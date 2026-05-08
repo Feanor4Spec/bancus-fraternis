@@ -111,6 +111,7 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | `tools/validate-route-aliases.mjs` | Paridade de 52 paginas e aliases curtos. |
 | `tools/validate-calculadoras.mjs` | Catalogo atual de 19 calculadoras, premissas e golden tests. |
 | `tools/validate-simulator-groups.mjs` | Base real do simulador: 17.396 grupos validos. |
+| `tools/validate-simulator-performance.mjs` | Base compacta do simulador, peso online e fallback para JSON legado. |
 | `tools/validate-proposal-builder.mjs` | Lousa seletiva de proposta/PDF. |
 | `tools/validate-proposal-acceptance.mjs` | Revisao e aceite local da proposta. |
 | `tools/validate-proposal-handoff.mjs` | Proposta revisada para handoff. |

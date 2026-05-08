@@ -76,7 +76,10 @@ let _shelfDataSource = 'pending';
 let _shelfDataStats = {
   total: 0,
   valid: 0,
+  excluded: 0,
   path: '',
+  format: '',
+  bytes: 0,
   loadedAt: null
 };
 
@@ -95,12 +98,15 @@ function _applyFallbackCatalog(message) {
     }
   }
 
-  _shelfDataStats = {
-    total: ShelfCatalog.length,
-    valid: ShelfCatalog.length,
-    path: 'fallback-simulado',
-    loadedAt: new Date().toISOString()
-  };
+    _shelfDataStats = {
+      total: ShelfCatalog.length,
+      valid: ShelfCatalog.length,
+      excluded: 0,
+      path: 'fallback-simulado',
+      format: 'fallback',
+      bytes: 0,
+      loadedAt: new Date().toISOString()
+    };
 
   return ShelfCatalog.length;
 }
@@ -167,6 +173,51 @@ function _parseBoolean(value, fallback = false) {
   if (['true', '1', 'sim', 's', 'yes'].includes(text)) return true;
   if (['false', '0', 'nao', 'não', 'n', 'no'].includes(text)) return false;
   return fallback;
+}
+
+function _decodeCompactDatabasePayload(payload) {
+  if (Array.isArray(payload)) {
+    return {
+      groups: payload,
+      rawRecords: payload.length,
+      validRecords: null,
+      excludedRecords: 0,
+      format: 'array-json',
+      source: 'real-json'
+    };
+  }
+
+  if (!payload || typeof payload !== 'object') {
+    throw new Error('Formato invalido: a base de grupos precisa ser um array ou payload compacto');
+  }
+
+  if (payload.schema !== 'bancus.shelf.compact.v1') {
+    throw new Error(`Schema compacto desconhecido: ${payload.schema || 'ausente'}`);
+  }
+
+  if (!Array.isArray(payload.columns) || !Array.isArray(payload.rows)) {
+    throw new Error('Payload compacto invalido: columns/rows ausentes');
+  }
+
+  const columns = payload.columns;
+  const groups = payload.rows.map((row) => {
+    const group = {};
+    columns.forEach((column, index) => {
+      group[column] = Array.isArray(row) ? row[index] : undefined;
+    });
+    return group;
+  });
+
+  return {
+    groups,
+    rawRecords: Number(payload.rawRecords) || groups.length,
+    validRecords: Number(payload.validRecords) || groups.length,
+    excludedRecords: Number(payload.excludedRecords) || 0,
+    format: payload.schema,
+    source: 'compact-json',
+    generatedAt: payload.generatedAt || '',
+    sourceSha256: payload.sourceSha256 || ''
+  };
 }
 
 function _normalizeGroup(raw, index = 0) {
@@ -281,7 +332,7 @@ function enrichGroup(g, index = 0) {
  * @param {string} jsonPath - Caminho relativo ao JSON
  * @returns {Promise<number>} - Quantidade de grupos carregados
  */
-async function loadRealDatabase(jsonPath) {
+async function _loadLegacyRealDatabase(jsonPath) {
   try {
     _shelfDataSource = 'loading';
     _shelfDataError = null;
@@ -350,6 +401,85 @@ async function loadRealDatabase(jsonPath) {
  * Retorna o catálogo simulado como fallback.
  * Mantido para desenvolvimento offline.
  */
+async function _loadDatabaseCandidate(jsonPath) {
+  _shelfDataSource = 'loading';
+  _shelfDataError = null;
+  _shelfDataStats = {
+    total: 0,
+    valid: 0,
+    excluded: 0,
+    path: jsonPath || '',
+    format: '',
+    bytes: 0,
+    loadedAt: null
+  };
+
+  if (typeof fetch !== 'function') {
+    throw new Error('fetch indisponivel neste ambiente');
+  }
+
+  const response = await fetch(jsonPath);
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+  }
+  const contentLength = response.headers && typeof response.headers.get === 'function'
+    ? Number(response.headers.get('content-length')) || 0
+    : 0;
+  const payload = await response.json();
+  const decoded = _decodeCompactDatabasePayload(payload);
+  const data = decoded.groups;
+
+  if (!Array.isArray(data)) {
+    throw new Error('Formato invalido: a base de grupos precisa ser um array');
+  }
+
+  const validGroups = data.filter(g =>
+    g &&
+    Number(g.valorCartaRef) > 0 &&
+    Number(g.prazoMeses) > 0 &&
+    Number(g.qtdAtivasEmDia) >= 0
+  );
+
+  ShelfCatalog = validGroups.map(enrichGroup);
+
+  _shelfDataLoaded = true;
+  _shelfDataError = null;
+  _shelfDataSource = decoded.source || 'real-json';
+  _shelfDataStats = {
+    total: decoded.rawRecords || data.length,
+    valid: validGroups.length,
+    excluded: decoded.excludedRecords != null ? decoded.excludedRecords : Math.max(0, data.length - validGroups.length),
+    path: jsonPath || '',
+    format: decoded.format || 'array-json',
+    bytes: contentLength,
+    generatedAt: decoded.generatedAt || '',
+    sourceSha256: decoded.sourceSha256 || '',
+    loadedAt: new Date().toISOString()
+  };
+
+  console.log(`Base real carregada: ${ShelfCatalog.length} grupos validos de ${_shelfDataStats.total} totais`);
+  return ShelfCatalog.length;
+}
+
+/**
+ * Override v8.53: tenta a base compacta primeiro e preserva fallback legado.
+ */
+async function loadRealDatabase(jsonPath) {
+  const candidates = Array.isArray(jsonPath) ? jsonPath.filter(Boolean) : [jsonPath];
+  let lastMessage = '';
+
+  for (const candidate of candidates) {
+    try {
+      return await _loadDatabaseCandidate(candidate);
+    } catch (err) {
+      lastMessage = err && err.message ? err.message : String(err);
+      console.warn(`Base real nao carregada em ${candidate} (${lastMessage}).`);
+    }
+  }
+
+  return _applyFallbackCatalog(lastMessage || 'nenhuma fonte de base disponivel');
+}
+
 function _getSimulatedCatalog() {
   return [
     { dataBase: 202512, cnpjRaiz: '00000776', nomeAdministradora: 'ITAÚ ADM DE CONSÓRCIOS LTDA', codigoGrupo: '57', codigoSegmento: 1, valorCartaRef: 248543.52, taxaAdmPct: 20.61, prazoMeses: 200, indiceCorrecaoCodigo: 3, indiceCorrecaoNome: 'IGP-M', qtdAtivasEmDia: 709, qtdContempladasNoMes: 5, qtdExcluidas: 23, qtdQuitadas: 112, qtdCreditoPendente: 8 },

@@ -19,7 +19,7 @@
     mode: 'pending',
     count: 0,
     source: 'pending',
-    path: 'data_base/Tab_Grupos_Consorcio.json'
+    path: 'data_base/Tab_Grupos_Consorcio.compact.json'
   };
 
   function clamp(value) {
@@ -34,6 +34,7 @@
   }
 
   function sourceLabel(source) {
+    if (source === 'compact-json') return 'Base compacta JSON';
     if (source === 'real-json') return 'Base real JSON';
     if (source === 'fallback') return 'Fallback local';
     if (source === 'loading') return 'Carregando';
@@ -98,7 +99,7 @@
     update({
       percent: 8,
       message: message || 'Preparando conexao com a base.',
-      detail: detail || 'Abrindo canal local para data_base/Tab_Grupos_Consorcio.json.',
+      detail: detail || 'Abrindo canal local para data_base/Tab_Grupos_Consorcio.compact.json.',
       mode: 'loading',
       source: 'loading'
     });
@@ -132,7 +133,7 @@
       detail: detail || 'Base real disponivel para filtros, prateleira e simulacao.',
       mode: 'success',
       count,
-      source: 'real-json'
+      source: 'compact-json'
     });
     stageOrder.forEach((key) => setStage(key, 'done'));
   }

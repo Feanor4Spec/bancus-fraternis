@@ -1,0 +1,25 @@
+{
+  "ok": true,
+  "source": {
+    "path": "data_base/Tab_Grupos_Consorcio.json",
+    "bytes": 18364884,
+    "rawRecords": 17418,
+    "validRecords": 17396
+  },
+  "compact": {
+    "path": "data_base/Tab_Grupos_Consorcio.compact.json",
+    "bytes": 4066794,
+    "schema": "bancus.shelf.compact.v1",
+    "columns": 30,
+    "rows": 17396,
+    "rawRecords": 17418,
+    "validRecords": 17396,
+    "ratio": 0.2214
+  },
+  "gzip": {
+    "sourceBytes": 982046,
+    "compactBytes": 695525,
+    "ratio": 0.7082
+  },
+  "failures": []
+}

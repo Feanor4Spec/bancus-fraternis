@@ -356,7 +356,8 @@ Melhoria implementada em 2026-05-07:
 | `assets/data/instituicoes.json` | 4 grupos institucionais/demonstrativos. |
 | `assets/data/modelos-comparador-padrao.json` | 4 modelos padrao publicados. |
 | `assets/data/regras-negocio.json` | Regras de LGPD, Open Finance, simulacao e recomendacao. |
-| `data_base/Tab_Grupos_Consorcio.json` | Base grande de grupos de consorcio usada pela prateleira; 17.418 registros brutos, 17.396 grupos validos carregados pelo simulador e 22 registros sem `valorCartaRef`. |
+| `data_base/Tab_Grupos_Consorcio.json` | Base canonica de grupos de consorcio; 17.418 registros brutos, 17.396 grupos validos e 22 registros sem `valorCartaRef`. |
+| `data_base/Tab_Grupos_Consorcio.compact.json` | Base compacta usada pelo simulador online; 17.396 grupos validos em formato colunar, com fallback para o JSON canonico. |
 | `data_base/Tab_Grupos_Consorcio.csv` | Origem CSV da base. |
 | `data_base/converter.html` e `data_base/converter.js` | Conversor local de apoio. |
 
@@ -462,6 +463,7 @@ Scripts confirmados em `tools/`:
 | `validate-navigable-journey.mjs` | Roteiro navegavel ponta a ponta, links, marcadores e QA de jornada na lousa. |
 | `validate-online-journey-smoke.mjs` | Smoke test online no GitHub Pages para as 10 etapas do roteiro navegavel. |
 | `validate-simulator-groups.mjs` | Carga completa da base real no simulador, filtro vazio, score, ordenacao e paginacao. |
+| `validate-simulator-performance.mjs` | Peso da base compacta, schema colunar, fallback e reducao de bytes do simulador online. |
 | `validate-handoff-origins.mjs` | Origem dos handoffs por proposta, trilha, sinal e pacote importado. |
 | `validate-calculadoras.mjs` | Catalogo, paginas, premissas e formulas. |
 | `validate-dashboard-continuity-flow.mjs` | Timeline e deep links do Dashboard Cliente. |
@@ -511,7 +513,7 @@ Governanca documental: docs ativos passaram a usar Bancus Fraternis como platafo
 7. Usar design system v8 antes de criar novas variacoes visuais.
 8. Tratar `versions/` como backup, nao como fonte ativa.
 9. Tratar GitHub Pages como superficie publica: toda mudanca online deve preservar selo demo, fallback estatico e auditoria de publicacao segura.
-9. Considerar performance ao tocar na base grande `data_base/Tab_Grupos_Consorcio.json`.
+9. Considerar performance ao tocar na base grande `data_base/Tab_Grupos_Consorcio.json`; regenerar e validar `data_base/Tab_Grupos_Consorcio.compact.json` quando a base canonica mudar.
 
 ## Proximos Vetores
 

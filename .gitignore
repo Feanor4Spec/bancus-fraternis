@@ -36,3 +36,4 @@ versions/
 # Bases auxiliares fora do runtime online
 data_base/*
 !data_base/Tab_Grupos_Consorcio.json
+!data_base/Tab_Grupos_Consorcio.compact.json

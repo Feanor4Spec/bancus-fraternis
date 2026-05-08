@@ -252,6 +252,7 @@ const requiredFiles = [
   'js/proposal-acceptance.js',
   'assets/js/services/handoff-consultivo.service.js',
   'tools/validate-calculadoras.mjs',
+  'tools/validate-simulator-performance.mjs',
   'tools/validate-dashboard-continuity-flow.mjs',
   'tools/validate-decision-flow.mjs',
   'tools/validate-decision-journey-context.mjs',

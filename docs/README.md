@@ -82,6 +82,7 @@ node tools/validate-github-pages-deploy.mjs
 node tools/validate-calculadoras.mjs
 node tools/validate-route-aliases.mjs
 node tools/validate-simulator-groups.mjs
+node tools/validate-simulator-performance.mjs
 ```
 
 ## Contratos que Nao Devem Quebrar

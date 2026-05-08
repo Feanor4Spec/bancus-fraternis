@@ -4,6 +4,29 @@
 
 ---
 
+## [v8.53.0] - 2026-05-08
+
+### Performance do simulador online
+
+#### Adicionado
+- Criado `data_base/Tab_Grupos_Consorcio.compact.json` em formato colunar compacto, preservando os 17.396 grupos validos da base canonica.
+- Criado `tools/build-simulator-compact-db.mjs` para regenerar a base compacta a partir de `Tab_Grupos_Consorcio.json`.
+- Criado `tools/validate-simulator-performance.mjs` com relatorio em `docs/test-reports/simulator-performance-report.json`.
+
+#### Modificado
+- `pages/simulador.html` passou a carregar a base compacta primeiro e manter fallback para o JSON canonico.
+- `js/shelf-data.js` passou a aceitar payload compacto `bancus.shelf.compact.v1` e lista de fontes com fallback.
+- `js/database-progress.js` passou a exibir fonte `Base compacta JSON`.
+- CI, contratos publicos, mapa, plano e READMEs passaram a registrar o validador de performance.
+
+#### Validado
+- `node tools/build-simulator-compact-db.mjs`
+- `node tools/validate-simulator-performance.mjs`
+- `node tools/validate-simulator-groups.mjs`
+- `node tools/validate-design-system.mjs`
+
+---
+
 ## [v8.52.0] - 2026-05-08
 
 ### QA online da jornada publicada

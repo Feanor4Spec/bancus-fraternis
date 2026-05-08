@@ -148,7 +148,8 @@ const gitignore = await read('.gitignore');
   'server-8080.out.log',
   'versions/',
   'data_base/*',
-  '!data_base/Tab_Grupos_Consorcio.json'
+  '!data_base/Tab_Grupos_Consorcio.json',
+  '!data_base/Tab_Grupos_Consorcio.compact.json'
 ].forEach((marker) => assert(gitignore.includes(marker), `.gitignore sem protecao publica: ${marker}.`));
 
 const sharedLayout = await read('js/shared-layout.js');

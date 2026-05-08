@@ -80,8 +80,10 @@ function createFetch() {
 }
 
 const dataPath = 'data_base/Tab_Grupos_Consorcio.json';
+const compactDataPath = 'data_base/Tab_Grupos_Consorcio.compact.json';
 const dataText = await readText(dataPath);
 const rawData = JSON.parse(dataText);
+const compactData = JSON.parse(await readText(compactDataPath));
 const expectedValid = rawData.filter(isValidRawGroup);
 const invalidGroups = rawData.filter((group) => !isValidRawGroup(group));
 const invalidReasons = invalidGroups.reduce((acc, group) => {
@@ -94,6 +96,8 @@ const expectedSegments = Array.from(new Set(expectedValid.map((group) => Number(
 const expectedAdmins = new Set(expectedValid.map((group) => group.nomeAdministradora || group.cnpjRaiz || group.cnpjAdministradora).filter(Boolean));
 
 assert(Array.isArray(rawData), 'Tab_Grupos_Consorcio.json precisa ser um array.');
+assert(compactData.schema === 'bancus.shelf.compact.v1', 'Tab_Grupos_Consorcio.compact.json precisa usar schema compacto v1.');
+assert(Array.isArray(compactData.rows) && compactData.rows.length === expectedValid.length, 'Base compacta precisa conter todos os grupos validos.');
 assert(rawData.length > 17000, `Base bruta deveria ter mais de 17.000 registros, obteve ${rawData.length}.`);
 assert(expectedValid.length > 17000, `Base valida deveria ter mais de 17.000 grupos, obteve ${expectedValid.length}.`);
 assert(expectedSegments.length === 6, `Base valida deveria cobrir 6 segmentos, obteve ${expectedSegments.length}.`);
@@ -127,7 +131,7 @@ for (const script of [
 }
 
 const loadedCount = await vm.runInContext(
-  "loadRealDatabase('../data_base/Tab_Grupos_Consorcio.json')",
+  "loadRealDatabase(['../data_base/Tab_Grupos_Consorcio.compact.json', '../data_base/Tab_Grupos_Consorcio.json'])",
   context,
   { filename: 'validate-simulator-groups:load' }
 );
@@ -135,10 +139,11 @@ const status = vm.runInContext('getShelfDataStatus()', context);
 
 assert(loadedCount === expectedValid.length, `loadRealDatabase retornou ${loadedCount}, esperado ${expectedValid.length}.`);
 assert(status.loaded === true, 'getShelfDataStatus().loaded deveria ser true.');
-assert(status.source === 'real-json', `Fonte deveria ser real-json, obteve ${status.source}.`);
+assert(status.source === 'compact-json', `Fonte deveria ser compact-json, obteve ${status.source}.`);
 assert(status.count === expectedValid.length, `ShelfCatalog deveria ter ${expectedValid.length} grupos, obteve ${status.count}.`);
 assert(status.stats && status.stats.total === rawData.length, `stats.total deveria ser ${rawData.length}, obteve ${status.stats && status.stats.total}.`);
 assert(status.stats && status.stats.valid === expectedValid.length, `stats.valid deveria ser ${expectedValid.length}, obteve ${status.stats && status.stats.valid}.`);
+assert(status.stats && status.stats.format === 'bancus.shelf.compact.v1', `stats.format deveria ser compacto v1, obteve ${status.stats && status.stats.format}.`);
 
 const engineReport = vm.runInContext(`
   const emptyFiltered = ShelfEngine.filterGroups(ShelfCatalog, {});
@@ -175,8 +180,9 @@ assert(engineReport.uniqueAdmins === expectedAdmins.size, `Administradoras unica
 assert(JSON.stringify(engineReport.segments) === JSON.stringify(expectedSegments), 'Segmentos carregados nao batem com a base valida.');
 
 const simulatorHtml = await readText('pages/simulador.html');
-assert(simulatorHtml.includes('data_base/Tab_Grupos_Consorcio.json'), 'simulador.html nao referencia a base real de grupos.');
-assert(simulatorHtml.includes('loadRealDatabase(dbPath)'), 'simulador.html nao chama loadRealDatabase(dbPath).');
+assert(simulatorHtml.includes('data_base/Tab_Grupos_Consorcio.compact.json'), 'simulador.html nao referencia a base compacta de grupos.');
+assert(simulatorHtml.includes('data_base/Tab_Grupos_Consorcio.json'), 'simulador.html nao preserva fallback da base real legada.');
+assert(simulatorHtml.includes('loadRealDatabase([dbPath, fallbackDbPath])'), 'simulador.html nao chama loadRealDatabase com fallback.');
 assert(simulatorHtml.includes('App.buscarGrupos()'), 'simulador.html nao dispara busca inicial apos carregar a base.');
 assert(simulatorHtml.includes('shelf-pagination'), 'simulador.html nao tem controles de paginacao da prateleira.');
 
@@ -184,6 +190,7 @@ const report = {
   ok: failures.length === 0,
   database: {
     path: dataPath,
+    compactPath: compactDataPath,
     rawRecords: rawData.length,
     validGroups: expectedValid.length,
     excludedByMinimumData: rawData.length - expectedValid.length,
@@ -198,7 +205,8 @@ const report = {
   shelfEngine: engineReport,
   uiContract: {
     simulatorUsesRealJson: simulatorHtml.includes('data_base/Tab_Grupos_Consorcio.json'),
-    bootCallsLoadRealDatabase: simulatorHtml.includes('loadRealDatabase(dbPath)'),
+    usesCompactJson: simulatorHtml.includes('data_base/Tab_Grupos_Consorcio.compact.json'),
+    bootCallsLoadRealDatabase: simulatorHtml.includes('loadRealDatabase([dbPath, fallbackDbPath])'),
     bootCallsInitialSearch: simulatorHtml.includes('App.buscarGrupos()'),
     hasPagination: simulatorHtml.includes('shelf-pagination')
   },

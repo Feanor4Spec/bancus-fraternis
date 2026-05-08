@@ -138,6 +138,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'tools/validate-admin-dashboard-source-funnel.mjs',
   'tools/validate-proposal-builder.mjs',
   'tools/validate-simulator-groups.mjs',
+  'tools/validate-simulator-performance.mjs',
   'tools/validate-docs-modernization.mjs',
   'tools/validate-handoff-consultant-operations.mjs',
   'tools/validate-auth-navigation.mjs',
@@ -209,7 +210,7 @@ const report = {
     dataMarkers: 13,
     globals: 11,
     deepLinks: 9,
-    validators: 13,
+    validators: 14,
     calculatorCount
   },
   warnings,

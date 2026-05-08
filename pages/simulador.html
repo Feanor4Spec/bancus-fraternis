@@ -234,7 +234,7 @@
             </div>
             <div>
               <dt>Caminho</dt>
-              <dd id="database-status-path">data_base/Tab_Grupos_Consorcio.json</dd>
+              <dd id="database-status-path">data_base/Tab_Grupos_Consorcio.compact.json</dd>
             </div>
           </dl>
         </div>
@@ -1129,15 +1129,17 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
       const progress = window.BankFraternProgress;
       const wait = (ms) => new Promise(r => setTimeout(r, ms));
       if (overlay) overlay.style.display = 'flex';
-        const dbPath = `${location.pathname.includes('/pages/') ? '../' : ''}data_base/Tab_Grupos_Consorcio.json`;
+        const dbPrefix = location.pathname.includes('/pages/') ? '../' : '';
+        const dbPath = `${dbPrefix}data_base/Tab_Grupos_Consorcio.compact.json`;
+        const fallbackDbPath = `${dbPrefix}data_base/Tab_Grupos_Consorcio.json`;
         if (progress) progress.start('Preparando conexao com a base.', `Abrindo ${dbPath}.`);
       try {
-        if (msg) msg.textContent = 'Carregando base de grupos (18 MB)⬦';
+        if (msg) msg.textContent = 'Carregando base compacta de grupos (4 MB)...';
         if (typeof loadRealDatabase !== 'function') {
           throw new Error('loadRealDatabase indisponivel');
         }
-        if (progress) progress.stage('download', 28, 'Carregando base de grupos (18 MB)...', 'Recebendo registros do JSON local.');
-        const count = await loadRealDatabase(dbPath);
+        if (progress) progress.stage('download', 28, 'Carregando base compacta de grupos (4 MB)...', 'Recebendo registros compactos do JSON local.');
+        const count = await loadRealDatabase([dbPath, fallbackDbPath]);
         if (progress) progress.stage('parse', 68, 'Validando registros carregados.', 'Normalizando campos comerciais e dados minimos.');
         const catalog = (typeof ShelfCatalog !== 'undefined' && Array.isArray(ShelfCatalog)) ? ShelfCatalog : [];
         const loadedFromReal = (typeof isShelfDataLoaded === 'function') ? isShelfDataLoaded() : count > 0;

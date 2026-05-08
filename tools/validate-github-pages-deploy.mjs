@@ -115,12 +115,36 @@ try {
   fail(`Base JSON online invalida: ${error.message}`);
 }
 
+let compactDatabase = null;
+try {
+  const result = await fetchText(`${baseUrl}/data_base/Tab_Grupos_Consorcio.compact.json`);
+  assert(result.ok, `Base compacta retornou HTTP ${result.status}.`);
+  const data = JSON.parse(result.text);
+  compactDatabase = {
+    url: `${baseUrl}/data_base/Tab_Grupos_Consorcio.compact.json`,
+    status: result.status,
+    bytes: result.bytes,
+    schema: data && data.schema,
+    rawRecords: data && data.rawRecords,
+    validRecords: data && data.validRecords,
+    rows: data && Array.isArray(data.rows) ? data.rows.length : 0
+  };
+  assert(data && data.schema === 'bancus.shelf.compact.v1', 'Base compacta online sem schema esperado.');
+  assert(data && data.rawRecords === 17418, `Base compacta deveria registrar 17418 registros brutos; encontrou ${data && data.rawRecords}.`);
+  assert(data && data.validRecords === 17396, `Base compacta deveria registrar 17396 grupos validos; encontrou ${data && data.validRecords}.`);
+  assert(Array.isArray(data.rows) && data.rows.length === 17396, `Base compacta deveria ter 17396 linhas; encontrou ${data && data.rows && data.rows.length}.`);
+  assert(result.bytes < 4_500_000, `Base compacta online deveria ficar abaixo de 4.5 MB; obteve ${result.bytes}.`);
+} catch (error) {
+  fail(`Base compacta online invalida: ${error.message}`);
+}
+
 const report = {
   ok: failures.length === 0,
   baseUrl,
   pages,
   fallback404,
   database,
+  compactDatabase,
   warnings,
   failures
 };
