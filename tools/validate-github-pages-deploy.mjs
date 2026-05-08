@@ -54,7 +54,12 @@ const checks = [
   {
     name: 'simulador',
     url: `${baseUrl}/pages/simulador.html`,
-    includes: ['data-simulator-readiness', 'database-status-panel', 'Bancus Fraternis']
+    includes: ['data-simulator-readiness', 'database-status-panel', 'Bancus Fraternis', 'Demo local']
+  },
+  {
+    name: 'login',
+    url: `${baseUrl}/pages/login.html`,
+    includes: ['data-public-demo-notice', 'Demo local', 'Ambiente publico de demonstracao']
   }
 ];
 
@@ -78,6 +83,21 @@ for (const check of checks) {
   }
 }
 
+let fallback404 = null;
+try {
+  const result = await fetchText(`${baseUrl}/rota-curta-inexistente-qa`);
+  fallback404 = {
+    url: `${baseUrl}/rota-curta-inexistente-qa`,
+    status: result.status,
+    bytes: result.bytes
+  };
+  assert(result.status === 404, `Fallback deveria retornar HTTP 404; recebeu ${result.status}.`);
+  assert(result.text.includes('Bancus Fraternis - rota nao encontrada'), 'Fallback 404 nao contem identidade Bancus Fraternis.');
+  assert(result.text.includes('pages/index.html'), 'Fallback 404 nao aponta para a entrada principal.');
+} catch (error) {
+  fail(`Fallback 404 nao pode ser validado: ${error.message}`);
+}
+
 let database = null;
 try {
   const result = await fetchText(`${baseUrl}/data_base/Tab_Grupos_Consorcio.json`);
@@ -99,6 +119,7 @@ const report = {
   ok: failures.length === 0,
   baseUrl,
   pages,
+  fallback404,
   database,
   warnings,
   failures
