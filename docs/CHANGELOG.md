@@ -4,6 +4,28 @@
 
 ---
 
+## [v8.54.0] - 2026-05-08
+
+### Lousa consultiva avancada da proposta/PDF
+
+#### Adicionado
+- A lousa da etapa 9 ganhou presets `Consultiva` e `Tecnica`, alem de acoes para selecionar ou limpar grupos inteiros de blocos, graficos, conceitos e formulas.
+- Adicionado painel de prontidao `data-proposal-builder-readiness`, com foco da proposta, estimativa de paginas e alertas antes da exportacao.
+- Cada item selecionavel agora expoe `data-proposal-builder-option`, facilitando QA visual e automacao futura.
+- O PDF passou a incluir `data-proposal-selection-summary` no plano de proximos passos, resumindo quantos blocos, graficos, conceitos e formulas entraram na proposta final.
+
+#### Modificado
+- Graficos desmarcados pela lousa deixam de aparecer como placeholders no PDF final; a proposta mostra apenas o que o consultor escolheu exibir ao cliente.
+- `tools/validate-proposal-builder.mjs`, contratos publicos e CI passaram a proteger os novos controles da lousa.
+
+#### Validado
+- `node --check js/app.js`
+- `node --check js/proposal-summary.js`
+- `node tools/validate-proposal-builder.mjs`
+- Browser headless local: `docs/test-reports/proposal-builder-browser-report.json`
+
+---
+
 ## [v8.53.0] - 2026-05-08
 
 ### Performance do simulador online

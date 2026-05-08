@@ -49,7 +49,7 @@ Cada etapa deve responder quatro perguntas:
 | Produtos com contexto preservado | Concluido parcial | CTAs usam `from=products`, `productId`, `preset` e selecao em `products`. |
 | Calculadoras com contexto preservado | Concluido | CTAs usam `BFCalculatorJourney`, `from=calculator|calculators`, `calculatorSlug`, `historyId` e `preset`. |
 | Trilha Assistida contextual | Concluido parcial | Entrada reconhece Produtos/Calculadoras e saidas usam `from=journey` com `sourceFrom`. |
-| Proposta/PDF com lousa seletiva | Concluido | Etapa 9 usa `proposal-builder-board`, `builder` em `ProposalSummary` e `tools/validate-proposal-builder.mjs`. |
+| Proposta/PDF com lousa seletiva | Concluido | Etapa 9 usa `proposal-builder-board`, presets consultivo/tecnico, prontidao de exportacao, selecao por grupos, `builder` em `ProposalSummary` e `tools/validate-proposal-builder.mjs`. |
 | Handoff por origem | Concluido parcial | Filtro, badge, metricas, origem, aging, SLA, responsavel sugerido e proximo passo operacional. |
 | Dashboards por funil/aging | Concluido parcial | Dashboard Cliente tem timeline/deep links; Dashboard Admin agora tem proximas acoes, funil por origem, aging, prioridade, responsavel sugerido e gargalos. |
 | Navegacao autenticada | Concluido parcial | Login local tem acesso rapido por perfil, redirect preservado e validador dedicado. |

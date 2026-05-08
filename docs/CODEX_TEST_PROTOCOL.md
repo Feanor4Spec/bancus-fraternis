@@ -145,7 +145,10 @@ Validacoes obrigatorias:
 - Abrir `http://127.0.0.1:8080/pages/simulador.html`.
 - Carregar um exemplo ou restaurar uma simulacao salva.
 - Avancar para a etapa 9 e confirmar a existencia de `#proposal-export-root`.
+- Confirmar que a lousa contem `data-proposal-builder-readiness`, presets consultivo/tecnico e acoes de selecionar/limpar por grupo.
+- Confirmar que itens desmarcados na lousa nao aparecem como placeholder no PDF final.
 - Confirmar que a etapa 9 contem `.ps-section--conversation` e quatro `.ps-conversation-card`.
+- Confirmar que `data-proposal-selection-summary` registra a quantidade de blocos, graficos, conceitos e formulas selecionados.
 - Confirmar que `#proposal-export-root` e `#proposal-summary-print-root` usam IDs de graficos diferentes para evitar duplicidade de canvas.
 - Clicar em `Exportar PDF` e verificar que o arquivo gerado preserva cabecalho, resumo, blocos conversacionais, graficos, cronograma e disclaimer.
 - Confirmar que nao existe overflow horizontal em desktop e mobile.
@@ -157,6 +160,7 @@ $node='<node-runtime>'
 & $node --check js\proposal-summary.js
 & $node --check js\export.js
 & $node --check js\app.js
+& $node tools\validate-proposal-builder.mjs
 ```
 
 ## Aceite local da proposta

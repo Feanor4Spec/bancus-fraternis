@@ -242,6 +242,10 @@ const ProposalSummary = (() => {
     return !data.builder || !data.builder.formulas || data.builder.formulas[key] !== false;
   }
 
+  function countEnabledFlags(group) {
+    return Object.values(group || {}).filter(Boolean).length;
+  }
+
   const chartSectionMap = {
     composition: 'financialComposition',
     installment: 'contributionOverview',
@@ -251,12 +255,7 @@ const ProposalSummary = (() => {
   };
 
   function renderDisabledChart(label) {
-    return `
-      <div class="ps-chart-disabled">
-        <strong>${escapeHTML(label)}</strong>
-        <p>Grafico removido desta versao da proposta pela lousa de exportacao.</p>
-      </div>
-    `;
+    return '';
   }
 
   function prepareRenderData(data, options = {}, target) {
@@ -1163,6 +1162,13 @@ const ProposalSummary = (() => {
       ['nextSteps', 'Proximos passos'],
       ['disclaimer', 'Premissas finais']
     ].filter(([key]) => key === 'nextSteps' || isSectionEnabled(data, key)).map(([, label]) => label);
+    const builder = data.builder || proposalBuilderDefaults;
+    const selectionFacts = [
+      ['Blocos', countEnabledFlags(builder.sections), Object.keys(builder.sections || {}).length],
+      ['Graficos', countEnabledFlags(builder.charts), Object.keys(builder.charts || {}).length],
+      ['Conceitos', countEnabledFlags(builder.concepts), Object.keys(builder.concepts || {}).length],
+      ['Formulas', countEnabledFlags(builder.formulas), Object.keys(builder.formulas || {}).length]
+    ];
     return `
       <section class="ps-section ps-section--split ps-print-page">
         <div>
@@ -1182,6 +1188,11 @@ const ProposalSummary = (() => {
         </div>
         <div class="ps-pdf-plan">
           <h4>Estrutura selecionada na lousa</h4>
+          <div class="ps-pdf-plan__facts" data-proposal-selection-summary>
+            ${selectionFacts.map(([label, selected, total]) => `
+              <article><span>${escapeHTML(label)}</span><strong>${number(selected)} de ${number(total)}</strong></article>
+            `).join('')}
+          </div>
           ${planItems.map((item, i) => `
             <div><span>${i + 1}</span><strong>${escapeHTML(item)}</strong></div>
           `).join('')}

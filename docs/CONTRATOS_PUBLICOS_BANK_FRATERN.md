@@ -52,7 +52,7 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | Trilha | `data-decision-journey-form`, `data-decision-journey-state`, `data-decision-journey-steps`, `data-decision-journey-actions`. |
 | Comparador | `data-comparator-form`, `data-comparator-result`, `data-comparator-preset-summary`, `data-comparator-model-recommendation`. |
 | Simulador | `data-simulator-readiness`, `data-simulator-decision-strip`, `data-v8-stagebar`, `data-shelf-col`. |
-| Proposta | `data-proposal-acceptance-panel`, `data-proposal-handoff-bridge`, `data-proposal-builder-board`. |
+| Proposta | `data-proposal-acceptance-panel`, `data-proposal-handoff-bridge`, `data-proposal-builder-board`, `data-proposal-builder-readiness`, `data-proposal-builder-option`. |
 | Handoff | `data-handoff-list`, `data-handoff-detail`, `data-handoff-metrics`, `data-handoff-recovery-signals`, `data-handoff-consultant-cockpit`, `data-handoff-assignee-filter`, `data-handoff-aging-filter`. |
 | Dashboard Cliente | `data-client-continuity-strip`, `data-client-continuity-timeline`, `data-client-decision-journey`, `data-client-recovery-signals`. |
 | Dashboard Admin | `data-admin-next-actions`, `data-admin-source-funnel`, `data-admin-bottleneck-board`, `data-admin-journey-funnel`, `data-admin-operational-alerts`, `data-admin-recovery-queue`, `data-admin-recovery-packages`. |

@@ -11,7 +11,7 @@ O Bancus Fraternis e uma plataforma estatica/progressiva para apoiar decisao fin
 - Simulador conectado a base real com 17.396 grupos validos.
 - Fluxo principal: Home -> Produtos -> Calculadoras -> Trilha Assistida -> Comparador -> Simulador -> Proposta -> Handoff -> Dashboards.
 - Lousa de navegacao em `pages/lousa-navegacao.html` para revisao do produto.
-- Lousa de proposta/PDF no simulador para o consultor selecionar blocos, graficos, conceitos e formulas.
+- Lousa de proposta/PDF no simulador para o consultor selecionar blocos, graficos, conceitos e formulas, com presets consultivo/tecnico e prontidao antes da exportacao.
 - Dashboard Cliente e Dashboard Admin com continuidade, origem, aging, prioridade e proximos passos.
 - Publicacao em GitHub Pages com selo de ambiente demo/local, fallback estatico e validador de seguranca publica.
 

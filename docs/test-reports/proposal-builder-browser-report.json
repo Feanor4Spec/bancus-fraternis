@@ -1,0 +1,29 @@
+{
+  "ok": true,
+  "screenshot": "docs/test-prints/proposal-builder-advanced-desktop.png",
+  "checked": {
+    "consultivaPreset": true,
+    "tecnicaPreset": true,
+    "readinessPanel": true,
+    "builderOptions": 41,
+    "selectionSummary": true,
+    "chartsDisabledWithoutPlaceholders": true,
+    "consoleErrors": 0
+  },
+  "sample": {
+    "consultiva": {
+      "sections": "15 de 16",
+      "charts": "5 de 5",
+      "concepts": "7 de 12",
+      "formulas": "4 de 8"
+    },
+    "tecnica": {
+      "sections": "12 de 16",
+      "charts": "4 de 5",
+      "concepts": "0 de 12",
+      "formulas": "8 de 8",
+      "formulasVisible": true
+    }
+  },
+  "failures": []
+}

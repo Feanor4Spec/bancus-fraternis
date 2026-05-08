@@ -11,7 +11,14 @@
     "appStorage": true,
     "proposalBuilder": true,
     "conceptsSection": true,
-    "formulasSection": true
+    "formulasSection": true,
+    "readinessPanel": true,
+    "groupActions": true,
+    "selectionSummary": true,
+    "presets": {
+      "consultiva": true,
+      "tecnica": true
+    }
   },
   "failures": []
 }

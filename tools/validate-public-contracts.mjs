@@ -90,6 +90,8 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
 
 [
   'data-proposal-builder-board',
+  'data-proposal-builder-readiness',
+  'data-proposal-builder-option',
   'data-admin-next-actions',
   'data-admin-source-funnel',
   'data-admin-bottleneck-board',
@@ -207,7 +209,7 @@ const report = {
   ok: failures.length === 0,
   contracts: {
     localStorageKeys: 12,
-    dataMarkers: 13,
+    dataMarkers: 15,
     globals: 11,
     deepLinks: 9,
     validators: 14,

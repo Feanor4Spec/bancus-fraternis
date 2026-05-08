@@ -925,6 +925,15 @@ const App = (() => {
       Object.keys(config[group]).forEach(key => { config[group][key] = value; });
     };
 
+    if (preset === 'consultiva') {
+      config.sections.schedule = false;
+      setAll('concepts', false);
+      setAll('formulas', false);
+      ['consorcio', 'cartaCredito', 'lanceProprio', 'lanceEmbutido', 'contemplacao', 'taxaAdministracao', 'saldoDevedor'].forEach(key => { config.concepts[key] = true; });
+      ['parcelaTotal', 'lanceTotal', 'cartaLiquida', 'saldoDevedor'].forEach(key => { config.formulas[key] = true; });
+      return config;
+    }
+
     if (preset === 'executiva') {
       ['project', 'productPhases', 'schedule', 'concepts', 'formulas'].forEach(key => { config.sections[key] = false; });
       setAll('concepts', false);
@@ -936,6 +945,15 @@ const App = (() => {
     if (preset === 'educativa') {
       config.sections.schedule = false;
       config.sections.acceptance = false;
+      return config;
+    }
+
+    if (preset === 'tecnica') {
+      setAll('sections', false);
+      ['header', 'kpis', 'project', 'productPhases', 'financialComposition', 'contributionOverview', 'projection', 'schedule', 'formulas', 'nextSteps', 'acceptance', 'disclaimer'].forEach(key => { config.sections[key] = true; });
+      setAll('concepts', false);
+      config.charts.bid = false;
+      config.sections.concepts = false;
       return config;
     }
 
@@ -952,14 +970,78 @@ const App = (() => {
     return config;
   }
 
+  const proposalBuilderChartSections = {
+    composition: 'financialComposition',
+    installment: 'contributionOverview',
+    bid: 'bidStrategy',
+    debt: 'projection',
+    installmentProjection: 'projection'
+  };
+
+  const proposalBuilderSectionWeights = {
+    header: 0.6,
+    executive: 0.8,
+    kpis: 0.8,
+    journey: 0.8,
+    project: 1.1,
+    productPhases: 0.8,
+    financialComposition: 0.9,
+    contributionOverview: 0.9,
+    bidStrategy: 0.9,
+    projection: 1.1,
+    schedule: 2.2,
+    concepts: 1.1,
+    formulas: 1.1,
+    nextSteps: 0.8,
+    acceptance: 0.8,
+    disclaimer: 0.4
+  };
+
   function countEnabledFlags(group) {
     return Object.values(group || {}).filter(Boolean).length;
+  }
+
+  function proposalBuilderPageEstimate(config) {
+    const total = Object.entries(proposalBuilderSectionWeights).reduce((sum, [key, weight]) => {
+      return sum + (config.sections && config.sections[key] !== false ? weight : 0);
+    }, 0);
+    return Math.max(1, Math.ceil(total));
+  }
+
+  function proposalBuilderReadinessIssues(config) {
+    const issues = [];
+    if (!config.sections.header) issues.push('Capa desativada.');
+    if (!config.sections.kpis) issues.push('Numeros estrategicos desativados.');
+    if (!config.sections.nextSteps) issues.push('Proximos passos desativados.');
+    if (!config.sections.disclaimer) issues.push('Premissas finais desativadas.');
+    if (config.sections.concepts && countEnabledFlags(config.concepts) === 0) issues.push('Bloco de conceitos ativo sem conceitos selecionados.');
+    if (config.sections.formulas && countEnabledFlags(config.formulas) === 0) issues.push('Memoria de calculo ativa sem formulas selecionadas.');
+    if (countEnabledFlags(config.sections) === 0) issues.push('Nenhum bloco selecionado para exportacao.');
+    return issues;
+  }
+
+  function proposalBuilderFocusLabel(config) {
+    if (config.sections.schedule && config.sections.formulas && !config.sections.concepts) return 'Tecnica';
+    if (!config.sections.schedule && config.sections.concepts && config.sections.formulas) return 'Consultiva';
+    if (!config.sections.concepts && !config.sections.formulas && !config.sections.schedule) return 'Executiva';
+    if (config.sections.concepts && config.sections.formulas && !config.sections.acceptance) return 'Educativa';
+    if (countEnabledFlags(config.sections) <= 7) return 'Compacta';
+    return 'Completa';
+  }
+
+  function syncProposalBuilderDependencies(config, group, key, checked) {
+    if (!checked) return;
+    if (group === 'concepts') config.sections.concepts = true;
+    if (group === 'formulas') config.sections.formulas = true;
+    if (group === 'charts' && proposalBuilderChartSections[key]) {
+      config.sections[proposalBuilderChartSections[key]] = true;
+    }
   }
 
   function renderProposalBuilderOption(groupKey, option, config) {
     const checked = config[groupKey] && config[groupKey][option.key] !== false;
     return `
-      <label class="proposal-builder-option">
+      <label class="proposal-builder-option ${checked ? 'proposal-builder-option--selected' : ''}" data-proposal-builder-option="${groupKey}.${option.key}">
         <input type="checkbox" ${checked ? 'checked' : ''} onchange="App.toggleProposalBuilderOption('${groupKey}', '${option.key}', this.checked)">
         <span>
           <strong>${escapeSettingsText(option.label)}</strong>
@@ -979,11 +1061,43 @@ const App = (() => {
             <p>${escapeSettingsText(group.description)}</p>
           </div>
           <span>${selected}/${group.options.length}</span>
+          <div class="proposal-builder-group__actions">
+            <button type="button" onclick="App.setProposalBuilderGroup('${group.key}', true)">Tudo</button>
+            <button type="button" onclick="App.setProposalBuilderGroup('${group.key}', false)">Limpar</button>
+          </div>
         </div>
         <div class="proposal-builder-options">
           ${group.options.map(option => renderProposalBuilderOption(group.key, option, config)).join('')}
         </div>
       </article>
+    `;
+  }
+
+  function renderProposalBuilderReadiness(config) {
+    const issues = proposalBuilderReadinessIssues(config);
+    const pages = proposalBuilderPageEstimate(config);
+    const statusLabel = issues.length ? 'Revisar' : 'Pronta';
+    const issueList = issues.length
+      ? `<ul>${issues.map(issue => `<li>${escapeSettingsText(issue)}</li>`).join('')}</ul>`
+      : '<p>Selecao coerente para preview, impressao e PDF final.</p>';
+
+    return `
+      <div class="proposal-builder-readiness proposal-builder-readiness--${issues.length ? 'warning' : 'ok'}" data-proposal-builder-readiness>
+        <article>
+          <span>Status</span>
+          <strong>${statusLabel}</strong>
+          <small>${pages} pagina(s) estimada(s)</small>
+        </article>
+        <article>
+          <span>Foco</span>
+          <strong>${escapeSettingsText(proposalBuilderFocusLabel(config))}</strong>
+          <small>${countEnabledFlags(config.sections)} blocos ativos</small>
+        </article>
+        <div>
+          <strong>Controle antes do PDF</strong>
+          ${issueList}
+        </div>
+      </div>
     `;
   }
 
@@ -1012,9 +1126,12 @@ const App = (() => {
         </div>
         <div class="proposal-builder-presets">
           <button class="btn btn--sm btn--primary" type="button" onclick="App.applyProposalBuilderPreset('completa')">Completa</button>
+          <button class="btn btn--sm btn--ghost" type="button" onclick="App.applyProposalBuilderPreset('consultiva')">Consultiva</button>
           <button class="btn btn--sm btn--ghost" type="button" onclick="App.applyProposalBuilderPreset('executiva')">Executiva</button>
           <button class="btn btn--sm btn--ghost" type="button" onclick="App.applyProposalBuilderPreset('educativa')">Educativa</button>
+          <button class="btn btn--sm btn--ghost" type="button" onclick="App.applyProposalBuilderPreset('tecnica')">Tecnica</button>
           <button class="btn btn--sm btn--ghost" type="button" onclick="App.applyProposalBuilderPreset('compacta')">Compacta</button>
+          <button class="btn btn--sm btn--ghost" type="button" onclick="App.setProposalBuilderAll(false)">Limpar</button>
         </div>
       </div>
       <div class="proposal-builder-scoreboard">
@@ -1023,6 +1140,7 @@ const App = (() => {
         <article><span>Conceitos</span><strong>${selectedConcepts}</strong><small>de ${Object.keys(config.concepts).length}</small></article>
         <article><span>Formulas</span><strong>${selectedFormulas}</strong><small>de ${Object.keys(config.formulas).length}</small></article>
       </div>
+      ${renderProposalBuilderReadiness(config)}
       <div class="proposal-builder-grid">
         ${groups.map(group => renderProposalBuilderGroup(group, config)).join('')}
       </div>
@@ -1033,8 +1151,31 @@ const App = (() => {
     const config = getProposalBuilderConfig();
     if (!config[group] || typeof config[group][key] === 'undefined') return;
     config[group][key] = !!checked;
+    syncProposalBuilderDependencies(config, group, key, checked);
     saveProposalBuilderConfig(config);
     renderProposta();
+  }
+
+  function setProposalBuilderGroup(group, checked) {
+    const config = getProposalBuilderConfig();
+    if (!config[group]) return;
+    Object.keys(config[group]).forEach(key => {
+      config[group][key] = !!checked;
+      syncProposalBuilderDependencies(config, group, key, checked);
+    });
+    saveProposalBuilderConfig(config);
+    renderProposta();
+    showToast(`Lousa atualizada: ${checked ? 'todos' : 'nenhum'} em ${group}.`, 'success');
+  }
+
+  function setProposalBuilderAll(checked) {
+    const config = getProposalBuilderConfig();
+    ['sections', 'charts', 'concepts', 'formulas'].forEach(group => {
+      Object.keys(config[group] || {}).forEach(key => { config[group][key] = !!checked; });
+    });
+    saveProposalBuilderConfig(config);
+    renderProposta();
+    showToast(checked ? 'Todos os itens da lousa foram selecionados.' : 'A lousa foi limpa para uma nova selecao.', checked ? 'success' : 'warning');
   }
 
   function applyProposalBuilderPreset(preset = 'completa') {
@@ -3039,6 +3180,8 @@ const App = (() => {
     renderProposta,
     renderProposalBuilderBoard,
     toggleProposalBuilderOption,
+    setProposalBuilderGroup,
+    setProposalBuilderAll,
     applyProposalBuilderPreset,
     salvarRevisaoProposta,
     limparRevisaoProposta,

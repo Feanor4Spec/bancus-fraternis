@@ -3523,6 +3523,7 @@ body.sim-body {
 
 .proposal-builder-group {
   display: grid;
+  align-content: start;
   gap: 12px;
   padding: 14px;
   border: 1px solid #e2e8f0;
@@ -3569,8 +3570,32 @@ body.sim-body {
   font-weight: 900;
 }
 
+.proposal-builder-group__actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.proposal-builder-group__actions button {
+  min-height: 28px;
+  padding: 4px 10px;
+  border: 1px solid #d6e3f3;
+  border-radius: 8px;
+  background: #fff;
+  color: #143B66;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.proposal-builder-group__actions button:hover {
+  background: #eaf2ff;
+}
+
 .proposal-builder-options {
   display: grid;
+  align-content: start;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
 }
@@ -3586,6 +3611,11 @@ body.sim-body {
   border-radius: 8px;
   background: #f8fafc;
   cursor: pointer;
+}
+
+.proposal-builder-option--selected {
+  border-color: #9cc4f5;
+  background: #f0f7ff;
 }
 
 .proposal-builder-option input {
@@ -3611,6 +3641,68 @@ body.sim-body {
   color: #64748b;
   font-size: 11px;
   line-height: 1.35;
+}
+
+.proposal-builder-readiness {
+  display: grid;
+  grid-template-columns: minmax(150px, .55fr) minmax(150px, .55fr) minmax(0, 1fr);
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #d6e3f3;
+  border-radius: 8px;
+  background: #f8fbff;
+}
+
+.proposal-builder-readiness article,
+.proposal-builder-readiness > div {
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.proposal-builder-readiness span,
+.proposal-builder-readiness small,
+.proposal-builder-readiness p,
+.proposal-builder-readiness li {
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.proposal-builder-readiness span,
+.proposal-builder-readiness strong,
+.proposal-builder-readiness small {
+  display: block;
+}
+
+.proposal-builder-readiness strong {
+  color: #0f172a;
+  font-size: 15px;
+}
+
+.proposal-builder-readiness article strong {
+  margin: 5px 0;
+  font-size: 22px;
+}
+
+.proposal-builder-readiness p,
+.proposal-builder-readiness ul {
+  margin: 8px 0 0;
+}
+
+.proposal-builder-readiness ul {
+  padding-left: 18px;
+}
+
+.proposal-builder-readiness--ok {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+.proposal-builder-readiness--warning {
+  border-color: #fde68a;
+  background: #fffbeb;
 }
 
 .proposal-acceptance-panel {
@@ -4287,7 +4379,39 @@ body.sim-body {
   margin: 0 0 12px;
 }
 
-.ps-pdf-plan div {
+.ps-pdf-plan__facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.ps-pdf-plan__facts article {
+  padding: 10px;
+  border: 1px solid var(--ps-line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.ps-pdf-plan__facts span,
+.ps-pdf-plan__facts strong {
+  display: block;
+}
+
+.ps-pdf-plan__facts span {
+  color: var(--ps-muted);
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.ps-pdf-plan__facts strong {
+  margin-top: 4px;
+  color: var(--ps-ink);
+  font-size: 13px;
+}
+
+.ps-pdf-plan > div:not(.ps-pdf-plan__facts) {
   display: grid;
   grid-template-columns: 30px minmax(0, 1fr);
   align-items: center;
@@ -4296,7 +4420,7 @@ body.sim-body {
   border-top: 1px solid var(--ps-line);
 }
 
-.ps-pdf-plan span {
+.ps-pdf-plan > div:not(.ps-pdf-plan__facts) > span {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -4866,6 +4990,7 @@ body.sim-body {
   .ps-phase-grid,
   .ps-schedule-summary,
   .proposal-builder-grid,
+  .proposal-builder-readiness,
   .ps-concepts-grid,
   .ps-formula-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -4919,6 +5044,8 @@ body.sim-body {
   .proposal-builder-scoreboard,
   .proposal-builder-grid,
   .proposal-builder-options,
+  .proposal-builder-readiness,
+  .ps-pdf-plan__facts,
   .ps-concepts-grid,
   .ps-formula-grid {
     grid-template-columns: 1fr;
