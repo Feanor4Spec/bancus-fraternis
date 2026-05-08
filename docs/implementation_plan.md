@@ -131,17 +131,17 @@ gantt
 
 ### O que será feito
 
-#### [MODIFY] [shelf-data.js](file:///c:/Users/gustavo.pinheiro/.gemini/antigravity/scratch/simulador-consorcio/js/shelf-data.js)
+#### [MODIFY] [shelf-data.js](file://<workspace-historico>/js/shelf-data.js)
 - Substituir o array de 24 grupos estáticos por um **loader dinâmico** que carrega `Tab_Grupos_Consorcio.json` via `fetch()`
 - Manter o array `ShelfCatalog` como variável global populada após o carregamento
 - Manter os objetos `SegmentosRef`, `IndiceCorrecaoRef` e `AdminRef` (já existem na base)
 - Adicionar enriquecimento pós-carregamento: calcular `nomeSegmento`, `macroCategoria`, `iconSegmento`, `contemplacoesRelativasPct` e `groupKey` para cada grupo
 
-#### [MODIFY] [app.js](file:///c:/Users/gustavo.pinheiro/.gemini/antigravity/scratch/simulador-consorcio/js/app.js)
+#### [MODIFY] [app.js](file://<workspace-historico>/js/app.js)
 - Ajustar `init()` para aguardar o carregamento assíncrono do JSON antes de popular filtros e prateleira
 - Exibir um loading spinner durante o carregamento da base (já existe CSS `.loading-overlay`)
 
-#### [MODIFY] [simulador.html](file:///c:/Users/gustavo.pinheiro/.gemini/antigravity/scratch/simulador-consorcio/simulador.html)
+#### [MODIFY] [simulador.html](file://<workspace-historico>/simulador.html)
 - Alterar `<script src="js/shelf-data.js">` para o novo modelo de carregamento assíncrono
 
 ### Entrega de valor
@@ -157,7 +157,7 @@ gantt
 
 ### O que será feito
 
-#### [NEW] [js/heuristic-engine.js](file:///c:/Users/gustavo.pinheiro/.gemini/antigravity/scratch/simulador-consorcio/js/heuristic-engine.js)
+#### [NEW] [js/heuristic-engine.js](file://<workspace-historico>/js/heuristic-engine.js)
 Novo módulo IIFE `HeuristicEngine` que implementa **todas as regras do `DIRETRIZES_ANALISE_GRUPOS.md`**:
 
 **Métricas Derivadas (Bloco B):**
@@ -186,16 +186,16 @@ Novo módulo IIFE `HeuristicEngine` que implementa **todas as regras do `DIRETRI
 **Sinopse Automática:**
 - `gerarSinopse(grupo)` → retorna array de bullet points justificando o porquê do grupo ter sido classificado assim
 
-#### [MODIFY] [shelf-engine.js](file:///c:/Users/gustavo.pinheiro/.gemini/antigravity/scratch/simulador-consorcio/js/shelf-engine.js)
+#### [MODIFY] [shelf-engine.js](file://<workspace-historico>/js/shelf-engine.js)
 - Integrar o `HeuristicEngine` no cálculo de score: o novo `computeShelfScore` combina o score quantitativo atual com as classificações heurísticas
 - Adicionar campo `classificacao`, `papel` e `sinopse` a cada grupo após processamento
 
-#### [MODIFY] [app.js](file:///c:/Users/gustavo.pinheiro/.gemini/antigravity/scratch/simulador-consorcio/js/app.js)
+#### [MODIFY] [app.js](file://<workspace-historico>/js/app.js)
 - `renderShelfTable()`: adicionar colunas/badges visuais para classificação (A/B/C/D) e papel (⚓/🧩/⚡/⚠️)
 - `verDetalheGrupo()`: exibir seção "Análise Heurística" no modal de detalhes com métricas derivadas, classificações e sinopse
 - Coloração de linhas na prateleira: verde suave para A, neutro para B, amarelo suave para C, vermelho suave para D
 
-#### [MODIFY] [simulador.html](file:///c:/Users/gustavo.pinheiro/.gemini/antigravity/scratch/simulador-consorcio/simulador.html)
+#### [MODIFY] [simulador.html](file://<workspace-historico>/simulador.html)
 - Incluir `<script src="js/heuristic-engine.js">` na ordem correta de carregamento (após shelf-data.js, antes de shelf-engine.js)
 - Adicionar colunas "Class." e "Papel" no `<thead>` da tabela da prateleira (Etapa 4)
 
@@ -212,7 +212,7 @@ Novo módulo IIFE `HeuristicEngine` que implementa **todas as regras do `DIRETRI
 
 ### O que será feito
 
-#### [MODIFY] [shelf-engine.js](file:///c:/Users/gustavo.pinheiro/.gemini/antigravity/scratch/simulador-consorcio/js/shelf-engine.js)
+#### [MODIFY] [shelf-engine.js](file://<workspace-historico>/js/shelf-engine.js)
 - `filterGroups()`: Adicionar novos filtros:
   - `cartaMin` / `cartaMax` (faixa de valor da carta)
   - `taxaMax` (taxa máxima de administração)
@@ -224,7 +224,7 @@ Novo módulo IIFE `HeuristicEngine` que implementa **todas as regras do `DIRETRI
   - `busca` (busca textual livre)
 - Adicionar função de paginação: `paginateGroups(groups, page, pageSize)` → retorna `{ data, totalPages, currentPage }`
 
-#### [MODIFY] [simulador.html](file:///c:/Users/gustavo.pinheiro/.gemini/antigravity/scratch/simulador-consorcio/simulador.html)
+#### [MODIFY] [simulador.html](file://<workspace-historico>/simulador.html)
 - **Etapa 3 (Filtros)**: Expandir o formulário de filtros com:
   - Faixa de valor de carta (min/max com máscara monetária)
   - Taxa máxima de administração
@@ -235,13 +235,13 @@ Novo módulo IIFE `HeuristicEngine` que implementa **todas as regras do `DIRETRI
 - **Etapa 4 (Prateleira)**: Adicionar controles de paginação (anterior/próximo/seletor de página) abaixo da tabela
 - Adicionar seletor de colunas (dropdown multi-check para escolher quais colunas exibir na tabela)
 
-#### [MODIFY] [app.js](file:///c:/Users/gustavo.pinheiro/.gemini/antigravity/scratch/simulador-consorcio/js/app.js)
+#### [MODIFY] [app.js](file://<workspace-historico>/js/app.js)
 - `buscarGrupos()`: integrar novos filtros e paginação
 - `renderShelfTable()`: renderizar apenas a página atual, não todos os 17K grupos
 - Novo `renderPaginationControls()`: controles de navegação de página
 - Novo `toggleShelfColumn(colName)`: mostrar/ocultar colunas da tabela
 
-#### [MODIFY] [css/styles.css](file:///c:/Users/gustavo.pinheiro/.gemini/antigravity/scratch/simulador-consorcio/css/styles.css)
+#### [MODIFY] [css/styles.css](file://<workspace-historico>/css/styles.css)
 - Estilos para controles de paginação (`.pagination`, `.pagination__btn`, `.pagination__current`)
 - Estilos para badges de classificação (A verde, B azul, C amarelo, D vermelho)
 - Estilos para dropdown multi-check de colunas
@@ -259,17 +259,17 @@ Novo módulo IIFE `HeuristicEngine` que implementa **todas as regras do `DIRETRI
 
 ### O que será feito
 
-#### [MODIFY] [app.js](file:///c:/Users/gustavo.pinheiro/.gemini/antigravity/scratch/simulador-consorcio/js/app.js)
+#### [MODIFY] [app.js](file://<workspace-historico>/js/app.js)
 - `populateGroupSelects()`: em vez de popular com `GruposComparacao` (4 grupos fixos), popular com os **grupos do carrinho** (projeto estruturado) ou permitir seleção livre de qualquer grupo filtrado da prateleira
 - Adicionar opção de "Comparar" diretamente da prateleira (botão na coluna de ações da tabela)
 - `executarComparacao()`: utilizar grupos da prateleira real em vez de `GruposComparacao`
 
-#### [MODIFY] [comparator.js](file:///c:/Users/gustavo.pinheiro/.gemini/antigravity/scratch/simulador-consorcio/js/comparator.js)
+#### [MODIFY] [comparator.js](file://<workspace-historico>/js/comparator.js)
 - `normalizeInputs()`: integrar campos heurísticos (classificação, papel, saúde) ao contexto
 - `buildNarrativa()`: enriquecer a narrativa com informações heurísticas ("O grupo CAIXA-33 é classificado como ⚓ Âncora com saúde Controlada, enquanto o ITAÚ-57 é 🧩 Complemento com saúde Baixa")
 - Adicionar nova métrica de comparação: `melhorClassificacao` (qual grupo é A/B/C/D mais favorável)
 
-#### [MODIFY] [simulador.html](file:///c:/Users/gustavo.pinheiro/.gemini/antigravity/scratch/simulador-consorcio/simulador.html)
+#### [MODIFY] [simulador.html](file://<workspace-historico>/simulador.html)
 - Etapa 10: Popular os selects dinâmicamente com grupos do projeto ou da última busca
 
 ### Entrega de valor
@@ -285,7 +285,7 @@ Novo módulo IIFE `HeuristicEngine` que implementa **todas as regras do `DIRETRI
 
 ### O que será feito
 
-#### [NEW] [js/settings.js](file:///c:/Users/gustavo.pinheiro/.gemini/antigravity/scratch/simulador-consorcio/js/settings.js)
+#### [NEW] [js/settings.js](file://<workspace-historico>/js/settings.js)
 Novo módulo IIFE `Settings`:
 - `load()` → lê do `localStorage` e retorna objeto de configuração
 - `save(config)` → persiste no `localStorage`
@@ -303,19 +303,19 @@ Novo módulo IIFE `Settings`:
 | `darkMode` | boolean | Tema escuro (preparação futura) |
 | `pageSize` | number | Número de grupos por página na prateleira |
 
-#### [MODIFY] [configuracoes.html](file:///c:/Users/gustavo.pinheiro/.gemini/antigravity/scratch/simulador-consorcio/versions/v.6/configuracoes.html)
+#### [MODIFY] [configuracoes.html](file://<workspace-historico>/versions/v.6/configuracoes.html)
 - Conectar os switches existentes ao módulo `Settings`
 - Adicionar feedback visual (toast) ao salvar
 - Carregar valores persistidos ao abrir a página
 
-#### [NEW] [js/storage.js](file:///c:/Users/gustavo.pinheiro/.gemini/antigravity/scratch/simulador-consorcio/js/storage.js)
+#### [NEW] [js/storage.js](file://<workspace-historico>/js/storage.js)
 Módulo para salvar/carregar simulações:
 - `saveSimulation(nome, { params, resultado, carrinho })` → salva no `localStorage`
 - `loadSimulations()` → retorna lista de simulações salvas
 - `loadSimulation(id)` → restaura uma simulação específica
 - `deleteSimulation(id)` → remove simulação
 
-#### [MODIFY] [app.js](file:///c:/Users/gustavo.pinheiro/.gemini/antigravity/scratch/simulador-consorcio/js/app.js)
+#### [MODIFY] [app.js](file://<workspace-historico>/js/app.js)
 - `init()`: carregar configurações do `Settings` e aplicar
 - Adicionar botões "💾 Salvar Simulação" e "📂 Carregar Simulação" no header do simulador
 - Modal de carregamento listando simulações salvas com data, cliente e resumo
@@ -333,13 +333,13 @@ Módulo para salvar/carregar simulações:
 
 ### O que será feito
 
-#### [MODIFY] [carteira.html](file:///c:/Users/gustavo.pinheiro/.gemini/antigravity/scratch/simulador-consorcio/versions/v.6/carteira.html)
+#### [MODIFY] [carteira.html](file://<workspace-historico>/versions/v.6/carteira.html)
 - Substituir dados mockados por leitura de `localStorage` (simulações salvas)
 - KPIs dinâmicos: total da carteira, qtd de simulações, ticket médio, perfil de segmento
 - Tabela de clientes/simulações com filtros
 - Gráfico de distribuição de segmentos (Chart.js)
 
-#### [MODIFY] [carteira_clientes.html](file:///c:/Users/gustavo.pinheiro/.gemini/antigravity/scratch/simulador-consorcio/versions/v.6/carteira_clientes.html)
+#### [MODIFY] [carteira_clientes.html](file://<workspace-historico>/versions/v.6/carteira_clientes.html)
 - Visão detalhada por cliente com histórico de simulações
 - Indicadores de oportunidade (próximo de contemplação, lance agressivo possível)
 

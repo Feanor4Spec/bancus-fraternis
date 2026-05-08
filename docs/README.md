@@ -13,6 +13,7 @@ O Bancus Fraternis e uma plataforma estatica/progressiva para apoiar decisao fin
 - Lousa de navegacao em `pages/lousa-navegacao.html` para revisao do produto.
 - Lousa de proposta/PDF no simulador para o consultor selecionar blocos, graficos, conceitos e formulas.
 - Dashboard Cliente e Dashboard Admin com continuidade, origem, aging, prioridade e proximos passos.
+- Publicacao em GitHub Pages com selo de ambiente demo/local, fallback estatico e validador de seguranca publica.
 
 ## Entrada Recomendada
 
@@ -73,6 +74,7 @@ Documentos como `docs/ARQUITETURA.md`, `docs/ATA_PROJETO.md`, `docs/FOLDER_PROJE
 
 ```bash
 node tools/validate-design-system.mjs
+node tools/validate-public-release-safety.mjs
 node tools/validate-public-contracts.mjs
 node tools/validate-docs-modernization.mjs
 node tools/validate-github-pages-deploy.mjs

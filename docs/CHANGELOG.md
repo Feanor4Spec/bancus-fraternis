@@ -4,6 +4,28 @@
 
 ---
 
+## [v8.51.0] - 2026-05-08
+
+### Publicacao segura e governanca online
+
+#### Adicionado
+- Criado `tools/validate-public-release-safety.mjs` para auditar paths locais, dados pessoais de exemplo, aviso demo, fallback estatico, `.gitignore` e workflow publico.
+- Criado `404.html` para redirecionar rotas curtas comuns no GitHub Pages.
+- Criado `.github/workflows/validate.yml` para rodar validadores estaticos em push, pull request e execucao manual.
+- Shell, login e simulador ganharam selo/aviso de ambiente publico de demonstracao.
+
+#### Modificado
+- Dados de exemplo legados em `js/data.js` foram anonimizados para placeholders locais.
+- `tools/run-v8af-browser-evidence.mjs` deixou de referenciar caminho absoluto de runtime.
+- Contratos publicos, plano e README passaram a registrar a validacao de seguranca publica.
+
+#### Validado
+- `node tools/validate-public-release-safety.mjs`
+- `node tools/validate-public-contracts.mjs`
+- `node tools/validate-design-system.mjs`
+
+---
+
 ## [v8.50.0] - 2026-05-08
 
 ### Governanca do deploy publico

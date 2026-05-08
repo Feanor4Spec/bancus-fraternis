@@ -265,6 +265,7 @@ const requiredFiles = [
   'tools/validate-admin-recovery-routing-goals.mjs',
   'tools/validate-admin-dashboard-source-funnel.mjs',
   'tools/validate-public-contracts.mjs',
+  'tools/validate-public-release-safety.mjs',
   'tools/validate-docs-modernization.mjs',
   'tools/validate-handoff-consultant-operations.mjs',
   'tools/validate-auth-navigation.mjs',

@@ -3,7 +3,7 @@ import path from 'node:path';
 import { createRequire } from 'node:module';
 
 const root = process.cwd();
-const require = createRequire('C:/Users/gustavo.pinheiro/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/package.json');
+const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
 
 const baseUrl = 'http://127.0.0.1:8080/pages';

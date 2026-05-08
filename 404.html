@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bancus Fraternis - rota nao encontrada</title>
+  <script>
+    (function () {
+      var aliases = {
+        inicio: 'pages/index.html',
+        home: 'pages/index.html',
+        index: 'pages/index.html',
+        lousa: 'pages/lousa-navegacao.html',
+        'lousa-navegacao': 'pages/lousa-navegacao.html',
+        produtos: 'pages/produtos.html',
+        calculadoras: 'pages/calculadoras.html',
+        trilha: 'pages/trilha-decisao.html',
+        'trilha-decisao': 'pages/trilha-decisao.html',
+        comparador: 'pages/comparador.html',
+        simulador: 'pages/simulador.html',
+        proposta: 'pages/simulador.html#proposal-builder-board',
+        handoff: 'pages/handoff-consultivo.html',
+        'handoff-consultivo': 'pages/handoff-consultivo.html',
+        dashboard: 'pages/dashboard-cliente.html',
+        cliente: 'pages/dashboard-cliente.html',
+        admin: 'pages/dashboard-admin.html',
+        login: 'pages/login.html'
+      };
+      var parts = window.location.pathname.split('/').filter(Boolean);
+      var last = (parts[parts.length - 1] || '').replace(/\.html$/i, '').toLowerCase();
+      var target = aliases[last];
+      if (!target) return;
+      var baseIndex = parts.indexOf('bancus-fraternis');
+      var base = baseIndex >= 0 ? '/' + parts.slice(0, baseIndex + 1).join('/') + '/' : '/';
+      window.location.replace(base + target + window.location.search + window.location.hash);
+    })();
+  </script>
+</head>
+<body>
+  <main style="max-width:720px;margin:80px auto;padding:24px;font-family:Inter,Arial,sans-serif;color:#102033;">
+    <h1>Bancus Fraternis</h1>
+    <p>Esta rota direta nao foi encontrada no GitHub Pages. Use a entrada principal da plataforma.</p>
+    <p><a href="./pages/index.html">Abrir Bancus Fraternis</a></p>
+  </main>
+</body>
+</html>

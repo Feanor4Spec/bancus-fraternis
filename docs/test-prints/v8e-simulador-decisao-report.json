@@ -7,7 +7,7 @@
     {
       "scenario": "desktop",
       "status": 200,
-      "screenshot": "C:\\Users\\gustavo.pinheiro\\.gemini\\antigravity\\scratch\\Bancus Fraternis\\docs\\test-prints\\v8e-simulador-decisao-desktop-visible.png",
+      "screenshot": "<workspace-historico>\\docs\\test-prints\\v8e-simulador-decisao-desktop-visible.png",
       "consoleErrors": [],
       "title": "ConsórcioPro – Simulador de Consórcio",
       "hasDecisionStrip": true,
@@ -30,7 +30,7 @@
     {
       "scenario": "mobile",
       "status": 200,
-      "screenshot": "C:\\Users\\gustavo.pinheiro\\.gemini\\antigravity\\scratch\\Bancus Fraternis\\docs\\test-prints\\v8e-simulador-decisao-mobile-visible.png",
+      "screenshot": "<workspace-historico>\\docs\\test-prints\\v8e-simulador-decisao-mobile-visible.png",
       "consoleErrors": [],
       "title": "ConsórcioPro – Simulador de Consórcio",
       "hasDecisionStrip": true,

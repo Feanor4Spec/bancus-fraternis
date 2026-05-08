@@ -1,0 +1,39 @@
+name: Validate Bancus Fraternis
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: Public safety and contracts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Check validator syntax
+        run: |
+          for file in tools/*.mjs; do
+            node --check "$file"
+          done
+
+      - name: Run static validators
+        run: |
+          node tools/validate-public-release-safety.mjs
+          node tools/validate-public-contracts.mjs
+          node tools/validate-docs-modernization.mjs
+          node tools/validate-calculadoras.mjs
+          node tools/validate-simulator-groups.mjs
+          node tools/validate-auth-navigation.mjs
+          node tools/validate-navigable-journey.mjs
+          node tools/validate-design-system.mjs

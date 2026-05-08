@@ -10,6 +10,7 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 - Nao remover marcadores `data-*` cobertos por validadores sem atualizar o validador e o mapa.
 - Nao quebrar deep links existentes; novas URLs devem preservar parametros recebidos quando fizer sentido.
 - Nao expor senha, CPF, telefone, hash sensivel ou dado pessoal em datasets publicos, analytics compartilhado ou pacotes exportados.
+- Toda area autenticada ou operacional publicada deve manter aviso de ambiente demo/local antes de backend real.
 - Toda entrega deve atualizar pelo menos um destes artefatos: changelog, plano, mapa, contrato publico ou protocolo de teste.
 
 ## Persistencia Local
@@ -44,6 +45,7 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | Area | Marcadores obrigatorios |
 | --- | --- |
 | Login/Auth | `data-login-form`, `data-login-email`, `data-login-password`, `data-demo-login`. |
+| Publicacao demo | `data-public-demo-notice`, `.bf-demo-chip`. |
 | Home | `data-home-hero-contextual`, `data-home-continuity-cockpit`, `data-home-next-actions`, `data-journey-analytics`. |
 | Produtos | `data-products-grid`, `data-products-filter`, `data-products-selection-panel`, `data-products-compare-link`, `data-products-decision-strip`. |
 | Calculadoras | `data-calculator-form`, `data-calculator-result`, `data-calculator-history`, `data-calculators-hub`, `data-calculator-decision-strip`. |
@@ -99,6 +101,7 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | Validador | Protege |
 | --- | --- |
 | `tools/validate-public-contracts.mjs` | Este documento, contratos publicos e DoD. |
+| `tools/validate-public-release-safety.mjs` | Exposicao publica, paths locais, dados pessoais de exemplo, aviso demo, fallback estatico e CI. |
 | `tools/validate-docs-modernization.mjs` | README ativo, docs historicos e contagem atual de 19 calculadoras. |
 | `tools/validate-auth-navigation.mjs` | Login local, seed users, redirect seguro e bloqueio por papel. |
 | `tools/validate-navigable-journey.mjs` | Roteiro ponta a ponta da lousa, links, marcadores e contratos de QA de jornada. |
@@ -127,3 +130,4 @@ Uma entrega de jornada so deve ser considerada pronta quando:
 5. `docs/PLANO_ACAO_EVOLUCAO_BANK_FRATERN.md` foi atualizado quando o status da fase mudou.
 6. O mapa ou este contrato publico foi atualizado quando surgiu novo contrato.
 7. O teste visual foi feito quando a mudanca altera UI, desktop/mobile ou navegacao.
+8. Mudancas publicadas em GitHub Pages devem passar por `tools/validate-public-release-safety.mjs`.

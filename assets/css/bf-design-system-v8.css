@@ -112,6 +112,34 @@ body.assemblies-page {
   border-radius: 999px;
 }
 
+.bf-demo-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 8px 12px;
+  border: 1px solid rgba(197, 160, 71, .45);
+  border-radius: 999px;
+  color: #6c4b00;
+  background: #fff7dc;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.bf-public-demo-note {
+  margin: 16px 0;
+  padding: 13px 14px;
+  border: 1px solid rgba(197, 160, 71, .38);
+  border-radius: var(--bf-v8-radius-sm);
+  color: #523b08;
+  background: #fff9e8;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
 .bf-v8-body .btn,
 .bf-platform-body .btn,
 .home-body .btn,
@@ -1530,6 +1558,11 @@ th {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     width: 100%;
     min-width: 0;
+  }
+
+  .sim-header__demo {
+    grid-column: 1 / -1;
+    width: 100%;
   }
 
   .sim-header__actions .btn {

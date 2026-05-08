@@ -476,6 +476,7 @@ Scripts confirmados em `tools/`:
 | `validate-admin-recovery-*.mjs` | Fila, filtros, pacotes, operacao, SLA, roteamento e metas. |
 | `validate-admin-dashboard-source-funnel.mjs` | Cockpit Admin, origem, gargalos e proximas acoes. |
 | `validate-public-contracts.mjs` | Matriz de contratos publicos, DoD e governanca de compatibilidade. |
+| `validate-public-release-safety.mjs` | Publicacao segura: paths locais, dados pessoais de exemplo, selo demo, fallback estatico e CI. |
 | `validate-docs-modernization.mjs` | README ativo, docs historicos marcados e catalogo atual de 19 calculadoras. |
 | `run-v8af-browser-evidence.mjs` | Evidencias visuais do fluxo proposta/handoff. |
 
@@ -484,7 +485,7 @@ Scripts confirmados em `tools/`:
 | Documento | Uso |
 | --- | --- |
 | `docs/README.md` | Porta atual do Bancus Fraternis, com rotas, estado do produto, validadores e contratos preservados. |
-| `docs/CHANGELOG.md` | Historico ate v8.48. |
+| `docs/CHANGELOG.md` | Historico ate v8.51. |
 | `docs/PLANO_IMPLEMENTACAO_EVOLUTIVO_BANK_FRATERN.md` | Evolucao detalhada de fases v8. |
 | `docs/PLANO_SALTO_PLATAFORMA_BANK_FRATERN.md` | Salto de simulador para plataforma. |
 | `docs/DESIGN_SYSTEM_V8_BANK_FRATERN.md` | Contrato visual v8. |
@@ -508,6 +509,7 @@ Governanca documental: docs ativos passaram a usar Bancus Fraternis como platafo
 6. Manter novas evolucoes cobertas por `tools/validate-*.mjs`.
 7. Usar design system v8 antes de criar novas variacoes visuais.
 8. Tratar `versions/` como backup, nao como fonte ativa.
+9. Tratar GitHub Pages como superficie publica: toda mudanca online deve preservar selo demo, fallback estatico e auditoria de publicacao segura.
 9. Considerar performance ao tocar na base grande `data_base/Tab_Grupos_Consorcio.json`.
 
 ## Proximos Vetores

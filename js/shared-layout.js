@@ -144,6 +144,10 @@
     `;
   }
 
+  function demoChip() {
+    return '<span class="bf-demo-chip" title="Ambiente publico de demonstracao: dados e sessoes ficam somente no navegador.">Demo local</span>';
+  }
+
   const HEADER_HTML = `
     <header class="header bf-header">
       <div class="header__inner bf-header__inner">
@@ -162,6 +166,7 @@
           ${navLink(`${pageDir}componentes-v8.html`, 'Design')}
           ${navLink(`${pageDir}dashboard-cliente.html`, 'Dashboard')}
           ${navLink(`${pageDir}simulador.html`, 'Simulacao')}
+          ${demoChip()}
           ${accountControls()}
         </nav>
       </div>

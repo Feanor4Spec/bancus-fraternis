@@ -8,18 +8,18 @@ const DadosExemplo = {
   // ─── Cenário padrão de teste ───
   padrao: {
     // Dados do Consultor (V3)
-    consultor: 'Peterson Araujo',
-    consultorEmail: 'peterson.araujo@investimentos.com',
-    consultorTelefone: '11933937021',
-    consultorEmpresa: 'Invest Pet',
+    consultor: 'Consultor Demo',
+    consultorEmail: 'consultor.demo@bankfratern.local',
+    consultorTelefone: '(11) 0000-0000',
+    consultorEmpresa: 'Bancus Fraternis Demo',
     consultorCodigo: 'Consultor 01',
     dataSimulacao: new Date().toISOString().split('T')[0],
 
     // Dados do Cliente (V3)
-    nomeCliente: 'Gustavo Santana',
-    clienteCpf: '43377473890',
-    clienteEmail: 'gustavo.benzeno@gmail.com',
-    clienteTelefone: '11911340158',
+    nomeCliente: 'Cliente Demonstracao',
+    clienteCpf: '00000000000',
+    clienteEmail: 'cliente.demo@bankfratern.local',
+    clienteTelefone: '(11) 90000-0000',
     clienteObjetivo: 'aquisicao',
     observacoes: 'Desejo ser contemplado em até 6 meses.',
 

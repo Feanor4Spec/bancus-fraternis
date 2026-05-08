@@ -21,9 +21,9 @@
     "text": "Novo\nAlta\nProposta PROP-2026-0100\n\nGustavo Santana - Consorcio estruturado / Revisada localmente\n\nCREDITO\nR$ 100.000,00\nCHECKLIST\n4/5\nAbrir\nComparar"
   },
   "screenshots": {
-    "proposalDesktop": "C:\\Users\\gustavo.pinheiro\\.gemini\\antigravity\\scratch\\Bancus Fraternis\\docs\\test-prints\\v8af-proposta-handoff-desktop.png",
-    "proposalMobile": "C:\\Users\\gustavo.pinheiro\\.gemini\\antigravity\\scratch\\Bancus Fraternis\\docs\\test-prints\\v8af-proposta-handoff-mobile.png",
-    "handoffDesktop": "C:\\Users\\gustavo.pinheiro\\.gemini\\antigravity\\scratch\\Bancus Fraternis\\docs\\test-prints\\v8af-handoff-proposta-desktop.png"
+    "proposalDesktop": "<workspace-historico>\\docs\\test-prints\\v8af-proposta-handoff-desktop.png",
+    "proposalMobile": "<workspace-historico>\\docs\\test-prints\\v8af-proposta-handoff-mobile.png",
+    "handoffDesktop": "<workspace-historico>\\docs\\test-prints\\v8af-handoff-proposta-desktop.png"
   },
   "consoleErrors": [
     "Failed to load resource: the server responded with a status of 404 (File not found)"

@@ -35,7 +35,7 @@ O motor lógico (que será implementado no `shelf-engine.js` ou num novo arquivo
 
 
 
-A base fornecida é uma tabela analítica consolidada chamada "Tab_Grupos_Consorcio". localizada em "C:\Users\gustavo.pinheiro\.gemini\antigravity\scratch\simulador-consorcio\data_base"
+A base fornecida é uma tabela analítica consolidada chamada "Tab_Grupos_Consorcio". localizada em "<workspace-historico>\data_base"
 
 
 Essa tabela foi criada para transformar dados operacionais de grupos de consórcio em uma matriz de decisão.

@@ -95,6 +95,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-admin-bottleneck-board',
   'data-handoff-consultant-cockpit',
   'data-login-form',
+  'data-public-demo-notice',
   'data-client-continuity-timeline',
   'data-products-selection-panel',
   'data-decision-journey-form',
@@ -131,6 +132,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
 
 [
   'tools/validate-public-contracts.mjs',
+  'tools/validate-public-release-safety.mjs',
   'tools/validate-design-system.mjs',
   'tools/validate-calculadoras.mjs',
   'tools/validate-admin-dashboard-source-funnel.mjs',
@@ -156,6 +158,10 @@ assert(proposalSummary.includes('proposalBuilderDefaults'), 'proposal-summary.js
 assert(contracts.includes('data-handoff-assignee-filter'), 'Contrato publico nao documenta filtro de responsavel do handoff.');
 assert(contracts.includes('data-handoff-aging-filter'), 'Contrato publico nao documenta filtro de aging do handoff.');
 assert(contracts.includes('data-demo-login'), 'Contrato publico nao documenta acesso rapido do login.');
+assert(contracts.includes('.bf-demo-chip'), 'Contrato publico nao documenta selo demo do shell.');
+assert(contracts.includes('data-public-demo-notice'), 'Contrato publico nao documenta aviso publico de demo.');
+assert(await exists('404.html'), 'Fallback 404.html ausente.');
+assert(await exists('.github/workflows/validate.yml'), 'Workflow de validacao publica ausente.');
 
 assert(map.includes('docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md'), 'Mapa completo nao referencia contratos publicos.');
 assert(plan.includes('CONTRATOS_PUBLICOS_BANK_FRATERN.md'), 'Plano de acao nao referencia contratos publicos.');
@@ -199,10 +205,10 @@ const report = {
   ok: failures.length === 0,
   contracts: {
     localStorageKeys: 12,
-    dataMarkers: 12,
+    dataMarkers: 13,
     globals: 11,
     deepLinks: 9,
-    validators: 11,
+    validators: 12,
     calculatorCount
   },
   warnings,

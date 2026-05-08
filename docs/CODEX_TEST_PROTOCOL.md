@@ -4,8 +4,8 @@ Atualizado em 2026-05-08 para o projeto Bancus Fraternis.
 
 ## Caminho base
 
-- Workspace atual: `C:\Users\gusta\OneDrive\Documentos\Bank Fratern`
-- Workspace historico: `C:\Users\gustavo.pinheiro\.gemini\antigravity\scratch\Bank Fratern`
+- Workspace atual: `<workspace>`
+- Workspace historico: `<workspace-historico>`
 - URL local preferencial: `http://127.0.0.1:8080/pages/index.html`
 - URL publica GitHub Pages: `https://feanor4spec.github.io/bancus-fraternis/`
 - Entrada de compatibilidade: `http://127.0.0.1:8080/index.html`
@@ -73,7 +73,7 @@ Validacoes adicionais da fase v8B:
 Comandos preferenciais:
 
 ```powershell
-$node='C:\Users\gustavo.pinheiro\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'
+$node='<node-runtime>'
 & $node tools\validate-design-system.mjs
 & $node tools\validate-public-contracts.mjs
 & $node tools\validate-navigable-journey.mjs
@@ -102,7 +102,7 @@ Validacoes obrigatorias:
 Comandos:
 
 ```powershell
-$node='C:\Users\gustavo.pinheiro\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'
+$node='<node-runtime>'
 & $node --check tools\validate-public-contracts.mjs
 & $node tools\validate-public-contracts.mjs
 & $node tools\validate-design-system.mjs
@@ -129,7 +129,7 @@ Validacoes obrigatorias:
 Comandos:
 
 ```powershell
-$node='C:\Users\gustavo.pinheiro\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'
+$node='<node-runtime>'
 & $node --check tools\validate-navigable-journey.mjs
 & $node tools\validate-navigable-journey.mjs
 & $node tools\validate-public-contracts.mjs
@@ -153,7 +153,7 @@ Validacoes obrigatorias:
 Comandos de sintaxe:
 
 ```powershell
-$node='C:\Users\gustavo.pinheiro\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'
+$node='<node-runtime>'
 & $node --check js\proposal-summary.js
 & $node --check js\export.js
 & $node --check js\app.js
@@ -177,7 +177,7 @@ Validacoes obrigatorias:
 Comandos:
 
 ```powershell
-$node='C:\Users\gustavo.pinheiro\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'
+$node='<node-runtime>'
 & $node --check js\proposal-acceptance.js
 & $node --check js\proposal-summary.js
 & $node --check js\app.js
@@ -201,7 +201,7 @@ Validacoes obrigatorias:
 Comandos:
 
 ```powershell
-$node='C:\Users\gustavo.pinheiro\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'
+$node='<node-runtime>'
 & $node --check assets\js\services\handoff-consultivo.service.js
 & $node --check js\app.js
 & $node --check tools\validate-proposal-handoff.mjs
@@ -225,7 +225,7 @@ Validacoes obrigatorias:
 Comandos:
 
 ```powershell
-$node='C:\Users\gustavo.pinheiro\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'
+$node='<node-runtime>'
 & $node --check assets\js\services\admin-recovery.service.js
 & $node --check assets\js\admin-users.js
 & $node --check tools\validate-admin-recovery-filters-export.mjs
@@ -252,7 +252,7 @@ Validacoes obrigatorias:
 Comandos:
 
 ```powershell
-$node='C:\Users\gustavo.pinheiro\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'
+$node='<node-runtime>'
 & $node --check assets\js\services\admin-recovery.service.js
 & $node --check assets\js\admin-users.js
 & $node --check tools\validate-admin-recovery-package-governance.mjs
@@ -279,7 +279,7 @@ Validacoes obrigatorias:
 Comandos:
 
 ```powershell
-$node='C:\Users\gustavo.pinheiro\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'
+$node='<node-runtime>'
 & $node --check assets\js\services\admin-recovery.service.js
 & $node --check assets\js\admin-users.js
 & $node --check tools\validate-admin-recovery-package-operations.mjs
@@ -306,7 +306,7 @@ Validacoes obrigatorias:
 Comandos:
 
 ```powershell
-$node='C:\Users\gustavo.pinheiro\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'
+$node='<node-runtime>'
 & $node --check assets\js\services\admin-recovery.service.js
 & $node --check assets\js\admin-users.js
 & $node --check tools\validate-admin-recovery-package-sla-filters.mjs
@@ -333,7 +333,7 @@ Validacoes obrigatorias:
 Comandos:
 
 ```powershell
-$node='C:\Users\gustavo.pinheiro\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'
+$node='<node-runtime>'
 & $node --check assets\js\services\admin-recovery.service.js
 & $node --check assets\js\admin-users.js
 & $node --check tools\validate-admin-recovery-routing-goals.mjs
@@ -361,7 +361,7 @@ Validacoes obrigatorias:
 Comandos:
 
 ```powershell
-$node='C:\Users\gustavo.pinheiro\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'
+$node='<node-runtime>'
 & $node --check js\home.js
 & $node --check tools\validate-home-contextual-hero.mjs
 & $node tools\validate-home-contextual-hero.mjs
@@ -387,7 +387,7 @@ Validacoes obrigatorias:
 Comandos:
 
 ```powershell
-$node='C:\Users\gustavo.pinheiro\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'
+$node='<node-runtime>'
 & $node --check js\home.js
 & $node --check tools\validate-home-continuity-cockpit.mjs
 & $node tools\validate-home-continuity-cockpit.mjs
@@ -415,7 +415,7 @@ Validacoes obrigatorias:
 Comandos:
 
 ```powershell
-$node='C:\Users\gustavo.pinheiro\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'
+$node='<node-runtime>'
 & $node --check assets\js\services\admin-recovery.service.js
 & $node --check assets\js\admin-users.js
 & $node --check tools\validate-admin-recovery-queue.mjs
@@ -444,7 +444,7 @@ Validacoes obrigatorias:
 Comandos:
 
 ```powershell
-$node='C:\Users\gustavo.pinheiro\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'
+$node='<node-runtime>'
 & $node --check assets\js\services\journey-recovery.service.js
 & $node --check assets\js\client-dashboard.js
 & $node --check assets\js\services\handoff-consultivo.service.js
@@ -475,7 +475,7 @@ Validacoes obrigatorias:
 Comandos:
 
 ```powershell
-$node='C:\Users\gustavo.pinheiro\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'
+$node='<node-runtime>'
 & $node --check tools\validate-product-journey-flow.mjs
 & $node tools\validate-product-journey-flow.mjs
 ```
@@ -502,7 +502,7 @@ Validacoes obrigatorias:
 Comandos:
 
 ```powershell
-$node='C:\Users\gustavo.pinheiro\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'
+$node='<node-runtime>'
 & $node --check tools\validate-decision-flow.mjs
 & $node tools\validate-decision-flow.mjs
 ```
@@ -528,7 +528,7 @@ Validacoes obrigatorias:
 Comandos:
 
 ```powershell
-$node='C:\Users\gustavo.pinheiro\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'
+$node='<node-runtime>'
 & $node --check assets\js\services\decision-context.service.js
 & $node --check assets\js\services\calculadoras.service.js
 & $node --check assets\js\calculadoras-page.js
@@ -933,7 +933,7 @@ Validacoes obrigatorias:
 Comando preferencial para QA automatizado das calculadoras:
 
 ```powershell
-$node='C:\Users\gustavo.pinheiro\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'
+$node='<node-runtime>'
 & $node tools\validate-calculadoras.mjs
 ```
 

@@ -8,8 +8,8 @@ Reposicionar a pagina inicial do Bancus Fraternis como uma porta institucional o
 
 ## Referencia usada
 
-- `C:/Users/gustavo.pinheiro/Downloads/documentacao_bloco_ecossistema_calculadoras_v2.md`
-- `C:/Users/gustavo.pinheiro/Downloads/documentacao_bloco_ecossistema_calculadoras_v2 (1).html`
+- `<arquivo-local-historico-documentacao.md>`
+- `<arquivo-local-historico-documentacao.html>`
 
 ## O que foi implementado
 

@@ -54,6 +54,7 @@ Cada etapa deve responder quatro perguntas:
 | Dashboards por funil/aging | Concluido parcial | Dashboard Cliente tem timeline/deep links; Dashboard Admin agora tem proximas acoes, funil por origem, aging, prioridade, responsavel sugerido e gargalos. |
 | Navegacao autenticada | Concluido parcial | Login local tem acesso rapido por perfil, redirect preservado e validador dedicado. |
 | Teste navegavel ponta a ponta | Concluido | `pages/lousa-navegacao.html` ganhou roteiro de Auth, Home, Produtos, Calculadoras, Trilha, Comparador, Simulador, Proposta, Handoff e Dashboards com `tools/validate-navigable-journey.mjs`. |
+| Publicacao segura em GitHub Pages | Concluido parcial | Selo demo/local, fallback `404.html`, CI em `.github/workflows/validate.yml` e `tools/validate-public-release-safety.mjs`. |
 | Governanca permanente | Em andamento | Changelog, mapa, plano, validadores, contratos publicos e lousa navegavel atualizados por entrega. |
 
 ## Fase 1 - Saneamento da Jornada Navegavel

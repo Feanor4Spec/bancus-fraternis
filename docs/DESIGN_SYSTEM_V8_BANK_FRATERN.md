@@ -342,7 +342,7 @@ Tons suportados:
 Comando preferencial:
 
 ```powershell
-$node='C:\Users\gustavo.pinheiro\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'
+$node='<node-runtime>'
 & $node tools\validate-design-system.mjs
 ```
 
