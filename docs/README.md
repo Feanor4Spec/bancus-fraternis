@@ -77,6 +77,7 @@ node tools/validate-design-system.mjs
 node tools/validate-public-release-safety.mjs
 node tools/validate-public-contracts.mjs
 node tools/validate-docs-modernization.mjs
+node tools/validate-online-journey-smoke.mjs
 node tools/validate-github-pages-deploy.mjs
 node tools/validate-calculadoras.mjs
 node tools/validate-route-aliases.mjs

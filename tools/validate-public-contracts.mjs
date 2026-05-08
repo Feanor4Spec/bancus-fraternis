@@ -142,6 +142,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'tools/validate-handoff-consultant-operations.mjs',
   'tools/validate-auth-navigation.mjs',
   'tools/validate-navigable-journey.mjs',
+  'tools/validate-online-journey-smoke.mjs',
   'tools/validate-github-pages-deploy.mjs'
 ].forEach((validator) => assert(contracts.includes(validator), `Validador nao documentado: ${validator}.`));
 
@@ -208,7 +209,7 @@ const report = {
     dataMarkers: 13,
     globals: 11,
     deepLinks: 9,
-    validators: 12,
+    validators: 13,
     calculatorCount
   },
   warnings,

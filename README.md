@@ -35,5 +35,6 @@ Validacao do deploy:
 
 ```bash
 node tools/validate-public-release-safety.mjs
+node tools/validate-online-journey-smoke.mjs
 node tools/validate-github-pages-deploy.mjs
 ```

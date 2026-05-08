@@ -460,6 +460,7 @@ Scripts confirmados em `tools/`:
 | `validate-route-aliases.mjs` | Paridade entre paginas HTML e aliases curtos do servidor. |
 | `validate-auth-navigation.mjs` | Login local, seed users, redirect seguro e bloqueio por papel. |
 | `validate-navigable-journey.mjs` | Roteiro navegavel ponta a ponta, links, marcadores e QA de jornada na lousa. |
+| `validate-online-journey-smoke.mjs` | Smoke test online no GitHub Pages para as 10 etapas do roteiro navegavel. |
 | `validate-simulator-groups.mjs` | Carga completa da base real no simulador, filtro vazio, score, ordenacao e paginacao. |
 | `validate-handoff-origins.mjs` | Origem dos handoffs por proposta, trilha, sinal e pacote importado. |
 | `validate-calculadoras.mjs` | Catalogo, paginas, premissas e formulas. |

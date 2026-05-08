@@ -4,6 +4,27 @@
 
 ---
 
+## [v8.52.0] - 2026-05-08
+
+### QA online da jornada publicada
+
+#### Adicionado
+- Criado `tools/validate-online-journey-smoke.mjs` para validar no GitHub Pages as 10 etapas do roteiro navegavel: Auth, Home, Produtos, Calculadoras, Trilha, Comparador, Simulador, Proposta, Handoff e Dashboards.
+- Criado relatorio `docs/test-reports/online-journey-smoke-report.json`.
+- Criado relatorio renderizado `docs/test-reports/online-journey-browser-report.json` com login admin demo, anchor dinamica do Admin, lousa e simulador.
+
+#### Modificado
+- Contratos publicos, mapa, plano e READMEs passaram a registrar o smoke test online da jornada publicada.
+- `tools/validate-design-system.mjs` passou a exigir a presenca do novo validador.
+
+#### Validado
+- `node tools/validate-online-journey-smoke.mjs`
+- Browser renderizado: login demo -> Dashboard Admin, lousa com 10 etapas e simulador com lousa de proposta.
+- `node tools/validate-public-contracts.mjs`
+- `node tools/validate-design-system.mjs`
+
+---
+
 ## [v8.51.0] - 2026-05-08
 
 ### Publicacao segura e governanca online

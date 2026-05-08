@@ -1,0 +1,27 @@
+{
+  "ok": true,
+  "baseUrl": "https://feanor4spec.github.io/bancus-fraternis",
+  "browser": "Codex in-app browser",
+  "checks": {
+    "loginAdminRedirect": {
+      "ok": true,
+      "loginNoticeCount": 1,
+      "adminButtonCount": 1,
+      "targetUrl": "https://feanor4spec.github.io/bancus-fraternis/pages/dashboard-admin.html?from=lousa#admin-proximos-passos",
+      "adminAnchorCount": 1
+    },
+    "lousaRendered": {
+      "ok": true,
+      "steps": 10,
+      "checklistCount": 1
+    },
+    "simulatorRendered": {
+      "ok": true,
+      "url": "https://feanor4spec.github.io/bancus-fraternis/pages/simulador.html?from=lousa#proposal-builder-board",
+      "demoChipCount": 1,
+      "proposalBoardCount": 1,
+      "databasePanelCount": 1
+    }
+  },
+  "failures": []
+}
