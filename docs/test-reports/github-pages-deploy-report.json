@@ -24,9 +24,20 @@
       "name": "simulador",
       "url": "https://feanor4spec.github.io/bancus-fraternis/pages/simulador.html",
       "status": 200,
-      "bytes": 61481
+      "bytes": 61660
+    },
+    {
+      "name": "login",
+      "url": "https://feanor4spec.github.io/bancus-fraternis/pages/login.html",
+      "status": 200,
+      "bytes": 3565
     }
   ],
+  "fallback404": {
+    "url": "https://feanor4spec.github.io/bancus-fraternis/rota-curta-inexistente-qa",
+    "status": 404,
+    "bytes": 1940
+  },
   "database": {
     "url": "https://feanor4spec.github.io/bancus-fraternis/data_base/Tab_Grupos_Consorcio.json",
     "status": 200,

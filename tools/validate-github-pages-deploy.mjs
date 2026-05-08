@@ -59,7 +59,7 @@ const checks = [
   {
     name: 'login',
     url: `${baseUrl}/pages/login.html`,
-    includes: ['data-public-demo-notice', 'Demo local', 'Ambiente publico de demonstracao']
+    includes: ['data-public-demo-notice', 'Ambiente publico de demonstracao', 'data-demo-login']
   }
 ];
 
