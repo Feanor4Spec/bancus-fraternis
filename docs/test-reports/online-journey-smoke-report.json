@@ -73,7 +73,7 @@
       "label": "Simulador base real",
       "url": "https://feanor4spec.github.io/bancus-fraternis/pages/simulador.html?from=lousa#database-status-panel",
       "status": 200,
-      "bytes": 61660,
+      "bytes": 61836,
       "foundMarkers": 3,
       "expectedMarkers": 3,
       "anchor": "database-status-panel"
@@ -83,7 +83,7 @@
       "label": "Lousa proposta/PDF",
       "url": "https://feanor4spec.github.io/bancus-fraternis/pages/simulador.html?from=lousa#proposal-builder-board",
       "status": 200,
-      "bytes": 61660,
+      "bytes": 61836,
       "foundMarkers": 3,
       "expectedMarkers": 3,
       "anchor": "proposal-builder-board"
