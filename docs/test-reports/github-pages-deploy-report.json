@@ -24,7 +24,7 @@
       "name": "simulador",
       "url": "https://feanor4spec.github.io/bancus-fraternis/pages/simulador.html",
       "status": 200,
-      "bytes": 61660
+      "bytes": 61836
     },
     {
       "name": "login",
@@ -43,6 +43,15 @@
     "status": 200,
     "bytes": 18364884,
     "total": 17418
+  },
+  "compactDatabase": {
+    "url": "https://feanor4spec.github.io/bancus-fraternis/data_base/Tab_Grupos_Consorcio.compact.json",
+    "status": 200,
+    "bytes": 4066794,
+    "schema": "bancus.shelf.compact.v1",
+    "rawRecords": 17418,
+    "validRecords": 17396,
+    "rows": 17396
   },
   "warnings": [],
   "failures": []
