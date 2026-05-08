@@ -2,11 +2,17 @@
 
 Plataforma estatica de decisao financeira, simulacao, proposta, handoff consultivo e dashboards.
 
-Entrada online prevista pelo GitHub Pages:
+## Online
 
-- `index.html`
-- `pages/index.html`
-- `pages/lousa-navegacao.html#roteiro-navegavel`
+Site publicado:
+
+- https://feanor4spec.github.io/bancus-fraternis/
+
+Entradas principais:
+
+- https://feanor4spec.github.io/bancus-fraternis/pages/index.html
+- https://feanor4spec.github.io/bancus-fraternis/pages/lousa-navegacao.html#roteiro-navegavel
+- https://feanor4spec.github.io/bancus-fraternis/pages/simulador.html
 
 ## Publicacao
 
@@ -22,3 +28,9 @@ Arquivos grandes preservados fora do push:
 Base necessaria para o simulador online:
 
 - `data_base/Tab_Grupos_Consorcio.json`
+
+Validacao do deploy:
+
+```bash
+node tools/validate-github-pages-deploy.mjs
+```

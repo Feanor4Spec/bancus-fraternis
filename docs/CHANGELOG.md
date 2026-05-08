@@ -4,6 +4,27 @@
 
 ---
 
+## [v8.50.0] - 2026-05-08
+
+### Governanca do deploy publico
+
+#### Adicionado
+- Criado `tools/validate-github-pages-deploy.mjs` para validar GitHub Pages, Home, lousa, simulador e base real online.
+- Criado relatorio `docs/test-reports/github-pages-deploy-report.json`.
+- README raiz e `docs/README.md` passaram a registrar a URL publica do Bancus Fraternis.
+
+#### Modificado
+- `tools/validate-design-system.mjs` passou a exigir o validador de deploy publico.
+- Contratos publicos passaram a documentar o validador de GitHub Pages.
+- Repositorio GitHub passou a apontar a homepage para `https://feanor4spec.github.io/bancus-fraternis/`.
+
+#### Validado
+- `node tools/validate-github-pages-deploy.mjs`
+- `node tools/validate-public-contracts.mjs`
+- `node tools/validate-design-system.mjs`
+
+---
+
 ## [v8.49.0] - 2026-05-08
 
 ### Rebrand publico para Bancus Fraternis

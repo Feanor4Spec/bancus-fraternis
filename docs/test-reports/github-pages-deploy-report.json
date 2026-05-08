@@ -1,0 +1,38 @@
+{
+  "ok": true,
+  "baseUrl": "https://feanor4spec.github.io/bancus-fraternis",
+  "pages": [
+    {
+      "name": "root",
+      "url": "https://feanor4spec.github.io/bancus-fraternis/",
+      "status": 200,
+      "bytes": 420
+    },
+    {
+      "name": "home",
+      "url": "https://feanor4spec.github.io/bancus-fraternis/pages/index.html",
+      "status": 200,
+      "bytes": 23935
+    },
+    {
+      "name": "lousa",
+      "url": "https://feanor4spec.github.io/bancus-fraternis/pages/lousa-navegacao.html#roteiro-navegavel",
+      "status": 200,
+      "bytes": 15822
+    },
+    {
+      "name": "simulador",
+      "url": "https://feanor4spec.github.io/bancus-fraternis/pages/simulador.html",
+      "status": 200,
+      "bytes": 61481
+    }
+  ],
+  "database": {
+    "url": "https://feanor4spec.github.io/bancus-fraternis/data_base/Tab_Grupos_Consorcio.json",
+    "status": 200,
+    "bytes": 18364884,
+    "total": 17418
+  },
+  "warnings": [],
+  "failures": []
+}

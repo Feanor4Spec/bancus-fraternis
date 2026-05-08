@@ -102,6 +102,7 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | `tools/validate-docs-modernization.mjs` | README ativo, docs historicos e contagem atual de 19 calculadoras. |
 | `tools/validate-auth-navigation.mjs` | Login local, seed users, redirect seguro e bloqueio por papel. |
 | `tools/validate-navigable-journey.mjs` | Roteiro ponta a ponta da lousa, links, marcadores e contratos de QA de jornada. |
+| `tools/validate-github-pages-deploy.mjs` | Deploy publico no GitHub Pages, marca Bancus Fraternis, lousa, simulador e base real online. |
 | `tools/validate-design-system.mjs` | Contrato visual, referencias, paginas ativas e validadores obrigatorios. |
 | `tools/validate-route-aliases.mjs` | Paridade de 52 paginas e aliases curtos. |
 | `tools/validate-calculadoras.mjs` | Catalogo atual de 19 calculadoras, premissas e golden tests. |

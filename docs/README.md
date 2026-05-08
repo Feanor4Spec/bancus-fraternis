@@ -16,6 +16,13 @@ O Bancus Fraternis e uma plataforma estatica/progressiva para apoiar decisao fin
 
 ## Entrada Recomendada
 
+Para acessar a versao online:
+
+```text
+https://feanor4spec.github.io/bancus-fraternis/
+https://feanor4spec.github.io/bancus-fraternis/pages/lousa-navegacao.html#roteiro-navegavel
+```
+
 Para navegar localmente sem backend:
 
 ```text
@@ -68,6 +75,7 @@ Documentos como `docs/ARQUITETURA.md`, `docs/ATA_PROJETO.md`, `docs/FOLDER_PROJE
 node tools/validate-design-system.mjs
 node tools/validate-public-contracts.mjs
 node tools/validate-docs-modernization.mjs
+node tools/validate-github-pages-deploy.mjs
 node tools/validate-calculadoras.mjs
 node tools/validate-route-aliases.mjs
 node tools/validate-simulator-groups.mjs

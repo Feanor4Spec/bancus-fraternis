@@ -269,6 +269,7 @@ const requiredFiles = [
   'tools/validate-handoff-consultant-operations.mjs',
   'tools/validate-auth-navigation.mjs',
   'tools/validate-navigable-journey.mjs',
+  'tools/validate-github-pages-deploy.mjs',
   'tools/validate-home-continuity-cockpit.mjs',
   'tools/validate-home-contextual-hero.mjs',
   'tools/validate-proposal-acceptance.mjs',

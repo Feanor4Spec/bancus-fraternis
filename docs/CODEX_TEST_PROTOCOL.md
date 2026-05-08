@@ -7,6 +7,7 @@ Atualizado em 2026-05-08 para o projeto Bancus Fraternis.
 - Workspace atual: `C:\Users\gusta\OneDrive\Documentos\Bank Fratern`
 - Workspace historico: `C:\Users\gustavo.pinheiro\.gemini\antigravity\scratch\Bank Fratern`
 - URL local preferencial: `http://127.0.0.1:8080/pages/index.html`
+- URL publica GitHub Pages: `https://feanor4spec.github.io/bancus-fraternis/`
 - Entrada de compatibilidade: `http://127.0.0.1:8080/index.html`
 - Pagina principal de teste da Fase 1: `http://127.0.0.1:8080/pages/simulador.html`
 - Modo de evidencia do loading: `http://127.0.0.1:8080/pages/simulador.html?showLoading=1`
@@ -76,6 +77,7 @@ $node='C:\Users\gustavo.pinheiro\.cache\codex-runtimes\codex-primary-runtime\dep
 & $node tools\validate-design-system.mjs
 & $node tools\validate-public-contracts.mjs
 & $node tools\validate-navigable-journey.mjs
+& $node tools\validate-github-pages-deploy.mjs
 & $node tools\validate-calculadoras.mjs
 ```
 

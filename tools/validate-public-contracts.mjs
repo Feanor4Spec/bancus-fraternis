@@ -139,7 +139,8 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'tools/validate-docs-modernization.mjs',
   'tools/validate-handoff-consultant-operations.mjs',
   'tools/validate-auth-navigation.mjs',
-  'tools/validate-navigable-journey.mjs'
+  'tools/validate-navigable-journey.mjs',
+  'tools/validate-github-pages-deploy.mjs'
 ].forEach((validator) => assert(contracts.includes(validator), `Validador nao documentado: ${validator}.`));
 
 [
@@ -164,6 +165,7 @@ assert(apiDocs.includes('Lista as 19 calculadoras'), 'api-docs.html ainda nao re
 assert(designValidator.includes('tools/validate-public-contracts.mjs'), 'validate-design-system nao exige validate-public-contracts.');
 assert(designValidator.includes('tools/validate-docs-modernization.mjs'), 'validate-design-system nao exige validate-docs-modernization.');
 assert(designValidator.includes('tools/validate-navigable-journey.mjs'), 'validate-design-system nao exige validate-navigable-journey.');
+assert(designValidator.includes('tools/validate-github-pages-deploy.mjs'), 'validate-design-system nao exige validate-github-pages-deploy.');
 assert(lousa.includes('data-lousa-journey-checklist'), 'lousa-navegacao.html sem checklist de jornada navegavel.');
 assert(lousa.includes('data-lousa-journey-acceptance'), 'lousa-navegacao.html sem criterios de aceite da jornada navegavel.');
 
@@ -200,7 +202,7 @@ const report = {
     dataMarkers: 12,
     globals: 11,
     deepLinks: 9,
-    validators: 10,
+    validators: 11,
     calculatorCount
   },
   warnings,
