@@ -1,0 +1,362 @@
+[
+  {
+    "slug": "juros-compostos",
+    "nome": "Juros Compostos",
+    "tipo": "investimento",
+    "categoria": "Investimentos",
+    "badge": "Acumulacao",
+    "resumo": "Projeta patrimonio com valor inicial, aportes recorrentes, taxa e prazo.",
+    "pergunta": "Quanto meu patrimonio pode crescer com disciplina de aporte?",
+    "formula": "FV = PV(1+i)^n + PMT * (((1+i)^n - 1) / i)",
+    "risco": "Taxa futura e uma premissa, nao garantia de rentabilidade.",
+    "related": ["primeiro-milhao", "aposentadoria", "renda-fixa"],
+    "fields": [
+      { "name": "valorInicial", "label": "Valor inicial", "type": "number", "default": 1000 },
+      { "name": "aporteMensal", "label": "Aporte mensal", "type": "number", "default": 1000 },
+      { "name": "taxaAnual", "label": "Taxa ao ano (%)", "type": "number", "step": "0.01", "default": 8 },
+      { "name": "prazoMeses", "label": "Prazo (meses)", "type": "number", "default": 240 }
+    ]
+  },
+  {
+    "slug": "juros-simples",
+    "nome": "Juros Simples",
+    "tipo": "educacao",
+    "categoria": "Educacao financeira",
+    "badge": "Conceito base",
+    "resumo": "Mostra custo ou rendimento linear sem capitalizacao sobre juros.",
+    "pergunta": "Quanto de juros lineares um capital gera no periodo?",
+    "formula": "J = C * i * t; M = C + J",
+    "risco": "Uso didatico; muitos produtos financeiros reais usam juros compostos.",
+    "related": ["pix-parcelado", "compra-vista-parcelado", "cdb"],
+    "fields": [
+      { "name": "capital", "label": "Capital", "type": "number", "default": 10000 },
+      { "name": "taxaPeriodo", "label": "Taxa por periodo (%)", "type": "number", "step": "0.01", "default": 2 },
+      { "name": "periodos", "label": "Periodos", "type": "number", "default": 12 }
+    ]
+  },
+  {
+    "slug": "primeiro-milhao",
+    "nome": "Primeiro Milhao",
+    "tipo": "planejamento",
+    "categoria": "Planejamento",
+    "badge": "Meta patrimonial",
+    "resumo": "Calcula o prazo para atingir uma meta ou o aporte necessario.",
+    "pergunta": "Quanto tempo falta para chegar a uma meta patrimonial?",
+    "formula": "Juros compostos com meta-alvo e aporte recorrente.",
+    "risco": "A meta depende de aporte, prazo e taxa estimada.",
+    "related": ["juros-compostos", "aposentadoria", "custos-fixos"],
+    "fields": [
+      { "name": "meta", "label": "Meta patrimonial", "type": "number", "default": 1000000 },
+      { "name": "valorInicial", "label": "Valor inicial", "type": "number", "default": 10000 },
+      { "name": "aporteMensal", "label": "Aporte mensal", "type": "number", "default": 1000 },
+      { "name": "taxaAnual", "label": "Taxa ao ano (%)", "type": "number", "step": "0.01", "default": 8 },
+      { "name": "prazoMeses", "label": "Prazo maximo para calcular aporte (meses)", "type": "number", "default": 312 }
+    ]
+  },
+  {
+    "slug": "aposentadoria",
+    "nome": "Aposentadoria",
+    "tipo": "planejamento",
+    "categoria": "Planejamento",
+    "badge": "Longo prazo",
+    "resumo": "Estima patrimonio futuro e aporte necessario para renda futura.",
+    "pergunta": "Meu plano atual sustenta minha aposentadoria desejada?",
+    "formula": "Acumulacao ate a idade alvo e comparacao com patrimonio desejado.",
+    "risco": "Nao substitui previdencia, planejamento tributario ou analise profissional.",
+    "related": ["renda", "juros-compostos", "primeiro-milhao"],
+    "fields": [
+      { "name": "idadeAtual", "label": "Idade atual", "type": "number", "default": 35 },
+      { "name": "idadeAlvo", "label": "Idade alvo", "type": "number", "default": 65 },
+      { "name": "patrimonioAtual", "label": "Patrimonio atual", "type": "number", "default": 100000 },
+      { "name": "aporteMensal", "label": "Aporte mensal atual", "type": "number", "default": 1200 },
+      { "name": "patrimonioDesejado", "label": "Patrimonio desejado", "type": "number", "default": 3000000 },
+      { "name": "taxaAnual", "label": "Taxa ao ano (%)", "type": "number", "step": "0.01", "default": 8 }
+    ]
+  },
+  {
+    "slug": "renda",
+    "nome": "Calculadora de Renda",
+    "tipo": "investimento",
+    "categoria": "Planejamento",
+    "badge": "Descumulacao",
+    "resumo": "Simula quanto sobra ao retirar renda mensal de um patrimonio investido.",
+    "pergunta": "Por quanto tempo meu patrimonio sustenta uma retirada mensal?",
+    "formula": "FV = PV(1+i)^n - PMT * (((1+i)^n - 1) / i)",
+    "risco": "Nao considera inflacao, sequencia de retornos ou impostos especificos.",
+    "related": ["aposentadoria", "juros-compostos", "renda-fixa"],
+    "fields": [
+      { "name": "patrimonioInicial", "label": "Patrimonio inicial", "type": "number", "default": 1000000 },
+      { "name": "retiradaMensal", "label": "Retirada mensal", "type": "number", "default": 10000 },
+      { "name": "taxaAnual", "label": "Taxa ao ano (%)", "type": "number", "step": "0.01", "default": 10 },
+      { "name": "prazoMeses", "label": "Prazo (meses)", "type": "number", "default": 120 }
+    ]
+  },
+  {
+    "slug": "reserva-emergencia",
+    "nome": "Reserva de Emergencia",
+    "tipo": "planejamento",
+    "categoria": "Diagnostico",
+    "badge": "Liquidez",
+    "resumo": "Calcula o colchao minimo de seguranca para cobrir gastos mensais.",
+    "pergunta": "Quantos meses de protecao financeira eu tenho?",
+    "formula": "Reserva ideal = gasto mensal * meses de cobertura",
+    "risco": "Reserva deve priorizar liquidez e baixo risco.",
+    "related": ["custos-fixos", "poupanca-selic", "renda-fixa"],
+    "fields": [
+      { "name": "gastoMensal", "label": "Gasto mensal", "type": "number", "default": 3000 },
+      { "name": "mesesCobertura", "label": "Meses de cobertura", "type": "number", "default": 6 },
+      { "name": "reservaAtual", "label": "Reserva atual", "type": "number", "default": 8000 }
+    ]
+  },
+  {
+    "slug": "poupanca-selic",
+    "nome": "Poupanca x Selic",
+    "tipo": "comparacao",
+    "categoria": "Investimentos",
+    "badge": "Caixa eficiente",
+    "resumo": "Compara poupanca com um retorno de referencia atrelado a Selic.",
+    "pergunta": "Meu caixa conservador esta rendendo bem?",
+    "formula": "Capitalizacao mensal da poupanca versus benchmark Selic.",
+    "risco": "Resultado usa premissas locais e nao substitui consulta ao produto real.",
+    "related": ["reserva-emergencia", "renda-fixa", "cdb"],
+    "fields": [
+      { "name": "valorInicial", "label": "Valor inicial", "type": "number", "default": 10000 },
+      { "name": "aporteMensal", "label": "Aporte mensal", "type": "number", "default": 500 },
+      { "name": "prazoMeses", "label": "Prazo (meses)", "type": "number", "default": 12 },
+      { "name": "selicAnual", "label": "Selic ao ano (%)", "type": "number", "step": "0.01", "default": 14.75 },
+      { "name": "trAnual", "label": "TR ao ano (%)", "type": "number", "step": "0.01", "default": 0 }
+    ]
+  },
+  {
+    "slug": "renda-fixa",
+    "nome": "Comparador de Renda Fixa",
+    "tipo": "comparacao",
+    "categoria": "Investimentos",
+    "badge": "Comparador",
+    "resumo": "Compara dois produtos de renda fixa por taxa, indexador, IR e prazo.",
+    "pergunta": "Qual alternativa conservadora entrega melhor retorno liquido?",
+    "formula": "Comparacao de retorno bruto e liquido por indexador.",
+    "risco": "Tambem considerar liquidez, garantia, emissor e suitability.",
+    "related": ["cdb", "poupanca-selic", "juros-compostos"],
+    "fields": [
+      { "name": "valor", "label": "Valor aplicado", "type": "number", "default": 10000 },
+      { "name": "prazoDias", "label": "Prazo (dias)", "type": "number", "default": 365 },
+      { "name": "produtoAIndexador", "label": "Produto A", "type": "select", "default": "prefixado", "options": ["prefixado", "cdi", "ipca"] },
+      { "name": "produtoATaxa", "label": "Taxa A (% a.a. ou % CDI)", "type": "number", "step": "0.01", "default": 10 },
+      { "name": "produtoBIndexador", "label": "Produto B", "type": "select", "default": "cdi", "options": ["prefixado", "cdi", "ipca"] },
+      { "name": "produtoBTaxa", "label": "Taxa B (% a.a. ou % CDI)", "type": "number", "step": "0.01", "default": 105 },
+      { "name": "cdiAnual", "label": "CDI ao ano (%)", "type": "number", "step": "0.01", "default": 14.65 },
+      { "name": "ipcaAnual", "label": "IPCA ao ano (%)", "type": "number", "step": "0.01", "default": 4.5 }
+    ]
+  },
+  {
+    "slug": "compra-vista-parcelado",
+    "nome": "Compra a Vista ou Parcelado",
+    "tipo": "credito",
+    "categoria": "Credito e consumo",
+    "badge": "Decisao de compra",
+    "resumo": "Compara desconto a vista, parcelamento e custo de oportunidade do caixa.",
+    "pergunta": "Vale pagar a vista ou preservar caixa parcelando?",
+    "formula": "Valor presente das parcelas versus preco a vista.",
+    "risco": "Usar taxa de oportunidade realista para nao justificar consumo caro.",
+    "related": ["pix-parcelado", "renda-fixa", "reserva-emergencia"],
+    "fields": [
+      { "name": "precoCheio", "label": "Preco cheio", "type": "number", "default": 1000 },
+      { "name": "descontoVista", "label": "Desconto a vista (%)", "type": "number", "step": "0.01", "default": 10 },
+      { "name": "parcelas", "label": "Numero de parcelas", "type": "number", "default": 10 },
+      { "name": "valorParcela", "label": "Valor da parcela", "type": "number", "default": 100 },
+      { "name": "taxaOportunidadeMes", "label": "Taxa de oportunidade ao mes (%)", "type": "number", "step": "0.01", "default": 1 },
+      { "name": "rendaMensal", "label": "Renda mensal", "type": "number", "default": 8000 },
+      { "name": "gastoMensal", "label": "Custos mensais", "type": "number", "default": 3000 },
+      { "name": "reservaAtual", "label": "Reserva atual", "type": "number", "default": 8000 },
+      { "name": "prioridadeCompra", "label": "Prioridade da decisao", "type": "select", "default": "equilibrio", "options": ["equilibrio", "menor custo", "preservar caixa"] }
+    ]
+  },
+  {
+    "slug": "pix-parcelado",
+    "nome": "Pix Parcelado",
+    "tipo": "credito",
+    "categoria": "Credito e consumo",
+    "badge": "Credito curto",
+    "resumo": "Simula parcela, juros e custo total de um Pix parcelado.",
+    "pergunta": "Quanto custa antecipar consumo via Pix parcelado?",
+    "formula": "PMT = PV * i(1+i)^n / ((1+i)^n - 1)",
+    "risco": "Estimativa educativa; contrato real pode incluir tarifas e CET diferente.",
+    "related": ["compra-vista-parcelado", "juros-simples", "custos-fixos"],
+    "fields": [
+      { "name": "valor", "label": "Valor do Pix", "type": "number", "default": 1000 },
+      { "name": "taxaMes", "label": "Taxa ao mes (%)", "type": "number", "step": "0.01", "default": 4 },
+      { "name": "prazo", "label": "Parcelas", "type": "number", "default": 6 }
+    ]
+  },
+  {
+    "slug": "alugar-financiar",
+    "nome": "Alugar x Financiar",
+    "tipo": "comparacao",
+    "categoria": "Credito e patrimonio",
+    "badge": "Imovel",
+    "resumo": "Compara financiamento imobiliario com aluguel e investimento da diferenca.",
+    "pergunta": "E melhor financiar o imovel ou alugar e investir?",
+    "formula": "Fluxo do financiamento versus aluguel + investimento da entrada/diferenca.",
+    "risco": "Decisao imobiliaria depende de fatores de vida, mercado, impostos e liquidez.",
+    "related": ["renda-fixa", "aposentadoria", "compra-vista-parcelado"],
+    "fields": [
+      { "name": "valorImovel", "label": "Valor do imovel", "type": "number", "default": 600000 },
+      { "name": "entrada", "label": "Entrada", "type": "number", "default": 120000 },
+      { "name": "aluguel", "label": "Aluguel mensal", "type": "number", "default": 3000 },
+      { "name": "taxaFinanciamentoMes", "label": "Taxa financiamento ao mes (%)", "type": "number", "step": "0.01", "default": 0.9 },
+      { "name": "taxaInvestimentoMes", "label": "Taxa investimento ao mes (%)", "type": "number", "step": "0.01", "default": 0.8 },
+      { "name": "valorizacaoAno", "label": "Valorizacao imovel ao ano (%)", "type": "number", "step": "0.01", "default": 4 },
+      { "name": "prazoMeses", "label": "Prazo (meses)", "type": "number", "default": 360 }
+    ]
+  },
+  {
+    "slug": "cartoes",
+    "nome": "Comparador de Cartoes",
+    "tipo": "comparacao",
+    "categoria": "Credito e consumo",
+    "badge": "Cartoes",
+    "resumo": "Sugere cartoes demonstrativos por renda, gasto mensal e preferencia.",
+    "pergunta": "Qual cartao combina com meu perfil de renda e gasto?",
+    "formula": "Score por elegibilidade, gasto, preferencia e beneficio.",
+    "risco": "Catalogo demonstrativo; nao representa aprovacao de credito.",
+    "related": ["custos-fixos", "compra-vista-parcelado", "realidade-brasileira"],
+    "fields": [
+      { "name": "rendaMensal", "label": "Renda mensal", "type": "number", "default": 9000 },
+      { "name": "gastoCartao", "label": "Gasto mensal no cartao", "type": "number", "default": 3000 },
+      { "name": "preferencia", "label": "Preferencia", "type": "select", "default": "cashback", "options": ["cashback", "pontos", "viagem", "sem-anuidade"] }
+    ]
+  },
+  {
+    "slug": "realidade-brasileira",
+    "nome": "Salario diante da Realidade Brasileira",
+    "tipo": "educacao",
+    "categoria": "Diagnostico",
+    "badge": "Renda",
+    "resumo": "Contextualiza renda por faixas demonstrativas nacionais e estaduais.",
+    "pergunta": "Minha renda esta em qual faixa de comparacao?",
+    "formula": "Interpolacao simplificada em faixas curadas locais.",
+    "risco": "Base demonstrativa para produto; nao substitui estatistica oficial.",
+    "related": ["custos-fixos", "reserva-emergencia", "cartoes"],
+    "fields": [
+      { "name": "salarioLiquido", "label": "Salario liquido", "type": "number", "default": 8000 },
+      { "name": "uf", "label": "UF", "type": "select", "default": "SP", "options": ["SP", "RJ", "MG", "PR", "SC", "RS", "BA", "PE", "GO", "DF", "BR"] }
+    ]
+  },
+  {
+    "slug": "rentabilidade",
+    "nome": "Simulador de Rentabilidade",
+    "tipo": "investimento",
+    "categoria": "Investimentos",
+    "badge": "Historico demo",
+    "resumo": "Simula desempenho demonstrativo de carteira com retornos anuais curados.",
+    "pergunta": "Como uma carteira teria evoluido em um cenario historico demonstrativo?",
+    "formula": "Capitalizacao anual com aportes e retornos por classe.",
+    "risco": "Retornos passados demonstrativos nao garantem retornos futuros.",
+    "related": ["acoes", "juros-compostos", "renda-fixa"],
+    "fields": [
+      { "name": "valorInicial", "label": "Valor inicial", "type": "number", "default": 20000 },
+      { "name": "aporteMensal", "label": "Aporte mensal", "type": "number", "default": 800 },
+      { "name": "perfilCarteira", "label": "Carteira", "type": "select", "default": "moderada", "options": ["conservadora", "moderada", "arrojada"] },
+      { "name": "anos", "label": "Anos simulados", "type": "number", "default": 5 }
+    ]
+  },
+  {
+    "slug": "acoes",
+    "nome": "Comparador de Acoes",
+    "tipo": "comparacao",
+    "categoria": "Investimentos",
+    "badge": "Ativos demo",
+    "resumo": "Compara ate tres ativos demonstrativos por retorno, dividend yield e volatilidade.",
+    "pergunta": "Qual ativo demonstrativo parece mais aderente ao criterio escolhido?",
+    "formula": "Score por retorno, dividendos e risco.",
+    "risco": "Dados demonstrativos; nao representa recomendacao de compra ou venda.",
+    "related": ["rentabilidade", "renda-fixa", "aposentadoria"],
+    "fields": [
+      { "name": "ativoA", "label": "Ativo A", "type": "select", "default": "BFSA3", "options": ["BFSA3", "UTIL4", "TECH3", "BANK11"] },
+      { "name": "ativoB", "label": "Ativo B", "type": "select", "default": "UTIL4", "options": ["BFSA3", "UTIL4", "TECH3", "BANK11"] },
+      { "name": "ativoC", "label": "Ativo C", "type": "select", "default": "BANK11", "options": ["BFSA3", "UTIL4", "TECH3", "BANK11"] },
+      { "name": "criterio", "label": "Criterio", "type": "select", "default": "equilibrio", "options": ["retorno", "dividendos", "risco", "equilibrio"] }
+    ]
+  },
+  {
+    "slug": "cdb",
+    "nome": "Calculadora de CDB",
+    "tipo": "investimento",
+    "categoria": "Investimentos",
+    "badge": "CDI",
+    "resumo": "Estima rendimento bruto e liquido de CDB indexado ao CDI.",
+    "pergunta": "Quanto rende um CDB em relacao ao CDI?",
+    "formula": "FV = PV * (1 + CDI * percentual)^periodo, com IR regressivo.",
+    "risco": "Verificar emissor, FGC, liquidez e tributacao real.",
+    "related": ["renda-fixa", "poupanca-selic", "juros-compostos"],
+    "fields": [
+      { "name": "valor", "label": "Valor aplicado", "type": "number", "default": 10000 },
+      { "name": "percentualCdi", "label": "% do CDI", "type": "number", "step": "0.01", "default": 105 },
+      { "name": "cdiAnual", "label": "CDI ao ano (%)", "type": "number", "step": "0.01", "default": 14.65 },
+      { "name": "prazoDias", "label": "Prazo (dias)", "type": "number", "default": 365 }
+    ]
+  },
+  {
+    "slug": "capacidade-credito",
+    "nome": "Capacidade de Credito",
+    "tipo": "diagnostico",
+    "categoria": "Credito e consumo",
+    "badge": "Parcela segura",
+    "resumo": "Calcula parcela segura, folga mensal, comprometimento projetado e risco antes de simular credito.",
+    "pergunta": "Qual parcela cabe no meu fluxo sem pressionar reserva e renda?",
+    "formula": "Parcela segura = menor valor entre teto de comprometimento e margem da folga mensal.",
+    "risco": "Estimativa educativa; nao representa aprovacao, limite ou oferta de credito.",
+    "related": ["custos-fixos", "reserva-emergencia", "lance-consorcio"],
+    "fields": [
+      { "name": "rendaMensal", "label": "Renda mensal", "type": "number", "default": 9000 },
+      { "name": "gastoMensal", "label": "Gastos mensais", "type": "number", "default": 5000 },
+      { "name": "dividasMensais", "label": "Dividas e parcelas atuais", "type": "number", "default": 900 },
+      { "name": "reservaAtual", "label": "Reserva atual", "type": "number", "default": 25000 },
+      { "name": "comprometimentoMaximo", "label": "Comprometimento maximo da renda (%)", "type": "number", "step": "0.01", "default": 30 },
+      { "name": "margemFluxo", "label": "Margem da folga para parcela (%)", "type": "number", "step": "0.01", "default": 60 },
+      { "name": "mesesReservaMinima", "label": "Meses minimos de reserva", "type": "number", "default": 3 }
+    ]
+  },
+  {
+    "slug": "lance-consorcio",
+    "nome": "Lance em Consorcio",
+    "tipo": "planejamento",
+    "categoria": "Credito e patrimonio",
+    "badge": "Lance seguro",
+    "resumo": "Calcula lance proprio sustentavel, impacto na reserva e limite seguro para levar ao simulador.",
+    "pergunta": "Quanto posso ofertar de lance sem desmontar minha reserva?",
+    "formula": "Lance seguro = menor valor entre caixa acima da reserva minima e limite percentual da carta.",
+    "risco": "Estimativa local; contemplacao depende das regras do grupo e da concorrencia real.",
+    "related": ["capacidade-credito", "reserva-emergencia", "compra-vista-parcelado"],
+    "fields": [
+      { "name": "valorCarta", "label": "Valor da carta", "type": "number", "default": 180000 },
+      { "name": "reservaAtual", "label": "Reserva atual", "type": "number", "default": 30000 },
+      { "name": "gastoMensal", "label": "Gasto mensal", "type": "number", "default": 5000 },
+      { "name": "capacidadePagamento", "label": "Capacidade de pagamento", "type": "number", "default": 1200 },
+      { "name": "lanceDesejadoPct", "label": "Lance desejado (% da carta)", "type": "number", "step": "0.01", "default": 12 },
+      { "name": "limiteLancePct", "label": "Limite maximo recomendado (% da carta)", "type": "number", "step": "0.01", "default": 30 },
+      { "name": "mesesReservaMinima", "label": "Meses minimos de reserva", "type": "number", "default": 3 }
+    ]
+  },
+  {
+    "slug": "custos-fixos",
+    "nome": "Custos Fixos",
+    "tipo": "planejamento",
+    "categoria": "Diagnostico",
+    "badge": "Orcamento",
+    "resumo": "Calcula comprometimento da renda, sobra e saude financeira.",
+    "pergunta": "Quanto da minha renda esta comprometido antes de investir ou tomar credito?",
+    "formula": "Comprometimento = custos fixos / renda liquida.",
+    "risco": "Classificacao e educativa e depende da qualidade dos dados informados.",
+    "related": ["reserva-emergencia", "compra-vista-parcelado", "primeiro-milhao"],
+    "fields": [
+      { "name": "rendaLiquida", "label": "Renda liquida", "type": "number", "default": 9000 },
+      { "name": "moradia", "label": "Moradia", "type": "number", "default": 2500 },
+      { "name": "alimentacao", "label": "Alimentacao", "type": "number", "default": 1200 },
+      { "name": "transporte", "label": "Transporte", "type": "number", "default": 600 },
+      { "name": "dividas", "label": "Dividas e parcelas", "type": "number", "default": 900 },
+      { "name": "outros", "label": "Outros custos fixos", "type": "number", "default": 700 }
+    ]
+  }
+]

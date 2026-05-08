@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trilha Assistida - Bank Fratern</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="icon" href="../assets/logos/bank-fratern-icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/bank-fratern-design-system.css">
+  <link rel="stylesheet" href="../assets/css/platform.css">
+</head>
+<body class="bf-platform-body decision-journey-page" data-bf-page="trilha-decisao" data-auth-required="true" data-auth-roles="admin,consultor,cliente">
+  <div data-shell-header></div>
+  <main class="bf-platform-shell">
+    <section class="bf-platform-hero">
+      <div class="bf-platform-hero__content">
+        <span class="bf-badge bf-badge--gold">Trilha assistida</span>
+        <h1>Do diagnostico ao comparador, com proximo passo claro.</h1>
+        <p>Informe o objetivo e os dados principais. A plataforma cruza perfil financeiro, catalogo de produtos, modelos padrao e matriz comparativa para montar uma jornada acionavel.</p>
+      </div>
+      <aside class="bf-platform-hero__rail">
+        <a href="calculadora-custos-fixos.html?from=journey&calculatorSlug=custos-fixos&preset=comprar_bem">Diagnostico <span>DG</span></a>
+        <a href="produtos.html?from=journey">Produtos <span>PR</span></a>
+        <a href="modelos-biblioteca.html?from=journey">Modelos <span>MB</span></a>
+        <a href="comparador.html?from=journey">Comparador <span>CP</span></a>
+      </aside>
+    </section>
+
+    <section class="bf-v8-stagebar bf-v8-stagebar--inside" aria-label="Atalhos da ponte de decisao" data-v8-stagebar>
+      <div class="bf-v8-stagebar__intro">
+        <span>Trilha v8</span>
+        <strong>Diagnóstico, produto, comparador, dashboard e handoff conectados.</strong>
+      </div>
+      <a class="bf-v8-stagebar__item" href="#trilha-diagnostico" data-step="1">
+        <span>Diagnóstico</span>
+        <strong>Perfil financeiro</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="#ponte-trilha" data-step="2">
+        <span>Ponte</span>
+        <strong>Resumo da decisão</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="#trilha-continuidade" data-step="3">
+        <span>Continuidade</span>
+        <strong>Timeline</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="#trilha-acoes" data-step="4">
+        <span>Ação</span>
+        <strong>Comparador</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="handoff-consultivo.html#operacao-handoff" data-step="5">
+        <span>Handoff</span>
+        <strong>Atendimento</strong>
+      </a>
+    </section>
+
+    <section class="bf-v8-decision-strip bf-v8-decision-strip--outer" id="ponte-trilha" aria-label="Resumo da ponte de decisao" data-journey-bridge-strip></section>
+
+    <section class="bf-platform-panel bf-platform-section" id="trilha-continuidade">
+      <div class="bf-admin-panel-heading">
+        <div>
+          <span class="bf-badge bf-badge--navy">Ponte da jornada</span>
+          <h2>Da intenção ao atendimento</h2>
+        </div>
+        <a class="btn btn--ghost btn--sm" href="dashboard-cliente.html?from=journey#continuidade-cliente">Ver no dashboard</a>
+      </div>
+      <div class="bf-client-timeline" data-journey-bridge-timeline></div>
+    </section>
+
+    <section class="bf-platform-panel" id="trilha-diagnostico">
+      <div class="bf-admin-panel-heading">
+        <div>
+          <span class="bf-badge bf-badge--ok">Perfil e objetivo</span>
+          <h2>Monte a trilha do usuario</h2>
+        </div>
+        <a class="btn btn--ghost btn--sm" href="dashboard-cliente.html?from=journey">Voltar ao dashboard</a>
+      </div>
+      <form class="bf-platform-form bf-decision-journey-form" data-decision-journey-form>
+        <label>Objetivo principal
+          <select name="objetivo">
+            <option value="obter_liquidez">Obter liquidez</option>
+            <option value="comprar_bem">Comprar bem</option>
+            <option value="trocar_veiculo">Trocar veiculo</option>
+            <option value="consumo_pontual">Consumo pontual</option>
+          </select>
+        </label>
+        <label>Urgencia
+          <select name="urgencia">
+            <option value="alta">Alta</option>
+            <option value="media">Media</option>
+            <option value="baixa">Baixa</option>
+          </select>
+        </label>
+        <label>Prioridade
+          <select name="prioridade">
+            <option value="rapidez">Disponibilidade rapida</option>
+            <option value="menor_custo">Menor custo total</option>
+            <option value="menor_parcela">Menor parcela inicial</option>
+            <option value="liquidez">Preservar caixa</option>
+          </select>
+        </label>
+        <label>Risco declarado
+          <select name="risco">
+            <option value="conservador">Conservador</option>
+            <option value="moderado">Moderado</option>
+            <option value="arrojado">Arrojado</option>
+          </select>
+        </label>
+        <label>Renda mensal<input name="rendaMensal" type="number" value="14000"></label>
+        <label>Custos mensais<input name="gastoMensal" type="number" value="7600"></label>
+        <label>Dividas mensais<input name="dividasMensais" type="number" value="900"></label>
+        <label>Reserva atual<input name="reservaAtual" type="number" value="22000"></label>
+        <label>Valor do objetivo<input name="valorObjetivo" type="number" value="80000"></label>
+        <label>Entrada disponivel<input name="entrada" type="number" value="0"></label>
+        <button class="btn btn--primary" type="submit">Gerar e salvar trilha</button>
+      </form>
+    </section>
+
+    <section class="bf-platform-panel bf-platform-section" data-decision-journey-summary></section>
+    <section class="bf-platform-panel bf-platform-section" data-decision-journey-steps></section>
+    <section class="bf-platform-panel bf-platform-section" id="trilha-acoes" data-decision-journey-actions></section>
+    <section class="bf-platform-section" data-decision-journey-state></section>
+  </main>
+  <div data-shell-footer></div>
+  <script src="../js/auth.js"></script>
+  <script src="../js/shared-layout.js"></script>
+  <script src="../assets/js/formatters.js"></script>
+  <script src="../assets/js/validators.js"></script>
+  <script src="../assets/js/services/dados.service.js"></script>
+  <script src="../assets/js/services/recomendacao.service.js"></script>
+  <script src="../assets/js/services/modelos-recomendacao.service.js"></script>
+  <script src="../assets/js/services/trilha-decisao.service.js"></script>
+  <script src="../assets/js/services/handoff-consultivo.service.js"></script>
+  <script src="../assets/js/trilha-decisao.js"></script>
+</body>
+</html>

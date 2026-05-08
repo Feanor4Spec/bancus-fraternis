@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "counts": {
+    "sections": 16,
+    "charts": 5,
+    "concepts": 12,
+    "formulas": 8
+  },
+  "contracts": {
+    "htmlBoard": true,
+    "appStorage": true,
+    "proposalBuilder": true,
+    "conceptsSection": true,
+    "formulasSection": true
+  },
+  "failures": []
+}

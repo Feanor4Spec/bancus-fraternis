@@ -1,0 +1,22 @@
+{
+  "ok": true,
+  "packageOperations": {
+    "importedItems": 2,
+    "assignedTo": "pacotes@bankfratern.local",
+    "handoffId": "LEAD-MOWCZI11-LIR",
+    "handoffs": 1,
+    "repeatedWithoutDuplicate": true,
+    "auditActions": [
+      "import-item-handoff",
+      "import-item-handoff",
+      "import-item-assign",
+      "import"
+    ]
+  },
+  "uiContract": {
+    "importedItemsPanel": true,
+    "assignAction": true,
+    "handoffAction": true
+  },
+  "failures": []
+}

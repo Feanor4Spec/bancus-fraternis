@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Bank Fratern — Portal de Operações</title>
+  <meta name="description" content="Plataforma de engenharia de consórcio e simulação financeira do Bank Fratern.">
+  <meta name="theme-color" content="#0f172a">
+
+  <!-- Fonte Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+  <!-- CSS do Projeto -->
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/home.css">
+
+  <style>
+    .hm-education {
+      margin-top: 28px;
+      padding: 28px;
+      border-radius: 28px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.06);
+    }
+
+    .hm-education__top {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .hm-education__eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #eef2ff;
+      color: #3730a3;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .02em;
+      margin-bottom: 10px;
+    }
+
+    .hm-education__title {
+      margin: 0 0 8px;
+      font-size: clamp(1.7rem, 2.6vw, 2.3rem);
+      line-height: 1.1;
+      color: #0f172a;
+    }
+
+    .hm-education__desc {
+      margin: 0;
+      max-width: 840px;
+      color: #475569;
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .hm-education__actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .hm-education__summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    .hm-education__summary-card {
+      background: #0f172a;
+      color: #fff;
+      border-radius: 20px;
+      padding: 18px;
+      min-height: 118px;
+    }
+
+    .hm-education__summary-card:nth-child(2) {
+      background: #1d4ed8;
+    }
+
+    .hm-education__summary-card:nth-child(3) {
+      background: #065f46;
+    }
+
+    .hm-education__summary-card:nth-child(4) {
+      background: #5b21b6;
+    }
+
+    .hm-education__summary-label {
+      display: block;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      opacity: .72;
+      margin-bottom: 8px;
+    }
+
+    .hm-education__summary-value {
+      display: block;
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      line-height: 1;
+    }
+
+    .hm-education__summary-text {
+      display: block;
+      font-size: 13px;
+      line-height: 1.55;
+      opacity: .92;
+    }
+
+    .hm-education__shell {
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .hm-education__nav {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 24px;
+      padding: 14px;
+      position: sticky;
+      top: 88px;
+      box-shadow: 0 16px 32px rgba(15, 23, 42, 0.04);
+    }
+
+    .hm-education__nav-title {
+      margin: 0 0 6px;
+      font-size: 15px;
+      color: #0f172a;
+    }
+
+    .hm-education__nav-desc {
+      margin: 0 0 12px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #64748b;
+    }
+
+    .hm-education__nav-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .hm-education__nav-btn {
+      width: 100%;
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      border-radius: 18px;
+      padding: 12px;
+      text-align: left;
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr);
+      gap: 10px;
+      cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+    }
+
+    .hm-education__nav-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 18px rgba(15, 23, 42, 0.06);
+      border-color: #cbd5e1;
+    }
+
+    .hm-education__nav-btn.is-active {
+      background: #eef2ff;
+      border-color: #a5b4fc;
+    }
+
+    .hm-education__nav-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: #f8fafc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 19px;
+    }
+
+    .hm-education__nav-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 3px;
+    }
+
+    .hm-education__nav-sub {
+      display: block;
+      font-size: 11px;
+      line-height: 1.45;
+      color: #64748b;
+    }
+
+    .hm-education__panel {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 28px;
+      padding: 24px;
+      box-shadow: 0 16px 32px rgba(15, 23, 42, 0.04);
+    }
+
+    .hm-education__stage-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .hm-education__stage-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .hm-education__stage-overline {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #6366f1;
+      margin-bottom: 8px;
+    }
+
+    .hm-education__stage-title {
+      margin: 0 0 8px;
+      font-size: clamp(1.35rem, 2vw, 1.9rem);
+      color: #0f172a;
+      line-height: 1.15;
+    }
+
+    .hm-education__stage-desc {
+      margin: 0;
+      color: #475569;
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .hm-education__badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 14px 0 18px;
+    }
+
+    .hm-education__badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid transparent;
+    }
+
+    .hm-education__badge--ok {
+      background: #ecfdf5;
+      color: #166534;
+      border-color: #bbf7d0;
+    }
+
+    .hm-education__badge--warn {
+      background: #fff7ed;
+      color: #9a3412;
+      border-color: #fdba74;
+    }
+
+    .hm-education__badge--info {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border-color: #93c5fd;
+    }
+
+    .hm-education__flow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .hm-education__flow-pill {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      font-size: 12px;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .hm-education__grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .hm-education__card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 18px;
+    }
+
+    .hm-education__card--full {
+      grid-column: 1 / -1;
+      background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%);
+    }
+
+    .hm-education__card-title {
+      margin: 0 0 8px;
+      font-size: 15px;
+      color: #0f172a;
+    }
+
+    .hm-education__card-text {
+      margin: 0;
+      color: #475569;
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .hm-education__list {
+      margin: 0;
+      padding-left: 18px;
+      color: #475569;
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .hm-education__list li+li {
+      margin-top: 6px;
+    }
+
+    .hm-education__fields {
+      display: grid;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .hm-education__field {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .hm-education__field:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .hm-education__field-label {
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .hm-education__field-value {
+      color: #64748b;
+      text-align: right;
+      max-width: 58%;
+    }
+
+    .hm-education__prompt {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      border-radius: 22px;
+      padding: 18px;
+      color: #fff;
+      margin-top: 10px;
+    }
+
+    .hm-education__prompt-label {
+      display: block;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      opacity: .72;
+      margin-bottom: 8px;
+    }
+
+    .hm-education__prompt strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 16px;
+    }
+
+    .hm-education__prompt p {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.7;
+      color: rgba(255, 255, 255, .86);
+    }
+
+    @media (max-width: 1100px) {
+      .hm-education__summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .hm-education__shell {
+        grid-template-columns: 1fr;
+      }
+
+      .hm-education__nav {
+        position: static;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .hm-education {
+        padding: 20px;
+      }
+
+      .hm-education__summary {
+        grid-template-columns: 1fr;
+      }
+
+      .hm-education__grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hm-education__field {
+        flex-direction: column;
+      }
+
+      .hm-education__field-value {
+        max-width: none;
+        text-align: left;
+      }
+
+      .hm-education__nav-list {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+
+</head>
+
+<body class="home-body">
+
+  <!-- ══════════════════════════════════════════
+       HEADER FIXO
+       ══════════════════════════════════════════ -->
+  <header class="hm-header" id="hm-header">
+    <div class="hm-header__inner">
+      <!-- Logo -->
+      <a href="index.html" class="hm-logo">
+        <span class="hm-logo__icon">ðŸ¦</span>
+        <span class="hm-logo__text">Bank <strong>Fratern</strong></span>
+      </a>
+
+      <!-- Menu Horizontal -->
+      <nav class="hm-nav" id="hm-nav">
+        <a href="#" class="hm-nav__link hm-nav__link--active">Início</a>
+
+        <!-- Produtos (Mega Menu) -->
+        <div class="hm-nav__dropdown">
+          <a href="#" class="hm-nav__link">Produtos <span class="hm-caret">▾</span></a>
+          <div class="hm-mega">
+            <div class="hm-mega__grid">
+              <div class="hm-mega__section">
+                <h4 class="hm-mega__title">Consórcio</h4>
+                <a href="simulador.html" class="hm-mega__item hm-mega__item--primary">
+                  <span class="hm-mega__icon">ðŸ“ˆ</span>
+                  <div>
+                    <strong>Simulação de Consórcio</strong>
+                    <span>Jornada completa de simulação financeira</span>
+                  </div>
+                </a>
+                <a href="simulador.html#step-4" class="hm-mega__item">
+                  <span class="hm-mega__icon">ðŸª</span>
+                  <div>
+                    <strong>Prateleira de Grupos</strong>
+                    <span>Catálogo filtrado de grupos disponíveis</span>
+                  </div>
+                </a>
+                <a href="simulador.html#step-10" class="hm-mega__item">
+                  <span class="hm-mega__icon">⚖ï¸</span>
+                  <div>
+                    <strong>Comparador</strong>
+                    <span>Compare grupos lado a lado</span>
+                  </div>
+                </a>
+                <a href="simulador.html#step-9" class="hm-mega__item">
+                  <span class="hm-mega__icon">ðŸ“„</span>
+                  <div>
+                    <strong>Propostas</strong>
+                    <span>Gere propostas comerciais em PDF</span>
+                  </div>
+                </a>
+              </div>
+              <div class="hm-mega__section hm-mega__section--highlight">
+                <h4 class="hm-mega__title">Acesso Rápido</h4>
+                <a href="simulador.html" class="hm-mega__cta">
+                  ðŸš€ Abrir Nova Simulação
+                </a>
+                <p class="hm-mega__hint">Jornada guiada em 10 etapas com preenchimento inteligente e motor de cálculo
+                  proprietário.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <a href="#solucoes" class="hm-nav__link">Soluções</a>
+        <a href="#diferenciais" class="hm-nav__link">Diferenciais</a>
+        <a href="simulador.html" class="hm-nav__link hm-nav__link--cta">Simulação →</a>
+      </nav>
+
+      <!-- Ações -->
+      <div class="hm-header__actions">
+        <button class="btn btn--ghost btn--sm">Suporte</button>
+        <button class="btn btn--primary btn--sm">Acessar Conta</button>
+      </div>
+
+      <!-- Hamburger Mobile -->
+      <button class="hm-hamburger" id="hm-hamburger"
+        onclick="document.getElementById('hm-nav').classList.toggle('open')">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════
+       LAYOUT PRINCIPAL: SIDEBAR + CONTEÚDO
+       ══════════════════════════════════════════ -->
+  <div class="hm-layout">
+    <!-- Sidebar Executiva -->
+    <aside class="hm-sidebar" id="hm-sidebar">
+      <div class="hm-sidebar__section">
+        <h5 class="hm-sidebar__label">Navegação</h5>
+        <a href="#" class="hm-sidebar__item hm-sidebar__item--active">
+          <span class="hm-sidebar__icon">ðŸ </span> Início
+        </a>
+        <a href="simulador.html" class="hm-sidebar__item">
+          <span class="hm-sidebar__icon">ðŸ“ˆ</span> Simulação
+        </a>
+        <a href="simulador.html#step-4" class="hm-sidebar__item">
+          <span class="hm-sidebar__icon">ðŸª</span> Prateleira
+        </a>
+        <a href="simulador.html#step-10" class="hm-sidebar__item">
+          <span class="hm-sidebar__icon">⚖ï¸</span> Comparador
+        </a>
+        <a href="simulador.html#step-9" class="hm-sidebar__item">
+          <span class="hm-sidebar__icon">ðŸ“„</span> Propostas
+        </a>
+      </div>
+      <div class="hm-sidebar__section">
+        <h5 class="hm-sidebar__label">Administração</h5>
+        <a href="#" class="hm-sidebar__item">
+          <span class="hm-sidebar__icon">⚙ï¸</span> Configurações
+        </a>
+        <a href="#" class="hm-sidebar__item">
+          <span class="hm-sidebar__icon">❓</span> Ajuda
+        </a>
+      </div>
+    </aside>
+
+    <!-- Conteúdo Principal -->
+    <main class="hm-main">
+
+      <!-- ── KPI BAR ── -->
+      <section class="hm-kpi-bar">
+        <div class="hm-kpi">
+          <span class="hm-kpi__value">24</span>
+          <span class="hm-kpi__label">Grupos Disponíveis</span>
+        </div>
+        <div class="hm-kpi">
+          <span class="hm-kpi__value">6</span>
+          <span class="hm-kpi__label">Segmentos Ativos</span>
+        </div>
+        <div class="hm-kpi">
+          <span class="hm-kpi__value">10</span>
+          <span class="hm-kpi__label">Etapas na Jornada</span>
+        </div>
+        <div class="hm-kpi">
+          <span class="hm-kpi__value">R$ 1.5M</span>
+          <span class="hm-kpi__label">Maior Carta Disponível</span>
+        </div>
+      </section>
+
+      <!-- ── HERO PRINCIPAL ── -->
+      <section class="hm-hero">
+        <div class="hm-hero__content">
+          <span class="hm-hero__badge">Plataforma de Engenharia Financeira</span>
+          <h1 class="hm-hero__title">A inteligência do consórcio, agora acessível.</h1>
+          <p class="hm-hero__desc">Monte operações estruturadas, compare grupos reais e gere propostas profissionais —
+            tudo em uma única jornada guiada.</p>
+          <a href="simulador.html" class="btn btn--primary btn--lg">
+            Abrir Simulação →
+          </a>
+        </div>
+        <div class="hm-hero__visual">
+          <div class="hm-hero__mock">
+            <div class="hm-mock-row"><span class="dot dot--green"></span> Dados do Consultor</div>
+            <div class="hm-mock-row"><span class="dot dot--green"></span> Dados do Cliente</div>
+            <div class="hm-mock-row"><span class="dot dot--green"></span> Filtros</div>
+            <div class="hm-mock-row hm-mock-row--active"><span class="dot dot--blue"></span> Prateleira de Grupos</div>
+            <div class="hm-mock-row"><span class="dot dot--gray"></span> Parâmetros Financeiros</div>
+            <div class="hm-mock-row"><span class="dot dot--gray"></span> Resultados</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── ATALHOS RÁPIDOS ── -->
+      <section class="hm-shortcuts">
+        <a href="simulador.html" class="hm-shortcut">
+          <div class="hm-shortcut__icon">ðŸš€</div>
+          <div>
+            <strong>Nova Simulação</strong>
+            <span>Inicie a jornada completa de 10 etapas</span>
+          </div>
+        </a>
+        <a href="simulador.html#step-10" class="hm-shortcut">
+          <div class="hm-shortcut__icon">⚖ï¸</div>
+          <div>
+            <strong>Comparar Grupos</strong>
+            <span>Análise lado a lado com narrativa</span>
+          </div>
+        </a>
+        <a href="simulador.html#step-4" class="hm-shortcut">
+          <div class="hm-shortcut__icon">ðŸª</div>
+          <div>
+            <strong>Prateleira de Grupos</strong>
+            <span>Explore 24 grupos com score de mercado</span>
+          </div>
+        </a>
+        <a href="simulador.html#step-9" class="hm-shortcut">
+          <div class="hm-shortcut__icon">ðŸ“„</div>
+          <div>
+            <strong>Gerar Proposta</strong>
+            <span>Exporte proposta comercial em PDF</span>
+          </div>
+        </a>
+      </section>
+
+      <!-- ── JORNADA DE SIMULAÇÃO (4 Fases) ── -->
+      <section class="hm-journey" id="solucoes">
+        <h2 class="hm-section-title">Jornada da Simulação</h2>
+        <p class="hm-section-desc">Um fluxo estruturado do produto ao resultado final.</p>
+
+        <div class="hm-journey__grid">
+          <div class="hm-journey__step">
+            <div class="hm-journey__number">1</div>
+            <h3>Produto</h3>
+            <p>Selecione administradora, segmento e prazo. A prateleira exibe grupos disponíveis com score inteligente.
+            </p>
+          </div>
+          <div class="hm-journey__connector">→</div>
+          <div class="hm-journey__step">
+            <div class="hm-journey__number">2</div>
+            <h3>Parametrização</h3>
+            <p>Configure carta, taxas, lances e parcela reduzida. Dados auto-preenchidos ao selecionar o grupo.</p>
+          </div>
+          <div class="hm-journey__connector">→</div>
+          <div class="hm-journey__step">
+            <div class="hm-journey__number">3</div>
+            <h3>Cálculo</h3>
+            <p>Motor financeiro proprietário: cronograma mensal, KPIs, gráficos e cenários de comparação.</p>
+          </div>
+          <div class="hm-journey__connector">→</div>
+          <div class="hm-journey__step">
+            <div class="hm-journey__number">4</div>
+            <h3>Resultado</h3>
+            <p>Proposta comercial elegante em PDF, tabela analítica e comparador de dois grupos.</p>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ── BLOCO EDUCATIVO: JORNADA DO CLIENTE ── -->
+      <section class="hm-education" id="jornada-cliente">
+        <div class="hm-education__top">
+          <div>
+            <span class="hm-education__eyebrow">ðŸ“š Bloco educativo do produto</span>
+            <h2 class="hm-education__title">Jornada completa do cliente no consórcio</h2>
+            <p class="hm-education__desc">Este bloco traduz o produto em uma trilha didática. A proposta é mostrar, de
+              forma clara, o que acontece em cada etapa, quais dúvidas financeiras surgem e como o simulador deve apoiar
+              o cliente desde a adesão até o encerramento do grupo.</p>
+          </div>
+          <div class="hm-education__actions">
+            <a href="simulador.html" class="btn btn--primary btn--sm">Abrir simulação</a>
+            <a href="consorcio_user_journey_map_v2.html" class="btn btn--ghost btn--sm">Mapa completo da jornada</a>
+          </div>
+        </div>
+
+        <div class="hm-education__summary">
+          <article class="hm-education__summary-card">
+            <span class="hm-education__summary-label">Objetivo</span>
+            <span class="hm-education__summary-value">Didática</span>
+            <span class="hm-education__summary-text">Transformar um produto técnico em uma experiência compreensível
+              para o cliente, o consultor e o motor de simulação.</span>
+          </article>
+          <article class="hm-education__summary-card">
+            <span class="hm-education__summary-label">Cobertura</span>
+            <span class="hm-education__summary-value">12 etapas</span>
+            <span class="hm-education__summary-text">Da visão geral do consórcio até o encerramento do grupo, com foco
+              em dúvidas, custos, prazos e decisões.</span>
+          </article>
+          <article class="hm-education__summary-card">
+            <span class="hm-education__summary-label">Foco financeiro</span>
+            <span class="hm-education__summary-value">Carta + parcela</span>
+            <span class="hm-education__summary-text">Cada etapa destaca o impacto em parcela, lance, reajuste,
+              documentação, faturamento e uso do crédito.</span>
+          </article>
+          <article class="hm-education__summary-card">
+            <span class="hm-education__summary-label">Uso no site</span>
+            <span class="hm-education__summary-value">Educar e converter</span>
+            <span class="hm-education__summary-text">O bloco apoia a navegação comercial e prepara o usuário para entrar
+              na jornada de simulação com mais clareza.</span>
+          </article>
+        </div>
+
+        <div class="hm-education__shell">
+          <aside class="hm-education__nav">
+            <h3 class="hm-education__nav-title">Mapa da jornada</h3>
+            <p class="hm-education__nav-desc">Selecione uma etapa para ver o que o cliente precisa entender, quais
+              pontos financeiros exigem explicação e quais campos devem alimentar o simulador.</p>
+            <div class="hm-education__nav-list" id="hm-education-nav"></div>
+          </aside>
+
+          <div class="hm-education__panel" id="hm-education-panel"></div>
+        </div>
+      </section>
+
+
+      <!-- ── BLOCO DEMO: SIMULAÇÃO RESUMIDA ── -->
+      <section class="hm-demo" id="diferenciais">
+        <h2 class="hm-section-title">Demonstração: Motor de Simulação</h2>
+        <p class="hm-section-desc">Veja os campos e indicadores que o motor processa em tempo real.</p>
+
+        <div class="hm-demo__grid">
+          <!-- Campos -->
+          <div class="hm-demo__card">
+            <h4>ðŸ“¥ Parâmetros de Entrada</h4>
+            <div class="hm-demo__fields">
+              <div class="hm-demo__field">
+                <label>Carta de Crédito</label>
+                <span>R$ 200.000,00</span>
+              </div>
+              <div class="hm-demo__field">
+                <label>Prazo</label>
+                <span>180 meses</span>
+              </div>
+              <div class="hm-demo__field">
+                <label>Taxa de Administração</label>
+                <span>15,50%</span>
+              </div>
+              <div class="hm-demo__field">
+                <label>Fundo de Reserva</label>
+                <span>2,00%</span>
+              </div>
+              <div class="hm-demo__field">
+                <label>Índice de Correção</label>
+                <span>INCC</span>
+              </div>
+              <div class="hm-demo__field">
+                <label>Lance Embutido</label>
+                <span>30%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- KPIs Resultado -->
+          <div class="hm-demo__card hm-demo__card--result">
+            <h4>ðŸ“Š KPIs Calculados</h4>
+            <div class="hm-demo__kpis">
+              <div class="hm-demo__kpi">
+                <span class="hm-demo__kpi-val">R$ 1.283,33</span>
+                <span class="hm-demo__kpi-lbl">Parcela Inicial</span>
+              </div>
+              <div class="hm-demo__kpi">
+                <span class="hm-demo__kpi-val">R$ 140.000</span>
+                <span class="hm-demo__kpi-lbl">Carta Líquida</span>
+              </div>
+              <div class="hm-demo__kpi">
+                <span class="hm-demo__kpi-val">R$ 60.000</span>
+                <span class="hm-demo__kpi-lbl">Lance Total</span>
+              </div>
+              <div class="hm-demo__kpi">
+                <span class="hm-demo__kpi-val">162 meses</span>
+                <span class="hm-demo__kpi-lbl">Prazo Restante</span>
+              </div>
+            </div>
+            <a href="simulador.html" class="btn btn--primary" style="margin-top: 20px; width: 100%;">
+              Simular com estes dados →
+            </a>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       FOOTER
+       ══════════════════════════════════════════ -->
+  <footer class="hm-footer">
+    <div class="hm-footer__inner">
+      <div class="hm-footer__brand">
+        <span>ðŸ¦</span> <strong>Bank Fratern</strong>
+        <p>Inteligência financeira acessível.<br>Engenharia de consórcio e planejamento patrimonial.</p>
+      </div>
+      <div class="hm-footer__links">
+        <div>
+          <h5>Produtos</h5>
+          <a href="simulador.html">Simulação</a>
+          <a href="simulador.html#step-4">Prateleira</a>
+          <a href="simulador.html#step-10">Comparador</a>
+          <a href="simulador.html#step-9">Propostas</a>
+        </div>
+        <div>
+          <h5>Institucional</h5>
+          <a href="#">Sobre Nós</a>
+          <a href="#">Compliance</a>
+          <a href="#">Ouvidoria</a>
+          <a href="#">Termos de Uso</a>
+        </div>
+      </div>
+    </div>
+    <div class="hm-footer__bottom">
+      © 2026 Bank Fratern S.A. — Instituição Financeira. CNPJ: 00.000.000/0001-00
+    </div>
+  </footer>
+
+
+  <script>
+    const hmJourneyStages = [
+      {
+        id: 'visao-geral',
+        label: '1. Visão geral',
+        short: 'Entendimento inicial do produto',
+        icon: 'ðŸ§­',
+        iconBg: '#eef2ff',
+        title: 'Visão geral do consórcio',
+        desc: 'Consórcio é uma forma de aquisição planejada em grupo. O cliente entra em uma cota, paga parcelas, participa de assembleias e só utiliza a carta quando for contemplado e cumprir as regras de liberação.',
+        badges: [
+          { text: 'Compra planejada', type: 'ok' },
+          { text: 'Não é crédito imediato', type: 'warn' },
+          { text: 'Precisa de alinhamento de expectativa', type: 'info' }
+        ],
+        flow: ['Entrada no grupo', 'Pagamento mensal', 'Assembleia', 'Contemplação', 'Documentos', 'Faturamento', 'Uso do bem', 'Quitação'],
+        explain: [
+          'Deixar claro que o cliente não recebe dinheiro imediatamente como em um empréstimo.',
+          'Explicar que parcela, contemplação, análise de crédito e faturamento são momentos diferentes da jornada.',
+          'Mostrar que o produto é mais aderente a quem consegue se planejar no tempo.'
+        ],
+        financial: [
+          'Objetivo do cliente e urgência de compra.',
+          'Categoria do bem, valor da carta e horizonte de tempo.',
+          'Expectativa correta sobre sorteio, lance e uso do crédito.'
+        ],
+        question: '"Eu recebo o dinheiro na hora?"',
+        answer: 'Não. O fluxo principal do consórcio é a aquisição planejada via carta de crédito. Em alguns cenários existe faturamento em espécie, mas ele depende de regras específicas e não equivale a um CDC.',
+        fields: [
+          ['Objetivo do cliente', 'Imóvel, veículo, serviço ou estratégia patrimonial.'],
+          ['Urgência', 'Curto, médio ou longo prazo para aquisição.'],
+          ['Categoria do bem', 'Define regras de crédito, reajuste e documentação.']
+        ]
+      },
+      {
+        id: 'adesao',
+        label: '2. Adesão',
+        short: 'Definição dos parâmetros do contrato',
+        icon: '✍ï¸',
+        iconBg: '#f5f3ff',
+        title: 'Adesão ao grupo',
+        desc: 'Na adesão nascem as referências contratuais que sustentam toda a operação: carta de crédito, prazo, taxa de administração, fundo de reserva, seguro e índice de reajuste.',
+        badges: [
+          { text: 'Contrato base', type: 'info' },
+          { text: 'Custos definidos aqui', type: 'warn' },
+          { text: 'Ponto de partida do simulador', type: 'ok' }
+        ],
+        flow: ['Escolha da carta', 'Escolha do prazo', 'Aceite do grupo', 'Definição de custos', 'Entrada formal'],
+        explain: [
+          'Explicar que o cliente está escolhendo o tamanho econômico do projeto e o prazo para sustentá-lo.',
+          'Diferenciar taxa de administração de juros de financiamento.',
+          'Mostrar que um prazo menor ou uma carta maior tende a pressionar a parcela.'
+        ],
+        financial: [
+          'Valor da carta contratada.',
+          'Prazo total do grupo e data de vencimento.',
+          'Taxa de administração, fundo de reserva, seguro e índice de reajuste.'
+        ],
+        question: '"Quais informações eu preciso validar antes de assinar?"',
+        answer: 'Carta, prazo, índice de reajuste, custo do plano, regras de contemplação, política de cancelamento e data de aniversário do grupo.',
+        fields: [
+          ['Carta de crédito', 'Valor base da cota na adesão.'],
+          ['Prazo do grupo', 'Quantidade total de meses do plano.'],
+          ['Taxa de administração', 'Remuneração da administradora.'],
+          ['Fundo de reserva', 'Reserva de estabilidade do grupo.'],
+          ['Seguro', 'Cobertura prevista pelo plano, quando aplicável.']
+        ]
+      },
+      {
+        id: 'parcelas',
+        label: '3. Parcelas',
+        short: 'Ciclo mensal e habilitação do cliente',
+        icon: 'ðŸ’³',
+        iconBg: '#eff6ff',
+        title: 'Pagamento mensal das parcelas',
+        desc: 'A prestação mensal alimenta o caixa coletivo do grupo e mantém o cliente habilitado para participar das assembleias. Ela não é apenas o valor do bem dividido pelo prazo.',
+        badges: [
+          { text: 'Parcela é composta', type: 'warn' },
+          { text: 'Adimplência habilita', type: 'ok' },
+          { text: 'Motor mensal do grupo', type: 'info' }
+        ],
+        flow: ['Vencimento', 'Pagamento', 'Formação do fundo comum', 'Habilitação para assembleia'],
+        explain: [
+          'Mostrar que a parcela reúne fundo comum, taxa de administração, fundo de reserva e seguro, quando houver.',
+          'Explicar que atraso gera custo adicional e pode bloquear sorteio e lance.',
+          'Reforçar que mesmo após a contemplação o pagamento continua até a quitação.'
+        ],
+        financial: [
+          'Prestação mensal e seus componentes.',
+          'Multa e juros em caso de atraso.',
+          'Situação do pagamento: em dia, em atraso, suspenso ou quitado.'
+        ],
+        question: '"Se eu já fui contemplado, continuo pagando?"',
+        answer: 'Sim. A contemplação antecipa o direito ao crédito, mas a obrigação de pagar a cota permanece até a quitação total.',
+        fields: [
+          ['Prestação mensal', 'Soma dos componentes financeiros do mês.'],
+          ['Fundo comum', 'Parte da parcela destinada ao grupo.'],
+          ['Encargos de atraso', 'Multa e juros moratórios, quando aplicáveis.']
+        ]
+      },
+      {
+        id: 'reajuste',
+        label: '4. Reajuste',
+        short: 'Atualização econômica da carta e da parcela',
+        icon: 'ðŸ“',
+        iconBg: '#ecfeff',
+        title: 'Reajuste da carta e das parcelas',
+        desc: 'O reajuste preserva o poder de compra do crédito ao longo do tempo. Ele não deve ser explicado como juro, mas como atualização econômica contratual.',
+        badges: [
+          { text: 'Preserva poder de compra', type: 'ok' },
+          { text: 'Índice contratual', type: 'info' },
+          { text: 'Ponto sensível da explicação', type: 'warn' }
+        ],
+        flow: ['Aniversário do grupo', 'Aplicação do índice', 'Nova carta', 'Nova parcela'],
+        explain: [
+          'Dizer que, se o bem encarece no tempo, a carta precisa acompanhar esse movimento.',
+          'Relacionar o reajuste à manutenção do equilíbrio econômico do grupo.',
+          'Explicar que o índice depende do contrato e da categoria do bem.'
+        ],
+        financial: [
+          'Carta atualizada.',
+          'Índice contratual como INCC, IPCA, FIPE ou equivalente.',
+          'Reflexo do reajuste na parcela futura.'
+        ],
+        question: '"Se a carta sobe, a parcela sobe também?"',
+        answer: 'Em regra, sim. Quando a base econômica do plano é atualizada, a prestação também acompanha essa nova referência.',
+        fields: [
+          ['Carta atual', 'Carta original corrigida pelo fator de reajuste.'],
+          ['Índice de reajuste', 'Índice previsto no contrato do grupo.'],
+          ['Parcela reajustada', 'Nova prestação após a atualização.']
+        ]
+      },
+      {
+        id: 'assembleia',
+        label: '5. Assembleia',
+        short: 'Sorteio e apuração de lances',
+        icon: 'ðŸŽ²',
+        iconBg: '#ecfdf5',
+        title: 'Assembleia mensal do grupo',
+        desc: 'A assembleia é o momento em que o grupo realiza contemplações. Primeiro entram os sorteios previstos na regra do grupo; depois são avaliados os lances ofertados pelos participantes habilitados.',
+        badges: [
+          { text: 'Ritual mensal do grupo', type: 'info' },
+          { text: 'Exige adimplência', type: 'warn' },
+          { text: 'Momento de contemplação', type: 'ok' }
+        ],
+        flow: ['Fechamento do mês', 'Validação dos habilitados', 'Sorteio', 'Apuração de lances', 'Resultado'],
+        explain: [
+          'Separar sorteio de contemplação por lance na narrativa para o cliente.',
+          'Explicar que nem todo mês o cliente será contemplado, porque existe competição e aleatoriedade.',
+          'Reforçar que a assembleia depende do caixa do grupo e das regras do contrato.'
+        ],
+        financial: [
+          'Saldo do grupo e recursos disponíveis para contemplações.',
+          'Situação do cliente no mês da assembleia.',
+          'Histórico de ofertas e probabilidade prática de sucesso.'
+        ],
+        question: '"Estar no grupo garante contemplação rápida?"',
+        answer: 'Não. A entrada no grupo garante participação na dinâmica coletiva, mas a contemplação depende de sorteio, lance e cronograma do grupo.',
+        fields: [
+          ['Mês da assembleia', 'Competência em que ocorre o evento.'],
+          ['Status do cliente', 'Habilitado ou não habilitado para participar.'],
+          ['Resultado', 'Não contemplado, sorteado ou contemplado por lance.']
+        ]
+      },
+      {
+        id: 'lance',
+        label: '6. Lance',
+        short: 'Estratégia para acelerar a contemplação',
+        icon: 'ðŸ¹',
+        iconBg: '#fff7ed',
+        title: 'Simulação e estratégia de lance',
+        desc: 'O lance é a principal alavanca de aceleração da jornada. Ele pode ser livre, embutido, com recursos próprios e, em alguns produtos, combinado com regras específicas como FGTS ou modalidades fixas.',
+        badges: [
+          { text: 'Acelera a contemplação', type: 'ok' },
+          { text: 'Exige estratégia', type: 'warn' },
+          { text: 'Impacta carta e parcela', type: 'info' }
+        ],
+        flow: ['Definição da estratégia', 'Oferta do valor', 'Assembleia', 'Vitória ou derrota', 'Recalibração'],
+        explain: [
+          'Explicar a diferença entre lance com recursos próprios e lance embutido.',
+          'Mostrar que o embutido reduz o crédito líquido disponível para compra.',
+          'Traduzir a estratégia em cenários: maior chance de contemplação versus menor crédito na ponta.'
+        ],
+        financial: [
+          'Percentual ofertado versus valor da carta.',
+          'Crédito líquido após lance embutido.',
+          'Uso de caixa próprio ou recursos permitidos pela regra do produto.'
+        ],
+        question: '"Vale a pena ofertar lance embutido?"',
+        answer: 'Depende do objetivo do cliente. Ele aumenta a capacidade de competir na assembleia, mas reduz o valor líquido da carta para comprar o bem.',
+        fields: [
+          ['Tipo de lance', 'Livre, embutido, recursos próprios, fixo ou regra específica do grupo.'],
+          ['Percentual ofertado', 'Base para disputar a assembleia.'],
+          ['Carta líquida', 'Valor disponível após desconto do lance embutido.']
+        ]
+      },
+      {
+        id: 'contemplacao',
+        label: '7. Contemplação',
+        short: 'Aquisição do direito de usar o crédito',
+        icon: 'ðŸ†',
+        iconBg: '#fef9c3',
+        title: 'Contemplação do cliente',
+        desc: 'A contemplação marca a virada da jornada: o cliente passa a ter direito de utilizar a carta, mas ainda não encerra a operação. A partir daqui entram análise, documentos e faturamento.',
+        badges: [
+          { text: 'Direito ao crédito', type: 'ok' },
+          { text: 'Ainda não é pagamento ao vendedor', type: 'warn' },
+          { text: 'Transição de fase', type: 'info' }
+        ],
+        flow: ['Resultado da assembleia', 'Comunicação da contemplação', 'Validação do lance', 'Preparação da documentação'],
+        explain: [
+          'O cliente precisa ouvir que contemplação é direito de uso da carta, não liberação automática de dinheiro.',
+          'Em contemplação por lance, reforçar prazo de pagamento do lance e risco de cancelamento se houver descumprimento.',
+          'Apresentar a contemplação como início da fase operacional do crédito.'
+        ],
+        financial: [
+          'Carta bruta versus carta líquida.',
+          'Pagamento do lance vencedor quando aplicável.',
+          'Regras de manutenção do pagamento das parcelas restantes.'
+        ],
+        question: '"Depois de ser contemplado, em quanto tempo compro o bem?"',
+        answer: 'Isso depende da velocidade de análise de crédito, envio de documentos, validação das garantias e formalização do faturamento.',
+        fields: [
+          ['Tipo de contemplação', 'Sorteio ou lance.'],
+          ['Carta liberável', 'Valor potencial a ser utilizado.'],
+          ['Prazo do lance', 'Janela para pagar o lance, quando aplicável.']
+        ]
+      },
+      {
+        id: 'credito-documentos',
+        label: '8. Crédito e documentos',
+        short: 'Análise cadastral, garantias e formalização',
+        icon: 'ðŸ§¾',
+        iconBg: '#eff6ff',
+        title: 'Análise de crédito e documentação',
+        desc: 'Após a contemplação, a administradora avalia dados cadastrais, documentos, garantias e conformidade da operação antes de permitir a utilização efetiva da carta.',
+        badges: [
+          { text: 'Validação obrigatória', type: 'warn' },
+          { text: 'Protege a operação', type: 'info' },
+          { text: 'Etapa crítica de conversão', type: 'ok' }
+        ],
+        flow: ['Envio de dados', 'Análise cadastral', 'Validação da garantia', 'Ajustes documentais', 'Aprovação'],
+        explain: [
+          'Separar na explicação o que é documentação do cliente e o que é documentação do bem.',
+          'Em veículos, destacar placa ou chassi, dados bancários do vendedor e eventual avaliação de usado.',
+          'Em imóveis, explicar que a análise tende a ser mais documental e registral.'
+        ],
+        financial: [
+          'Custos acessórios como avaliação, documentação e seguros vinculados.',
+          'Necessidade de compatibilidade entre vendedor, bem e dados de pagamento.',
+          'Risco de atraso no faturamento por pendência documental.'
+        ],
+        question: '"Fui contemplado. Isso quer dizer que já está tudo aprovado?"',
+        answer: 'Não. A contemplação abre o direito ao crédito, mas a liberação depende de a operação passar pela análise e pela documentação exigida.',
+        fields: [
+          ['Documentos do cliente', 'Identificação, renda, cadastro e formalização.'],
+          ['Documentos do bem', 'Placa, chassi, matrícula, nota fiscal ou equivalentes.'],
+          ['Dados do vendedor', 'Banco, agência, conta e titularidade do favorecido.']
+        ]
+      },
+      {
+        id: 'aquisicao-faturamento',
+        label: '9. Aquisição e faturamento',
+        short: 'Compra do bem e pagamento ao vendedor',
+        icon: 'ðŸ ',
+        iconBg: '#f0fdf4',
+        title: 'Aquisição do bem e faturamento da carta',
+        desc: 'Com a operação aprovada, a carta é usada para pagar o vendedor ou para formalizar a aquisição do bem. É aqui que a jornada sai do plano e entra no mundo real da compra.',
+        badges: [
+          { text: 'Pagamento ao fornecedor', type: 'ok' },
+          { text: 'Exige formalização correta', type: 'warn' },
+          { text: 'Momento de materialização da compra', type: 'info' }
+        ],
+        flow: ['Escolha do bem', 'Contrato ou nota fiscal', 'Assinatura', 'Pagamento ao vendedor', 'Comprovante'],
+        explain: [
+          'Explicar que o crédito vai para o vendedor ou favorecido autorizado, não para uso livre do cliente.',
+          'Nos materiais analisados, veículos usados podem demandar avaliação e registro, enquanto o documento do bem precisa ser emitido em prazo definido.',
+          'Destacar que carta quitada ou quase quitada pode ter tratamento diferente em relação à alienação, conforme a regra operacional.'
+        ],
+        financial: [
+          'Valor do bem versus carta disponível.',
+          'Complemento com recursos próprios quando o bem custa mais que a carta.',
+          'Uso limitado do saldo para despesas elegíveis, quando permitido pela administradora.'
+        ],
+        question: '"O dinheiro cai na minha conta?"',
+        answer: 'Em regra, não. O pagamento vai para o vendedor, fornecedor ou favorecido autorizado na operação aprovada.',
+        fields: [
+          ['Bem escolhido', 'Dados do item que será adquirido.'],
+          ['Favorecido', 'Vendedor ou emissor da nota fiscal.'],
+          ['Valor a pagar', 'Montante do crédito usado no faturamento.']
+        ]
+      },
+      {
+        id: 'pos-contemplacao',
+        label: '10. Pós-contemplação',
+        short: 'Uso do crédito, espécie e rendimentos',
+        icon: 'ðŸ’¼',
+        iconBg: '#ede9fe',
+        title: 'Utilização do crédito após a contemplação',
+        desc: 'Depois da contemplação, o cliente pode usar a carta para adquirir o bem ou, em hipóteses permitidas, seguir para espécie. Também existem cenários em que o crédito permanece aguardando uso e precisa ser acompanhado.',
+        badges: [
+          { text: 'Uso estratégico do crédito', type: 'info' },
+          { text: 'Espécie segue regra própria', type: 'warn' },
+          { text: 'Precisa de clareza operacional', type: 'ok' }
+        ],
+        flow: ['Crédito disponível', 'Escolha da destinação', 'Compra do bem ou espécie', 'Acompanhamento do saldo'],
+        explain: [
+          'Orientar o cliente sobre limites do uso do crédito e diferenças entre faturar um bem e resgatar em espécie.',
+          'Mostrar que o crédito pode permanecer sem uso por um período e exigir acompanhamento da atualização econômica.',
+          'Explicar que o consorciado contemplado continua com obrigações até o final da cota.'
+        ],
+        financial: [
+          'Carta líquida disponível para uso.',
+          'Condições de faturamento em espécie quando previstas.',
+          'Possível atualização do valor enquanto o crédito não é utilizado.'
+        ],
+        question: '"Posso usar a carta para qualquer destino?"',
+        answer: 'Não. A utilização segue a categoria do consórcio, as hipóteses contratuais e o fluxo aprovado pela administradora.',
+        fields: [
+          ['Destino do crédito', 'Bem, quitação autorizada ou espécie, conforme a regra.'],
+          ['Status do uso', 'Crédito já utilizado, aguardando uso ou em espécie.'],
+          ['Saldo residual', 'Parte do crédito ainda não alocada, quando houver.']
+        ]
+      },
+      {
+        id: 'cancelamento',
+        label: '11. Cancelamento e inadimplência',
+        short: 'Saída da jornada ativa e devolução de valores',
+        icon: '⚠ï¸',
+        iconBg: '#fef2f2',
+        title: 'Cancelamento, exclusão e inadimplência',
+        desc: 'Quando o cliente deixa de pagar ou pede saída da cota, a jornada muda. A partir daí entram regras de exclusão, multa, restituição e participação em sorteios próprios de excluídos, conforme contrato.',
+        badges: [
+          { text: 'Ponto de fricção', type: 'warn' },
+          { text: 'Exige transparência', type: 'info' },
+          { text: 'Impacta percepção do produto', type: 'ok' }
+        ],
+        flow: ['Atraso', 'Acúmulo de inadimplência', 'Suspensão ou exclusão', 'Regra de restituição'],
+        explain: [
+          'Explicar cedo que desistir ou ficar inadimplente não significa recuperar todo o dinheiro imediatamente.',
+          'Mostrar a diferença entre valores pagos ao fundo comum e custos que não retornam na mesma lógica.',
+          'Traduzir a penalidade contratual em linguagem simples, sem esconder prazo e condição de devolução.'
+        ],
+        financial: [
+          'Encargos por atraso.',
+          'Multa compensatória ou retenções previstas no contrato.',
+          'Prazo e regra de restituição ao cliente excluído.'
+        ],
+        question: '"Se eu cancelar, recebo meu dinheiro de volta na hora?"',
+        answer: 'Normalmente, não. A restituição segue a regra do grupo e do contrato, podendo depender de sorteio específico ou do encerramento do grupo.',
+        fields: [
+          ['Status da cota', 'Ativa, suspensa, excluída ou cancelada.'],
+          ['Valor pago ao fundo comum', 'Base para cálculo de restituição.'],
+          ['Penalidades', 'Multa, encargos e regras de retenção.']
+        ]
+      },
+      {
+        id: 'encerramento',
+        label: '12. Encerramento',
+        short: 'Fechamento da operação e devoluções finais',
+        icon: 'ðŸ”’',
+        iconBg: '#f8fafc',
+        title: 'Encerramento do grupo',
+        desc: 'No encerramento, o grupo conclui sua vida útil. Entram em cena a prestação de contas final, a devolução de saldos residuais, a baixa das garantias e o fechamento definitivo da relação econômica da cota.',
+        badges: [
+          { text: 'Prestação de contas final', type: 'info' },
+          { text: 'Baixa de garantia', type: 'ok' },
+          { text: 'Última camada do relacionamento', type: 'warn' }
+        ],
+        flow: ['Últimas obrigações', 'Prestação de contas', 'Devolução de sobras', 'Baixa da garantia', 'Fechamento'],
+        explain: [
+          'Explicar ao cliente que o fim do grupo não é apenas a última parcela, mas o fechamento formal das obrigações e dos saldos residuais.',
+          'Destacar devolução de fundo de reserva e valores não utilizados, quando houver saldo positivo e previsão contratual.',
+          'Em operações com garantia, reforçar a importância de confirmar a desoneração documental do bem.'
+        ],
+        financial: [
+          'Quitação integral da cota.',
+          'Devoluções residuais e fundo de reserva não consumido, quando aplicável.',
+          'Custos ou pendências finais até a baixa completa da operação.'
+        ],
+        question: '"Depois da última parcela, acabou tudo automaticamente?"',
+        answer: 'A quitação é central, mas o ideal é acompanhar a baixa da garantia, a prestação de contas final e eventuais devoluções residuais do grupo.',
+        fields: [
+          ['Status final da cota', 'Quitada, encerrada e regularizada.'],
+          ['Baixa da garantia', 'Alienação ou vínculo documental retirado.'],
+          ['Saldo residual', 'Valor a devolver ou a regularizar no fechamento.']
+        ]
+      }
+    ];
+
+    const navContainer = document.getElementById('hm-education-nav');
+    const panelContainer = document.getElementById('hm-education-panel');
+
+    function renderJourneyNav(activeId) {
+      navContainer.innerHTML = hmJourneyStages.map(stage => `
+        <button class="hm-education__nav-btn ${stage.id === activeId ? 'is-active' : ''}" data-stage-id="${stage.id}">
+          <span class="hm-education__nav-icon" style="background:${stage.iconBg}">${stage.icon}</span>
+          <span>
+            <span class="hm-education__nav-label">${stage.label}</span>
+            <span class="hm-education__nav-sub">${stage.short}</span>
+          </span>
+        </button>
+      `).join('');
+
+      navContainer.querySelectorAll('[data-stage-id]').forEach(button => {
+        button.addEventListener('click', () => renderJourneyPanel(button.dataset.stageId));
+      });
+    }
+
+    function renderJourneyPanel(stageId) {
+      const stage = hmJourneyStages.find(item => item.id === stageId) || hmJourneyStages[0];
+      renderJourneyNav(stage.id);
+      panelContainer.innerHTML = `
+        <div class="hm-education__stage-head">
+          <div class="hm-education__stage-icon" style="background:${stage.iconBg}">${stage.icon}</div>
+          <div>
+            <span class="hm-education__stage-overline">${stage.label}</span>
+            <h3 class="hm-education__stage-title">${stage.title}</h3>
+            <p class="hm-education__stage-desc">${stage.desc}</p>
+          </div>
+        </div>
+
+        <div class="hm-education__badges">
+          ${stage.badges.map(badge => `<span class="hm-education__badge hm-education__badge--${badge.type}">${badge.text}</span>`).join('')}
+        </div>
+
+        <div class="hm-education__flow">
+          ${stage.flow.map(item => `<span class="hm-education__flow-pill">${item}</span>`).join('')}
+        </div>
+
+        <div class="hm-education__grid">
+          <article class="hm-education__card">
+            <h4 class="hm-education__card-title">O que o cliente precisa entender</h4>
+            <ul class="hm-education__list">
+              ${stage.explain.map(item => `<li>${item}</li>`).join('')}
+            </ul>
+          </article>
+
+          <article class="hm-education__card">
+            <h4 class="hm-education__card-title">Pontos financeiros desta etapa</h4>
+            <ul class="hm-education__list">
+              ${stage.financial.map(item => `<li>${item}</li>`).join('')}
+            </ul>
+          </article>
+
+          <article class="hm-education__card hm-education__card--full">
+            <h4 class="hm-education__card-title">Pergunta crítica da jornada</h4>
+            <p class="hm-education__card-text"><strong>${stage.question}</strong><br>${stage.answer}</p>
+          </article>
+
+          <article class="hm-education__card hm-education__card--full">
+            <h4 class="hm-education__card-title">Campos que o simulador deve carregar</h4>
+            <div class="hm-education__fields">
+              ${stage.fields.map(field => `
+                <div class="hm-education__field">
+                  <span class="hm-education__field-label">${field[0]}</span>
+                  <span class="hm-education__field-value">${field[1]}</span>
+                </div>
+              `).join('')}
+            </div>
+          </article>
+        </div>
+
+        <div class="hm-education__prompt">
+          <span class="hm-education__prompt-label">Aplicação prática no site</span>
+          <strong>Como este bloco ajuda a conversão</strong>
+          <p>Ao educar o usuário antes da simulação, o site reduz objeções, melhora a qualidade das perguntas e aumenta a confiança para avançar para a prateleira de grupos e para a construção da proposta.</p>
+        </div>
+      `;
+    }
+
+    if (navContainer && panelContainer) {
+      renderJourneyPanel(hmJourneyStages[0].id);
+    }
+  </script>
+
+</body>
+
+</html>
+

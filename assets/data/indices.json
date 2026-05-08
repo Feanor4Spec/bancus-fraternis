@@ -1,0 +1,34 @@
+[
+  {
+    "id": "selic",
+    "nome": "Selic",
+    "tipo": "taxa_publica",
+    "valorReferencia": null,
+    "fonte": "Banco Central - dados abertos",
+    "status": "pendente_integracao_api"
+  },
+  {
+    "id": "ipca",
+    "nome": "IPCA",
+    "tipo": "indice_inflacao",
+    "valorReferencia": null,
+    "fonte": "IBGE / Banco Central - serie temporal",
+    "status": "pendente_integracao_api"
+  },
+  {
+    "id": "incc",
+    "nome": "INCC",
+    "tipo": "indice_construcao",
+    "valorReferencia": null,
+    "fonte": "Base curada",
+    "status": "manual"
+  },
+  {
+    "id": "fipe",
+    "nome": "FIPE",
+    "tipo": "veiculos",
+    "valorReferencia": null,
+    "fonte": "Base curada",
+    "status": "manual"
+  }
+]

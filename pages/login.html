@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Bank Fratern</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/bank-fratern-design-system.css">
+  <link rel="stylesheet" href="../assets/css/platform.css">
+</head>
+<body class="bf-platform-body" data-bf-page="login">
+  <div data-shell-header></div>
+
+  <main class="bf-platform-shell">
+    <section class="bf-auth-shell">
+      <article class="bf-auth-card">
+        <span class="bf-badge bf-badge--gold">Acesso seguro local</span>
+        <h1>Entrar no Bank Fratern</h1>
+        <p>Autenticacao de prototipo para validar funcoes de cliente, consultor e administracao dentro da plataforma.</p>
+
+        <form class="bf-platform-form bf-auth-form" data-login-form>
+          <label>E-mail
+            <input type="email" data-login-email name="email" autocomplete="username" value="admin@bankfratern.local" required>
+          </label>
+          <label>Senha
+            <input type="password" data-login-password name="password" autocomplete="current-password" value="Admin@123" required>
+          </label>
+          <button class="btn btn--primary" type="submit">Entrar</button>
+        </form>
+
+        <div class="bf-auth-progress" aria-label="Progresso do login">
+          <div><i data-login-progress-bar></i></div>
+          <span data-login-progress-label>Pronto para autenticar</span>
+        </div>
+
+        <div class="bf-auth-message bf-auth-message--info" data-login-status>Use uma conta de demonstracao ou informe um usuario criado no painel admin.</div>
+        <div class="bf-auth-active" data-active-session></div>
+      </article>
+
+      <aside class="bf-auth-panel">
+        <span class="bf-badge bf-badge--navy">Contas seed</span>
+        <h2>Perfis para teste</h2>
+        <p>Estas credenciais entram direto no prototipo, preservando o redirecionamento solicitado antes da API real.</p>
+
+        <div class="bf-demo-logins">
+          <button type="button" data-demo-login data-email="admin@bankfratern.local" data-password="Admin@123">
+            <strong>Administrador</strong>
+            <span>Entrar como admin@bankfratern.local</span>
+          </button>
+          <button type="button" data-demo-login data-email="consultor@bankfratern.local" data-password="Consultor@123">
+            <strong>Consultor</strong>
+            <span>Entrar como consultor@bankfratern.local</span>
+          </button>
+          <button type="button" data-demo-login data-email="cliente@bankfratern.local" data-password="Cliente@123">
+            <strong>Cliente</strong>
+            <span>Entrar como cliente@bankfratern.local</span>
+          </button>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <div data-shell-footer></div>
+  <script src="../js/auth.js"></script>
+  <script src="../js/shared-layout.js"></script>
+  <script src="../assets/js/login.js"></script>
+</body>
+</html>

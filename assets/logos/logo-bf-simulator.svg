@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 230" role="img" aria-label="BF Simulator Logo" >
+  <title>BF Simulator Logo</title>
+  
+  <rect x="32" y="34" width="86" height="86" rx="20" fill="#0B2C52"/>
+  <rect x="52" y="54" width="46" height="46" rx="10" fill="none" stroke="#D2AA49" stroke-width="6"/>
+  <path d="M60 86 L72 74 L82 80 L96 62" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="145" y="76" font-size="30" font-weight="850" fill="#0A2540" font-family="Inter, Arial, sans-serif">BF Simulator</text>
+  <text x="145" y="106" font-size="15" font-weight="700" fill="#C5A047" font-family="Inter, Arial, sans-serif" letter-spacing="1.8">CENÁRIOS • LANCE • PARCELA</text>
+
+</svg>

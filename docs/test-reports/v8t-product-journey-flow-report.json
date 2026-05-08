@@ -1,0 +1,99 @@
+{
+  "ok": true,
+  "products": {
+    "total": 6,
+    "expectedProducts": [
+      "consorcio",
+      "financiamento",
+      "veiculos",
+      "cdc",
+      "garantia",
+      "consignado"
+    ],
+    "contextualRoutes": {
+      "simulator": "simulador-garantia.html?from=products&productId=garantia&preset=obter_liquidez&products=garantia%2Cfinanciamento",
+      "comparator": "comparador.html?preset=obter_liquidez&from=products&productId=garantia&products=garantia%2Cfinanciamento",
+      "calculator": "calculadora-custos-fixos.html?from=products&productId=garantia&preset=obter_liquidez&products=garantia%2Cfinanciamento",
+      "journey": "trilha-decisao.html?from=products&productId=garantia&preset=obter_liquidez&products=garantia%2Cfinanciamento",
+      "selectedCompare": "comparador.html?preset=manual&products=garantia%2Cfinanciamento&from=products&productId=garantia"
+    },
+    "recommendedTop3": [
+      "garantia",
+      "financiamento",
+      "veiculos"
+    ],
+    "bestModel": {
+      "id": "std-compra-bem-planejada",
+      "score": 100,
+      "productIds": [
+        "financiamento",
+        "consorcio",
+        "garantia"
+      ]
+    }
+  },
+  "comparator": {
+    "bestModelComparedCount": 3,
+    "fullComparedCount": 7,
+    "comparedIds": [
+      "financiamento",
+      "consorcio",
+      "cdc",
+      "garantia",
+      "consignado",
+      "vista",
+      "parcelado"
+    ],
+    "decision": "Consignado",
+    "nextActions": [
+      "calculadora-reserva-emergencia.html",
+      "simulador-consignado.html",
+      "calculadora-custos-fixos.html",
+      "calculadoras.html"
+    ]
+  },
+  "simulators": {
+    "financiamento": {
+      "totalPago": 298831.1651859816,
+      "primeiraParcela": 2156.926376549845
+    },
+    "consorcio": {
+      "totalPago": 243000,
+      "primeiraParcela": 1800
+    },
+    "cdc": {
+      "totalPago": 152282.09955226933,
+      "primeiraParcela": 2538.0349925378227
+    },
+    "garantia": {
+      "totalPago": 235240.22000175575,
+      "primeiraParcela": 1960.335166681302
+    },
+    "consignado": {
+      "totalPago": 102033.84952677276,
+      "primeiraParcela": 1417.136798982953,
+      "elegivel": true
+    },
+    "veiculos": {
+      "comparedCount": 4,
+      "decision": "Financiamento"
+    }
+  },
+  "analytics": {
+    "total": 12,
+    "productSelections": 1,
+    "compareOpen": 2,
+    "comparatorRuns": 1,
+    "savedScenarios": 1,
+    "simulatorRuns": 6,
+    "activeProducts": 3,
+    "conversionRate": 350,
+    "lastEventType": "simulator_calculated_veiculos"
+  },
+  "uiContract": {
+    "heroContextLinks": true,
+    "compareLinkMarker": true,
+    "productsJourneyApi": true
+  },
+  "failures": []
+}

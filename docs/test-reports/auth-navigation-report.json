@@ -1,0 +1,10 @@
+{
+  "ok": true,
+  "auth": {
+    "seeds": 3,
+    "adminLogin": true,
+    "anonymousRedirect": "login.html?redirect=handoff-consultivo.html%3Ffrom%3Dlousa%23fila-handoff",
+    "forbiddenRedirect": "dashboard-cliente.html?auth=forbidden"
+  },
+  "failures": []
+}

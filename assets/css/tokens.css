@@ -1,0 +1,77 @@
+/* Bank Fratern Design System — tokens.css */
+:root {
+  /* Brand */
+  --bf-navy-950: #061A2E;
+  --bf-navy-900: #0A2540;
+  --bf-navy-850: #0B2C52;
+  --bf-navy-800: #102F55;
+  --bf-navy-700: #143B66;
+  --bf-navy-600: #1F5C9A;
+
+  --bf-gold-800: #7C591A;
+  --bf-gold-700: #9C7524;
+  --bf-gold-600: #B38728;
+  --bf-gold-500: #C5A047;
+  --bf-gold-400: #D4AF37;
+  --bf-gold-300: #E6C76E;
+  --bf-gold-200: #F3DF9A;
+  --bf-gold-100: #FBF2CB;
+
+  /* Semantic */
+  --bf-success: #16734D;
+  --bf-success-bg: #ECFDF5;
+  --bf-success-bd: #BCEAD3;
+  --bf-warning: #A16207;
+  --bf-warning-bg: #FFFBEB;
+  --bf-warning-bd: #F8E1A7;
+  --bf-danger: #B42318;
+  --bf-danger-bg: #FEF3F2;
+  --bf-danger-bd: #FDA29B;
+  --bf-info: #1D4ED8;
+  --bf-info-bg: #EFF6FF;
+  --bf-info-bd: #CFE0F5;
+
+  /* Neutral */
+  --bf-ink: #111827;
+  --bf-text: #263241;
+  --bf-muted: #5B6572;
+  --bf-soft: #F6F9FC;
+  --bf-soft-2: #EEF3F8;
+  --bf-line: #E7ECF3;
+  --bf-white: #FFFFFF;
+
+  /* Typography */
+  --bf-font-sans: Inter, "Segoe UI", Arial, sans-serif;
+  --bf-font-serif: Georgia, "Times New Roman", serif;
+  --bf-font-mono: Consolas, Monaco, "Courier New", monospace;
+
+  /* Radius */
+  --bf-radius-xs: 10px;
+  --bf-radius-sm: 14px;
+  --bf-radius-md: 18px;
+  --bf-radius-lg: 24px;
+  --bf-radius-xl: 32px;
+  --bf-radius-xxl: 40px;
+
+  /* Shadow */
+  --bf-shadow-sm: 0 8px 20px rgba(10, 37, 64, 0.06);
+  --bf-shadow-md: 0 18px 42px rgba(10, 37, 64, 0.10);
+  --bf-shadow-lg: 0 28px 70px rgba(10, 37, 64, 0.16);
+  --bf-shadow-gold: 0 16px 36px rgba(197, 160, 71, 0.22);
+
+  /* Spacing */
+  --bf-space-1: 4px;
+  --bf-space-2: 8px;
+  --bf-space-3: 12px;
+  --bf-space-4: 16px;
+  --bf-space-5: 20px;
+  --bf-space-6: 24px;
+  --bf-space-8: 32px;
+  --bf-space-10: 40px;
+  --bf-space-12: 48px;
+  --bf-space-14: 56px;
+  --bf-space-16: 64px;
+
+  /* Layout */
+  --bf-container: 1240px;
+}

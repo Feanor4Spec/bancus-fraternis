@@ -1,0 +1,22 @@
+{
+  "lgpd": {
+    "dadosPessoais": ["nome", "cpf", "email", "telefone", "renda", "dados_open_finance"],
+    "diretriz": "Dados pessoais devem ficar em base privada e depender de base legal, finalidade e prazo."
+  },
+  "openFinance": {
+    "consentimento": true,
+    "cancelamento": true,
+    "finalidade": "determinada",
+    "ambiente": "api_segura"
+  },
+  "simulacao": {
+    "validarRenda": true,
+    "limiteComprometimentoRendaPct": 30,
+    "mostrarCET": true,
+    "mostrarPremissas": true
+  },
+  "recomendacao": {
+    "criterios": ["urgencia", "renda", "entrada", "garantia", "risco", "objetivo"],
+    "modoInicial": "heuristico_local"
+  }
+}

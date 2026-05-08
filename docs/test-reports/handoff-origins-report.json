@@ -1,0 +1,25 @@
+{
+  "ok": true,
+  "uiContract": {
+    "sourceFilter": true,
+    "sourceBadgeCss": true,
+    "adminOriginMetrics": true
+  },
+  "serviceContract": {
+    "total": 4,
+    "origins": {
+      "proposal": 1,
+      "imported": 1,
+      "signal": 1,
+      "journey": 1
+    },
+    "labels": {
+      "journey": "Trilha assistida",
+      "signal": "Sinal de retomada",
+      "proposal": "Proposta revisada",
+      "imported": "Pacote importado",
+      "manual": "Origem local"
+    }
+  },
+  "failures": []
+}

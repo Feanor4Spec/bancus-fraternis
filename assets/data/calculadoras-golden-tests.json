@@ -1,0 +1,130 @@
+[
+  {
+    "id": "formula-juros-simples-montante",
+    "suite": "formulas",
+    "name": "Juros simples - montante",
+    "fn": "simpleInterest",
+    "args": [10000, 2, 12],
+    "path": "montante",
+    "expected": 12400,
+    "tolerance": 0.01
+  },
+  {
+    "id": "formula-juros-simples-juros",
+    "suite": "formulas",
+    "name": "Juros simples - juros",
+    "fn": "simpleInterest",
+    "args": [10000, 2, 12],
+    "path": "juros",
+    "expected": 2400,
+    "tolerance": 0.01
+  },
+  {
+    "id": "formula-juros-compostos-fv",
+    "suite": "formulas",
+    "name": "Juros compostos com aporte",
+    "fn": "compoundFutureValue",
+    "args": [1000, 1000, 8, 24],
+    "expected": 27028.88,
+    "tolerance": 0.05
+  },
+  {
+    "id": "formula-price-payment",
+    "suite": "formulas",
+    "name": "PMT Price Pix parcelado",
+    "fn": "pricePayment",
+    "args": [1000, 4, 6],
+    "expected": 190.76,
+    "tolerance": 0.05
+  },
+  {
+    "id": "formula-valor-presente",
+    "suite": "formulas",
+    "name": "Valor presente de parcelas",
+    "fn": "presentValueOfPayments",
+    "args": [100, 10, 1],
+    "expected": 947.13,
+    "tolerance": 0.05
+  },
+  {
+    "id": "formula-reserva-gap",
+    "suite": "formulas",
+    "name": "Reserva de emergencia - gap",
+    "fn": "emergency",
+    "args": [3000, 6, 8000],
+    "path": "gap",
+    "expected": 10000,
+    "tolerance": 0.01
+  },
+  {
+    "id": "formula-custos-fixos-sobra",
+    "suite": "formulas",
+    "name": "Custos fixos - sobra mensal",
+    "fn": "fixedCosts",
+    "args": [{ "rendaLiquida": 9000, "moradia": 2500, "alimentacao": 1200, "transporte": 600, "dividas": 900, "outros": 700 }],
+    "path": "sobra",
+    "expected": 3100,
+    "tolerance": 0.01
+  },
+  {
+    "id": "formula-custos-fixos-comprometimento",
+    "suite": "formulas",
+    "name": "Custos fixos - comprometimento",
+    "fn": "fixedCosts",
+    "args": [{ "rendaLiquida": 9000, "moradia": 2500, "alimentacao": 1200, "transporte": 600, "dividas": 900, "outros": 700 }],
+    "path": "comprometimento",
+    "expected": 65.56,
+    "tolerance": 0.05
+  },
+  {
+    "id": "formula-cdb-liquido",
+    "suite": "formulas",
+    "name": "CDB 105% CDI liquido",
+    "fn": "fixedIncomeReturn",
+    "args": [
+      { "valor": 10000, "prazoDias": 365, "indexador": "cdi", "taxa": 105, "cdiAnual": 14.65 },
+      {
+        "indices": { "cdiAnual": 14.65, "ipcaAnual": 4.5 },
+        "irRegressivo": [
+          { "diasAte": 180, "aliquota": 22.5 },
+          { "diasAte": 360, "aliquota": 20 },
+          { "diasAte": 720, "aliquota": 17.5 },
+          { "diasAte": 99999, "aliquota": 15 }
+        ]
+      }
+    ],
+    "path": "liquid",
+    "expected": 11269.06,
+    "tolerance": 0.05
+  },
+  {
+    "id": "formula-poupanca-selic-diferenca",
+    "suite": "formulas",
+    "name": "Poupanca x Selic - diferenca",
+    "fn": "savingsVsSelic",
+    "args": [{ "valorInicial": 10000, "aporteMensal": 500, "prazoMeses": 12, "selicAnual": 14.75, "trAnual": 0 }],
+    "path": "diferenca",
+    "expected": 1085.99,
+    "tolerance": 0.05
+  },
+  {
+    "id": "formula-capacidade-credito-parcela-segura",
+    "suite": "formulas",
+    "name": "Capacidade de credito - parcela segura",
+    "fn": "creditCapacity",
+    "args": [{ "rendaMensal": 10000, "gastoMensal": 5000, "dividasMensais": 1000, "reservaAtual": 30000, "comprometimentoMaximo": 30, "margemFluxo": 60, "mesesReservaMinima": 3 }],
+    "path": "parcelaSegura",
+    "expected": 2000,
+    "tolerance": 0.01
+  },
+  {
+    "id": "formula-lance-consorcio-lance-seguro",
+    "suite": "formulas",
+    "name": "Lance em consorcio - lance seguro",
+    "fn": "consortiumBidCapacity",
+    "args": [{ "valorCarta": 200000, "reservaAtual": 40000, "gastoMensal": 5000, "capacidadePagamento": 1500, "lanceDesejadoPct": 10, "mesesReservaMinima": 3, "limiteLancePct": 30 }],
+    "path": "lanceSeguroValor",
+    "expected": 25000,
+    "tolerance": 0.01
+  }
+]

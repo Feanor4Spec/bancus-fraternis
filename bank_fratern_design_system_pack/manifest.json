@@ -1,0 +1,44 @@
+{
+  "project": "Bank Fratern Design System",
+  "version": "1.0.0",
+  "motto": "CAPITAL • TRUST • LEGAC",
+  "css": [
+    "tokens.css",
+    "components.css",
+    "utilities.css"
+  ],
+  "logos": [
+    "bank-fratern-compass.svg",
+    "bank-fratern-portal.svg",
+    "bank-fratern-dark.svg",
+    "bank-fratern-icon.svg",
+    "bf-journey.svg"
+  ],
+  "icons": [
+    "01-visao-geral.svg",
+    "02-adesao.svg",
+    "03-parcelas.svg",
+    "04-reajuste.svg",
+    "05-assembleia.svg",
+    "06-lance.svg",
+    "07-contemplacao.svg",
+    "08-credito-documentos.svg",
+    "09-faturamento.svg",
+    "10-pos-contemplacao.svg",
+    "11-cancelamento.svg",
+    "12-encerramento.svg",
+    "bf-journey-icons-sprite.svg"
+  ],
+  "creatives": [
+    "hero-direction.svg",
+    "hero-access.svg",
+    "hero-security.svg",
+    "hero-data.svg"
+  ],
+  "docs": [
+    "docs/design-system.html"
+  ],
+  "examples": [
+    "examples/journey-stage-card.html"
+  ]
+}

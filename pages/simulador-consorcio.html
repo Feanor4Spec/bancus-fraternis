@@ -1,0 +1,78 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador de Consorcio - Bank Fratern</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="icon" href="../assets/logos/bank-fratern-icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/styles.css"><link rel="stylesheet" href="../css/bank-fratern-design-system.css"><link rel="stylesheet" href="../assets/css/platform.css">
+</head>
+<body class="bf-platform-body light-simulator-page" data-bf-page="simulador-consorcio">
+  <div data-shell-header></div>
+  <main class="bf-platform-shell">
+    <section class="bf-platform-hero">
+      <div class="bf-platform-hero__content">
+        <span class="bf-badge bf-badge--gold">ConsorcioPro V7</span>
+        <h1>O simulador de consorcio continua como motor principal.</h1>
+        <p>A nova plataforma aponta para o simulador ja conectado a base real, prateleira, proposta, PDF, MOB Contemplacao e MOB Faturamento. Esta pagina e a ponte entre a arquitetura nova e o fluxo V7 existente.</p>
+        <a class="btn btn--primary btn--lg" href="simulador.html">Abrir simulador completo</a>
+      </div>
+      <aside class="bf-platform-hero__rail">
+        <a href="simulador.html#step-4">Prateleira real <span>GR</span></a>
+        <a href="simulador.html#step-10">Comparador V7 <span>CP</span></a>
+        <a href="simulador.html#step-9">Proposta <span>PF</span></a>
+      </aside>
+    </section>
+    <section class="bf-v8-stagebar bf-v8-stagebar--inside" aria-label="Atalhos do simulador de consorcio" data-v8-stagebar>
+      <div class="bf-v8-stagebar__intro">
+        <span>Consorcio v8</span>
+        <strong>Ponte, base real, prateleira, proposta e continuidade conectadas.</strong>
+      </div>
+      <a class="bf-v8-stagebar__item" href="#decisao-consorcio-ponte" data-step="1"><span>Ponte</span><strong>Fluxo completo</strong></a>
+      <a class="bf-v8-stagebar__item" href="simulador.html#database-status-panel" data-step="2"><span>Base</span><strong>17 mil grupos</strong></a>
+      <a class="bf-v8-stagebar__item" href="simulador.html#step-4" data-step="3"><span>Prateleira</span><strong>Escolha de grupos</strong></a>
+      <a class="bf-v8-stagebar__item" href="simulador.html#step-9" data-step="4"><span>Proposta</span><strong>PDF e memoria</strong></a>
+      <a class="bf-v8-stagebar__item" href="carteira.html#decisao-carteira" data-step="5"><span>Continuidade</span><strong>Carteira</strong></a>
+    </section>
+    <section class="bf-v8-decision-strip bf-v8-decision-strip--outer" id="decisao-consorcio-ponte" aria-label="Ponte do simulador de consorcio" data-light-simulator-decision-strip>
+      <div class="bf-v8-decision-strip__head">
+        <span class="bf-badge bf-badge--gold">Ponte para o motor completo</span>
+        <div>
+          <h2>Consorcio completo roda no Simulador V7 conectado a base real.</h2>
+          <p>Esta pagina preserva a rota de produto e direciona o usuario para a jornada completa com base, prateleira, calculo, proposta e carteira.</p>
+          <div class="bf-inline-actions">
+            <a class="btn btn--primary btn--sm" href="simulador.html">Abrir simulador completo</a>
+            <a class="btn btn--ghost btn--sm" href="comparador.html?preset=comprar_bem">Comparar alternativas</a>
+            <a class="btn btn--ghost btn--sm" href="carteira.html#simulacoes-salvas">Ver carteira</a>
+          </div>
+        </div>
+      </div>
+      <div class="bf-v8-decision-strip__grid">
+        <article class="bf-v8-decision-card bf-v8-decision-card--stable"><span>Base</span><strong>Base real</strong><p>O fluxo completo usa a prateleira de grupos carregada no simulador principal.</p><small>JSON local validado</small></article>
+        <article class="bf-v8-decision-card bf-v8-decision-card--info"><span>Etapas</span><strong>10 passos</strong><p>Consultor, cliente, filtros, prateleira, parametros, eventos, resultado, tabela, proposta e comparador.</p><small>Jornada completa</small></article>
+        <article class="bf-v8-decision-card bf-v8-decision-card--info"><span>Memoria</span><strong>MOB e proposta</strong><p>O motor principal preserva MOB Contemplacao, MOB Faturamento, exportacao e retomada.</p><small>Auditoria financeira</small></article>
+        <article class="bf-v8-decision-card bf-v8-decision-card--stable"><span>Continuidade</span><strong>Carteira</strong><p>Simulacoes salvas retornam para carteira, dashboard e comparador.</p><small>Historico conectado</small></article>
+      </div>
+    </section>
+    <section class="bf-platform-panel bf-platform-section" id="continuidade-consorcio-ponte">
+      <div class="bf-admin-panel-heading">
+        <div><span class="bf-badge bf-badge--navy">Ponte do consorcio</span><h2>Todos os passos da jornada</h2></div>
+        <a class="btn btn--ghost btn--sm" href="simulador.html">Abrir fluxo completo</a>
+      </div>
+      <div class="bf-client-timeline" data-light-simulator-timeline>
+        <a class="bf-client-timeline__item is-done" href="simulador.html#database-status-panel"><span>1</span><div><small>Base</small><strong>Conexao real</strong><p>Status de base e carregamento da prateleira.</p></div></a>
+        <a class="bf-client-timeline__item is-active" href="simulador.html#step-4"><span>2</span><div><small>Prateleira</small><strong>Escolha de grupos</strong><p>Filtro e selecao de cotas para montar a sacola.</p></div></a>
+        <a class="bf-client-timeline__item is-pending" href="simulador.html#step-7"><span>3</span><div><small>Resultado</small><strong>Dashboard financeiro</strong><p>KPIs, graficos, tabela mensal e memoria de calculo.</p></div></a>
+        <a class="bf-client-timeline__item is-pending" href="simulador.html#step-9"><span>4</span><div><small>Proposta</small><strong>PDF consultivo</strong><p>Material final de apresentacao e impressao.</p></div></a>
+        <a class="bf-client-timeline__item is-pending" href="carteira.html#simulacoes-salvas"><span>5</span><div><small>Continuidade</small><strong>Carteira</strong><p>Retomada de simulacao e pipeline comercial.</p></div></a>
+      </div>
+    </section>
+  </main>
+  <div data-shell-footer></div>
+  <script src="../js/auth.js"></script><script src="../js/shared-layout.js"></script>
+</body>
+</html>
+
+
+

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuracoes - Bank Fratern</title>
+  <meta name="description" content="Preferencias globais, parametros padrao e comportamento da plataforma Bank Fratern.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="icon" href="../assets/logos/bank-fratern-icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/shared-site.css">
+  <link rel="stylesheet" href="../css/bank-fratern-design-system.css">
+  <link rel="stylesheet" href="../assets/css/platform.css">
+  <link rel="stylesheet" href="../assets/css/bf-design-system-v8.css">
+</head>
+<body class="bf-platform-body settings-page bf-v8-body" data-bf-page="configuracoes" data-bf-archetype="governance" data-bf-visual-version="8">
+  <div data-shell-header></div>
+
+  <main class="bf-platform-shell">
+    <section class="bf-platform-hero">
+      <div class="bf-platform-hero__content">
+        <span class="bf-badge bf-badge--gold">Centro de preferencias</span>
+        <h1>Controle como o Bank Fratern preenche, calcula e apresenta sua jornada.</h1>
+        <p>As configuracoes ajustam experiencia visual, defaults do simulador, prateleira de grupos e parametros usados como ponto de partida nas proximas simulacoes.</p>
+        <div class="bf-inline-actions">
+          <a class="btn btn--primary" href="simulador.html">Abrir simulador</a>
+          <a class="btn btn--ghost" href="dashboard-cliente.html">Meu painel</a>
+          <a class="btn btn--ghost" href="componentes-v8.html">Ver design v8</a>
+        </div>
+      </div>
+      <aside class="bf-platform-hero__rail">
+        <a href="#prefs-gerais">Experiencia <span>EX</span></a>
+        <a href="#parametros-padrao">Defaults <span>DF</span></a>
+        <a href="#prateleira-config">Prateleira <span>PR</span></a>
+        <a href="#cfg-applied-panel">Ativas <span>OK</span></a>
+      </aside>
+    </section>
+
+    <section class="bf-v8-stagebar bf-v8-stagebar--inside" aria-label="Atalhos de configuracoes" data-v8-stagebar>
+      <div class="bf-v8-stagebar__intro"><span>Configuracoes</span><strong>Preferencias, defaults, prateleira, status e simulador.</strong></div>
+      <a class="bf-v8-stagebar__item" href="#prefs-gerais" data-step="1"><span>UX</span><strong>Preferencias</strong></a>
+      <a class="bf-v8-stagebar__item" href="#parametros-padrao" data-step="2"><span>Simulador</span><strong>Defaults</strong></a>
+      <a class="bf-v8-stagebar__item" href="#prateleira-config" data-step="3"><span>Dados</span><strong>Prateleira</strong></a>
+      <a class="bf-v8-stagebar__item" href="#cfg-applied-panel" data-step="4"><span>Status</span><strong>Ativas</strong></a>
+      <a class="bf-v8-stagebar__item" href="simulador.html" data-step="5"><span>Testar</span><strong>Abrir fluxo</strong></a>
+    </section>
+
+    <section class="bf-v8-decision-strip bf-v8-decision-strip--outer" id="decisao-configuracoes" aria-label="Resumo de configuracoes" data-settings-decision-strip>
+      <div class="bf-v8-decision-strip__head">
+        <span class="bf-badge bf-badge--navy">Governanca local</span>
+        <div>
+          <h2>Preferencias devem ser visiveis, reversiveis e aplicadas no boot da plataforma.</h2>
+          <p>Esta tela mostra o que sera usado em Home, simulador e paginas compartilhadas, evitando defaults invisiveis durante testes de uso.</p>
+        </div>
+      </div>
+      <div class="bf-v8-decision-strip__grid">
+        <article class="bf-v8-decision-card bf-v8-decision-card--stable"><span>Experiencia</span><strong>Jornada clara</strong><p>Preferencias visuais mantem navegacao e scroll previsiveis.</p><small>Aplicacao global</small></article>
+        <article class="bf-v8-decision-card bf-v8-decision-card--info"><span>Defaults</span><strong>Menos retrabalho</strong><p>Administradora, segmento, lance e indice entram como sugestao inicial.</p><small>Editavel</small></article>
+        <article class="bf-v8-decision-card bf-v8-decision-card--warning"><span>Risco</span><strong>Parametros sensiveis</strong><p>Defaults ajudam teste, mas nao substituem analise de produto ou contrato.</p><small>Premissa local</small></article>
+        <article class="bf-v8-decision-card bf-v8-decision-card--stable"><span>Persistencia</span><strong>localStorage</strong><p>Valores ficam neste navegador e podem ser resetados a qualquer momento.</p><small>Sem backend novo</small></article>
+      </div>
+    </section>
+
+    <section class="settings-status-panel" id="cfg-applied-panel">
+      <div class="settings-status-panel__head">
+        <div>
+          <strong>Configuracoes globais ativas</strong>
+          <p>As preferencias abaixo sao aplicadas no boot da Home, simulador, dashboards e paginas com layout compartilhado.</p>
+        </div>
+        <span class="settings-status-panel__badge">v8.11</span>
+      </div>
+      <div class="bf-settings-chip-row" id="cfg-applied-chips"></div>
+    </section>
+
+    <section class="bf-platform-panel bf-platform-section">
+      <div class="bf-admin-panel-heading">
+        <div><span class="bf-badge bf-badge--gold">Fluxo de aplicacao</span><h2>Como uma preferencia vira comportamento.</h2></div>
+        <a class="btn btn--ghost btn--sm" href="api-docs.html">Ver API Docs</a>
+      </div>
+      <div class="bf-client-timeline" data-settings-timeline>
+        <a class="bf-client-timeline__item is-done" href="#prefs-gerais"><span>1</span><div><small>Escolher</small><strong>Preferencia</strong><p>Usuario define experiencia e defaults.</p></div></a>
+        <a class="bf-client-timeline__item is-active" href="#cfg-applied-panel"><span>2</span><div><small>Salvar</small><strong>localStorage</strong><p>Configuracao fica disponivel localmente.</p></div></a>
+        <a class="bf-client-timeline__item is-pending" href="index.html"><span>3</span><div><small>Aplicar</small><strong>Home</strong><p>A entrada institucional reflete preferencias.</p></div></a>
+        <a class="bf-client-timeline__item is-pending" href="simulador.html"><span>4</span><div><small>Simular</small><strong>Defaults</strong><p>Campos iniciais seguem parametros salvos.</p></div></a>
+        <a class="bf-client-timeline__item is-pending" href="dashboard-cliente.html"><span>5</span><div><small>Retomar</small><strong>Dashboard</strong><p>Historico e perfil continuam acessiveis.</p></div></a>
+      </div>
+    </section>
+
+    <section class="bf-platform-panel bf-platform-section" id="prefs-gerais">
+      <div class="bf-admin-panel-heading">
+        <div><span class="bf-badge bf-badge--navy">Experiencia</span><h2>Preferencias visuais e comportamentais.</h2></div>
+      </div>
+      <div class="section-grid">
+        <article class="info-card">
+          <h3>Visual e navegacao</h3>
+          <div class="switch-row">
+            <div class="switch-text"><strong>Mostrar jornada no topo da home</strong><span>Mantem o bloco educativo como ponto de leitura.</span></div>
+            <button class="switch is-on" type="button" data-setting="showJourney" aria-label="Alternar jornada"></button>
+          </div>
+          <div class="switch-row">
+            <div class="switch-text"><strong>Scroll suave entre etapas</strong><span>Melhora a navegacao entre secoes do simulador.</span></div>
+            <button class="switch is-on" type="button" data-setting="smoothScroll" aria-label="Alternar scroll suave"></button>
+          </div>
+          <div class="switch-row">
+            <div class="switch-text"><strong>Tema escuro futuro</strong><span>Reserva de controle para modo escuro global.</span></div>
+            <button class="switch" type="button" data-setting="darkMode" aria-label="Alternar tema escuro"></button>
+          </div>
+        </article>
+        <article class="info-card">
+          <h3>Score e prateleira</h3>
+          <div class="switch-row">
+            <div class="switch-text"><strong>Score automatico na prateleira</strong><span>Calcula score heuristico ao abrir grupos disponiveis.</span></div>
+            <button class="switch is-on" type="button" data-setting="autoScore" aria-label="Alternar score automatico"></button>
+          </div>
+          <p>Esses controles sao demonstrativos e ajudam o teste de fluxo antes da camada de usuarios e backend completo.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="bf-platform-panel bf-platform-section" id="parametros-padrao">
+      <div class="bf-admin-panel-heading">
+        <div><span class="bf-badge bf-badge--gold">Defaults</span><h2>Parametros padrao para novas simulacoes.</h2></div>
+      </div>
+      <form class="bf-platform-form">
+        <label for="cfg-defaultAdmin">Administradora padrao<input id="cfg-defaultAdmin" type="text" placeholder="Ex: Itau Consorcio"></label>
+        <label for="cfg-defaultSegmento">Segmento padrao
+          <select id="cfg-defaultSegmento">
+            <option value="">Nenhum</option>
+            <option value="1">Imoveis</option>
+            <option value="3">Automoveis</option>
+            <option value="4">Motos</option>
+            <option value="2">Pesados</option>
+            <option value="5">Outros</option>
+            <option value="6">Servicos</option>
+          </select>
+        </label>
+        <label for="cfg-maxLanceEmbutido">Limite de lance embutido (%)<input id="cfg-maxLanceEmbutido" type="number" min="0" max="100" step="1"></label>
+        <label for="cfg-defaultIndiceReajuste">Indice de reajuste padrao (%)<input id="cfg-defaultIndiceReajuste" type="number" min="0" max="30" step="0.5"></label>
+        <label for="cfg-defaultMesContemplacao">Mes de contemplacao padrao<input id="cfg-defaultMesContemplacao" type="number" min="1" max="300"></label>
+        <label for="cfg-defaultPoliticaSaldo">Politica de saldo inicial
+          <select id="cfg-defaultPoliticaSaldo">
+            <option value="carta">Valor da carta</option>
+            <option value="carta_mais_custos">Carta + custos</option>
+          </select>
+        </label>
+      </form>
+    </section>
+
+    <section class="bf-platform-panel bf-platform-section" id="prateleira-config">
+      <div class="bf-admin-panel-heading">
+        <div><span class="bf-badge bf-badge--ok">Prateleira</span><h2>Quantidade e comportamento de busca.</h2></div>
+      </div>
+      <form class="bf-platform-form">
+        <label for="cfg-pageSize">Grupos por pagina
+          <select id="cfg-pageSize">
+            <option value="25">25 grupos</option>
+            <option value="50">50 grupos</option>
+            <option value="100">100 grupos</option>
+            <option value="200">200 grupos</option>
+          </select>
+        </label>
+      </form>
+    </section>
+
+    <section class="bf-platform-panel bf-platform-section">
+      <div class="bf-inline-actions" style="justify-content:flex-end;">
+        <button class="btn btn--ghost" id="btn-reset" type="button" onclick="resetarConfiguracoes()">Restaurar padroes</button>
+        <button class="btn btn--primary" id="btn-save" type="button" onclick="salvarConfiguracoes()">Salvar configuracoes</button>
+      </div>
+      <div id="cfg-toast" style="display:none;margin-top:16px;padding:14px 20px;border-radius:10px;font-weight:700;font-size:14px;text-align:center;"></div>
+    </section>
+  </main>
+
+  <div data-shell-footer></div>
+  <script src="../js/settings.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/shared-layout.js"></script>
+  <script>
+    const switchMap = {
+      showJourney: 'showJourney',
+      smoothScroll: 'smoothScroll',
+      darkMode: 'darkMode',
+      autoScore: 'autoScore'
+    };
+
+    const fieldMap = {
+      'cfg-defaultAdmin': 'defaultAdmin',
+      'cfg-defaultSegmento': 'defaultSegmento',
+      'cfg-maxLanceEmbutido': 'maxLanceEmbutido',
+      'cfg-defaultIndiceReajuste': 'defaultIndiceReajuste',
+      'cfg-defaultMesContemplacao': 'defaultMesContemplacao',
+      'cfg-defaultPoliticaSaldo': 'defaultPoliticaSaldo',
+      'cfg-pageSize': 'pageSize'
+    };
+
+    function carregarConfiguracoes() {
+      const config = Settings.load();
+      document.querySelectorAll('.switch[data-setting]').forEach((sw) => {
+        const key = sw.dataset.setting;
+        sw.classList.toggle('is-on', Boolean(config[key]));
+        sw.setAttribute('aria-pressed', Boolean(config[key]).toString());
+      });
+      Object.entries(fieldMap).forEach(([elId, key]) => {
+        const el = document.getElementById(elId);
+        if (el && config[key] !== undefined) el.value = config[key];
+      });
+      Settings.applyGlobal(config);
+      renderConfigSummary(config);
+    }
+
+    function salvarConfiguracoes() {
+      const config = Settings.load();
+      document.querySelectorAll('.switch[data-setting]').forEach((sw) => {
+        config[sw.dataset.setting] = sw.classList.contains('is-on');
+      });
+      Object.entries(fieldMap).forEach(([elId, key]) => {
+        const el = document.getElementById(elId);
+        if (!el) return;
+        const val = el.value;
+        config[key] = el.type === 'number' ? (parseFloat(val) || 0) : val;
+      });
+      const ok = Settings.save(config);
+      Settings.applyGlobal(config);
+      renderConfigSummary(config);
+      showToast(ok ? 'Configuracoes salvas com sucesso.' : 'Erro ao salvar configuracoes.', ok ? '#059669' : '#dc2626');
+    }
+
+    function resetarConfiguracoes() {
+      if (!confirm('Restaurar todas as configuracoes para os valores padrao?')) return;
+      Settings.reset();
+      carregarConfiguracoes();
+      showToast('Configuracoes restauradas para o padrao.', '#b45309');
+    }
+
+    function renderConfigSummary(config) {
+      const cfg = config || Settings.load();
+      const target = document.getElementById('cfg-applied-chips');
+      if (!target) return;
+      const chips = [
+        cfg.showJourney ? 'Jornada visivel' : 'Jornada oculta',
+        cfg.smoothScroll ? 'Scroll suave' : 'Scroll direto',
+        cfg.darkMode ? 'Tema escuro ativo' : 'Tema claro',
+        cfg.autoScore ? 'Score automatico' : 'Score manual',
+        `${cfg.pageSize} grupos/pagina`,
+        `Lance embutido ate ${cfg.maxLanceEmbutido}%`,
+        `Reajuste ${cfg.defaultIndiceReajuste}%`,
+        `MOB ${cfg.defaultMesContemplacao}`
+      ];
+      if (cfg.defaultAdmin) chips.unshift(`Admin ${cfg.defaultAdmin}`);
+      if (cfg.defaultSegmento) chips.unshift(`Segmento ${cfg.defaultSegmento}`);
+      target.innerHTML = chips.map((chip) => `<span class="bf-settings-chip">${chip}</span>`).join('');
+    }
+
+    function showToast(msg, color) {
+      const t = document.getElementById('cfg-toast');
+      t.textContent = msg;
+      t.style.display = 'block';
+      t.style.background = `${color}18`;
+      t.style.color = color;
+      t.style.border = `1px solid ${color}40`;
+      window.setTimeout(() => { t.style.display = 'none'; }, 3000);
+    }
+
+    document.querySelectorAll('.switch[data-setting]').forEach((sw) => {
+      sw.addEventListener('click', () => {
+        sw.classList.toggle('is-on');
+        sw.setAttribute('aria-pressed', sw.classList.contains('is-on').toString());
+      });
+    });
+
+    carregarConfiguracoes();
+  </script>
+</body>
+</html>

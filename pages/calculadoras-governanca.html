@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Governanca de Calculadoras - Bank Fratern</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/bank-fratern-design-system.css">
+  <link rel="stylesheet" href="../assets/css/platform.css">
+</head>
+<body class="bf-platform-body" data-bf-page="calculadoras-governanca" data-auth-required="true" data-auth-roles="admin">
+  <div data-shell-header></div>
+
+  <main class="bf-platform-shell">
+    <section class="bf-platform-hero">
+      <div class="bf-platform-hero__content">
+        <span class="bf-badge bf-badge--gold">Governanca financeira</span>
+        <h1>Premissas, formulas e cobertura das calculadoras.</h1>
+        <p>Painel administrativo para auditar o catalogo, ajustar premissas locais, executar golden tests e preparar a transicao futura para API versionada.</p>
+      </div>
+      <aside class="bf-platform-hero__rail">
+        <a href="calculadoras.html">Hub de calculadoras <span>HC</span></a>
+        <a href="dados-abertos.html">Datasets <span>DB</span></a>
+        <a href="api-docs.html">API Docs <span>API</span></a>
+      </aside>
+    </section>
+
+    <section class="bf-platform-panel" data-governance-summary></section>
+
+    <section class="bf-admin-grid bf-platform-section">
+      <article class="bf-platform-panel">
+        <div class="bf-admin-panel-heading">
+          <div>
+            <span class="bf-badge bf-badge--navy">Premissas locais</span>
+            <h2>Indices demonstrativos</h2>
+          </div>
+          <button class="btn btn--ghost btn--sm" type="button" data-reset-premissas>Restaurar base</button>
+        </div>
+        <p data-premissas-status>Carregando premissas...</p>
+        <form class="bf-platform-form bf-admin-form" data-premissas-form>
+          <label>Selic ao ano (%)
+            <input name="selicAnual" type="number" step="0.01">
+          </label>
+          <label>CDI ao ano (%)
+            <input name="cdiAnual" type="number" step="0.01">
+          </label>
+          <label>IPCA ao ano (%)
+            <input name="ipcaAnual" type="number" step="0.01">
+          </label>
+          <label>TR ao ano (%)
+            <input name="trAnual" type="number" step="0.01">
+          </label>
+          <label>Poupanca ao mes (%)
+            <input name="poupancaMes" type="number" step="0.01">
+          </label>
+          <button class="btn btn--primary" type="submit">Salvar override local</button>
+        </form>
+      </article>
+
+      <article class="bf-platform-panel">
+        <div class="bf-admin-panel-heading">
+          <div>
+            <span class="bf-badge bf-badge--ok">Golden tests</span>
+            <h2>Suite de formulas</h2>
+          </div>
+          <button class="btn btn--primary btn--sm" type="button" data-run-golden-tests>Executar testes</button>
+        </div>
+        <div data-golden-tests-result></div>
+      </article>
+    </section>
+
+    <section class="bf-platform-panel bf-platform-section">
+      <div class="bf-admin-panel-heading">
+        <div>
+          <span class="bf-badge bf-badge--gold">Matriz funcional</span>
+          <h2>Cobertura das 17 calculadoras</h2>
+        </div>
+      </div>
+      <div class="bf-admin-toolbar">
+        <label>Busca
+          <input type="search" data-calculator-search placeholder="Nome, tipo, categoria ou formula">
+        </label>
+        <label>Tipo
+          <select data-calculator-type-filter>
+            <option value="">Todos</option>
+            <option value="credito">Credito</option>
+            <option value="investimento">Investimento</option>
+            <option value="comparacao">Comparacao</option>
+            <option value="planejamento">Planejamento</option>
+            <option value="educacao">Educacao</option>
+          </select>
+        </label>
+        <label>Categoria
+          <select data-calculator-category-filter></select>
+        </label>
+      </div>
+      <div class="bf-admin-table-wrap">
+        <table class="data-table bf-admin-table bf-governance-table">
+          <thead>
+            <tr>
+              <th>Calculadora</th>
+              <th>Tipo</th>
+              <th>Campos</th>
+              <th>Formula</th>
+              <th>Risco</th>
+              <th>Acao</th>
+            </tr>
+          </thead>
+          <tbody data-calculator-governance-table></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div data-shell-footer></div>
+  <script src="../js/auth.js"></script>
+  <script src="../js/shared-layout.js"></script>
+  <script src="../assets/js/formatters.js"></script>
+  <script src="../assets/js/services/dados.service.js"></script>
+  <script src="../assets/js/formulas/financial.formulas.js"></script>
+  <script src="../assets/js/services/calculadoras.service.js"></script>
+  <script src="../assets/js/calculadoras-governanca.js"></script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+/* Bank Fratern Design System — utilities.css */
+.bf-mt-0{margin-top:0!important}.bf-mt-4{margin-top:16px!important}.bf-mt-6{margin-top:24px!important}.bf-mt-8{margin-top:32px!important}.bf-mt-10{margin-top:40px!important}
+.bf-mb-0{margin-bottom:0!important}.bf-mb-4{margin-bottom:16px!important}.bf-mb-6{margin-bottom:24px!important}.bf-mb-8{margin-bottom:32px!important}
+.bf-flex{display:flex!important}.bf-flex-wrap{flex-wrap:wrap!important}.bf-items-center{align-items:center!important}.bf-justify-between{justify-content:space-between!important}
+.bf-gap-2{gap:8px!important}.bf-gap-4{gap:16px!important}.bf-gap-6{gap:24px!important}
+.bf-text-muted{color:var(--bf-muted)!important}.bf-text-navy{color:var(--bf-navy-900)!important}.bf-text-gold{color:var(--bf-gold-500)!important}
+.bf-bg-soft{background:var(--bf-soft)!important}.bf-bg-white{background:#fff!important}.bf-bg-navy{background:var(--bf-navy-900)!important}
+.bf-radius-lg{border-radius:var(--bf-radius-lg)!important}.bf-radius-xl{border-radius:var(--bf-radius-xl)!important}.bf-shadow-md{box-shadow:var(--bf-shadow-md)!important}

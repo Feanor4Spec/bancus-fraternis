@@ -1,0 +1,75 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadoras Financeiras - Bank Fratern</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="icon" href="../assets/logos/bank-fratern-icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/bank-fratern-design-system.css">
+  <link rel="stylesheet" href="../assets/css/platform.css">
+</head>
+<body class="bf-platform-body calculator-hub-page" data-bf-page="calculadoras" data-calculator-hub="true">
+  <div data-shell-header></div>
+  <main class="bf-platform-shell">
+    <section class="bf-platform-hero">
+      <div class="bf-platform-hero__content">
+        <span class="bf-badge bf-badge--gold">Financial Intelligence Hub</span>
+        <h1>Calculadoras integradas para credito, investimento e planejamento.</h1>
+        <p>Uma experiencia unica: cada calculo alimenta perfil financeiro, historico, comparacoes e recomendacoes explicaveis.</p>
+      </div>
+      <aside class="bf-platform-hero__rail">
+        <a href="calculadora-custos-fixos.html?from=calculators&calculatorSlug=custos-fixos&preset=comprar_bem">Comecar pelo diagnostico <span>DF</span></a>
+        <a href="calculadora-reserva-emergencia.html?from=calculators&calculatorSlug=reserva-emergencia&preset=obter_liquidez">Reserva de emergencia <span>RE</span></a>
+        <a href="calculadora-renda-fixa.html?from=calculators&calculatorSlug=renda-fixa">Comparar renda fixa <span>RF</span></a>
+      </aside>
+    </section>
+    <section class="bf-v8-stagebar bf-v8-stagebar--inside" aria-label="Atalhos do hub de calculadoras" data-v8-stagebar>
+      <div class="bf-v8-stagebar__intro">
+        <span>Calculadoras v8</span>
+        <strong>Perfil, historico, hub, comparador e dashboard em uma trilha unica.</strong>
+      </div>
+      <a class="bf-v8-stagebar__item" href="#calculadoras-perfil" data-step="1"><span>Perfil</span><strong>Dados consolidados</strong></a>
+      <a class="bf-v8-stagebar__item" href="#calculadoras-historico" data-step="2"><span>Historico</span><strong>Simulacoes recentes</strong></a>
+      <a class="bf-v8-stagebar__item" href="#calculadoras-hub-grid" data-step="3"><span>Hub</span><strong>19 calculadoras</strong></a>
+      <a class="bf-v8-stagebar__item" href="comparador.html?from=calculators" data-step="4"><span>Comparador</span><strong>Credito e decisao</strong></a>
+      <a class="bf-v8-stagebar__item" href="dashboard-cliente.html#continuidade-cliente" data-step="5"><span>Continuidade</span><strong>Dashboard</strong></a>
+    </section>
+    <section class="bf-platform-panel" id="calculadoras-perfil" data-calculator-profile-summary></section>
+    <section class="bf-v8-decision-strip bf-v8-decision-strip--outer" id="decisao-calculadoras" aria-label="Ponte de decisao das calculadoras" data-calculators-decision-strip></section>
+    <section class="bf-platform-panel bf-platform-section" id="calculadoras-historico">
+      <div class="bf-admin-panel-heading">
+        <div>
+          <span class="bf-badge bf-badge--navy">Historico</span>
+          <h2>Simulacoes recentes</h2>
+        </div>
+      </div>
+      <div class="bf-calculator-history" data-calculator-history></div>
+    </section>
+    <section class="bf-platform-panel bf-platform-section" id="continuidade-calculadoras">
+      <div class="bf-admin-panel-heading">
+        <div>
+          <span class="bf-badge bf-badge--navy">Ponte da jornada</span>
+          <h2>Do diagnostico ao dashboard</h2>
+        </div>
+        <a class="btn btn--ghost btn--sm" href="dashboard-cliente.html#continuidade-cliente">Ver dashboard</a>
+      </div>
+      <div class="bf-client-timeline" data-calculators-bridge-timeline></div>
+    </section>
+    <section class="bf-platform-section" id="calculadoras-hub-grid" data-calculators-hub></section>
+  </main>
+  <div data-shell-footer></div>
+  <script src="../js/auth.js"></script>
+  <script src="../js/shared-layout.js"></script>
+  <script src="../assets/js/formatters.js"></script>
+  <script src="../assets/js/formulas/financial.formulas.js"></script>
+  <script src="../assets/js/services/decision-context.service.js"></script>
+  <script src="../assets/js/services/calculadoras.service.js"></script>
+  <script src="../assets/js/calculadoras-page.js"></script>
+</body>
+</html>
+
+

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administracao - Bank Fratern</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="icon" href="../assets/logos/bank-fratern-icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/bank-fratern-design-system.css">
+  <link rel="stylesheet" href="../assets/css/platform.css">
+</head>
+<body class="bf-platform-body admin-dashboard-page" data-bf-page="dashboard-admin" data-auth-required="true" data-auth-roles="admin">
+  <div data-shell-header></div>
+
+  <main class="bf-platform-shell">
+    <section class="bf-platform-hero">
+      <div class="bf-platform-hero__content">
+        <span class="bf-badge bf-badge--gold">Administracao</span>
+        <h1>Usuarios, papeis e controle de acesso.</h1>
+        <p>Painel local para criar usuarios, ativar ou inativar acessos, redefinir senha temporaria e separar operacao entre administrador, consultor e cliente.</p>
+      </div>
+      <aside class="bf-platform-hero__rail">
+        <a href="dashboard-cliente.html">Area cliente <span>CL</span></a>
+        <a href="handoff-consultivo.html">Handoff consultivo <span>HC</span></a>
+        <a href="calculadoras-governanca.html">Governanca calculadoras <span>GC</span></a>
+        <a href="modelos-governanca.html">Governanca modelos <span>GM</span></a>
+        <a href="api-docs.html">API Docs <span>API</span></a>
+        <a href="compliance.html">Compliance <span>LGPD</span></a>
+        <a href="lousa-navegacao.html#roteiro-navegavel">Teste jornada <span>TJ</span></a>
+      </aside>
+    </section>
+
+    <section class="bf-v8-stagebar bf-v8-stagebar--inside" aria-label="Atalhos operacionais da administracao" data-v8-stagebar>
+      <div class="bf-v8-stagebar__intro">
+        <span>Admin v8</span>
+        <strong>Usuários, leads, modelos e auditoria na mesma visão.</strong>
+      </div>
+      <a class="bf-v8-stagebar__item" href="#operacao-admin" data-step="1">
+        <span>Operação</span>
+        <strong>Resumo executivo</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="#admin-usuarios" data-step="2">
+        <span>Usuários</span>
+        <strong>Acessos locais</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="#admin-funil-jornada" data-step="3">
+        <span>Funil</span>
+        <strong>Funil local</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="#admin-proximos-passos" data-step="4">
+        <span>Acoes</span>
+        <strong>Proximos passos</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="#admin-origens" data-step="5">
+        <span>Origem</span>
+        <strong>Funil por origem</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="#admin-gargalos" data-step="6">
+        <span>Gargalos</span>
+        <strong>Prioridades</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="#admin-alertas-operacionais" data-step="7">
+        <span>Alertas</span>
+        <strong>SLA e abandono</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="#admin-handoffs" data-step="8">
+        <span>Leads</span>
+        <strong>Fila consultiva</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="#admin-auditoria" data-step="9">
+        <span>Auditoria</span>
+        <strong>Modelos</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="handoff-consultivo.html#operacao-handoff" data-step="10">
+        <span>Atend.</span>
+        <strong>Fila HC</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="lousa-navegacao.html#roteiro-navegavel" data-step="11">
+        <span>Teste</span>
+        <strong>Jornada</strong>
+      </a>
+    </section>
+
+    <section class="bf-v8-decision-strip bf-v8-decision-strip--outer" id="operacao-admin" aria-label="Resumo operacional da administracao" data-admin-operational-strip></section>
+    <section class="bf-platform-panel bf-admin-session" data-current-admin></section>
+    <section class="bf-platform-panel bf-platform-section" data-admin-user-metrics></section>
+    <section class="bf-platform-panel bf-platform-section" id="admin-funil-jornada" data-admin-journey-funnel></section>
+    <section class="bf-platform-panel bf-platform-section" id="admin-alertas-operacionais" data-admin-operational-alerts></section>
+    <section class="bf-platform-panel bf-platform-section" id="admin-recuperacao-jornada" data-admin-recovery-queue></section>
+    <section class="bf-platform-panel bf-platform-section" id="admin-pacotes-recuperacao" data-admin-recovery-packages></section>
+    <section class="bf-platform-panel bf-platform-section" id="admin-handoffs" data-admin-handoff-summary></section>
+    <section class="bf-platform-panel bf-platform-section" id="admin-auditoria" data-admin-comparator-audit></section>
+    <div class="bf-platform-alert" data-admin-message>Base local pronta. As contas seed sao recriadas quando faltarem na base.</div>
+
+    <section class="bf-admin-grid bf-platform-section" id="admin-usuarios">
+      <article class="bf-platform-panel">
+        <div class="bf-admin-panel-heading">
+          <div>
+            <span class="bf-badge bf-badge--navy">Cadastro</span>
+            <h2 data-user-form-title>Novo usuario</h2>
+          </div>
+          <button class="btn btn--ghost btn--sm" type="button" data-user-cancel>Limpar</button>
+        </div>
+
+        <form class="bf-platform-form bf-admin-form" data-user-form>
+          <label>Nome
+            <input name="name" type="text" placeholder="Nome completo" required>
+          </label>
+          <label>E-mail
+            <input name="email" type="email" placeholder="usuario@bankfratern.local" required>
+          </label>
+          <label>Papel
+            <select name="role">
+              <option value="cliente">Cliente</option>
+              <option value="consultor">Consultor</option>
+              <option value="admin">Administrador</option>
+            </select>
+          </label>
+          <label>Status
+            <select name="status">
+              <option value="active">Ativo</option>
+              <option value="inactive">Inativo</option>
+            </select>
+          </label>
+          <label>Area
+            <input name="department" type="text" placeholder="Comercial, Operacao, Cliente">
+          </label>
+          <label>Telefone
+            <input name="phone" type="tel" placeholder="(00) 00000-0000">
+          </label>
+          <label class="bf-admin-form__wide">Senha
+            <input name="password" type="password" placeholder="Obrigatoria ao criar; opcional ao editar">
+          </label>
+          <button class="btn btn--primary" type="submit" data-user-submit>Criar usuario</button>
+        </form>
+      </article>
+
+      <article class="bf-platform-panel">
+        <div class="bf-admin-panel-heading">
+          <div>
+            <span class="bf-badge bf-badge--ok">Governanca</span>
+            <h2>Regras implementadas</h2>
+          </div>
+        </div>
+        <div class="bf-admin-rules">
+          <div><strong>Login</strong><span>Cria sessao local de 8 horas.</span></div>
+          <div><strong>Papeis</strong><span>Admin acessa administracao; consultor e cliente ficam no dashboard.</span></div>
+          <div><strong>Seguranca</strong><span>Prototipo estatico; a fase de API deve trocar localStorage por backend seguro.</span></div>
+          <div><strong>Auditoria</strong><span>Ultimo acesso e atualizacao ficam salvos por usuario.</span></div>
+          <div><strong>Calculadoras</strong><span>Premissas e formulas agora possuem painel de governanca e golden tests.</span></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="bf-platform-panel bf-platform-section">
+      <div class="bf-admin-panel-heading">
+        <div>
+          <span class="bf-badge bf-badge--gold">Diretorio</span>
+          <h2>Usuarios da plataforma</h2>
+        </div>
+      </div>
+
+      <div class="bf-admin-toolbar">
+        <label>Busca
+          <input type="search" data-user-search placeholder="Nome, e-mail, area ou telefone">
+        </label>
+        <label>Papel
+          <select data-user-role-filter>
+            <option value="">Todos</option>
+            <option value="admin">Administrador</option>
+            <option value="consultor">Consultor</option>
+            <option value="cliente">Cliente</option>
+          </select>
+        </label>
+        <label>Status
+          <select data-user-status-filter>
+            <option value="">Todos</option>
+            <option value="active">Ativo</option>
+            <option value="inactive">Inativo</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="bf-admin-table-wrap">
+        <table class="data-table bf-admin-table">
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Papel</th>
+              <th>Status</th>
+              <th>Area</th>
+              <th>Ultimo acesso</th>
+              <th>Acoes</th>
+            </tr>
+          </thead>
+          <tbody data-users-table></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div data-shell-footer></div>
+  <script src="../js/auth.js"></script>
+  <script src="../js/storage.js"></script>
+  <script src="../js/shared-layout.js"></script>
+  <script src="../assets/js/formatters.js"></script>
+  <script src="../assets/js/validators.js"></script>
+  <script src="../assets/js/services/dados.service.js"></script>
+  <script src="../assets/js/components/cards.js"></script>
+  <script src="../assets/js/components/tables.js"></script>
+  <script src="../assets/js/components/alerts.js"></script>
+  <script src="../assets/js/components/tooltips.js"></script>
+  <script src="../assets/js/components/charts.js"></script>
+  <script src="../assets/js/formulas/price.formulas.js"></script>
+  <script src="../assets/js/formulas/sac.formulas.js"></script>
+  <script src="../assets/js/formulas/consorcio.formulas.js"></script>
+  <script src="../assets/js/formulas/comparison.formulas.js"></script>
+  <script src="../assets/js/services/financiamento.service.js"></script>
+  <script src="../assets/js/services/cdc.service.js"></script>
+  <script src="../assets/js/services/consorcio.service.js"></script>
+  <script src="../assets/js/services/comparador.service.js"></script>
+  <script src="../assets/js/services/recomendacao.service.js"></script>
+  <script src="../assets/js/services/journey-recovery.service.js"></script>
+  <script src="../assets/js/services/handoff-consultivo.service.js"></script>
+  <script src="../assets/js/bf-platform.js"></script>
+  <script src="../assets/js/services/admin-recovery.service.js"></script>
+  <script src="../assets/js/admin-users.js"></script>
+</body>
+</html>

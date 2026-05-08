@@ -1,0 +1,304 @@
+{
+  "brand": {
+    "name": "Bank Fratern",
+    "motto": "CAPITAL • TRUST • LEGAC",
+    "concepts": [
+      "capital",
+      "trust",
+      "legacy",
+      "direction",
+      "access",
+      "security",
+      "journey",
+      "financial clarity"
+    ]
+  },
+  "logos": [
+    {
+      "file": "assets/logos/logo-bank-fratern-compass.svg",
+      "usage": "Marca principal institucional, dashboards, apresentações executivas."
+    },
+    {
+      "file": "assets/logos/logo-bank-fratern-portal.svg",
+      "usage": "Home, onboarding, abertura da jornada e landing pages."
+    },
+    {
+      "file": "assets/logos/logo-bank-fratern-dark.svg",
+      "usage": "Fundos escuros, banners hero e slides premium."
+    },
+    {
+      "file": "assets/logos/logo-bank-fratern-icon.svg",
+      "usage": "Favicon, menu mobile, avatar, selo e uso compacto."
+    },
+    {
+      "file": "assets/logos/logo-bf-journey.svg",
+      "usage": "Submarca da jornada do consorciado."
+    },
+    {
+      "file": "assets/logos/logo-bf-simulator.svg",
+      "usage": "Submarca para simulador financeiro."
+    },
+    {
+      "file": "assets/logos/logo-bf-intelligence.svg",
+      "usage": "Submarca para dashboard e inteligência."
+    },
+    {
+      "file": "assets/logos/logo-bf-advisory.svg",
+      "usage": "Submarca para consultoria e relacionamento premium."
+    }
+  ],
+  "journey_icons": [
+    {
+      "file": "assets/icons/journey/01-visao-geral.svg",
+      "label": "Visão geral"
+    },
+    {
+      "file": "assets/icons/journey/02-adesao.svg",
+      "label": "Adesão"
+    },
+    {
+      "file": "assets/icons/journey/03-parcelas.svg",
+      "label": "Parcelas"
+    },
+    {
+      "file": "assets/icons/journey/04-reajuste.svg",
+      "label": "Reajuste"
+    },
+    {
+      "file": "assets/icons/journey/05-assembleia.svg",
+      "label": "Assembleia"
+    },
+    {
+      "file": "assets/icons/journey/06-lance.svg",
+      "label": "Lance"
+    },
+    {
+      "file": "assets/icons/journey/07-contemplacao.svg",
+      "label": "Contemplação"
+    },
+    {
+      "file": "assets/icons/journey/08-credito-documentos.svg",
+      "label": "Crédito e documentos"
+    },
+    {
+      "file": "assets/icons/journey/09-faturamento.svg",
+      "label": "Faturamento"
+    },
+    {
+      "file": "assets/icons/journey/10-pos-contemplacao.svg",
+      "label": "Pós-contemplação"
+    },
+    {
+      "file": "assets/icons/journey/11-cancelamento.svg",
+      "label": "Cancelamento"
+    },
+    {
+      "file": "assets/icons/journey/12-encerramento.svg",
+      "label": "Encerramento"
+    }
+  ],
+  "ui_icons": [
+    {
+      "file": "assets/icons/ui/ui-shield.svg",
+      "label": "Shield"
+    },
+    {
+      "file": "assets/icons/ui/ui-key.svg",
+      "label": "Key"
+    },
+    {
+      "file": "assets/icons/ui/ui-compass.svg",
+      "label": "Compass"
+    },
+    {
+      "file": "assets/icons/ui/ui-portal.svg",
+      "label": "Portal"
+    },
+    {
+      "file": "assets/icons/ui/ui-vault.svg",
+      "label": "Vault"
+    },
+    {
+      "file": "assets/icons/ui/ui-graph.svg",
+      "label": "Graph"
+    },
+    {
+      "file": "assets/icons/ui/ui-document.svg",
+      "label": "Document"
+    },
+    {
+      "file": "assets/icons/ui/ui-calculator.svg",
+      "label": "Calculator"
+    },
+    {
+      "file": "assets/icons/ui/ui-users.svg",
+      "label": "Users"
+    },
+    {
+      "file": "assets/icons/ui/ui-lock.svg",
+      "label": "Lock"
+    },
+    {
+      "file": "assets/icons/ui/ui-scale.svg",
+      "label": "Scale"
+    },
+    {
+      "file": "assets/icons/ui/ui-building.svg",
+      "label": "Building"
+    },
+    {
+      "file": "assets/icons/ui/ui-arrow.svg",
+      "label": "Arrow"
+    },
+    {
+      "file": "assets/icons/ui/ui-handshake.svg",
+      "label": "Handshake"
+    },
+    {
+      "file": "assets/icons/ui/ui-coin.svg",
+      "label": "Coin"
+    },
+    {
+      "file": "assets/icons/ui/ui-ai.svg",
+      "label": "AI"
+    }
+  ],
+  "photos": [
+    {
+      "file": "assets/photos/photo-01-direction.png",
+      "title": "Direção estratégica",
+      "theme": "compass",
+      "aspect_ratio": "16:9"
+    },
+    {
+      "file": "assets/photos/photo-02-access.png",
+      "title": "Acesso premium",
+      "theme": "door",
+      "aspect_ratio": "16:9"
+    },
+    {
+      "file": "assets/photos/photo-03-security.png",
+      "title": "Segurança patrimonial",
+      "theme": "vault",
+      "aspect_ratio": "16:9"
+    },
+    {
+      "file": "assets/photos/photo-04-data.png",
+      "title": "Inteligência financeira",
+      "theme": "chart",
+      "aspect_ratio": "16:9"
+    },
+    {
+      "file": "assets/photos/photo-05-legacy.png",
+      "title": "Legado institucional",
+      "theme": "columns",
+      "aspect_ratio": "16:9"
+    },
+    {
+      "file": "assets/photos/photo-06-capital.png",
+      "title": "Capital planejado",
+      "theme": "coins",
+      "aspect_ratio": "16:9"
+    },
+    {
+      "file": "assets/photos/photo-07-documents.png",
+      "title": "Crédito e documentos",
+      "theme": "docs",
+      "aspect_ratio": "16:9"
+    },
+    {
+      "file": "assets/photos/photo-08-assembly.png",
+      "title": "Assembleia",
+      "theme": "nodes",
+      "aspect_ratio": "16:9"
+    },
+    {
+      "file": "assets/photos/photo-09-partnership.png",
+      "title": "Parceria",
+      "theme": "people",
+      "aspect_ratio": "16:9"
+    },
+    {
+      "file": "assets/photos/photo-10-dashboard.png",
+      "title": "Dashboard",
+      "theme": "dashboard",
+      "aspect_ratio": "16:9"
+    },
+    {
+      "file": "assets/photos/photo-11-onboarding.png",
+      "title": "Onboarding",
+      "theme": "steps",
+      "aspect_ratio": "16:9"
+    },
+    {
+      "file": "assets/photos/photo-12-closure.png",
+      "title": "Encerramento",
+      "theme": "target",
+      "aspect_ratio": "16:9"
+    }
+  ],
+  "creatives": [
+    {
+      "file": "assets/creatives/hero-direction.svg",
+      "title": "Direção estratégica",
+      "aspect_ratio": "16:9"
+    },
+    {
+      "file": "assets/creatives/hero-access.svg",
+      "title": "Acesso premium",
+      "aspect_ratio": "16:9"
+    },
+    {
+      "file": "assets/creatives/hero-security.svg",
+      "title": "Segurança patrimonial",
+      "aspect_ratio": "16:9"
+    },
+    {
+      "file": "assets/creatives/hero-data.svg",
+      "title": "Inteligência financeira",
+      "aspect_ratio": "16:9"
+    },
+    {
+      "file": "assets/creatives/hero-legacy.svg",
+      "title": "Legado institucional",
+      "aspect_ratio": "16:9"
+    },
+    {
+      "file": "assets/creatives/hero-capital.svg",
+      "title": "Capital e patrimônio",
+      "aspect_ratio": "16:9"
+    },
+    {
+      "file": "assets/creatives/hero-documents.svg",
+      "title": "Documentação e crédito",
+      "aspect_ratio": "16:9"
+    },
+    {
+      "file": "assets/creatives/hero-partnership.svg",
+      "title": "Parceria e confiança",
+      "aspect_ratio": "16:9"
+    },
+    {
+      "file": "assets/creatives/hero-dashboard.svg",
+      "title": "Dashboard executivo",
+      "aspect_ratio": "16:9"
+    },
+    {
+      "file": "assets/creatives/hero-closure.svg",
+      "title": "Encerramento",
+      "aspect_ratio": "16:9"
+    }
+  ],
+  "implementation": {
+    "css_order": [
+      "assets/css/tokens.css",
+      "assets/css/components.css",
+      "assets/css/utilities.css",
+      "assets/css/home.css",
+      "assets/css/journey.css"
+    ],
+    "recommended_home": "examples/home-final.html",
+    "documentation": "docs/design-system.html",
+    "codex_prompt": "docs/codex-implementation-prompt.md"
+  }
+}

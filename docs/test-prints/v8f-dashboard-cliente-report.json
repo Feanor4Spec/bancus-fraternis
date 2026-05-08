@@ -1,0 +1,48 @@
+{
+  "generatedAt": "2026-04-26T05:02:27.393Z",
+  "browser": "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
+  "url": "http://127.0.0.1:8080/pages/dashboard-cliente.html#continuidade-cliente",
+  "ok": true,
+  "results": [
+    {
+      "scenario": "desktop",
+      "status": 200,
+      "screenshot": "C:\\Users\\gustavo.pinheiro\\.gemini\\antigravity\\scratch\\Bank Fratern\\docs\\test-prints\\v8f-dashboard-cliente-continuidade-desktop.png",
+      "consoleErrors": [],
+      "title": "Dashboard Cliente - Bank Fratern",
+      "currentUrl": "http://127.0.0.1:8080/pages/dashboard-cliente.html#continuidade-cliente",
+      "hasContinuityStrip": true,
+      "decisionCards": 4,
+      "stagebarItems": 5,
+      "timelineItems": 5,
+      "activityItems": 4,
+      "firstCard": "PERFIL\nPerfil financeiro ativo\n\nRenda R$ 9.800,00, reserva R$ 36.000,00 e aporte R$ 3.750,00.\n\nATUALIZAR DIAGNOSTICO",
+      "handoffCard": "HANDOFF\nNovo\n\nLEAD-V8F-1 - prioridade media para atendimento consultivo.\n\nACOMPANHAR ATENDIMENTO",
+      "hasHorizontalOverflow": false,
+      "scrollWidth": 1440,
+      "bodyScrollWidth": 1440,
+      "clientWidth": 1440,
+      "brokenEncodingMatches": []
+    },
+    {
+      "scenario": "mobile",
+      "status": 200,
+      "screenshot": "C:\\Users\\gustavo.pinheiro\\.gemini\\antigravity\\scratch\\Bank Fratern\\docs\\test-prints\\v8f-dashboard-cliente-continuidade-mobile.png",
+      "consoleErrors": [],
+      "title": "Dashboard Cliente - Bank Fratern",
+      "currentUrl": "http://127.0.0.1:8080/pages/dashboard-cliente.html#continuidade-cliente",
+      "hasContinuityStrip": true,
+      "decisionCards": 4,
+      "stagebarItems": 5,
+      "timelineItems": 5,
+      "activityItems": 4,
+      "firstCard": "PERFIL\nPerfil financeiro ativo\n\nRenda R$ 9.800,00, reserva R$ 36.000,00 e aporte R$ 3.750,00.\n\nATUALIZAR DIAGNOSTICO",
+      "handoffCard": "HANDOFF\nNovo\n\nLEAD-V8F-1 - prioridade media para atendimento consultivo.\n\nACOMPANHAR ATENDIMENTO",
+      "hasHorizontalOverflow": false,
+      "scrollWidth": 390,
+      "bodyScrollWidth": 390,
+      "clientWidth": 390,
+      "brokenEncodingMatches": []
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "ok": true,
+  "recovery": {
+    "signals": 4,
+    "queue": 4,
+    "openAfterCreate": 3,
+    "totalAfterCreate": 4,
+    "summary": {
+      "total": 4,
+      "open": 4,
+      "high": 1,
+      "consultants": 2,
+      "owners": 4,
+      "readyForHandoff": 4
+    },
+    "top": {
+      "type": "selection-no-comparator",
+      "stage": "Produtos",
+      "severity": "alta",
+      "suggestedAssignee": "retencao@bankfratern.local"
+    }
+  },
+  "handoff": {
+    "createdId": "LEAD-MOWD8VZE-44Q",
+    "sourceSignalId": "SIG-cliente-alpha-bankfratern-local-selection-no-comparator-EV-product-top3-selected-36",
+    "assignedTo": "retencao@bankfratern.local",
+    "total": 1
+  },
+  "failures": []
+}

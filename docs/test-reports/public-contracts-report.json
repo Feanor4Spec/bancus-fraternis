@@ -1,0 +1,13 @@
+{
+  "ok": true,
+  "contracts": {
+    "localStorageKeys": 12,
+    "dataMarkers": 12,
+    "globals": 11,
+    "deepLinks": 9,
+    "validators": 10,
+    "calculatorCount": 19
+  },
+  "warnings": [],
+  "failures": []
+}

@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "uiContract": {
+    "simulatorLoadsService": true,
+    "appAction": true,
+    "bridgeMarkup": true,
+    "bridgeCss": true
+  },
+  "serviceContract": {
+    "handoffId": "LEAD-MOX83S8V-DKU",
+    "sourceProposalId": "PROP-TESTE-900",
+    "refreshedVersion": 3,
+    "totalHandoffs": 1,
+    "auditEvents": 2
+  },
+  "failures": []
+}

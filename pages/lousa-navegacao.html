@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lousa de Navegacao - Bank Fratern</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="icon" href="../assets/logos/bank-fratern-icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/bank-fratern-design-system.css">
+  <link rel="stylesheet" href="../assets/css/platform.css">
+</head>
+<body class="bf-platform-body bf-lousa-page" data-bf-page="lousa-navegacao">
+  <div data-shell-header></div>
+
+  <main class="bf-platform-shell">
+    <section class="bf-platform-hero">
+      <div class="bf-platform-hero__content">
+        <span class="bf-badge bf-badge--gold">Lousa de navegacao</span>
+        <h1>Bank Fratern em modo jornada.</h1>
+        <p>Um quadro unico para navegar pelo produto, revisar o que ja foi implementado e deixar o proximo ciclo pronto para execucao.</p>
+        <div class="bf-inline-actions">
+          <a class="btn btn--primary btn--sm" href="index.html">Abrir Home</a>
+          <a class="btn btn--ghost btn--sm" href="dashboard-cliente.html?from=lousa">Dashboard Cliente</a>
+          <a class="btn btn--ghost btn--sm" href="dashboard-admin.html?from=lousa">Dashboard Admin</a>
+        </div>
+      </div>
+      <aside class="bf-platform-hero__rail">
+        <a href="produtos.html?from=lousa">Produtos <span>PR</span></a>
+        <a href="calculadoras.html?from=lousa">Calculadoras <span>CA</span></a>
+        <a href="trilha-decisao.html?from=lousa">Trilha <span>TR</span></a>
+        <a href="simulador.html?from=lousa">Simulador <span>SI</span></a>
+        <a href="#roteiro-navegavel">Teste jornada <span>TJ</span></a>
+      </aside>
+    </section>
+
+    <section class="bf-v8-stagebar bf-v8-stagebar--inside" aria-label="Atalhos da lousa de navegacao" data-v8-stagebar>
+      <div class="bf-v8-stagebar__intro">
+        <span>Lousa</span>
+        <strong>Entrada, decisao, simulacao, handoff e evolucao.</strong>
+      </div>
+      <a class="bf-v8-stagebar__item" href="#jornada-principal" data-step="1">
+        <span>Jornada</span>
+        <strong>Fluxo principal</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="#operacao" data-step="2">
+        <span>Operacao</span>
+        <strong>Cliente e admin</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="#roteiro-navegavel" data-step="3">
+        <span>Teste</span>
+        <strong>Jornada ponta a ponta</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="#governanca" data-step="4">
+        <span>Governanca</span>
+        <strong>Contratos e docs</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="#proximos-ciclos" data-step="5">
+        <span>Ciclos</span>
+        <strong>Proximas entregas</strong>
+      </a>
+    </section>
+
+    <section class="bf-lousa-board" id="jornada-principal" aria-label="Jornada principal do Bank Fratern">
+      <div class="bf-lousa-board__head">
+        <span class="bf-badge bf-badge--ok">Jornada principal</span>
+        <h2>Do primeiro diagnostico ao atendimento consultivo.</h2>
+      </div>
+      <div class="bf-lousa-lane-grid">
+        <article class="bf-lousa-lane">
+          <span>Entrada</span>
+          <h3>Home e descoberta</h3>
+          <p>Primeira dobra contextual, cockpit de continuidade e links para retomar a decisao.</p>
+          <div class="bf-lousa-links">
+            <a href="index.html">Home</a>
+            <a href="educacao.html">Educacao</a>
+            <a href="sobre-nos.html">Institucional</a>
+          </div>
+        </article>
+        <article class="bf-lousa-lane">
+          <span>Diagnostico</span>
+          <h3>Produtos e calculadoras</h3>
+          <p>Catalogo financeiro, 19 calculadoras e contexto preservado para trilha, comparador e simulador.</p>
+          <div class="bf-lousa-links">
+            <a href="produtos.html?from=lousa">Produtos</a>
+            <a href="calculadoras.html?from=lousa">Hub de calculadoras</a>
+            <a href="calculadora-capacidade-credito.html?from=lousa&calculatorSlug=capacidade-credito&preset=comprar_bem">Capacidade</a>
+          </div>
+        </article>
+        <article class="bf-lousa-lane">
+          <span>Decisao</span>
+          <h3>Trilha e comparador</h3>
+          <p>Trilha Assistida reconhece origem, recomenda produto/modelo e leva para matriz comparativa.</p>
+          <div class="bf-lousa-links">
+            <a href="trilha-decisao.html?from=lousa">Trilha Assistida</a>
+            <a href="comparador.html?from=lousa&preset=comprar_bem">Comparador</a>
+            <a href="modelos-biblioteca.html?from=lousa">Modelos</a>
+          </div>
+        </article>
+        <article class="bf-lousa-lane">
+          <span>Conversao</span>
+          <h3>Simulador e proposta</h3>
+          <p>Simulador usa a base real de grupos, preserva contexto e prepara proposta com aceite local.</p>
+          <div class="bf-lousa-links">
+            <a href="simulador.html?from=lousa">Simulador completo</a>
+            <a href="simulador-consorcio.html?from=lousa">Consorcio leve</a>
+            <a href="carteira.html?from=lousa#simulacoes-salvas">Carteira</a>
+          </div>
+        </article>
+        <article class="bf-lousa-lane">
+          <span>Atendimento</span>
+          <h3>Handoff e dashboards</h3>
+          <p>Fila consultiva por origem, Dashboard Cliente por etapa e Admin preparado para funil operacional.</p>
+          <div class="bf-lousa-links">
+            <a href="handoff-consultivo.html?from=lousa#fila-handoff">Handoff</a>
+            <a href="dashboard-cliente.html?from=lousa#continuidade-cliente">Dashboard Cliente</a>
+            <a href="dashboard-admin.html?from=lousa#admin-funil-jornada">Dashboard Admin</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="bf-lousa-board" id="operacao" aria-label="Painel operacional">
+      <div class="bf-lousa-board__head">
+        <span class="bf-badge bf-badge--navy">Operacao</span>
+        <h2>Superficies para cliente, consultor e administrador.</h2>
+      </div>
+      <div class="bf-lousa-matrix">
+        <a href="dashboard-cliente.html?from=lousa#continuidade-cliente"><strong>Cliente</strong><span>Timeline com Diagnostico, Calculadora, Trilha, Comparador, Simulacao, Proposta e Handoff.</span></a>
+        <a href="handoff-consultivo.html?from=lousa#operacao-handoff"><strong>Consultor</strong><span>Fila por origem, prioridade, status, checklist e notas locais.</span></a>
+        <a href="dashboard-admin.html?from=lousa#admin-proximos-passos"><strong>Admin</strong><span>Cockpit de proximas acoes, origem, gargalos, recuperacao, pacotes e governanca de usuarios.</span></a>
+        <a href="modelos-governanca.html?from=lousa"><strong>Governanca</strong><span>Modelos, auditoria, publicacao e criterios de comparacao.</span></a>
+      </div>
+    </section>
+
+    <section class="bf-lousa-board" id="roteiro-navegavel" aria-label="Roteiro navegavel ponta a ponta" data-lousa-journey-checklist>
+      <div class="bf-lousa-board__head">
+        <span class="bf-badge bf-badge--gold">Teste navegavel</span>
+        <h2>Roteiro ponta a ponta para validar a jornada.</h2>
+      </div>
+      <div class="bf-lousa-test-grid">
+        <article class="bf-lousa-test-card" data-lousa-journey-step="auth">
+          <div class="bf-lousa-test-card__top">
+            <span>01</span>
+            <small>Auth</small>
+          </div>
+          <h3>Entrar com redirect seguro</h3>
+          <p>Validar acesso rapido por perfil e retorno para pagina protegida sem loop de login.</p>
+          <a href="login.html?redirect=handoff-consultivo.html">Abrir login</a>
+        </article>
+        <article class="bf-lousa-test-card" data-lousa-journey-step="home">
+          <div class="bf-lousa-test-card__top">
+            <span>02</span>
+            <small>Entrada</small>
+          </div>
+          <h3>Home com continuidade</h3>
+          <p>Conferir hero contextual, cockpit local e proximo passo recomendado.</p>
+          <a href="index.html?from=lousa#home-cockpit">Abrir Home</a>
+        </article>
+        <article class="bf-lousa-test-card" data-lousa-journey-step="products">
+          <div class="bf-lousa-test-card__top">
+            <span>03</span>
+            <small>Produto</small>
+          </div>
+          <h3>Produtos preservando contexto</h3>
+          <p>Selecionar produtos e confirmar CTAs com `from=products`, `productId` e `preset`.</p>
+          <a href="produtos.html?from=lousa#produtos-selecao">Abrir Produtos</a>
+        </article>
+        <article class="bf-lousa-test-card" data-lousa-journey-step="calculators">
+          <div class="bf-lousa-test-card__top">
+            <span>04</span>
+            <small>Diagnostico</small>
+          </div>
+          <h3>Calculadoras e historico</h3>
+          <p>Validar hub, calculadora de capacidade e saidas para trilha, comparador e simulador.</p>
+          <a href="calculadora-capacidade-credito.html?from=lousa&calculatorSlug=capacidade-credito&preset=comprar_bem">Abrir calculadora</a>
+        </article>
+        <article class="bf-lousa-test-card" data-lousa-journey-step="journey">
+          <div class="bf-lousa-test-card__top">
+            <span>05</span>
+            <small>Trilha</small>
+          </div>
+          <h3>Trilha assistida contextual</h3>
+          <p>Confirmar entrada contextual e saida com `from=journey` e `sourceFrom` preservados.</p>
+          <a href="trilha-decisao.html?from=lousa&sourceFrom=calculator&calculatorSlug=capacidade-credito&preset=comprar_bem#trilha-acoes">Abrir Trilha</a>
+        </article>
+        <article class="bf-lousa-test-card" data-lousa-journey-step="comparator">
+          <div class="bf-lousa-test-card__top">
+            <span>06</span>
+            <small>Comparador</small>
+          </div>
+          <h3>Matriz comparativa</h3>
+          <p>Revisar preset, recomendacao de modelo, riscos, analytics e link para simulacao.</p>
+          <a href="comparador.html?from=lousa&preset=comprar_bem#comparador-entrada">Abrir Comparador</a>
+        </article>
+        <article class="bf-lousa-test-card" data-lousa-journey-step="simulator">
+          <div class="bf-lousa-test-card__top">
+            <span>07</span>
+            <small>Simulador</small>
+          </div>
+          <h3>Base real e resultado</h3>
+          <p>Garantir prateleira completa, prontidao, filtros, score e resumo financeiro.</p>
+          <a href="simulador.html?from=lousa#database-status-panel">Abrir Simulador</a>
+        </article>
+        <article class="bf-lousa-test-card" data-lousa-journey-step="proposal">
+          <div class="bf-lousa-test-card__top">
+            <span>08</span>
+            <small>Proposta</small>
+          </div>
+          <h3>Lousa de proposta/PDF</h3>
+          <p>Selecionar blocos, graficos, conceitos e formulas antes da proposta final.</p>
+          <a href="simulador.html?from=lousa#proposal-builder-board">Abrir proposta</a>
+        </article>
+        <article class="bf-lousa-test-card" data-lousa-journey-step="handoff">
+          <div class="bf-lousa-test-card__top">
+            <span>09</span>
+            <small>Consultor</small>
+          </div>
+          <h3>Handoff por origem e aging</h3>
+          <p>Filtrar por origem, responsavel, aging, SLA e confirmar proximo passo do lead.</p>
+          <a href="handoff-consultivo.html?from=lousa#painel-consultor">Abrir Handoff</a>
+        </article>
+        <article class="bf-lousa-test-card" data-lousa-journey-step="dashboards">
+          <div class="bf-lousa-test-card__top">
+            <span>10</span>
+            <small>Operacao</small>
+          </div>
+          <h3>Dashboards cliente e admin</h3>
+          <p>Conferir continuidade do cliente, funil admin, gargalos, origem e proximas acoes.</p>
+          <a href="dashboard-admin.html?from=lousa#admin-proximos-passos">Abrir Admin</a>
+        </article>
+      </div>
+      <div class="bf-lousa-acceptance" data-lousa-journey-acceptance>
+        <div><strong>Aceite 1</strong><span>Cada etapa abre uma pagina existente e tem marcador `data-*` verificavel.</span></div>
+        <div><strong>Aceite 2</strong><span>Deep links preservam origem, preset, calculadora, historico, jornada ou handoff quando disponivel.</span></div>
+        <div><strong>Aceite 3</strong><span>Validadores obrigatorios: auth, aliases, simulador, proposta, handoff, dashboards e contratos publicos.</span></div>
+        <div><strong>Aceite 4</strong><span>O roteiro vira porta de QA antes de iniciar qualquer nova fase funcional.</span></div>
+      </div>
+    </section>
+
+    <section class="bf-lousa-board" id="governanca" aria-label="Contratos publicos e validadores">
+      <div class="bf-lousa-board__head">
+        <span class="bf-badge bf-badge--gold">Contratos</span>
+        <h2>O que precisa continuar estavel nas proximas evolucoes.</h2>
+      </div>
+      <div class="bf-lousa-contracts">
+        <div><strong>Deep links</strong><span>`from`, `sourceFrom`, `productId`, `calculatorSlug`, `historyId`, `preset`, `journeyId`, `handoffId`.</span></div>
+        <div><strong>Services globais</strong><span>`BFProductsJourney`, `BFCalculatorJourney`, `BFDecisionJourneyContext`, `BFTrilhaDecisaoService`, `BFHandoffConsultivoService`.</span></div>
+        <div><strong>Persistencia local</strong><span>`bf_financial_profile_v1`, historicos de calculadora, trilha, simulacao, handoff e analytics.</span></div>
+        <div><strong>Matriz publica</strong><span>`docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md` consolida localStorage, data markers, deep links, globals e Definition of Done.</span></div>
+        <div><strong>Documentacao ativa</strong><span>`docs/README.md`, mapa completo e plano de acao ficam alinhados a Bank Fratern, 19 calculadoras e docs historicos marcados.</span></div>
+        <div><strong>Validadores</strong><span>27 validadores em `tools/`, incluindo jornada navegavel, auth, contratos publicos, docs, handoff, dashboard, proposta e simulador com base real.</span></div>
+      </div>
+    </section>
+
+    <section class="bf-lousa-board" id="proximos-ciclos" aria-label="Proximos ciclos de implementacao">
+      <div class="bf-lousa-board__head">
+        <span class="bf-badge bf-badge--ok">Proximos ciclos</span>
+        <h2>Fila preparada para evolucao do produto.</h2>
+      </div>
+      <div class="bf-lousa-roadmap">
+        <article>
+          <span>Concluido</span>
+          <h3>Contratos e docs estabilizados</h3>
+          <p>Preservar localStorage, data markers, deep links, exports globais, README ativo e docs historicos antes de novos ciclos.</p>
+          <a href="api-docs.html?from=lousa">Abrir contratos</a>
+        </article>
+        <article>
+          <span>Concluido</span>
+          <h3>Consultor com aging e prioridade</h3>
+          <p>Dar mais clareza para origem, tempo parado, responsavel sugerido e proximo passo de cada lead.</p>
+          <a href="handoff-consultivo.html?from=lousa#fila-handoff">Abrir Handoff</a>
+        </article>
+        <article>
+          <span>Concluido</span>
+          <h3>Teste navegavel da jornada</h3>
+          <p>Roteiro ponta a ponta percorre Auth, Home, Produtos, Calculadoras, Trilha, Comparador, Simulador, Proposta, Handoff e Dashboards.</p>
+          <a href="#roteiro-navegavel">Abrir roteiro</a>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <div data-shell-footer></div>
+  <script src="../js/auth.js"></script>
+  <script src="../js/shared-layout.js"></script>
+</body>
+</html>

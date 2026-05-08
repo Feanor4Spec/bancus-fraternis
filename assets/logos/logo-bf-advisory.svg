@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 230" role="img" aria-label="BF Advisory Logo" >
+  <title>BF Advisory Logo</title>
+  
+  <rect x="32" y="34" width="86" height="86" rx="20" fill="#0B2C52"/>
+  <circle cx="75" cy="68" r="18" fill="none" stroke="#D2AA49" stroke-width="6"/>
+  <path d="M48 106 C56 88 94 88 102 106" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/>
+  <text x="145" y="76" font-size="30" font-weight="850" fill="#0A2540" font-family="Inter, Arial, sans-serif">BF Advisory</text>
+  <text x="145" y="106" font-size="15" font-weight="700" fill="#C5A047" font-family="Inter, Arial, sans-serif" letter-spacing="1.8">CONSULTORIA • CONFIANÇA • LEGADO</text>
+
+</svg>

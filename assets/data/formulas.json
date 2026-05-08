@@ -1,0 +1,26 @@
+[
+  {
+    "id": "price",
+    "nome": "Tabela Price",
+    "formula": "PMT = PV * i / (1 - (1 + i)^-n)",
+    "uso": "Financiamento com parcela fixa"
+  },
+  {
+    "id": "sac",
+    "nome": "SAC",
+    "formula": "Amortizacao = PV / n; Parcela = Amortizacao + Saldo * i",
+    "uso": "Financiamento com amortizacao constante"
+  },
+  {
+    "id": "consorcio",
+    "nome": "Parcela de consorcio",
+    "formula": "Parcela = fundo comum mensal + taxa administracao mensal + fundo reserva mensal + seguro",
+    "uso": "Planejamento de carta, lance, reajuste e MOB"
+  },
+  {
+    "id": "cdc",
+    "nome": "CDC",
+    "formula": "Parcela = Valor financiado por Price + tarifas diluidas",
+    "uso": "Credito direto ao consumidor"
+  }
+]

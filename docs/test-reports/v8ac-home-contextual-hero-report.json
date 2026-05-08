@@ -1,0 +1,23 @@
+{
+  "ok": true,
+  "contextualHero": {
+    "diagnosticStage": "diagnostic",
+    "readyStage": "ready",
+    "journeyStage": "journey",
+    "simulationStage": "simulation",
+    "readyPrimary": "simulador.html?from=calculator&calculatorSlug=capacidade-credito&historyId=hist_1778188239330_41759e",
+    "journeyPrimary": "comparador.html?preset=comprar_bem",
+    "simulationPrimary": "carteira.html",
+    "simulationSecondary": "simulador.html?simulationId=SIM-MOVZD6N9",
+    "datasetReady": true
+  },
+  "uiContract": {
+    "hero": true,
+    "title": true,
+    "primary": true,
+    "strip": true,
+    "panelScore": true,
+    "decisionJourney": true
+  },
+  "failures": []
+}

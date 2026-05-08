@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Governanca de Modelos - Bank Fratern</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/bank-fratern-design-system.css">
+  <link rel="stylesheet" href="../assets/css/platform.css">
+</head>
+<body class="bf-platform-body" data-bf-page="modelos-governanca" data-auth-required="true" data-auth-roles="admin,consultor">
+  <div data-shell-header></div>
+
+  <main class="bf-platform-shell">
+    <section class="bf-platform-hero">
+      <div class="bf-platform-hero__content">
+        <span class="bf-badge bf-badge--gold">Governanca comercial</span>
+        <h1>Modelos de comparacao prontos para operacao.</h1>
+        <p>Audite modelos salvos, filtre por usuario, produto, origem e status, valide qualidade das premissas e prepare modelos padrao para consultores.</p>
+      </div>
+      <aside class="bf-platform-hero__rail">
+        <a href="comparador.html">Comparador <span>CP</span></a>
+        <a href="dashboard-admin.html">Admin <span>AD</span></a>
+        <a href="calculadoras-governanca.html">Calculadoras <span>GC</span></a>
+        <a href="compliance.html">Compliance <span>LGPD</span></a>
+      </aside>
+    </section>
+
+    <section class="bf-platform-panel bf-platform-section" data-model-governance-summary></section>
+
+    <section class="bf-platform-panel bf-platform-section">
+      <div class="bf-admin-panel-heading">
+        <div>
+          <span class="bf-badge bf-badge--navy">Filtro de governanca</span>
+          <h2>Repositorio local de modelos</h2>
+        </div>
+        <a class="btn btn--primary btn--sm" href="comparador.html">Criar modelo</a>
+      </div>
+      <div class="bf-admin-toolbar">
+        <label>Busca
+          <input type="search" data-model-search placeholder="Nome, usuario, origem ou produto">
+        </label>
+        <label>Usuario
+          <select data-model-owner-filter></select>
+        </label>
+        <label>Preset
+          <select data-model-preset-filter>
+            <option value="">Todos</option>
+            <option value="manual">Manual</option>
+            <option value="comprar_bem">Comprar bem</option>
+            <option value="obter_liquidez">Obter liquidez</option>
+            <option value="trocar_veiculo">Trocar veiculo</option>
+            <option value="consumo_pontual">Consumo pontual</option>
+          </select>
+        </label>
+        <label>Produto
+          <select data-model-product-filter></select>
+        </label>
+        <label>Status
+          <select data-model-status-filter>
+            <option value="">Todos</option>
+            <option value="draft">Rascunho</option>
+            <option value="approved">Aprovado</option>
+            <option value="published">Publicado</option>
+            <option value="archived">Arquivado</option>
+          </select>
+        </label>
+      </div>
+      <div class="bf-admin-table-wrap">
+        <table class="data-table bf-admin-table bf-model-governance-table">
+          <thead>
+            <tr>
+              <th>Modelo</th>
+              <th>Usuario</th>
+              <th>Produtos</th>
+              <th>Qualidade</th>
+              <th>Status</th>
+              <th>Acoes</th>
+            </tr>
+          </thead>
+          <tbody data-model-governance-table></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="bf-platform-panel bf-platform-section">
+      <div class="bf-admin-panel-heading">
+        <div>
+          <span class="bf-badge bf-badge--ok">Auditoria</span>
+          <h2>Eventos recentes dos modelos</h2>
+        </div>
+      </div>
+      <div class="bf-calculator-history" data-model-governance-audit></div>
+    </section>
+  </main>
+
+  <div data-shell-footer></div>
+  <script src="../js/auth.js"></script>
+  <script src="../js/shared-layout.js"></script>
+  <script src="../assets/js/formatters.js"></script>
+  <script src="../assets/js/validators.js"></script>
+  <script src="../assets/js/services/dados.service.js"></script>
+  <script src="../assets/js/components/cards.js"></script>
+  <script src="../assets/js/components/tables.js"></script>
+  <script src="../assets/js/components/alerts.js"></script>
+  <script src="../assets/js/components/tooltips.js"></script>
+  <script src="../assets/js/components/charts.js"></script>
+  <script src="../assets/js/formulas/price.formulas.js"></script>
+  <script src="../assets/js/formulas/sac.formulas.js"></script>
+  <script src="../assets/js/formulas/consorcio.formulas.js"></script>
+  <script src="../assets/js/formulas/comparison.formulas.js"></script>
+  <script src="../assets/js/services/financiamento.service.js"></script>
+  <script src="../assets/js/services/cdc.service.js"></script>
+  <script src="../assets/js/services/garantia.service.js"></script>
+  <script src="../assets/js/services/consignado.service.js"></script>
+  <script src="../assets/js/services/consorcio.service.js"></script>
+  <script src="../assets/js/services/comparador.service.js"></script>
+  <script src="../assets/js/services/recomendacao.service.js"></script>
+  <script src="../assets/js/bf-platform.js"></script>
+  <script src="../assets/js/modelos-governanca.js"></script>
+</body>
+</html>

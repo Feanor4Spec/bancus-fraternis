@@ -1,0 +1,84 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compliance - Bank Fratern</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="icon" href="../assets/logos/bank-fratern-icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/styles.css"><link rel="stylesheet" href="../css/bank-fratern-design-system.css"><link rel="stylesheet" href="../assets/css/platform.css">
+</head>
+<body class="bf-platform-body trust-page" data-bf-page="compliance">
+  <div data-shell-header></div>
+  <main class="bf-platform-shell">
+    <section class="bf-platform-hero">
+      <div class="bf-platform-hero__content">
+        <span class="bf-badge bf-badge--warn">LGPD e Open Finance</span>
+        <h1>Separacao clara entre dados publicos e privados.</h1>
+        <p>Dados educacionais e taxas publicas podem compor a base aberta. Dados pessoais e Open Finance exigem finalidade, base legal, consentimento quando aplicavel, prazo e cancelamento.</p>
+      </div>
+      <aside class="bf-platform-hero__rail">
+        <a href="dados-abertos.html">Dados abertos <span>DB</span></a>
+        <a href="api-docs.html">APIs <span>API</span></a>
+      </aside>
+    </section>
+    <section class="bf-v8-stagebar bf-v8-stagebar--inside" aria-label="Atalhos de compliance" data-v8-stagebar>
+      <div class="bf-v8-stagebar__intro"><span>Compliance v8</span><strong>Dado publico, dado privado, consentimento, API e auditoria.</strong></div>
+      <a class="bf-v8-stagebar__item" href="#decisao-compliance" data-step="1"><span>Separacao</span><strong>Publico e privado</strong></a>
+      <a class="bf-v8-stagebar__item" href="#compliance-matriz" data-step="2"><span>Matriz</span><strong>Classificacao</strong></a>
+      <a class="bf-v8-stagebar__item" href="dados-abertos.html" data-step="3"><span>Dados</span><strong>Base curada</strong></a>
+      <a class="bf-v8-stagebar__item" href="api-docs.html" data-step="4"><span>API</span><strong>Contratos futuros</strong></a>
+      <a class="bf-v8-stagebar__item" href="dashboard-admin.html" data-step="5"><span>Auditoria</span><strong>Operacao</strong></a>
+    </section>
+    <section class="bf-v8-decision-strip bf-v8-decision-strip--outer" id="decisao-compliance" aria-label="Ponte de compliance" data-trust-decision-strip>
+      <div class="bf-v8-decision-strip__head">
+        <span class="bf-badge bf-badge--warn">Transparencia operacional</span>
+        <div>
+          <h2>Dados e recomendacoes precisam de fronteira visivel.</h2>
+          <p>A plataforma separa conteudo educativo, premissas demonstrativas, dados pessoais locais e evolucoes futuras com consentimento.</p>
+          <div class="bf-inline-actions">
+            <a class="btn btn--primary btn--sm" href="dados-abertos.html">Ver datasets</a>
+            <a class="btn btn--ghost btn--sm" href="api-docs.html">Ver API Docs</a>
+            <a class="btn btn--ghost btn--sm" href="calculadoras-governanca.html">Governanca</a>
+          </div>
+        </div>
+      </div>
+      <div class="bf-v8-decision-strip__grid">
+        <article class="bf-v8-decision-card bf-v8-decision-card--stable"><span>Publico</span><strong>Educacao e formulas</strong><p>Glossario, formulas e premissas gerais podem ser auditaveis e versionadas.</p><small>Base aberta</small></article>
+        <article class="bf-v8-decision-card bf-v8-decision-card--warning"><span>Privado</span><strong>Dados pessoais</strong><p>Nome, renda, telefone, perfil e historico individual nao entram na base publica.</p><small>LGPD</small></article>
+        <article class="bf-v8-decision-card bf-v8-decision-card--info"><span>Consentido</span><strong>Open Finance</strong><p>Uso futuro exige finalidade determinada, prazo certo e cancelamento.</p><small>Evolucao futura</small></article>
+        <article class="bf-v8-decision-card bf-v8-decision-card--stable"><span>Auditoria</span><strong>Local primeiro</strong><p>Nesta fase, historico e modelos ficam no navegador e sao documentados como demonstrativos.</p><small>Sem backend novo</small></article>
+      </div>
+    </section>
+    <section class="bf-platform-panel bf-platform-section" id="compliance-timeline">
+      <div class="bf-admin-panel-heading">
+        <div><span class="bf-badge bf-badge--navy">Trilha de governanca</span><h2>Como a confianca entra na jornada</h2></div>
+        <a class="btn btn--ghost btn--sm" href="componentes-v8.html">Ver componentes</a>
+      </div>
+      <div class="bf-client-timeline" data-trust-timeline>
+        <a class="bf-client-timeline__item is-done" href="educacao.html"><span>1</span><div><small>Educar</small><strong>Conceitos claros</strong><p>O usuario entende o produto antes da decisao.</p></div></a>
+        <a class="bf-client-timeline__item is-active" href="#compliance-matriz"><span>2</span><div><small>Classificar</small><strong>Tipo de dado</strong><p>Publico, privado e consentido ficam separados.</p></div></a>
+        <a class="bf-client-timeline__item is-pending" href="dados-abertos.html"><span>3</span><div><small>Base</small><strong>Premissas locais</strong><p>JSON curado mostra origem e uso de cada dataset.</p></div></a>
+        <a class="bf-client-timeline__item is-pending" href="api-docs.html"><span>4</span><div><small>API</small><strong>Contratos futuros</strong><p>A migracao para backend fica documentada.</p></div></a>
+        <a class="bf-client-timeline__item is-pending" href="dashboard-admin.html"><span>5</span><div><small>Auditar</small><strong>Governanca local</strong><p>Admin acompanha usuarios, modelos e handoffs.</p></div></a>
+      </div>
+    </section>
+    <section class="bf-platform-grid" id="compliance-matriz">
+      <article class="bf-platform-card"><span class="bf-badge bf-badge--ok">Publico</span><h3>Educacao e formulas</h3><p>Glossario, explicacoes, formulas e regras gerais podem ser publicos e auditaveis.</p></article>
+      <article class="bf-platform-card"><span class="bf-badge bf-badge--warn">Privado</span><h3>Dados pessoais</h3><p>Nome, CPF, renda, telefone e historico individual ficam fora da base publica.</p></article>
+      <article class="bf-platform-card"><span class="bf-badge bf-badge--navy">Consentido</span><h3>Open Finance</h3><p>Uso apenas com consentimento, finalidade determinada, prazo certo e possibilidade de cancelamento.</p></article>
+    </section>
+    <section class="bf-platform-panel bf-platform-section">
+      <span class="bf-badge bf-badge--gold">Calculadoras</span>
+      <h2>Limites educacionais e dados locais</h2>
+      <p>As calculadoras salvam somente no navegador nesta fase, usando <code>localStorage</code>. Premissas de mercado sao demonstrativas e precisam de atualizacao, fonte e governanca antes de qualquer uso comercial ou recomendacao regulada.</p>
+    </section>
+  </main>
+  <div data-shell-footer></div>
+  <script src="../js/auth.js"></script><script src="../js/shared-layout.js"></script><script src="../assets/js/formatters.js"></script><script src="../assets/js/validators.js"></script><script src="../assets/js/services/dados.service.js"></script><script src="../assets/js/components/cards.js"></script><script src="../assets/js/components/tables.js"></script><script src="../assets/js/components/alerts.js"></script><script src="../assets/js/components/tooltips.js"></script><script src="../assets/js/components/charts.js"></script><script src="../assets/js/formulas/price.formulas.js"></script><script src="../assets/js/formulas/sac.formulas.js"></script><script src="../assets/js/formulas/consorcio.formulas.js"></script><script src="../assets/js/formulas/comparison.formulas.js"></script><script src="../assets/js/services/financiamento.service.js"></script><script src="../assets/js/services/cdc.service.js"></script><script src="../assets/js/services/consorcio.service.js"></script><script src="../assets/js/services/comparador.service.js"></script><script src="../assets/js/services/recomendacao.service.js"></script><script src="../assets/js/bf-platform.js"></script>
+</body>
+</html>
+
+
+

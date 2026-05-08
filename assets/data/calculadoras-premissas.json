@@ -1,0 +1,47 @@
+{
+  "referencia": "2026-04-24",
+  "aviso": "Valores locais demonstrativos. Atualizar antes de uso comercial ou integracao com produto real.",
+  "indices": {
+    "selicAnual": 14.75,
+    "cdiAnual": 14.65,
+    "ipcaAnual": 4.5,
+    "trAnual": 0,
+    "poupancaMes": 0.5
+  },
+  "irRegressivo": [
+    { "diasAte": 180, "aliquota": 22.5 },
+    { "diasAte": 360, "aliquota": 20 },
+    { "diasAte": 720, "aliquota": 17.5 },
+    { "diasAte": 99999, "aliquota": 15 }
+  ],
+  "cartoes": [
+    { "id": "bf-cash", "nome": "BF Cashback", "rendaMinima": 2500, "gastoIdeal": 1500, "preferencia": "cashback", "beneficio": "1.2% de cashback demonstrativo", "anuidade": 0 },
+    { "id": "bf-points", "nome": "BF Pontos", "rendaMinima": 6000, "gastoIdeal": 3000, "preferencia": "pontos", "beneficio": "2.0 pontos por dolar demonstrativo", "anuidade": 49 },
+    { "id": "bf-travel", "nome": "BF Travel", "rendaMinima": 10000, "gastoIdeal": 5000, "preferencia": "viagem", "beneficio": "sala VIP e seguros demonstrativos", "anuidade": 89 },
+    { "id": "bf-light", "nome": "BF Light", "rendaMinima": 1500, "gastoIdeal": 700, "preferencia": "sem-anuidade", "beneficio": "sem anuidade e controle simples", "anuidade": 0 }
+  ],
+  "rendaFaixas": [
+    { "uf": "BR", "p50": 2600, "p75": 5200, "p90": 10000, "p95": 17000 },
+    { "uf": "SP", "p50": 3300, "p75": 6800, "p90": 13000, "p95": 22000 },
+    { "uf": "RJ", "p50": 3100, "p75": 6200, "p90": 12000, "p95": 20000 },
+    { "uf": "MG", "p50": 2700, "p75": 5400, "p90": 9800, "p95": 16000 },
+    { "uf": "PR", "p50": 3000, "p75": 5900, "p90": 11000, "p95": 18000 },
+    { "uf": "SC", "p50": 3200, "p75": 6300, "p90": 11500, "p95": 18500 },
+    { "uf": "RS", "p50": 2900, "p75": 5700, "p90": 10500, "p95": 17500 },
+    { "uf": "BA", "p50": 2200, "p75": 4300, "p90": 8000, "p95": 13000 },
+    { "uf": "PE", "p50": 2300, "p75": 4500, "p90": 8500, "p95": 13500 },
+    { "uf": "GO", "p50": 2800, "p75": 5300, "p90": 9800, "p95": 15500 },
+    { "uf": "DF", "p50": 4500, "p75": 9000, "p90": 17000, "p95": 28000 }
+  ],
+  "carteirasDemo": {
+    "conservadora": [8.2, 9.1, 10.4, 11.0, 9.7],
+    "moderada": [6.5, 13.2, 8.7, 16.1, 10.8],
+    "arrojada": [-4.5, 21.0, 3.2, 24.5, 14.0]
+  },
+  "ativosDemo": [
+    { "ticker": "BFSA3", "nome": "Banco Fratern SA", "retornoAnual": 14.2, "dy": 4.1, "volatilidade": 18, "pl": 8.5, "roe": 16.2 },
+    { "ticker": "UTIL4", "nome": "Utilidade Brasil", "retornoAnual": 9.8, "dy": 7.2, "volatilidade": 11, "pl": 11.1, "roe": 12.4 },
+    { "ticker": "TECH3", "nome": "Tecnologia Alpha", "retornoAnual": 18.7, "dy": 0.8, "volatilidade": 28, "pl": 24.6, "roe": 19.8 },
+    { "ticker": "BANK11", "nome": "ETF Bancos Demo", "retornoAnual": 12.9, "dy": 3.5, "volatilidade": 16, "pl": 10.3, "roe": 14.9 }
+  ]
+}

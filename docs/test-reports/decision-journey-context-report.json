@@ -1,0 +1,47 @@
+{
+  "ok": true,
+  "contexts": {
+    "products": {
+      "from": "products",
+      "sourceFrom": "",
+      "productId": "garantia",
+      "calculatorSlug": "",
+      "historyId": "",
+      "preset": "obter_liquidez",
+      "journeyId": "",
+      "products": [
+        "garantia",
+        "financiamento"
+      ]
+    },
+    "calculator": {
+      "from": "calculator",
+      "sourceFrom": "",
+      "productId": "",
+      "calculatorSlug": "capacidade-credito",
+      "historyId": "CALC-1",
+      "preset": "comprar_bem",
+      "journeyId": "",
+      "products": []
+    },
+    "empty": {
+      "from": "",
+      "sourceFrom": "",
+      "productId": "",
+      "calculatorSlug": "",
+      "historyId": "",
+      "preset": "",
+      "journeyId": "",
+      "products": []
+    }
+  },
+  "routes": {
+    "productsHref": "simulador-garantia.html?from=journey&sourceFrom=products&productId=garantia&preset=obter_liquidez&journeyId=TRI-VAL-1&products=garantia,financiamento",
+    "calculatorHref": "comparador.html?from=journey&sourceFrom=calculator&productId=financiamento&calculatorSlug=capacidade-credito&historyId=CALC-1&preset=comprar_bem&journeyId=TRI-CALC-1"
+  },
+  "uiContract": {
+    "heroLinksContextual": true,
+    "apiAvailable": true
+  },
+  "failures": []
+}

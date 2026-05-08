@@ -1,0 +1,127 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Produtos - Bank Fratern</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="icon" href="../assets/logos/bank-fratern-icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/bank-fratern-design-system.css">
+  <link rel="stylesheet" href="../assets/css/platform.css">
+</head>
+<body class="bf-platform-body decision-products-page" data-bf-page="produtos">
+  <div data-shell-header></div>
+  <main class="bf-platform-shell">
+    <section class="bf-platform-hero">
+      <div class="bf-platform-hero__content">
+        <span class="bf-badge bf-badge--navy">Portfolio inteligente</span>
+        <h1>Produtos financeiros conectados a decisao do usuario.</h1>
+        <p>Consorcio, financiamento, CDC, credito com garantia, consignado e veiculos agora entram em uma jornada unica: diagnosticar perfil, simular impacto, comparar alternativas e decidir com memoria de calculo.</p>
+      </div>
+      <aside class="bf-platform-hero__rail">
+        <a href="simulador-financiamento.html?from=products&productId=financiamento&preset=comprar_bem">Simular financiamento <span>SF</span></a>
+        <a href="simulador-cdc.html?from=products&productId=cdc&preset=obter_liquidez">Simular CDC <span>CD</span></a>
+        <a href="simulador-garantia.html?from=products&productId=garantia&preset=obter_liquidez">Credito com garantia <span>CG</span></a>
+        <a href="simulador-consignado.html?from=products&productId=consignado&preset=obter_liquidez">Consignado <span>CS</span></a>
+        <a href="comparador.html?from=products">Comparar produtos <span>CP</span></a>
+      </aside>
+    </section>
+    <section class="bf-v8-stagebar bf-v8-stagebar--inside" aria-label="Atalhos da jornada de produtos" data-v8-stagebar>
+      <div class="bf-v8-stagebar__intro">
+        <span>Produtos v8</span>
+        <strong>Perfil, filtros, catalogo, comparador e continuidade conectados.</strong>
+      </div>
+      <a class="bf-v8-stagebar__item" href="#produtos-perfil" data-step="1"><span>Perfil</span><strong>Dados do usuario</strong></a>
+      <a class="bf-v8-stagebar__item" href="#produtos-filtros" data-step="2"><span>Filtros</span><strong>Momento financeiro</strong></a>
+      <a class="bf-v8-stagebar__item" href="#produtos-catalogo" data-step="3"><span>Catalogo</span><strong>Catalogo e selecao</strong></a>
+      <a class="bf-v8-stagebar__item" href="comparador.html" data-step="4"><span>Comparador</span><strong>Matriz multi-produto</strong></a>
+      <a class="bf-v8-stagebar__item" href="dashboard-cliente.html#continuidade-cliente" data-step="5"><span>Continuidade</span><strong>Dashboard</strong></a>
+    </section>
+    <section class="bf-platform-panel bf-platform-section" id="produtos-perfil" data-products-profile></section>
+    <section class="bf-v8-decision-strip bf-v8-decision-strip--outer" id="decisao-produtos" aria-label="Ponte de decisao de produtos" data-products-decision-strip></section>
+    <section class="bf-platform-panel bf-platform-section" id="produtos-filtros">
+      <div class="bf-admin-panel-heading">
+        <div>
+          <span class="bf-badge bf-badge--ok">Catalogo guiado</span>
+          <h2>Filtre pelo momento financeiro</h2>
+        </div>
+        <a class="btn btn--ghost btn--sm" href="comparador.html" data-products-compare-link>Abrir comparador 2.0</a>
+      </div>
+      <form class="bf-platform-form bf-products-filter" data-products-filter>
+        <label>Objetivo
+          <select name="objetivo">
+            <option value="todos">Todos</option>
+            <option value="comprar">Comprar bem</option>
+            <option value="liquidez">Obter liquidez</option>
+            <option value="auto">Veiculo</option>
+          </select>
+        </label>
+        <label>Urgencia
+          <select name="urgencia">
+            <option value="todas">Todas</option>
+            <option value="baixa">Baixa</option>
+            <option value="media">Media</option>
+            <option value="alta">Alta</option>
+          </select>
+        </label>
+        <label>Perfil de risco
+          <select name="risco">
+            <option value="moderado">Moderado</option>
+            <option value="conservador">Conservador</option>
+            <option value="arrojado">Arrojado</option>
+          </select>
+        </label>
+        <button class="btn btn--primary" type="submit">Atualizar catalogo</button>
+      </form>
+    </section>
+    <section class="bf-platform-panel bf-platform-section" id="produtos-selecao" data-products-selection-panel></section>
+    <section class="bf-platform-panel bf-platform-section" id="produtos-metricas" data-journey-analytics data-analytics-context="produtos"></section>
+    <section class="bf-platform-grid" id="produtos-catalogo" data-products-grid></section>
+    <section class="bf-platform-panel bf-platform-section" id="continuidade-produtos">
+      <div class="bf-admin-panel-heading">
+        <div>
+          <span class="bf-badge bf-badge--navy">Ponte da decisao</span>
+          <h2>Do produto ao proximo passo</h2>
+        </div>
+        <a class="btn btn--ghost btn--sm" href="dashboard-cliente.html#continuidade-cliente">Retomar no dashboard</a>
+      </div>
+      <div class="bf-client-timeline" data-products-bridge-timeline></div>
+    </section>
+    <section class="bf-platform-panel bf-platform-section" id="produtos-ecossistema">
+      <div class="bf-admin-panel-heading">
+        <div>
+          <span class="bf-badge bf-badge--gold">Novo ecossistema</span>
+          <h2>Produtos agora conversam com calculadoras</h2>
+        </div>
+        <a class="btn btn--primary btn--sm" href="calculadoras.html">Abrir hub</a>
+      </div>
+      <p>Antes de escolher credito ou investimento, o usuario pode calcular reserva, custos fixos, renda fixa, CDB, compra parcelada, Pix parcelado, cartoes e metas patrimoniais. Cada resultado alimenta perfil e historico local.</p>
+    </section>
+    <section class="bf-platform-panel bf-platform-section">
+      <h2>Motor de recomendacao inicial</h2>
+      <form class="bf-platform-form" data-recommendation-form>
+        <label>Objetivo<select name="objetivo"><option value="comprar">Comprar bem</option><option value="liquidez">Obter liquidez</option><option value="trocar">Trocar veiculo</option></select></label>
+        <label>Urgencia<select name="urgencia"><option value="baixa">Baixa</option><option value="media">Media</option><option value="alta">Alta</option></select></label>
+        <label>Risco<select name="risco"><option value="conservador">Conservador</option><option value="moderado">Moderado</option><option value="arrojado">Arrojado</option></select></label>
+        <label>Renda mensal<input name="renda" type="number" value="12000"></label>
+        <label>Entrada disponivel<input name="entrada" type="number" value="50000"></label>
+        <label>Possui garantia?<select name="garantia"><option value="">Nao</option><option value="1">Sim</option></select></label>
+        <button class="btn btn--primary" type="submit">Recomendar</button>
+      </form>
+      <div class="bf-platform-grid bf-platform-section" data-recommendation-result></div>
+    </section>
+  </main>
+  <div data-shell-footer></div>
+  <script src="../js/auth.js"></script><script src="../js/shared-layout.js"></script>
+  <script src="../assets/js/formatters.js"></script><script src="../assets/js/validators.js"></script>
+  <script src="../assets/js/services/dados.service.js"></script><script src="../assets/js/components/cards.js"></script><script src="../assets/js/components/tables.js"></script><script src="../assets/js/components/alerts.js"></script><script src="../assets/js/components/tooltips.js"></script><script src="../assets/js/components/charts.js"></script>
+  <script src="../assets/js/formulas/price.formulas.js"></script><script src="../assets/js/formulas/sac.formulas.js"></script><script src="../assets/js/formulas/consorcio.formulas.js"></script><script src="../assets/js/formulas/comparison.formulas.js"></script>
+  <script src="../assets/js/services/financiamento.service.js"></script><script src="../assets/js/services/cdc.service.js"></script><script src="../assets/js/services/consorcio.service.js"></script><script src="../assets/js/services/comparador.service.js"></script><script src="../assets/js/services/recomendacao.service.js"></script><script src="../assets/js/bf-platform.js"></script>
+</body>
+</html>
+
+
+

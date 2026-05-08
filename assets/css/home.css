@@ -1,0 +1,44 @@
+/* Bank Fratern — home.css */
+.bf-home-visual {
+  position: relative;
+  display: grid;
+  gap: 14px;
+}
+.bf-home-visual__main {
+  border-radius: 28px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.14);
+  box-shadow: 0 26px 90px rgba(0,0,0,.22);
+}
+.bf-home-visual__main img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.bf-home-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 10px;
+}
+.bf-home-metric {
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 18px;
+  padding: 14px;
+}
+.bf-home-metric small {
+  display: block;
+  color: rgba(255,255,255,.56);
+  text-transform: uppercase;
+  letter-spacing: .13em;
+  font-size: 10px;
+  font-weight: 850;
+  margin-bottom: 6px;
+}
+.bf-home-metric strong {
+  color: #fff;
+  font-size: 15px;
+}
+@media (max-width:720px){
+  .bf-home-metrics{grid-template-columns:1fr;}
+}

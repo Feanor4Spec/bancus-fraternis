@@ -1,0 +1,44 @@
+{
+  "ok": true,
+  "routingGoals": {
+    "importedItems": 4,
+    "routed": 4,
+    "routeName": "Carteira validacao",
+    "consultants": [
+      {
+        "assignedTo": "consultor@bankfratern.local",
+        "total": 2,
+        "pending": 1,
+        "handoffs": 1,
+        "targetHandoffs": 1,
+        "progress": 100
+      },
+      {
+        "assignedTo": "sul@bankfratern.local",
+        "total": 1,
+        "pending": 1,
+        "handoffs": 0,
+        "targetHandoffs": 1,
+        "progress": 0
+      },
+      {
+        "assignedTo": "norte@bankfratern.local",
+        "total": 1,
+        "pending": 1,
+        "handoffs": 0,
+        "targetHandoffs": 1,
+        "progress": 0
+      }
+    ],
+    "totalTarget": 3,
+    "totalHandoffs": 1,
+    "progress": 33
+  },
+  "uiContract": {
+    "routingPanel": true,
+    "routeAction": true,
+    "goalInput": true,
+    "saveGoal": true
+  },
+  "failures": []
+}

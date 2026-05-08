@@ -1,0 +1,101 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Docs - Bank Fratern</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="icon" href="../assets/logos/bank-fratern-icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/styles.css"><link rel="stylesheet" href="../css/bank-fratern-design-system.css"><link rel="stylesheet" href="../assets/css/platform.css">
+</head>
+<body class="bf-platform-body trust-page" data-bf-page="api">
+  <div data-shell-header></div>
+  <main class="bf-platform-shell">
+    <section class="bf-platform-hero">
+      <div class="bf-platform-hero__content">
+        <span class="bf-badge bf-badge--navy">API propria - contrato inicial</span>
+        <h1>Servicos que hoje rodam no browser e amanha viram API.</h1>
+        <p>Os endpoints abaixo documentam a transicao progressiva: JSON local, servicos JavaScript, API propria e banco de dados.</p>
+      </div>
+      <aside class="bf-platform-hero__rail">
+        <a href="dados-abertos.html">Datasets <span>DB</span></a>
+        <a href="comparador.html">Comparador <span>CP</span></a>
+      </aside>
+    </section>
+    <section class="bf-v8-stagebar bf-v8-stagebar--inside" aria-label="Atalhos da documentacao de API" data-v8-stagebar>
+      <div class="bf-v8-stagebar__intro"><span>API v8</span><strong>Browser hoje, servicos amanha, banco depois.</strong></div>
+      <a class="bf-v8-stagebar__item" href="#decisao-api" data-step="1"><span>Contrato</span><strong>Evolucao</strong></a>
+      <a class="bf-v8-stagebar__item" href="#contratos-publicos" data-step="2"><span>Publicos</span><strong>Contratos vivos</strong></a>
+      <a class="bf-v8-stagebar__item" href="#api-endpoints" data-step="3"><span>Endpoints</span><strong>Rotas futuras</strong></a>
+      <a class="bf-v8-stagebar__item" href="dados-abertos.html" data-step="4"><span>Dados</span><strong>JSON local</strong></a>
+      <a class="bf-v8-stagebar__item" href="calculadoras-governanca.html" data-step="5"><span>QA</span><strong>Formulas</strong></a>
+      <a class="bf-v8-stagebar__item" href="compliance.html" data-step="6"><span>Compliance</span><strong>Consentimento</strong></a>
+    </section>
+    <section class="bf-v8-decision-strip bf-v8-decision-strip--outer" id="decisao-api" aria-label="Ponte de API" data-trust-decision-strip>
+      <div class="bf-v8-decision-strip__head">
+        <span class="bf-badge bf-badge--navy">Contrato progressivo</span>
+        <div>
+          <h2>A API futura nasce dos servicos que ja rodam no browser.</h2>
+          <p>Os endpoints documentam a transicao de HTML, JSON local e JavaScript puro para servicos server-side, banco de dados, auditoria e consentimento.</p>
+          <div class="bf-inline-actions">
+            <a class="btn btn--primary btn--sm" href="#api-endpoints">Ver endpoints</a>
+            <a class="btn btn--ghost btn--sm" href="dados-abertos.html">Ver dados</a>
+            <a class="btn btn--ghost btn--sm" href="componentes-v8.html">Ver componentes</a>
+          </div>
+        </div>
+      </div>
+      <div class="bf-v8-decision-strip__grid">
+        <article class="bf-v8-decision-card bf-v8-decision-card--info"><span>Fase atual</span><strong>Estatica/progressiva</strong><p>Servicos JS e JSON local mantem a plataforma testavel sem backend novo.</p><small>Browser first</small></article>
+        <article class="bf-v8-decision-card bf-v8-decision-card--stable"><span>Contrato</span><strong>Endpoints mapeados</strong><p>Produtos, simulacoes, comparador, calculadoras e premissas ja possuem rota-alvo.</p><small>API futura</small></article>
+        <article class="bf-v8-decision-card bf-v8-decision-card--warning"><span>Privacidade</span><strong>Perfil consentido</strong><p>Dados pessoais e Open Finance so entram com base legal, finalidade e prazo.</p><small>LGPD</small></article>
+        <article class="bf-v8-decision-card bf-v8-decision-card--stable"><span>QA</span><strong>Golden tests</strong><p>Formulas e premissas devem passar por teste antes de publicacao.</p><small>Governanca</small></article>
+      </div>
+    </section>
+    <section class="bf-platform-panel bf-platform-section" id="api-timeline">
+      <div class="bf-admin-panel-heading">
+        <div><span class="bf-badge bf-badge--gold">Evolucao tecnica</span><h2>Do estatico ao server-side</h2></div>
+        <a class="btn btn--ghost btn--sm" href="dados-abertos.html">Ver datasets</a>
+      </div>
+      <div class="bf-client-timeline" data-trust-timeline>
+        <a class="bf-client-timeline__item is-done" href="dados-abertos.html"><span>1</span><div><small>Dados</small><strong>JSON local</strong><p>Base curada e editavel sustenta a fase estatica.</p></div></a>
+        <a class="bf-client-timeline__item is-active" href="#api-endpoints"><span>2</span><div><small>Servicos</small><strong>Contratos</strong><p>Endpoints documentam o futuro backend.</p></div></a>
+        <a class="bf-client-timeline__item is-pending" href="dashboard-admin.html"><span>3</span><div><small>Banco</small><strong>Persistencia</strong><p>Usuarios, simulacoes e auditorias migram do localStorage.</p></div></a>
+        <a class="bf-client-timeline__item is-pending" href="calculadoras-governanca.html"><span>4</span><div><small>QA</small><strong>Publicacao</strong><p>Premissas passam por aprovacao e teste.</p></div></a>
+        <a class="bf-client-timeline__item is-pending" href="compliance.html"><span>5</span><div><small>Consentimento</small><strong>Open Finance</strong><p>Integracoes sensiveis exigem governanca propria.</p></div></a>
+      </div>
+    </section>
+    <section class="bf-platform-panel bf-platform-section" id="contratos-publicos">
+      <div class="bf-admin-panel-heading">
+        <div><span class="bf-badge bf-badge--ok">Contratos publicos</span><h2>Compatibilidade antes de backend.</h2></div>
+        <a class="btn btn--ghost btn--sm" href="componentes-v8.html">Ver v8</a>
+      </div>
+      <div class="bf-api-list">
+        <div class="bf-api-item"><code>localStorage</code><p>Chaves locais preservam usuarios, simulacoes, perfil, trilhas, proposta, handoff, pacotes e metas.</p></div>
+        <div class="bf-api-item"><code>data-*</code><p>Marcadores sustentam validadores, cockpit Admin, proposta, Dashboard Cliente e continuidade v8.</p></div>
+        <div class="bf-api-item"><code>window.BF*</code><p>Services globais atuais sao os contratos de migracao progressiva para API propria.</p></div>
+        <div class="bf-api-item"><code>Definition of Done</code><p>Cada entrega deve ter contrato revisado, validador, changelog e plano atualizado quando a fase mudar.</p></div>
+      </div>
+    </section>
+    <section class="bf-platform-panel" id="api-endpoints">
+      <div class="bf-api-list">
+        <div class="bf-api-item"><code>GET /api/produtos</code><p>Lista produtos financeiros e criterios de comparacao.</p></div>
+        <div class="bf-api-item"><code>POST /api/simulacoes/financiamento</code><p>Calcula Price/SAC, parcelas, juros e saldo.</p></div>
+        <div class="bf-api-item"><code>POST /api/simulacoes/consorcio</code><p>Calcula carta, lance, reajuste, MOB Contemplacao e MOB Faturamento.</p></div>
+        <div class="bf-api-item"><code>POST /api/comparador</code><p>Compara custo total, prazo, parcela e score de decisao.</p></div>
+        <div class="bf-api-item"><code>POST /api/recomendacoes</code><p>Retorna ranking por perfil, urgencia, renda, garantia e risco.</p></div>
+        <div class="bf-api-item"><code>GET /api/calculadoras</code><p>Lista as 19 calculadoras, campos, formulas, riscos e calculadoras relacionadas.</p></div>
+        <div class="bf-api-item"><code>POST /api/calculadoras/:slug/simular</code><p>Contrato futuro do servico que hoje roda em <code>assets/js/services/calculadoras.service.js</code>.</p></div>
+        <div class="bf-api-item"><code>GET /api/perfil-financeiro</code><p>Retorna perfil consolidado consentido; na fase estatica fica apenas no localStorage do navegador.</p></div>
+        <div class="bf-api-item"><code>GET /api/calculadoras/premissas</code><p>Contrato futuro para Selic, CDI, IPCA, TR, IR regressivo e vigencia das premissas.</p></div>
+        <div class="bf-api-item"><code>POST /api/calculadoras/golden-tests/run</code><p>Executa a suite de formulas antes de publicar nova versao de regras.</p></div>
+      </div>
+    </section>
+  </main>
+  <div data-shell-footer></div>
+  <script src="../js/auth.js"></script><script src="../js/shared-layout.js"></script><script src="../assets/js/formatters.js"></script><script src="../assets/js/validators.js"></script><script src="../assets/js/services/dados.service.js"></script><script src="../assets/js/components/cards.js"></script><script src="../assets/js/components/tables.js"></script><script src="../assets/js/components/alerts.js"></script><script src="../assets/js/components/tooltips.js"></script><script src="../assets/js/components/charts.js"></script><script src="../assets/js/formulas/price.formulas.js"></script><script src="../assets/js/formulas/sac.formulas.js"></script><script src="../assets/js/formulas/consorcio.formulas.js"></script><script src="../assets/js/formulas/comparison.formulas.js"></script><script src="../assets/js/services/financiamento.service.js"></script><script src="../assets/js/services/cdc.service.js"></script><script src="../assets/js/services/consorcio.service.js"></script><script src="../assets/js/services/comparador.service.js"></script><script src="../assets/js/services/recomendacao.service.js"></script><script src="../assets/js/bf-platform.js"></script>
+</body>
+</html>
+
+
+

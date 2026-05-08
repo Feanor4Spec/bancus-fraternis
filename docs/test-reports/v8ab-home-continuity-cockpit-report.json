@@ -1,0 +1,28 @@
+{
+  "ok": true,
+  "homeContinuity": {
+    "readinessScore": 100,
+    "history": 1,
+    "simulations": 1,
+    "journey": {
+      "id": "JOURNEY-HOME-1",
+      "objective": "comprar_bem",
+      "nextHref": "comparador.html?preset=comprar_bem"
+    },
+    "recommended": [
+      "calculadora-compra-vista-parcelado.html",
+      "comparador.html",
+      "calculadora-lance-consorcio.html"
+    ],
+    "datasetReady": true,
+    "datasetJourney": "active"
+  },
+  "uiContract": {
+    "cockpit": true,
+    "metrics": true,
+    "actions": true,
+    "decisionContext": true,
+    "decisionJourney": true
+  },
+  "failures": []
+}

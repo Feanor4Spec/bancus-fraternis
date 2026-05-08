@@ -1,0 +1,21 @@
+{
+  "ok": true,
+  "filters": {
+    "all": 4,
+    "byAssignee": 2,
+    "pending": 3,
+    "ready": 1,
+    "high": 1,
+    "decision": 1,
+    "search": 1,
+    "openAfterCreate": 3,
+    "createdOnly": 1
+  },
+  "exportPackage": {
+    "schema": "bank-fratern.admin-recovery-export.v1",
+    "items": 1,
+    "existingHandoffs": 1,
+    "queueStatus": "handoff-criado"
+  },
+  "failures": []
+}

@@ -1,0 +1,25 @@
+{
+  "ok": true,
+  "calculators": 19,
+  "flow": {
+    "emptyReadinessScore": 0,
+    "capacityHistoryId": "CALC-MOX97W7S",
+    "capacityPayment": 2000,
+    "bidHistoryId": "CALC-MOX97W7S",
+    "safeBid": 25000,
+    "calculatorRoutes": {
+      "simulator": "simulador.html?from=calculator&calculatorSlug=capacidade-credito&historyId=CALC-MOX97W7S&preset=comprar_bem",
+      "journey": "trilha-decisao.html?from=calculator&calculatorSlug=capacidade-credito&historyId=CALC-MOX97W7S&preset=comprar_bem",
+      "comparator": "comparador.html?from=calculator&calculatorSlug=capacidade-credito&historyId=CALC-MOX97W7S&preset=comprar_bem",
+      "calculator": "calculadora-capacidade-credito.html?from=calculator&calculatorSlug=capacidade-credito&historyId=CALC-MOX97W7S&preset=comprar_bem"
+    },
+    "prefillSource": "calculator",
+    "prefillCalculatorSlug": "capacidade-credito",
+    "readinessScore": 100,
+    "simulationId": "SIM-MOX97W7T",
+    "simulatorHistoryId": "hist_1778265254874_a348c4",
+    "finalHistoryCount": 3,
+    "auditCount": 7
+  },
+  "failures": []
+}

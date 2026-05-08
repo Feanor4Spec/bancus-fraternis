@@ -1,0 +1,34 @@
+{
+  "ok": true,
+  "baseUrl": "http://127.0.0.1:8080/pages",
+  "flow": {
+    "createdId": "LEAD-MOHVYURD-P4H",
+    "storedHandoffs": 1,
+    "sourceProposalId": "PROP-2026-0100",
+    "sourceProposalStatus": "reviewed",
+    "checklistDone": 4,
+    "checklistTotal": 5,
+    "auditActions": [
+      "proposal-create"
+    ],
+    "panelReady": "true",
+    "bridgeText": "CONTINUIDADE CONSULTIVA\nHandoff LEAD-MOHVYURD-P4H criado na fila consultiva.\nAcompanhe checklist, responsavel, notas e auditoria no handoff consultivo.\nAtualizar handoff\nAbrir LEAD-MOHVYURD-P4H"
+  },
+  "handoffPage": {
+    "ready": "true",
+    "cards": 1,
+    "expectedFound": true,
+    "text": "Novo\nAlta\nProposta PROP-2026-0100\n\nGustavo Santana - Consorcio estruturado / Revisada localmente\n\nCREDITO\nR$ 100.000,00\nCHECKLIST\n4/5\nAbrir\nComparar"
+  },
+  "screenshots": {
+    "proposalDesktop": "C:\\Users\\gustavo.pinheiro\\.gemini\\antigravity\\scratch\\Bank Fratern\\docs\\test-prints\\v8af-proposta-handoff-desktop.png",
+    "proposalMobile": "C:\\Users\\gustavo.pinheiro\\.gemini\\antigravity\\scratch\\Bank Fratern\\docs\\test-prints\\v8af-proposta-handoff-mobile.png",
+    "handoffDesktop": "C:\\Users\\gustavo.pinheiro\\.gemini\\antigravity\\scratch\\Bank Fratern\\docs\\test-prints\\v8af-handoff-proposta-desktop.png"
+  },
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "pageErrors": [],
+  "notFound": [],
+  "failures": []
+}

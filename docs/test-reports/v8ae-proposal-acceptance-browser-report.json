@@ -1,0 +1,35 @@
+{
+  "ok": true,
+  "url": "http://127.0.0.1:8080/pages/simulador.html",
+  "screenshots": {
+    "desktop": "C:\\Users\\gustavo.pinheiro\\.gemini\\antigravity\\scratch\\Bank Fratern\\docs\\test-prints\\v8ae-proposta-aceite-desktop.png",
+    "mobile": "C:\\Users\\gustavo.pinheiro\\.gemini\\antigravity\\scratch\\Bank Fratern\\docs\\test-prints\\v8ae-proposta-aceite-mobile.png"
+  },
+  "pdf": {
+    "path": "C:\\Users\\gustavo.pinheiro\\.gemini\\antigravity\\scratch\\Bank Fratern\\docs\\test-prints\\v8ae-proposta-aceite-exportada.pdf",
+    "downloaded": true,
+    "sizeBytes": 5156743,
+    "roughPageCount": 11,
+    "error": null
+  },
+  "desktopMetrics": {
+    "acceptanceReady": true,
+    "panelStatus": "reviewed",
+    "historyItems": 1,
+    "pdfAcceptanceBlock": true,
+    "pdfStatusText": true,
+    "validityText": true,
+    "storedCount": 1,
+    "storedStatus": "reviewed",
+    "storedVersion": 1,
+    "noHorizontalOverflow": true
+  },
+  "mobileMetrics": {
+    "noHorizontalOverflow": true,
+    "panelWidth": 340,
+    "viewportWidth": 390
+  },
+  "dialogs": [],
+  "pageErrors": [],
+  "badResponses": []
+}

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" role="img" aria-label="Dashboard executivo">
+  <title>Dashboard executivo</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#061A2E"/><stop offset="1" stop-color="#143B66"/></linearGradient>
+    <radialGradient id="glow" cx="74%" cy="45%" r="52%"><stop offset="0" stop-color="#D4AF37" stop-opacity=".45"/><stop offset="1" stop-color="#D4AF37" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="960" height="540" fill="url(#bg)"/>
+  <rect width="960" height="540" fill="url(#glow)"/>
+  <text x="56" y="92" fill="#E6C76E" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="800" letter-spacing="4">DASHBOARD</text>
+  <text x="56" y="178" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="54" font-weight="850">Visão executiva</text>
+  <text x="56" y="240" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="54" font-weight="850">em uma tela.</text>
+  <rect x="520" y="120" width="330" height="260" rx="22" fill="none" stroke="#FFFFFF" stroke-width="8" opacity=".85"/><path d="M560 320 L630 260 L700 290 L800 180" fill="none" stroke="#D4AF37" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/><path d="M560 340 H810" stroke="#FFFFFF" stroke-width="5" opacity=".30"/><path d="M580 210 H680 M580 240 H640" stroke="#D4AF37" stroke-width="8" stroke-linecap="round"/>
+  <path d="M0 440 C220 380 380 420 540 350 C690 286 810 300 960 240 V540 H0 Z" fill="#000000" opacity=".14"/>
+</svg>

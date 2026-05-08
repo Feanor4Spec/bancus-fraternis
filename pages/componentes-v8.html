@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Componentes v8 - Bank Fratern</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="icon" href="../assets/logos/bank-fratern-icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/bank-fratern-design-system.css">
+  <link rel="stylesheet" href="../assets/css/platform.css">
+</head>
+<body class="bf-platform-body component-catalog-page" data-bf-page="componentes-v8">
+  <div data-shell-header></div>
+  <main class="bf-platform-shell">
+    <section class="bf-platform-hero">
+      <div class="bf-platform-hero__content">
+        <span class="bf-badge bf-badge--gold">Design System v8</span>
+        <h1>Catalogo visual para manter a linguagem Bank Fratern consistente.</h1>
+        <p>Esta pagina funciona como amostra viva de stagebars, decision strips, cards, metricas, formularios, tabelas, alertas e estados usados nas jornadas financeiras.</p>
+      </div>
+      <aside class="bf-platform-hero__rail">
+        <a href="produtos.html">Produtos <span>PR</span></a>
+        <a href="calculadoras.html">Calculadoras <span>CA</span></a>
+        <a href="comparador.html">Comparador <span>CP</span></a>
+        <a href="compliance.html">Compliance <span>LG</span></a>
+      </aside>
+    </section>
+
+    <section class="bf-v8-stagebar bf-v8-stagebar--inside" aria-label="Atalhos dos componentes v8" data-v8-stagebar>
+      <div class="bf-v8-stagebar__intro"><span>Componentes</span><strong>Tokens, navegacao, decisao, dados e estados em uma referencia.</strong></div>
+      <a class="bf-v8-stagebar__item" href="#tokens-v8" data-step="1"><span>Tokens</span><strong>Cores e ritmo</strong></a>
+      <a class="bf-v8-stagebar__item" href="#decisao-componentes" data-step="2"><span>Decisao</span><strong>Decision strip</strong></a>
+      <a class="bf-v8-stagebar__item" href="#componentes-amostras" data-step="3"><span>UI</span><strong>Cards e forms</strong></a>
+      <a class="bf-v8-stagebar__item" href="#componentes-dados" data-step="4"><span>Dados</span><strong>Tabela e KPI</strong></a>
+      <a class="bf-v8-stagebar__item" href="../docs/DESIGN_SYSTEM_V8_BANK_FRATERN.md" data-step="5"><span>Docs</span><strong>Contrato</strong></a>
+    </section>
+
+    <section class="bf-v8-decision-strip bf-v8-decision-strip--outer" id="decisao-componentes" aria-label="Resumo dos componentes v8" data-component-decision-strip>
+      <div class="bf-v8-decision-strip__head">
+        <span class="bf-badge bf-badge--navy">Contrato visual</span>
+        <div>
+          <h2>Cada pagina ativa precisa de contexto, decisao e continuidade.</h2>
+          <p>O v8 reduz divergencia visual entre instituicao, simuladores, calculadoras, comparador, dashboards e governanca sem alterar formulas financeiras.</p>
+          <div class="bf-inline-actions">
+            <a class="btn btn--primary btn--sm" href="#componentes-amostras">Ver amostras</a>
+            <a class="btn btn--ghost btn--sm" href="dados-abertos.html">Ver dados</a>
+            <a class="btn btn--ghost btn--sm" href="compliance.html">Ver limites</a>
+          </div>
+        </div>
+      </div>
+      <div class="bf-v8-decision-strip__grid">
+        <article class="bf-v8-decision-card bf-v8-decision-card--stable"><span>Navegacao</span><strong>Stagebar</strong><p>Mostra a jornada principal e reduz ruptura entre paginas.</p><small>5 passos padrao</small></article>
+        <article class="bf-v8-decision-card bf-v8-decision-card--info"><span>Decisao</span><strong>Decision strip</strong><p>Resume entrada, resultado, risco e continuidade em quatro cards.</p><small>Acima do fluxo</small></article>
+        <article class="bf-v8-decision-card bf-v8-decision-card--warning"><span>Risco</span><strong>Estados claros</strong><p>Alertas e badges indicam cautela sem poluir a interface.</p><small>Warn, info, stable</small></article>
+        <article class="bf-v8-decision-card bf-v8-decision-card--stable"><span>Continuidade</span><strong>Timeline</strong><p>Conecta perfil, historico, simulacao, comparador e dashboard.</p><small>Jornada rastreavel</small></article>
+      </div>
+    </section>
+
+    <section class="bf-platform-panel bf-platform-section" id="componentes-linha">
+      <div class="bf-admin-panel-heading">
+        <div><span class="bf-badge bf-badge--gold">Uso recomendado</span><h2>Como aplicar o v8</h2></div>
+        <a class="btn btn--ghost btn--sm" href="api-docs.html">Ver contratos</a>
+      </div>
+      <div class="bf-client-timeline" data-component-timeline>
+        <a class="bf-client-timeline__item is-done" href="#tokens-v8"><span>1</span><div><small>Tokens</small><strong>Base visual</strong><p>Cores, bordas, foco e sombras mantem consistencia.</p></div></a>
+        <a class="bf-client-timeline__item is-active" href="#decisao-componentes"><span>2</span><div><small>Contexto</small><strong>Decision strip</strong><p>A pagina comunica resultado e risco rapidamente.</p></div></a>
+        <a class="bf-client-timeline__item is-pending" href="#componentes-amostras"><span>3</span><div><small>Componentes</small><strong>Cards e forms</strong><p>Blocos reutilizaveis aceleram novas paginas.</p></div></a>
+        <a class="bf-client-timeline__item is-pending" href="#componentes-dados"><span>4</span><div><small>Dados</small><strong>Tabelas e metricas</strong><p>Informacao numerica fica escaneavel.</p></div></a>
+        <a class="bf-client-timeline__item is-pending" href="dashboard-admin.html"><span>5</span><div><small>Governanca</small><strong>Validacao</strong><p>O validador checa shell, contratos e links.</p></div></a>
+      </div>
+    </section>
+
+    <section class="bf-platform-panel bf-platform-section" id="tokens-v8">
+      <div class="bf-admin-panel-heading">
+        <div><span class="bf-badge bf-badge--ok">Tokens</span><h2>Cores principais</h2></div>
+      </div>
+      <div class="bf-component-swatch-grid">
+        <article class="bf-component-swatch"><span style="background:#0A2540"></span><strong>Navy</strong><small>#0A2540</small></article>
+        <article class="bf-component-swatch"><span style="background:#143B66"></span><strong>Blue</strong><small>#143B66</small></article>
+        <article class="bf-component-swatch"><span style="background:#C5A047"></span><strong>Gold</strong><small>#C5A047</small></article>
+        <article class="bf-component-swatch"><span style="background:#16734D"></span><strong>Success</strong><small>#16734D</small></article>
+        <article class="bf-component-swatch"><span style="background:#EFF4F8"></span><strong>Surface</strong><small>#EFF4F8</small></article>
+      </div>
+    </section>
+
+    <section class="bf-platform-panel bf-platform-section" id="componentes-amostras">
+      <div class="bf-admin-panel-heading">
+        <div><span class="bf-badge bf-badge--navy">Amostras</span><h2>Estados de interface</h2></div>
+      </div>
+      <div class="bf-component-sample-grid">
+        <article class="bf-component-sample"><span class="bf-badge bf-badge--gold">Badge</span><strong>Contexto de decisao</strong><small>Use para categoria, status ou etapa. Evite texto longo dentro do badge.</small></article>
+        <article class="bf-component-sample"><span class="bf-badge bf-badge--ok">Card</span><strong>Resultado principal</strong><small>Cards devem destacar uma acao ou leitura, nao apenas decoracao.</small></article>
+        <article class="bf-component-sample"><span class="bf-badge bf-badge--warn">Alerta</span><strong>Risco explicavel</strong><small>Use warn para cautela financeira, dados incompletos ou premissas sensiveis.</small></article>
+        <article class="bf-component-sample"><span class="bf-badge bf-badge--navy">Loading</span><strong>Base em leitura</strong><small>Barras e mensagens devem indicar fonte, progresso e proximo estado da jornada.</small></article>
+      </div>
+      <form class="bf-platform-form bf-platform-section">
+        <label>Campo financeiro<input type="number" value="12000"></label>
+        <label>Modo de decisao<select><option>Menor custo</option><option>Preservar caixa</option><option>Rapidez</option></select></label>
+        <label>Observacao<textarea rows="3">Comentario consultivo demonstrativo.</textarea></label>
+        <button class="btn btn--primary" type="button">Acao principal</button>
+        <button class="btn btn--ghost" type="button">Acao secundaria</button>
+      </form>
+    </section>
+
+    <section class="bf-platform-panel bf-platform-section" id="componentes-dados">
+      <div class="bf-admin-panel-heading">
+        <div><span class="bf-badge bf-badge--gold">Dados</span><h2>Metricas e tabela</h2></div>
+      </div>
+      <div class="bf-platform-metrics">
+        <div class="bf-platform-metric is-strong"><small>Stagebars</small><strong>16+</strong></div>
+        <div class="bf-platform-metric"><small>Calculadoras</small><strong>17</strong></div>
+        <div class="bf-platform-metric is-warn"><small>Legados</small><strong>3</strong></div>
+      </div>
+      <div class="bf-admin-table-wrap bf-platform-section">
+        <table class="data-table bf-admin-table">
+          <thead><tr><th>Componente</th><th>Uso</th><th>Contrato</th></tr></thead>
+          <tbody>
+            <tr><td>Stagebar</td><td>Navegacao de jornada</td><td><code>data-v8-stagebar</code></td></tr>
+            <tr><td>Decision Strip</td><td>Resumo de decisao</td><td><code>bf-v8-decision-strip</code></td></tr>
+            <tr><td>Timeline</td><td>Continuidade</td><td><code>bf-client-timeline</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <div data-shell-footer></div>
+  <script src="../js/auth.js"></script>
+  <script src="../js/shared-layout.js"></script>
+</body>
+</html>

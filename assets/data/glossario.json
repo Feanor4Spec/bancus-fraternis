@@ -1,0 +1,52 @@
+[
+  {
+    "termo": "Carta de credito",
+    "categoria": "Consorcio",
+    "definicao": "Valor contratado que sera usado para aquisicao do bem ou servico apos a contemplacao."
+  },
+  {
+    "termo": "Fundo comum",
+    "categoria": "Consorcio",
+    "definicao": "Parte da parcela destinada a formar o caixa coletivo usado nas contemplations."
+  },
+  {
+    "termo": "Taxa de administracao",
+    "categoria": "Consorcio",
+    "definicao": "Remuneracao da administradora pela gestao do grupo, normalmente diluida no prazo."
+  },
+  {
+    "termo": "Assembleia",
+    "categoria": "Consorcio",
+    "definicao": "Evento periodico em que ocorrem sorteios, lances e deliberacoes do grupo."
+  },
+  {
+    "termo": "Contemplacao",
+    "categoria": "Consorcio",
+    "definicao": "Momento em que o participante passa a ter direito de usar a carta de credito."
+  },
+  {
+    "termo": "MOB Contemplacao",
+    "categoria": "Controle",
+    "definicao": "Mes operacional previsto para a contemplacao em um cenario simulado."
+  },
+  {
+    "termo": "MOB Faturamento",
+    "categoria": "Controle",
+    "definicao": "Mes operacional previsto para faturamento ou uso efetivo do credito."
+  },
+  {
+    "termo": "CET",
+    "categoria": "Credito",
+    "definicao": "Custo efetivo total, incluindo juros, tarifas, impostos e custos acessorios."
+  },
+  {
+    "termo": "SAC",
+    "categoria": "Financiamento",
+    "definicao": "Sistema de amortizacao constante, com parcela decrescente ao longo do tempo."
+  },
+  {
+    "termo": "Price",
+    "categoria": "Financiamento",
+    "definicao": "Sistema de parcela fixa, com composicao de juros e amortizacao variando no tempo."
+  }
+]

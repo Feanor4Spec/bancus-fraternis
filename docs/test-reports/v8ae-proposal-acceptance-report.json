@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "uiContract": {
+    "htmlPanel": true,
+    "serviceScript": true,
+    "appSave": true,
+    "pdfBlock": true,
+    "cssPanel": true
+  },
+  "serviceContract": {
+    "draftStatus": "pending",
+    "partialStatus": "partial",
+    "reviewedStatus": "reviewed",
+    "reviewedVersion": 2
+  },
+  "failures": []
+}

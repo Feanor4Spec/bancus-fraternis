@@ -1,0 +1,19 @@
+{
+  "ok": true,
+  "timeline": [
+    "Diagnostico",
+    "Calculadora",
+    "Trilha",
+    "Comparador",
+    "Simulacao",
+    "Proposta",
+    "Handoff"
+  ],
+  "contracts": {
+    "heroContext": true,
+    "dashboardHref": true,
+    "proposalStage": true,
+    "handoffAging": true
+  },
+  "failures": []
+}

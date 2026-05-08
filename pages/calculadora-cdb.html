@@ -1,0 +1,83 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora - Bank Fratern</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="icon" href="../assets/logos/bank-fratern-icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/bank-fratern-design-system.css">
+  <link rel="stylesheet" href="../assets/css/platform.css">
+</head>
+<body class="bf-platform-body calculator-detail-page" data-bf-page="calculadora" data-calculator-slug="cdb">
+  <div data-shell-header></div>
+  <main class="bf-platform-shell">
+    <section class="bf-platform-hero">
+      <div class="bf-platform-hero__content">
+        <span class="bf-badge bf-badge--gold" data-calculator-badge>Calculadora</span>
+        <h1 data-calculator-title>Calculadora financeira</h1>
+        <p data-calculator-description>Carregando modulo financeiro...</p>
+      </div>
+      <aside class="bf-platform-hero__rail" data-calculator-related></aside>
+    </section>
+    <section class="bf-v8-stagebar bf-v8-stagebar--inside" aria-label="Atalhos da calculadora" data-v8-stagebar>
+      <div class="bf-v8-stagebar__intro">
+        <span>Calculadora v8</span>
+        <strong>Entrada, resultado, memoria, relacionadas e dashboard conectados.</strong>
+      </div>
+      <a class="bf-v8-stagebar__item" href="#calculadora-entrada" data-step="1"><span>Entrada</span><strong>Campos do cenario</strong></a>
+      <a class="bf-v8-stagebar__item" href="#decisao-calculadora" data-step="2"><span>Decisao</span><strong>Resumo explicavel</strong></a>
+      <a class="bf-v8-stagebar__item" href="#resultado-calculadora" data-step="3"><span>Resultado</span><strong>Metricas e memoria</strong></a>
+      <a class="bf-v8-stagebar__item" href="calculadoras.html" data-step="4"><span>Relacionadas</span><strong>Hub financeiro</strong></a>
+      <a class="bf-v8-stagebar__item" href="dashboard-cliente.html#continuidade-cliente" data-step="5"><span>Continuidade</span><strong>Dashboard</strong></a>
+    </section>
+    <section class="bf-platform-panel" id="calculadora-perfil" data-calculator-profile-summary></section>
+    <section class="bf-v8-decision-strip bf-v8-decision-strip--outer" id="decisao-calculadora" aria-label="Ponte de decisao da calculadora" data-calculator-decision-strip></section>
+    <section class="bf-platform-grid bf-platform-grid--two bf-platform-section" id="calculadora-entrada">
+      <article class="bf-platform-panel">
+        <span class="bf-badge bf-badge--navy">Entrada</span>
+        <h2 data-calculator-question>Configure o cenario</h2>
+        <form class="bf-platform-form bf-calculator-form" data-calculator-form></form>
+      </article>
+      <article class="bf-platform-panel">
+        <span class="bf-badge bf-badge--ok">Formula e risco</span>
+        <h2>Premissas</h2>
+        <p><strong>Formula:</strong> <span data-calculator-formula></span></p>
+        <p><strong>Risco:</strong> <span data-calculator-risk></span></p>
+      </article>
+    </section>
+    <section class="bf-platform-panel bf-platform-section" id="resultado-calculadora" data-calculator-result></section>
+    <section class="bf-platform-panel bf-platform-section" id="continuidade-calculadora">
+      <div class="bf-admin-panel-heading">
+        <div>
+          <span class="bf-badge bf-badge--navy">Ponte da calculadora</span>
+          <h2>Do calculo ao proximo passo</h2>
+        </div>
+        <a class="btn btn--ghost btn--sm" href="dashboard-cliente.html#continuidade-cliente">Ver dashboard</a>
+      </div>
+      <div class="bf-client-timeline" data-calculator-bridge-timeline></div>
+    </section>
+    <section class="bf-platform-panel bf-platform-section">
+      <div class="bf-admin-panel-heading"><div><span class="bf-badge bf-badge--gold">Historico</span><h2>Simulacoes recentes</h2></div></div>
+      <div class="bf-calculator-history" data-calculator-history></div>
+    </section>
+  </main>
+  <div data-shell-footer></div>
+  <script src="../js/auth.js"></script>
+  <script src="../js/shared-layout.js"></script>
+  <script src="../assets/js/formatters.js"></script>
+  <script src="../assets/js/formulas/financial.formulas.js"></script>
+  <script src="../assets/js/services/decision-context.service.js"></script>
+  <script src="../assets/js/services/calculadoras.service.js"></script>
+  <script src="../assets/js/calculadoras-page.js"></script>
+</body>
+</html>
+
+
+
+
+
+

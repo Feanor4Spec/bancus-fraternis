@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "cockpit": {
+    "marker": true,
+    "nextActions": 2,
+    "overdue": 2,
+    "unassigned": 1,
+    "waiting": 1
+  },
+  "failures": []
+}

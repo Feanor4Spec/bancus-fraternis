@@ -1,0 +1,39 @@
+{
+  "ok": true,
+  "url": "http://127.0.0.1:8080/pages/simulador.html",
+  "screenshots": {
+    "desktop": "C:\\Users\\gustavo.pinheiro\\.gemini\\antigravity\\scratch\\Bank Fratern\\docs\\test-prints\\v8ad-proposta-espelhada-desktop.png",
+    "mobile": "C:\\Users\\gustavo.pinheiro\\.gemini\\antigravity\\scratch\\Bank Fratern\\docs\\test-prints\\v8ad-proposta-espelhada-mobile.png"
+  },
+  "pdf": {
+    "path": "C:\\Users\\gustavo.pinheiro\\.gemini\\antigravity\\scratch\\Bank Fratern\\docs\\test-prints\\v8ad-proposta-exportada.pdf",
+    "downloaded": true,
+    "sizeBytes": 4930560,
+    "roughPageCount": 10,
+    "error": null
+  },
+  "desktopMetrics": {
+    "rootReady": true,
+    "summaryReady": true,
+    "conversationCards": 4,
+    "printBlocks": 13,
+    "exportCanvasCount": 5,
+    "summaryCanvasCount": 5,
+    "uniqueCanvasIds": true,
+    "hasProposalSurface": true,
+    "noHorizontalOverflow": true,
+    "rootWidth": 898,
+    "viewportWidth": 1440,
+    "firstBlockTitle": "Blocos que conversam entre si"
+  },
+  "mobileMetrics": {
+    "noHorizontalOverflow": true,
+    "conversationColumns": "306px",
+    "rootWidth": 340,
+    "bodyScrollWidth": 390,
+    "viewportWidth": 390
+  },
+  "dialogs": [],
+  "pageErrors": [],
+  "badResponses": []
+}

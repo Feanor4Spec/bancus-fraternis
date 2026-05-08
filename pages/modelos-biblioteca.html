@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Biblioteca de Modelos - Bank Fratern</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/bank-fratern-design-system.css">
+  <link rel="stylesheet" href="../assets/css/platform.css">
+</head>
+<body class="bf-platform-body" data-bf-page="modelos-biblioteca" data-auth-required="true" data-auth-roles="admin,consultor,cliente">
+  <div data-shell-header></div>
+
+  <main class="bf-platform-shell">
+    <section class="bf-platform-hero">
+      <div class="bf-platform-hero__content">
+        <span class="bf-badge bf-badge--gold">Biblioteca de modelos</span>
+        <h1>Modelos padrao para iniciar comparacoes melhores.</h1>
+        <p>Escolha uma jornada financeira, clone um modelo publicado para seu usuario e abra o comparador com campos, produtos e premissas ja organizados.</p>
+      </div>
+      <aside class="bf-platform-hero__rail">
+        <a href="comparador.html">Comparador <span>CP</span></a>
+        <a href="dashboard-cliente.html">Dashboard <span>DC</span></a>
+        <a href="modelos-governanca.html">Governanca <span>GM</span></a>
+        <a href="produtos.html">Produtos <span>PR</span></a>
+      </aside>
+    </section>
+
+    <section class="bf-platform-panel bf-platform-section" data-standard-models-summary></section>
+
+    <section class="bf-platform-panel bf-platform-section">
+      <div class="bf-admin-panel-heading">
+        <div>
+          <span class="bf-badge bf-badge--navy">Modelos publicados</span>
+          <h2>Escolha uma jornada</h2>
+        </div>
+        <a class="btn btn--ghost btn--sm" href="comparador.html">Criar manualmente</a>
+      </div>
+      <div class="bf-admin-toolbar">
+        <label>Busca
+          <input type="search" data-standard-model-search placeholder="Nome, jornada, publico ou risco">
+        </label>
+        <label>Jornada
+          <select data-standard-model-journey></select>
+        </label>
+        <label>Preset
+          <select data-standard-model-preset>
+            <option value="">Todos</option>
+            <option value="comprar_bem">Comprar bem</option>
+            <option value="obter_liquidez">Obter liquidez</option>
+            <option value="trocar_veiculo">Trocar veiculo</option>
+            <option value="consumo_pontual">Consumo pontual</option>
+          </select>
+        </label>
+      </div>
+      <div class="bf-platform-grid" data-standard-models-grid></div>
+    </section>
+
+    <section class="bf-platform-panel bf-platform-section">
+      <div class="bf-admin-panel-heading">
+        <div>
+          <span class="bf-badge bf-badge--ok">Meus clones</span>
+          <h2>Modelos copiados para este usuario</h2>
+        </div>
+        <a class="btn btn--ghost btn--sm" href="dashboard-cliente.html">Ver dashboard</a>
+      </div>
+      <div class="bf-calculator-history" data-standard-model-clones></div>
+    </section>
+  </main>
+
+  <div data-shell-footer></div>
+  <script src="../js/auth.js"></script>
+  <script src="../js/shared-layout.js"></script>
+  <script src="../assets/js/formatters.js"></script>
+  <script src="../assets/js/services/dados.service.js"></script>
+  <script src="../assets/js/components/cards.js"></script>
+  <script src="../assets/js/components/tables.js"></script>
+  <script src="../assets/js/components/alerts.js"></script>
+  <script src="../assets/js/components/tooltips.js"></script>
+  <script src="../assets/js/components/charts.js"></script>
+  <script src="../assets/js/formulas/price.formulas.js"></script>
+  <script src="../assets/js/formulas/sac.formulas.js"></script>
+  <script src="../assets/js/formulas/consorcio.formulas.js"></script>
+  <script src="../assets/js/formulas/comparison.formulas.js"></script>
+  <script src="../assets/js/services/financiamento.service.js"></script>
+  <script src="../assets/js/services/cdc.service.js"></script>
+  <script src="../assets/js/services/garantia.service.js"></script>
+  <script src="../assets/js/services/consignado.service.js"></script>
+  <script src="../assets/js/services/consorcio.service.js"></script>
+  <script src="../assets/js/services/comparador.service.js"></script>
+  <script src="../assets/js/services/recomendacao.service.js"></script>
+  <script src="../assets/js/services/modelos-recomendacao.service.js"></script>
+  <script src="../assets/js/bf-platform.js"></script>
+  <script src="../assets/js/modelos-biblioteca.js"></script>
+</body>
+</html>

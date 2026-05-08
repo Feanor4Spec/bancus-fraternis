@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description"
+    content="ConsórcioPro - Simulador completo de consórcio. Simule, entenda e exporte propostas comerciais com visão financeira detalhada.">
+  <meta name="theme-color" content="#0B2C52">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="icon" href="../assets/logos/bank-fratern-icon.svg" type="image/svg+xml">
+  <title>ConsórcioPro  Simulador de Consórcio</title>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- jsPDF + html2canvas para exportação PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <!-- Estilos -->
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/bank-fratern-design-system.css">
+  <link rel="stylesheet" href="../assets/css/bf-design-system-v8.css">
+</head>
+
+<body class="sim-body bf-v8-body" data-bf-page="simulador" data-bf-archetype="calculator" data-bf-visual-version="8">
+
+  <!-- """""""""" TOASTS """""""""" -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- """""""""" LOADING OVERLAY (V7) """""""""" -->
+  <div id="loading-overlay" class="loading-overlay" style="display:none;">
+    <div class="loading-overlay__content">
+      <div class="loading-spinner"></div>
+      <span class="loading-overlay__eyebrow">Fase 1 - Base real</span>
+      <p id="loading-message" class="loading-overlay__title">Carregando base de grupos...</p>
+      <p id="loading-detail" class="loading-overlay__detail">17.000+ grupos reais do Banco Central</p>
+      <div class="loading-progress" aria-label="Progresso de carregamento da base">
+        <span id="loading-progress-bar"></span>
+      </div>
+      <div class="loading-progress__meta">
+        <span id="loading-progress-value">0%</span>
+        <span>Conexao segura com JSON local</span>
+      </div>
+      <ol class="loading-steps" id="loading-stage-list" aria-label="Etapas de carregamento">
+        <li data-loading-stage="connect">Conexao</li>
+        <li data-loading-stage="download">Download</li>
+        <li data-loading-stage="parse">Validacao</li>
+        <li data-loading-stage="filters">Filtros</li>
+        <li data-loading-stage="shelf">Prateleira</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- """""""""" HEADER COMPACTO DO SIMULADOR """""""""" -->
+  <header class="sim-header bf-header">
+    <div class="sim-header__inner bf-header__inner">
+      <a href="index.html" class="sim-header__back" title="Voltar para Bank Fratern">
+          Início
+      </a>
+      <div class="sim-header__brand bf-brand">
+        <img src="../assets/logos/logo-bf-simulator.svg" alt="BF Simulator" class="sim-header__logo bf-brand__logo">
+        <span class="sim-header__product">Consórcio<strong>Pro</strong></span>
+      </div>
+      <div class="sim-header__actions">
+        <button class="btn btn--accent btn--sm" onclick="App.carregarExemplo()" id="btn-exemplo">
+          <span class="bf-action-icon">EX</span> Exemplo
+        </button>
+        <button class="btn btn--ghost btn--sm" onclick="App.salvarSimulacao()" id="btn-salvar" title="Salvar simulação">
+          <span class="bf-action-icon">SV</span> Salvar
+        </button>
+        <button class="btn btn--ghost btn--sm" onclick="App.abrirCarregamento()" id="btn-carregar"
+          title="Carregar simulação">
+          <span class="bf-action-icon">AB</span> Carregar
+        </button>
+        <button class="btn btn--ghost btn--sm" onclick="App.resetar()" id="btn-resetar">
+          <span class="bf-action-icon">RS</span> Resetar
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Legacy top stagebar removed; bottom collapsible shortcuts are the active contract.
+    <div class="bf-v8-stagebar__intro">
+      <span>Simulador v8</span>
+      <strong>Base real, prateleira, resultado e retomada conectados.</strong>
+    </div>
+    <a class="bf-v8-stagebar__item" href="#database-status-panel" data-step="1">
+      <span>Base</span>
+      <strong>Status da conexão</strong>
+    </a>
+    <a class="bf-v8-stagebar__item" href="#step-4" data-step="2">
+      <span>Escolha</span>
+      <strong>Prateleira de grupos</strong>
+    </a>
+    <a class="bf-v8-stagebar__item" href="#decisao-simulador" data-step="3">
+      <span>Decisão</span>
+      <strong>Próximo passo</strong>
+    </a>
+    <a class="bf-v8-stagebar__item" href="#step-7" data-step="4">
+      <span>Resultado</span>
+      <strong>Resumo financeiro</strong>
+    </a>
+    <a class="bf-v8-stagebar__item" href="carteira.html#decisao-carteira" data-step="5">
+      <span>Continuidade</span>
+      <strong>Retomar na Carteira</strong>
+    </a>
+  -->
+
+  <!-- """""""""" LAYOUT: SIDEBAR STEPPER + CONTEaDO """""""""" -->
+  <section class="bf-v8-decision-strip bf-v8-decision-strip--outer" id="decisao-simulador"
+    aria-label="Resumo de decisão operacional do simulador" data-simulator-decision-strip>
+  </section>
+
+  <section class="bf-platform-panel bf-platform-section" id="simulador-prontidao" data-simulator-readiness>
+  </section>
+
+  <div class="sim-layout">
+
+    <!-- Sidebar Vertical Stepper -->
+    <aside class="sim-sidebar" id="sim-sidebar">
+      <nav class="sim-stepper" aria-label="Etapas da simulação">
+        <div class="sim-stepper__step sim-stepper__step--active" data-step="1" onclick="App.goToStep(1)">
+          <div class="sim-stepper__mark">
+            <img src="../assets/icons/journey/01-visao-geral.svg" alt="" class="sim-stepper__icon">
+            <span class="sim-stepper__number">1</span>
+          </div>
+          <span class="sim-stepper__label">Consultor</span>
+        </div>
+        <div class="sim-stepper__step" data-step="2" onclick="App.goToStep(2)">
+          <div class="sim-stepper__mark">
+            <img src="../assets/icons/journey/02-adesao.svg" alt="" class="sim-stepper__icon">
+            <span class="sim-stepper__number">2</span>
+          </div>
+          <span class="sim-stepper__label">Cliente</span>
+        </div>
+        <div class="sim-stepper__step" data-step="3" onclick="App.goToStep(3)">
+          <div class="sim-stepper__mark">
+            <img src="../assets/icons/journey/03-parcelas.svg" alt="" class="sim-stepper__icon">
+            <span class="sim-stepper__number">3</span>
+          </div>
+          <span class="sim-stepper__label">Filtros</span>
+        </div>
+        <div class="sim-stepper__step" data-step="4" onclick="App.goToStep(4)">
+          <div class="sim-stepper__mark">
+            <img src="../assets/icons/journey/05-assembleia.svg" alt="" class="sim-stepper__icon">
+            <span class="sim-stepper__number">4</span>
+          </div>
+          <span class="sim-stepper__label">Prateleira</span>
+        </div>
+        <div class="sim-stepper__step" data-step="5" onclick="App.goToStep(5)">
+          <div class="sim-stepper__mark">
+            <img src="../assets/icons/journey/06-lance.svg" alt="" class="sim-stepper__icon">
+            <span class="sim-stepper__number">5</span>
+          </div>
+          <span class="sim-stepper__label">Parâmetros</span>
+        </div>
+        <div class="sim-stepper__step" data-step="6" onclick="App.goToStep(6)">
+          <div class="sim-stepper__mark">
+            <img src="../assets/icons/journey/04-reajuste.svg" alt="" class="sim-stepper__icon">
+            <span class="sim-stepper__number">6</span>
+          </div>
+          <span class="sim-stepper__label">Eventos</span>
+        </div>
+        <div class="sim-stepper__step" data-step="7" onclick="App.goToStep(7)">
+          <div class="sim-stepper__mark">
+            <img src="../assets/icons/journey/07-contemplacao.svg" alt="" class="sim-stepper__icon">
+            <span class="sim-stepper__number">7</span>
+          </div>
+          <span class="sim-stepper__label">Resultados</span>
+        </div>
+        <div class="sim-stepper__step" data-step="8" onclick="App.goToStep(8)">
+          <div class="sim-stepper__mark">
+            <img src="../assets/icons/journey/08-credito-documentos.svg" alt="" class="sim-stepper__icon">
+            <span class="sim-stepper__number">8</span>
+          </div>
+          <span class="sim-stepper__label">Tabela</span>
+        </div>
+        <div class="sim-stepper__step" data-step="9" onclick="App.goToStep(9)">
+          <div class="sim-stepper__mark">
+            <img src="../assets/icons/journey/09-faturamento.svg" alt="" class="sim-stepper__icon">
+            <span class="sim-stepper__number">9</span>
+          </div>
+          <span class="sim-stepper__label">Proposta</span>
+        </div>
+        <div class="sim-stepper__step" data-step="10" onclick="App.goToStep(10)">
+          <div class="sim-stepper__mark">
+            <img src="../assets/icons/journey/10-pos-contemplacao.svg" alt="" class="sim-stepper__icon">
+            <span class="sim-stepper__number">10</span>
+          </div>
+          <span class="sim-stepper__label">Comparador</span>
+        </div>
+      </nav>
+
+      <div class="sim-sidebar__footer">
+        <a href="index.html" class="btn btn--ghost btn--sm" style="width:100%;text-align:center;">Voltar ao portal</a>
+      </div>
+    </aside>
+
+    <!-- Conteúdo Principal -->
+    <main class="sim-main">
+      <section class="database-status-panel" id="database-status-panel" data-state="pending" aria-live="polite">
+        <div class="database-status-panel__main">
+          <span class="database-status-panel__badge" id="database-status-badge">Fase 1</span>
+          <div>
+            <h2 id="database-status-title">Conexao com base real</h2>
+            <p id="database-status-text">Aguardando carregamento da base local de grupos.</p>
+          </div>
+        </div>
+        <div class="database-status-panel__progress">
+          <div class="database-status-panel__progress-head">
+            <span>Progresso da base</span>
+            <strong id="database-status-percent">0%</strong>
+          </div>
+          <div class="database-status-progress" aria-hidden="true">
+            <span id="database-status-bar"></span>
+          </div>
+          <dl class="database-status-panel__facts">
+            <div>
+              <dt>Registros</dt>
+              <dd id="database-status-count">0 grupos</dd>
+            </div>
+            <div>
+              <dt>Fonte</dt>
+              <dd id="database-status-source">Pendente</dd>
+            </div>
+            <div>
+              <dt>Caminho</dt>
+              <dd id="database-status-path">data_base/Tab_Grupos_Consorcio.json</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <!--  ETAPA 1: Dados do Consultor (V3)  -->
+      <section id="step-1" class="step-section step-section--active" aria-label="Dados do Consultor">
+        <div class="section-header">
+          <div class="section-header__eyebrow">Etapa 1 de 10</div>
+          <h2 class="section-header__title">Dados do Consultor</h2>
+          <p class="section-header__desc">Identifique o vendedor/consultor responsável por esta simulação.</p>
+        </div>
+
+        <div class="card">
+          <div class="card__header">
+            <div class="card__title">
+              <div class="card__title-icon card__title-icon--blue">CO</div>
+              Identificação Profissional
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="consultor">Nome Completo</label>
+              <input type="text" id="consultor" class="form-input" placeholder="Ex: Maria Santos">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="consultorEmail">E-mail Profissional</label>
+              <input type="email" id="consultorEmail" class="form-input" placeholder="consultor@empresa.com">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="consultorTelefone">Telefone / WhatsApp</label>
+              <input type="tel" id="consultorTelefone" class="form-input" placeholder="(11) 99999-9999">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="consultorEmpresa">Empresa / Escritório</label>
+              <input type="text" id="consultorEmpresa" class="form-input" placeholder="Nome da empresa">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="consultorCodigo">Código do Consultor</label>
+              <input type="text" id="consultorCodigo" class="form-input" placeholder="Ex: CONS-0042">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="dataSimulacao">Data da Simulação</label>
+              <input type="date" id="dataSimulacao" class="form-input">
+            </div>
+          </div>
+        </div>
+
+        <div class="step-nav">
+          <div></div>
+          <button class="btn btn--primary" onclick="App.nextStep()">Próximo: Dados do Cliente  </button>
+        </div>
+      </section>
+
+      <!--  ETAPA 2: Dados do Cliente (V3)  -->
+      <section id="step-2" class="step-section" aria-label="Dados do Cliente">
+        <div class="section-header">
+          <div class="section-header__eyebrow">Etapa 2 de 10</div>
+          <h2 class="section-header__title">Dados do Cliente</h2>
+          <p class="section-header__desc">Preencha as informações do cliente que receberá esta proposta.</p>
+        </div>
+
+        <div class="card">
+          <div class="card__header">
+            <div class="card__title">
+              <div class="card__title-icon card__title-icon--gold">CL</div>
+              Informações do Cliente
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="nomeCliente">Nome Completo do Cliente</label>
+              <input type="text" id="nomeCliente" class="form-input" placeholder="Ex: João da Silva">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="clienteCpf">CPF</label>
+              <input type="text" id="clienteCpf" class="form-input" placeholder="000.000.000-00">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="clienteEmail">E-mail do Cliente</label>
+              <input type="email" id="clienteEmail" class="form-input" placeholder="cliente@email.com">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="clienteTelefone">Telefone do Cliente</label>
+              <input type="tel" id="clienteTelefone" class="form-input" placeholder="(11) 99999-9999">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="clienteObjetivo">Objetivo do Cliente
+                <span class="tooltip-trigger" data-tip="O que o cliente deseja alcançar com o consórcio.">?</span>
+              </label>
+              <select id="clienteObjetivo" class="form-select">
+                <option value="aquisicao">Aquisição de bem</option>
+                <option value="investimento">Investimento / Patrimônio</option>
+                <option value="troca">Troca / Upgrade</option>
+                <option value="reforma">Reforma / Construção</option>
+                <option value="outro">Outro</option>
+              </select>
+            </div>
+            <div class="form-group form-group--full">
+              <label class="form-label" for="observacoes">Observações Comerciais</label>
+              <textarea id="observacoes" class="form-textarea"
+                placeholder="Notas sobre perfil, necessidades e expectativas do cliente..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-nav">
+          <button class="btn btn--ghost" onclick="App.prevStep()">&larr; Voltar</button>
+          <button class="btn btn--primary" onclick="App.nextStep()">Próximo: Filtros de Simulação  </button>
+        </div>
+      </section>
+
+      <!--  ETAPA 3: Filtros de Simulação (V3)  -->
+      <section id="step-3" class="step-section" aria-label="Filtros de Simulação">
+        <div class="section-header">
+          <div class="section-header__eyebrow">Etapa 3 de 10</div>
+          <h2 class="section-header__title">Filtros de Simulação</h2>
+          <p class="section-header__desc">Selecione os critérios para encontrar os melhores grupos disponíveis.</p>
+        </div>
+
+        <div class="card">
+          <div class="card__header">
+            <div class="card__title">
+              <div class="card__title-icon card__title-icon--green">FT</div>
+              Parâmetros de Busca
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="filtroAdministradora">Administradora
+                <span class="tooltip-trigger" data-tip="Selecione a administradora de consórcio desejada.">?</span>
+              </label>
+              <select id="filtroAdministradora" class="form-select">
+                <option value=""> Todas </option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="filtroProduto">Produto / Segmento
+                <span class="tooltip-trigger" data-tip="O tipo de bem que o cliente deseja adquirir.">?</span>
+              </label>
+              <select id="filtroProduto" class="form-select">
+                <option value=""> Todos </option>
+                <option value="1">Imóveis</option>
+                <option value="3">Automóveis</option>
+                <option value="4">Motos</option>
+                <option value="2">Pesados e Equipamentos</option>
+                <option value="5">Outros Bens Móveis</option>
+                <option value="6">Serviços Turísticos</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="filtroPrazoMin">Prazo Mínimo (meses)</label>
+              <input type="number" id="filtroPrazoMin" class="form-input" min="1" max="300" placeholder="Ex: 36">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="filtroPrazoMax">Prazo Máximo (meses)</label>
+              <input type="number" id="filtroPrazoMax" class="form-input" min="1" max="300" placeholder="Ex: 200">
+            </div>
+          </div>
+
+          <!-- V7: Filtros Avançados -->
+          <div class="card"
+            style="margin-top:16px;padding:18px 24px;border:1px dashed var(--primary-200);background:rgba(59,130,246,0.03);">
+            <div style="font-weight:700;font-size:14px;margin-bottom:14px;color:var(--gray-700);">Filtros Avançados
+              (Análise Heurística)</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" for="filtroCartaMin">Carta Mínima (R$)</label>
+                <input type="number" id="filtroCartaMin" class="form-input" min="0" step="1000" placeholder="Ex: 50000">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="filtroCartaMax">Carta Máxima (R$)</label>
+                <input type="number" id="filtroCartaMax" class="form-input" min="0" step="1000"
+                  placeholder="Ex: 300000">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="filtroTaxaMax">Taxa Adm. Máxima (%)</label>
+                <input type="number" id="filtroTaxaMax" class="form-input" min="0" max="50" step="0.5"
+                  placeholder="Ex: 18">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="filtroClassificacao">Classificação Executiva
+                  <span class="tooltip-trigger" data-tip="A=Expansão, B=Sustentação, C=Recuperação, D=Crítico">?</span>
+                </label>
+                <select id="filtroClassificacao" class="form-select">
+                  <option value=""> Todas </option>
+                  <option value="A">A - Expansão</option>
+                  <option value="B">B - Sustentação</option>
+                  <option value="C">C - Recuperação</option>
+                  <option value="D">D - Crítico</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="filtroSaude">Saúde da Carteira</label>
+                <select id="filtroSaude" class="form-select">
+                  <option value=""> Todas </option>
+                  <option value="Baixa">Baixa (boa)</option>
+                  <option value="Controlada">Controlada</option>
+                  <option value="Atenção">Atenção</option>
+                  <option value="Crítica">Crítica</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="filtroMaturidade">Maturidade do Grupo</label>
+                <select id="filtroMaturidade" class="form-select">
+                  <option value=""> Todas </option>
+                  <option value="Início">Início</option>
+                  <option value="Crescimento">Crescimento</option>
+                  <option value="Maturação">Maturação</option>
+                  <option value="Final">Final</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="filtroBusca">Busca Livre</label>
+                <input type="text" id="filtroBusca" class="form-input" placeholder="Administradora, grupo, segmento...">
+              </div>
+              <div class="form-group" style="display:flex;align-items:center;gap:16px;padding-top:8px;">
+                <label class="form-switch">
+                  <input type="checkbox" id="filtroFgts">
+                  <span class="form-switch__track"></span>
+                  <span class="form-switch__label">Aceita FGTS</span>
+                </label>
+              </div>
+              <div class="form-group" style="display:flex;align-items:center;gap:16px;padding-top:8px;">
+                <label class="form-switch">
+                  <input type="checkbox" id="filtroParcelaReduzida">
+                  <span class="form-switch__track"></span>
+                  <span class="form-switch__label">Parcela Reduzida</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap;">
+            <button class="btn btn--primary" onclick="App.buscarGrupos()" id="btn-buscar-grupos"><span class="bf-action-icon">BG</span> Buscar
+              Grupos</button>
+            <button class="btn btn--ghost" onclick="App.limparFiltros()">  Limpar Filtros</button>
+          </div>
+        </div>
+
+        <div class="step-nav">
+          <button class="btn btn--ghost" onclick="App.prevStep()">&larr; Voltar</button>
+          <button class="btn btn--primary" onclick="App.buscarGrupos(); App.nextStep()">Próximo: Ver Prateleira
+             </button>
+        </div>
+      </section>
+
+      <!--  ETAPA 4: Prateleira de Grupos (V3)  -->
+      <section id="step-4" class="step-section" aria-label="Prateleira de Grupos">
+        <div class="section-header">
+          <div class="section-header__eyebrow">Etapa 4 de 10</div>
+          <h2 class="section-header__title">Prateleira de Grupos</h2>
+          <p class="section-header__desc">Explore os grupos disponíveis. Clique em <strong>+ Adicionar</strong> para
+            incluir um grupo no projeto. Você pode adicionar vários grupos e editar os valores antes de simular.</p>
+        </div>
+
+        <!-- Ordenação + Contagem -->
+        <div class="journey-progress-panel" id="journey-progress-panel" data-state="pending" aria-live="polite">
+          <div class="journey-progress-panel__head">
+            <div>
+              <span class="journey-progress-panel__eyebrow">Jornada da prateleira</span>
+              <strong id="journey-progress-text">Aguardando busca de grupos.</strong>
+            </div>
+            <span id="journey-progress-value">0%</span>
+          </div>
+          <div class="journey-progress" aria-label="Progresso da busca de grupos">
+            <span id="journey-progress-bar"></span>
+          </div>
+          <div class="journey-progress-panel__steps">
+            <span data-journey-stage="connect">Base</span>
+            <span data-journey-stage="filters">Filtros</span>
+            <span data-journey-stage="shelf">Resultados</span>
+          </div>
+        </div>
+
+        <div class="card mb-6" style="padding:16px 24px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+            <div class="shelf-toolbar">
+              <label class="form-label" style="margin:0;" for="shelfSort">Ordenar por:</label>
+              <select id="shelfSort" class="form-select" style="width:auto;min-width:200px;"
+                onchange="App.buscarGrupos()">
+                <option value="maior_score">Maior Score</option>
+                <option value="melhor_classificacao">Melhor Classificação</option>
+                <option value="menor_taxa">Menor Taxa</option>
+                <option value="maior_carta">Maior Carta</option>
+                <option value="menor_prazo">Menor Prazo</option>
+                <option value="maior_prazo">Maior Prazo</option>
+                <option value="mais_ativas">Mais Cotas Ativas</option>
+                <option value="mais_contemplacoes">Mais Contemplações</option>
+              </select>
+              <label class="form-label" style="margin:0;" for="shelfPageSize">Por página:</label>
+              <select id="shelfPageSize" class="form-select" style="width:auto;min-width:92px;"
+                onchange="App.changeShelfPageSize(this.value)">
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="200">200</option>
+              </select>
+              <details class="shelf-columns-menu">
+                <summary class="btn btn--sm btn--ghost">ܷ Colunas</summary>
+                <div class="shelf-columns-menu__panel">
+                  <label><input type="checkbox" value="score" checked onchange="App.toggleShelfColumn(this.value, this.checked)"> Score</label>
+                  <label><input type="checkbox" value="classificacao" checked onchange="App.toggleShelfColumn(this.value, this.checked)"> Class.</label>
+                  <label><input type="checkbox" value="papel" checked onchange="App.toggleShelfColumn(this.value, this.checked)"> Papel</label>
+                  <label><input type="checkbox" value="admin" checked onchange="App.toggleShelfColumn(this.value, this.checked)"> Administradora</label>
+                  <label><input type="checkbox" value="grupo" checked onchange="App.toggleShelfColumn(this.value, this.checked)"> Grupo</label>
+                  <label><input type="checkbox" value="segmento" checked onchange="App.toggleShelfColumn(this.value, this.checked)"> Segmento</label>
+                  <label><input type="checkbox" value="carta" checked onchange="App.toggleShelfColumn(this.value, this.checked)"> Carta</label>
+                  <label><input type="checkbox" value="prazo" checked onchange="App.toggleShelfColumn(this.value, this.checked)"> Prazo</label>
+                  <label><input type="checkbox" value="taxa" checked onchange="App.toggleShelfColumn(this.value, this.checked)"> Taxa</label>
+                  <label><input type="checkbox" value="indice" checked onchange="App.toggleShelfColumn(this.value, this.checked)"> Índice</label>
+                  <label><input type="checkbox" value="ativas" checked onchange="App.toggleShelfColumn(this.value, this.checked)"> Ativas</label>
+                  <label><input type="checkbox" value="saude" checked onchange="App.toggleShelfColumn(this.value, this.checked)"> Saúde</label>
+                </div>
+              </details>
+            </div>
+            <div id="shelf-count" class="text-muted fw-bold" style="font-size:14px;">0 grupos encontrados</div>
+          </div>
+        </div>
+
+        <!-- Tabela da Prateleira -->
+        <div class="card">
+          <div class="table-wrapper">
+            <table class="data-table" id="shelf-table">
+              <thead>
+                <tr>
+                  <th data-shelf-col="score">Score</th>
+                  <th data-shelf-col="classificacao">Class.</th>
+                  <th data-shelf-col="papel">Papel</th>
+                  <th data-shelf-col="admin">Administradora</th>
+                  <th data-shelf-col="grupo">Grupo</th>
+                  <th data-shelf-col="segmento">Segmento</th>
+                  <th data-shelf-col="carta">Carta Ref.</th>
+                  <th data-shelf-col="prazo">Prazo</th>
+                  <th data-shelf-col="taxa">Taxa Adm.</th>
+                  <th data-shelf-col="indice">Índice</th>
+                  <th data-shelf-col="ativas">Ativas</th>
+                  <th data-shelf-col="saude">Saúde</th>
+                  <th data-shelf-col="acoes">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="shelf-table-body">
+                <tr>
+                  <td colspan="13" class="text-center text-muted" style="padding:40px;">Use os filtros acima para buscar
+                    grupos disponíveis.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <!-- V7: Controles de Paginação -->
+          <div id="shelf-pagination" class="shelf-pagination" style="display:none;">
+            <button class="btn btn--sm btn--ghost" id="shelf-prev-page" onclick="App.shelfPrevPage()"> 
+              Anterior</button>
+            <span id="shelf-page-info" class="shelf-page-info">Página 1 de 1</span>
+            <div class="shelf-page-jump-wrap">
+              <input type="number" id="shelf-page-jump" class="form-input shelf-page-jump" min="1" value="1"
+                aria-label="Ir para página" onkeydown="if(event.key==='Enter') App.shelfGoToPage(this.value)">
+              <button class="btn btn--sm btn--ghost" onclick="App.shelfGoToPage()">Ir</button>
+            </div>
+            <button class="btn btn--sm btn--ghost" id="shelf-next-page" onclick="App.shelfNextPage()">Próxima  </button>
+          </div>
+        </div>
+
+        <!-- Modal/Detalhes Expandido (hidden por padrão) -->
+        <div id="shelf-detail-modal" class="shelf-detail-overlay" style="display:none;">
+          <div class="shelf-detail-card">
+            <div class="shelf-detail-header">
+              <h3 id="shelf-detail-title">Detalhes do Grupo</h3>
+              <button class="btn btn--sm btn--ghost" onclick="App.fecharDetalheGrupo()">S" Fechar</button>
+            </div>
+            <div id="shelf-detail-content"></div>
+            <div style="margin-top:20px;text-align:right;">
+              <button class="btn btn--primary" onclick="App.selecionarGrupoDoDetalhe()">+ Adicionar ao Projeto</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- V5: Painel de Grupos Selecionados (Carrinho) -->
+        <div class="selected-groups-panel-wrapper">
+          <div class="selected-groups-panel-header">
+            <div class="selected-groups-panel-header__title">
+              <div class="card__title-icon card__title-icon--gold">PJ</div>
+              Grupos Selecionados para Simulação
+            </div>
+            <span id="shelf-cart-count" class="selected-groups-count-badge">0 grupos</span>
+          </div>
+          <div id="selected-groups-panel">
+            <div class="selected-groups-empty">
+              <span class="bf-empty-mark">PJ</span>
+              <p>Nenhum grupo adicionado ainda. Clique em <strong>+ Adicionar</strong> na tabela acima.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-nav">
+          <button class="btn btn--ghost" onclick="App.prevStep()">&larr; Voltar para Filtros</button>
+          <button class="btn btn--primary" disabled id="btn-avancar-parametros"
+            onclick="App.simularProjetoEstruturado()">Adicione pelo menos 1 grupo para avançar  </button>
+        </div>
+      </section>
+
+      <!--  ETAPA 5: Parâmetros Financeiros (Nova Sacola Consolidada)  -->
+      <section id="step-5" class="step-section" aria-label="Parâmetros Financeiros">
+        <div class="section-header">
+          <div class="section-header__eyebrow">Etapa 5 de 10</div>
+          <h2 class="section-header__title">Sacola de Consórcios</h2>
+          <p class="section-header__desc">Edite os parâmetros de cada grupo selecionado e veja os resultados
+            consolidados do seu projeto.</p>
+        </div>
+
+        <!-- Dashboard Consolidado (Topo) -->
+        <div class="card mb-6" id="step5-dashboard" style="display:none;">
+          <!-- Populated via JS App.renderStep5Dashboard() -->
+        </div>
+
+        <!-- Lista de Grupos Selecionados (Cart) -->
+        <div id="step5-cart-items">
+          <!-- Populated via JS App.renderStep5Cart() -->
+        </div>
+
+        <div class="step-nav" style="margin-top: 30px;">
+          <button class="btn btn--ghost" onclick="App.prevStep()">&larr; Voltar à Prateleira</button>
+          <button class="btn btn--primary" onclick="App.nextStep()">Avançar  </button>
+        </div>
+      </section>
+
+      <!--  ETAPA 6: Eventos e Regras (V3 renumerada)  -->
+      <section id="step-6" class="step-section" aria-label="Eventos e Regras">
+        <div class="section-header">
+          <div class="section-header__eyebrow">Etapa 6 de 10</div>
+          <h2 class="section-header__title">Eventos e Regras</h2>
+          <p class="section-header__desc">Configure adiantamentos de parcelas, inadimplência e encargos.</p>
+        </div>
+
+        <!-- Adiantamento -->
+        <div class="card mb-6">
+          <div class="card__header">
+            <div class="card__title">
+              <div class="card__title-icon card__title-icon--blue">AD</div>
+              Adiantamento de Parcelas
+            </div>
+            <button class="btn btn--sm btn--primary" onclick="App.addAdiantamentoRow()" id="btn-add-adiant">
+              + Adicionar
+            </button>
+          </div>
+          <p class="text-muted" style="margin-bottom:16px;font-size:14px;">
+            Adicione eventos de adiantamento de parcelas. Cada adiantamento pode reduzir o saldo devedor ou encurtar o
+            prazo.
+          </p>
+          <div id="adiantamentos-container"></div>
+        </div>
+
+        <!-- Inadimplência -->
+        <div class="card mb-6">
+          <div class="card__header">
+            <div class="card__title">
+              <div class="card__title-icon card__title-icon--red">IN</div>
+              Inadimplência
+            </div>
+            <button class="btn btn--sm btn--danger" onclick="App.addInadimplenciaRow()" id="btn-add-inad">
+              + Adicionar
+            </button>
+          </div>
+          <p class="text-muted" style="margin-bottom:16px;font-size:14px;">
+            Simule cenários de atraso no pagamento. Informe multa e juros nas configurações abaixo.
+          </p>
+          <div id="inadimplencias-container"></div>
+
+          <div class="form-grid mt-4" style="margin-top:20px;">
+            <div class="form-group">
+              <label class="form-label" for="multaAtraso">Multa por Atraso (%)
+                <span class="tooltip-trigger"
+                  data-tip="Percentual de multa aplicado sobre a parcela em caso de atraso.">?</span>
+              </label>
+              <input type="number" id="multaAtraso" class="form-input" min="0" max="100" step="0.1" value="2"
+                placeholder="2">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="jurosAtraso">Juros por Atraso (% a.m.)
+                <span class="tooltip-trigger"
+                  data-tip="Juros mensais aplicados sobre a parcela por cada mês de atraso.">?</span>
+              </label>
+              <input type="number" id="jurosAtraso" class="form-input" min="0" max="100" step="0.1" value="1"
+                placeholder="1">
+            </div>
+          </div>
+        </div>
+
+        <!-- Árvore Lógica Visual -->
+        <div class="card">
+          <div class="card__header">
+            <div class="card__title">
+              <div class="card__title-icon card__title-icon--gold">LG</div>
+              Árvore Lógica de Cálculo
+            </div>
+          </div>
+          <div
+            style="background:#f9fafb;border-radius:8px;padding:20px;font-family:'Courier New',monospace;font-size:13px;line-height:1.8;color:#374151;overflow-x:auto;">
+            <pre style="margin:0;white-space:pre;">t > N?
+S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
+ Não  
+   t = 1?
+   S <span style="color:#2563eb;">Sim   Parcela = Saldo_Inicial ÷ N (adesão)</span>
+    Não  
+      t = Mês_Aniversário?
+      S <span style="color:#f59e0b;">Sim   Saldo  (1 + Índice), recalcula parcela</span>
+       Não  
+         t = Mês_Contemplação?
+         S <span style="color:#10b981;">Sim   Abate lance, recalcula parcela</span>
+          Não  
+            Adiantamento?
+            S <span style="color:#8b5cf6;">Sim   Aplica estratégia configurada</span>
+             Não  
+               Inadimplência?
+               S <span style="color:#ef4444;">Sim   Multa + Juros</span>
+                <span style="color:#6b7280;">Não   Parcela = Saldo ÷ Prazo_Restante</span></pre>
+          </div>
+        </div>
+
+        <div class="step-nav">
+          <button class="btn btn--ghost" onclick="App.prevStep()">&larr; Voltar</button>
+          <button class="btn btn--success btn--lg" onclick="App.calcular(); App.nextStep();" id="btn-calcular">
+            <span class="bf-action-icon">CL</span> Calcular Simulação
+          </button>
+        </div>
+      </section>
+
+      <!--  ETAPA 7: Resumo da Proposta Estruturada  -->
+      <section id="step-7" class="step-section" aria-label="Resumo da Proposta Estruturada">
+        <div class="section-header">
+          <div class="section-header__eyebrow">Etapa 7 de 10</div>
+          <h2 class="section-header__title">Resumo da Proposta Estruturada de Consórcio</h2>
+          <p class="section-header__desc">Visão executiva da operação, jornada do cliente, estratégia financeira e próximos passos.</p>
+        </div>
+
+        <!-- Proposta visual explicada, renderizada pelo modulo ProposalSummary. -->
+        <div id="proposal-summary-container" class="proposal-summary-container">
+          <div class="card text-center" style="padding:48px 24px;">
+            <h3>Calcule a simulação para gerar a proposta estruturada.</h3>
+            <p class="text-muted">A tela reunirá resumo executivo, jornada, composição financeira, lances, projeções e próximos passos.</p>
+          </div>
+        </div>
+
+        <div class="step-nav">
+          <button class="btn btn--ghost" onclick="App.prevStep()">&larr; Voltar</button>
+          <button class="btn btn--primary" onclick="App.nextStep()">Próximo: Tabela Analítica  </button>
+        </div>
+      </section>
+
+      <!--  ETAPA 8: Tabela Analítica (V3 renumerada)  -->
+      <section id="step-8" class="step-section" aria-label="Tabela Analítica">
+        <div class="section-header">
+          <div class="section-header__eyebrow">Etapa 8 de 10</div>
+          <h2 class="section-header__title">Tabela Analítica Mensal</h2>
+          <p class="section-header__desc">Cronograma detalhado mês a mês com cada componente da parcela.</p>
+        </div>
+
+        <div class="card">
+          <div class="card__header">
+            <div class="card__title">
+              <div class="card__title-icon card__title-icon--blue">CR</div>
+              Cronograma Mensal
+            </div>
+            <label class="form-switch">
+              <input type="checkbox" id="tabelaDetalhada">
+              <span class="form-switch__track"></span>
+              <span class="form-switch__label">Visualização detalhada</span>
+            </label>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="data-table" id="tabela-analitica">
+              <thead>
+                <tr id="tabela-header-row">
+                  <th class="text-center">Mês</th>
+                  <th class="text-right">Parcela Total</th>
+                  <th class="text-right col-detail" style="display:none;">Saldo Anterior</th>
+                  <th class="text-right col-detail" style="display:none;">Índice</th>
+                  <th class="text-right col-detail" style="display:none;">Saldo Ajustado</th>
+                  <th class="text-right col-detail" style="display:none;">Lance</th>
+                  <th class="text-right col-detail" style="display:none;">Adiantamento</th>
+                  <th class="text-right col-detail" style="display:none;">Multa</th>
+                  <th class="text-right col-detail" style="display:none;">Juros</th>
+                  <th class="text-right col-detail" style="display:none;">Saldo Final</th>
+                  <th class="text-center col-detail" style="display:none;">Prazo Rest.</th>
+                  <th class="text-center">Evento</th>
+                </tr>
+              </thead>
+              <tbody id="tabela-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="step-nav">
+          <button class="btn btn--ghost" onclick="App.prevStep()">&larr; Voltar</button>
+          <button class="btn btn--primary" onclick="App.nextStep()">Próximo: Gerar Proposta &rarr;</button>
+        </div>
+      </section>
+
+      <!--  ETAPA 9: Proposta Comercial (V3 renumerada)  -->
+      <section id="step-9" class="step-section" aria-label="Proposta Comercial">
+        <div class="section-header">
+          <div class="section-header__eyebrow">Etapa 9 de 10</div>
+          <h2 class="section-header__title">Proposta Comercial</h2>
+          <p class="section-header__desc">Visualize a mesma proposta que sera exportada em PDF, com resumo, blocos narrativos, graficos e memoria de calculo alinhados.</p>
+        </div>
+
+        <div class="proposal-export-toolbar">
+          <button class="btn btn--success btn--lg" onclick="App.exportarPDF()" id="btn-export-pdf">
+            <span class="bf-action-icon">PDF</span> Exportar PDF
+          </button>
+          <button class="btn btn--primary btn--lg" onclick="App.imprimirProposta()" id="btn-print">
+            <span class="bf-action-icon">PR</span> Versão para Impressão
+          </button>
+          <button class="btn btn--ghost" onclick="App.calcular(); App.renderProposta && App.renderProposta();">
+            <span class="bf-action-icon">AT</span> Atualizar Proposta &rarr;</button>
+        </div>
+
+        <div class="proposal-export-note">
+          <strong>PDF espelhado na tela</strong>
+          <span>O preview abaixo usa o mesmo componente do resumo executivo. Cada bloco foi separado para que as informacoes, graficos e proximos passos conversem entre si no arquivo exportado.</span>
+        </div>
+
+        <section id="proposal-builder-board" class="proposal-builder-board" data-proposal-builder-board>
+          <div class="proposal-builder-board__empty">
+            Calcule a simulacao para montar a lousa de exportacao da proposta.
+          </div>
+        </section>
+
+        <section id="proposal-acceptance-panel" class="proposal-acceptance-panel" data-proposal-acceptance-panel>
+          <div class="proposal-acceptance-panel__empty">
+            Calcule a simulacao para registrar revisao, validade e aceite local da proposta.
+          </div>
+        </section>
+
+        <div id="proposta-container" class="proposal-preview">
+          <p class="text-muted" style="text-align:center;padding:60px 20px;">
+            Calcule a simulação para gerar a proposta comercial.
+          </p>
+        </div>
+
+        <div class="step-nav">
+          <button class="btn btn--ghost" onclick="App.prevStep()">&larr; Voltar</button>
+          <button class="btn btn--primary" onclick="App.nextStep()">Próximo: Comparador de Grupos &rarr;</button>
+        </div>
+      </section>
+
+      <!--  ETAPA 10: Comparador de Grupos (V3 renumerada)  -->
+      <section id="step-10" class="step-section" aria-label="Comparador de Grupos">
+        <div class="section-header">
+          <div class="section-header__eyebrow">Etapa 10 de 10</div>
+          <h2 class="section-header__title">Comparador de Grupos</h2>
+          <p class="section-header__desc">Compare dois grupos lado a lado com o mesmo cenário de simulação. Veja
+            diferenças, vencedores e gráficos.</p>
+        </div>
+
+        <!-- Bloco 1: Seleção dos Grupos -->
+        <div class="card mb-6">
+          <div class="card__header">
+            <div class="card__title">
+              <div class="card__title-icon card__title-icon--blue">GR</div>
+              Selecionar Grupos &rarr;</div>
+            <button class="btn btn--sm btn--accent" onclick="App.executarComparacao()" id="btn-comparar">
+              <span class="bf-action-icon">CP</span> Comparar Agora
+            </button>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="compGrupoA">Grupo A (Principal)
+                <span class="tooltip-trigger" data-tip="Selecione o primeiro grupo para comparação.">?</span>
+              </label>
+              <select id="compGrupoA" class="form-select" onchange="App.onCompGrupoChange()">
+                <option value=""> Selecione </option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="compGrupoB">Grupo B (Comparado)
+                <span class="tooltip-trigger" data-tip="Selecione o segundo grupo para comparar com o Grupo A.">?</span>
+              </label>
+              <select id="compGrupoB" class="form-select" onchange="App.onCompGrupoChange()">
+                <option value=""> Selecione </option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bloco 1.5: Cenário de Simulação Compartilhado -->
+        <div class="card mb-6">
+          <div class="card__header">
+            <div class="card__title">
+              <div class="card__title-icon card__title-icon--gold">CN</div>
+              Cenário de Simulação
+            </div>
+          </div>
+          <p class="text-muted" style="margin-bottom:16px;font-size:13px;">Este cenário será aplicado igualmente aos
+            dois grupos selecionados.</p>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="compPoliticaSaldo">Política de Saldo</label>
+              <select id="compPoliticaSaldo" class="form-select">
+                <option value="carta">Política A: Saldo = Carta</option>
+                <option value="com_custos">Política B: Saldo = Carta + Custos</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="compIndiceReajuste">Índice de Reajuste Anual (%)</label>
+              <input type="number" id="compIndiceReajuste" class="form-input" min="0" max="50" step="0.1" value="5"
+                placeholder="5">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="compMesContemplacao">Mês de Contemplação</label>
+              <input type="number" id="compMesContemplacao" class="form-input" min="1" value="18" placeholder="18">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="compLanceProprio">Lance Próprio (%)</label>
+              <input type="number" id="compLanceProprio" class="form-input" min="0" max="100" step="0.1" value="20"
+                placeholder="20">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="compLanceEmbutido">Lance Embutido (%)</label>
+              <input type="number" id="compLanceEmbutido" class="form-input" min="0" max="100" step="0.1" value="20"
+                placeholder="20">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Parcela Reduzida?</label>
+              <label class="form-switch">
+                <input type="checkbox" id="compParcelaReduzida">
+                <span class="form-switch__track"></span>
+                <span class="form-switch__label">Sim</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bloco 2: Cards Comparativos -->
+        <div id="comp-cards-container" class="comp-cards-grid mb-6" style="display:none;">
+          <!-- Preenchido via JS -->
+        </div>
+
+        <!-- Bloco 2.5: Winner Summary -->
+        <div id="comp-winners-container" class="card mb-6" style="display:none;">
+          <div class="card__header">
+            <div class="card__title">
+              <div class="card__title-icon card__title-icon--green">RV</div>
+              Resumo de Vencedores
+            </div>
+          </div>
+          <div id="comp-winners-badges" class="comp-winners-badges"></div>
+        </div>
+
+        <!-- Bloco 3: Gráficos Comparativos -->
+        <div id="comp-charts-container" class="charts-grid mt-6" style="display:none;">
+          <div class="chart-card">
+            <div class="chart-card__title">KPIs Comparativos</div>
+            <div class="chart-container" style="height:300px;">
+              <canvas id="compChartBarras"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card__title">Evolução das Parcelas</div>
+            <div class="chart-container" style="height:300px;">
+              <canvas id="compChartParcelas"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card__title">Saldo Devedor Comparado</div>
+            <div class="chart-container" style="height:300px;">
+              <canvas id="compChartSaldo"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card__title">Composição do Plano</div>
+            <div class="chart-container" style="height:300px;">
+              <canvas id="compChartComposicao"></canvas>
+            </div>
+          </div>
+          <div class="chart-card chart-card--full">
+            <div class="chart-card__title">Desembolso até Contemplação</div>
+            <div class="chart-container" style="height:280px;">
+              <canvas id="compChartContemplacao"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bloco 4: Narrativa Executiva -->
+        <div id="comp-narrativa-container" class="card mt-6" style="display:none;">
+          <div class="card__header">
+            <div class="card__title">
+              <div class="card__title-icon card__title-icon--blue">LE</div>
+              Leitura Executiva
+            </div>
+          </div>
+          <div id="comp-narrativa-text" class="comp-narrativa" style="font-size:14px;line-height:1.8;color:#374151;">
+          </div>
+        </div>
+
+        <div class="step-nav">
+          <button class="btn btn--ghost" onclick="App.prevStep()">&larr; Voltar</button>
+          <button class="btn btn--accent btn--lg" onclick="App.exportarPDF()"><span class="bf-action-icon">PDF</span> Exportar PDF Final</button>
+        </div>
+      </section>
+
+    </main>
+  </div><!-- end .sim-layout -->
+
+  <details class="bf-v8-stagebar-shell" open>
+    <summary class="bf-v8-stagebar-shell__summary">
+      <span>Atalhos da jornada</span>
+      <strong>Ocultar ou exibir painel</strong>
+    </summary>
+    <section class="bf-v8-stagebar bf-v8-stagebar--bottom" aria-label="Atalhos da jornada do simulador" data-v8-stagebar>
+      <div class="bf-v8-stagebar__intro">
+        <span>Simulador v8</span>
+        <strong>Base real, prateleira, resultado e retomada conectados.</strong>
+      </div>
+      <a class="bf-v8-stagebar__item" href="#database-status-panel" data-step="1">
+        <span>Base</span>
+        <strong>Status da conexao</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="#step-4" data-step="2">
+        <span>Escolha</span>
+        <strong>Prateleira de grupos</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="#decisao-simulador" data-step="3">
+        <span>Decisao</span>
+        <strong>Proximo passo</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="#step-7" data-step="4">
+        <span>Resultado</span>
+        <strong>Resumo financeiro</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="carteira.html#decisao-carteira" data-step="5">
+        <span>Continuidade</span>
+        <strong>Retomar na Carteira</strong>
+      </a>
+    </section>
+  </details>
+
+  <!-- """""""""" SE!ÒO EDUCATIVA """""""""" -->
+  <section class="concepts-section" aria-label="Conceitos de Consórcio">
+    <div class="container">
+      <div class="collapsible collapsible--open" style="border:none;background:transparent;">
+        <button class="collapsible__trigger"
+          style="background:transparent;padding:0 0 24px 0;font-size:1.5rem;font-weight:800;color:var(--gray-900);">
+          Guia de Conceitos - Entenda o Consórcio
+        </button>
+        <div class="collapsible__content" style="padding:0;">
+          <p class="text-muted mb-6">Clique em cada card para aprender sobre os conceitos fundamentais do consórcio.</p>
+          <div id="conceitos-container" class="concepts-grid"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- """""""""" FOOTER """""""""" -->
+  <footer class="site-footer">
+    <div class="container">
+      <p>ConsórcioPro  Simulador de Consórcio Profissional</p>
+      <p style="margin-top:4px;font-size:12px;color:#60a5fa;">Simulação educacional. Não constitui oferta vinculante.
+      </p>
+    </div>
+  </footer>
+
+  <!-- """""""""" BARRA DE A!"ES MOBILE """""""""" -->
+  <div class="mobile-action-bar" id="mobile-bar">
+    <button class="btn btn--success btn--sm" onclick="App.calcular()"><span class="bf-action-icon">CL</span> Calcular</button>
+    <button class="btn btn--primary btn--sm" onclick="App.exportarPDF()"><span class="bf-action-icon">PDF</span> PDF</button>
+  </div>
+
+  <!-- """""""""" SCRIPTS (V7  ordem atualizada) """""""""" -->
+  <script src="../js/data.js"></script>
+  <script src="../js/shelf-data.js"></script>
+  <script src="../js/database-progress.js"></script>
+  <script src="../js/heuristic-engine.js"></script>
+  <script src="../js/engine.js"></script>
+  <script src="../js/charts.js"></script>
+  <script src="../js/export.js"></script>
+  <script src="../js/comparator.js"></script>
+  <script src="../js/shelf-engine.js"></script>
+  <script src="../js/proposal-summary.js"></script>
+  <script src="../js/proposal-acceptance.js"></script>
+  <script src="../js/settings.js"></script>
+  <script src="../assets/js/services/decision-context.service.js"></script>
+  <script src="../assets/js/services/handoff-consultivo.service.js"></script>
+  <script src="../js/storage.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+    // V7: Carregamento assíncrono da base real
+    (async function bootV7() {
+      const overlay = document.getElementById('loading-overlay');
+      const msg = document.getElementById('loading-message');
+      const progress = window.BankFraternProgress;
+      const wait = (ms) => new Promise(r => setTimeout(r, ms));
+      if (overlay) overlay.style.display = 'flex';
+        const dbPath = `${location.pathname.includes('/pages/') ? '../' : ''}data_base/Tab_Grupos_Consorcio.json`;
+        if (progress) progress.start('Preparando conexao com a base.', `Abrindo ${dbPath}.`);
+      try {
+        if (msg) msg.textContent = 'Carregando base de grupos (18 MB)⬦';
+        if (typeof loadRealDatabase !== 'function') {
+          throw new Error('loadRealDatabase indisponivel');
+        }
+        if (progress) progress.stage('download', 28, 'Carregando base de grupos (18 MB)...', 'Recebendo registros do JSON local.');
+        const count = await loadRealDatabase(dbPath);
+        if (progress) progress.stage('parse', 68, 'Validando registros carregados.', 'Normalizando campos comerciais e dados minimos.');
+        const catalog = (typeof ShelfCatalog !== 'undefined' && Array.isArray(ShelfCatalog)) ? ShelfCatalog : [];
+        const loadedFromReal = (typeof isShelfDataLoaded === 'function') ? isShelfDataLoaded() : count > 0;
+        const dataError = (typeof getShelfDataError === 'function') ? getShelfDataError() : null;
+        if (progress && typeof getShelfDataStatus === 'function') progress.syncFromShelfStatus(getShelfDataStatus());
+        if (msg) msg.textContent = `OK - ${count.toLocaleString('pt-BR')} grupos carregados!`;
+        if (msg) {
+          if (loadedFromReal) {
+            msg.textContent = `OK - ${count.toLocaleString('pt-BR')} grupos carregados!`;
+          } else if (count > 0) {
+            msg.textContent = `Base real indisponivel. Usando fallback com ${count.toLocaleString('pt-BR')} grupos.`;
+          } else {
+            msg.textContent = 'Base real indisponivel. App iniciado sem grupos.';
+          }
+        }
+        console.log(`[bootV7] ShelfCatalog populado: ${catalog.length} grupos`);
+        if (dataError) console.warn(`[bootV7] ${dataError}`);
+
+        //  Notificar o App que a base está pronta 
+        // Popular filtros de administradora (dropdown etapa 3)
+        if (typeof App !== 'undefined' && App.buscarGrupos) {
+          if (progress) progress.stage('filters', 84, 'Montando filtros da jornada.', 'Administradoras e segmentos prontos para uso.');
+          // Forçar re-populagem dos filtros (resetar para permitir atualização)
+          const selAdmin = document.getElementById('filtroAdministradora');
+          if (selAdmin && typeof ShelfEngine !== 'undefined' && ShelfEngine.getUniqueAdmins) {
+            selAdmin.innerHTML = '<option value="">Todas</option>';
+            const admins = ShelfEngine.getUniqueAdmins(catalog);
+            admins.forEach(name => {
+              const opt = document.createElement('option');
+              opt.value = name;
+              opt.textContent = name;
+              selAdmin.appendChild(opt);
+            });
+            console.log(`[bootV7] ${admins.length} administradoras carregadas nos filtros`);
+            if (App.applyConfiguredDefaults) App.applyConfiguredDefaults({ forceFilters: true });
+          }
+          // Disparar busca inicial para popular a prateleira
+          if (progress) progress.stage('shelf', 94, 'Atualizando prateleira de grupos.', 'Aplicando filtros iniciais e score comercial.');
+          App.buscarGrupos();
+        } else {
+          console.warn('[bootV7] App indisponivel; boot continuou sem busca inicial.');
+        }
+
+        // Delay para mostrar mensagem de sucesso
+        if (progress) {
+          if (loadedFromReal) {
+            progress.success(count, 'Base real conectada para filtros, prateleira e simulacao.');
+          } else if (count > 0) {
+            progress.fallback(count, 'Base real indisponivel; catalogo local de seguranca em uso.');
+          } else {
+            progress.error('Base real indisponivel. App iniciado sem grupos.');
+          }
+        }
+        await wait(loadedFromReal ? 800 : 1400);
+      } catch (e) {
+        console.warn(`[bootV7] Boot controlado: ${e && e.message ? e.message : e}`);
+        const msg = document.getElementById('loading-message');
+        if (msg) msg.textContent = 'Nao foi possivel carregar a base agora. App iniciado em modo seguro.';
+        if (msg) msg.textContent = 'Nao foi possivel carregar a base agora. App iniciado em modo seguro.';
+        if (progress) progress.error('Nao foi possivel carregar a base agora. App iniciado em modo seguro.');
+        try {
+          if (typeof App !== 'undefined' && App.buscarGrupos) App.buscarGrupos();
+        } catch (appErr) {
+          console.warn(`[bootV7] Busca inicial ignorada: ${appErr && appErr.message ? appErr.message : appErr}`);
+        }
+        await wait(1600);
+      } finally {
+        if (progress && progress.holdOverlay()) {
+          if (overlay) overlay.style.display = 'flex';
+        } else if (progress) {
+          progress.hideOverlay();
+        } else if (overlay) {
+          overlay.style.display = 'none';
+        }
+      }
+    })();
+  </script>
+
+</body>
+
+</html>
+
+
+
+

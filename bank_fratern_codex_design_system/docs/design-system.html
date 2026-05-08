@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bank Fratern — Documentação do Design System</title>
+  <link rel="stylesheet" href="../assets/css/tokens.css" />
+  <link rel="stylesheet" href="../assets/css/components.css" />
+  <link rel="stylesheet" href="../assets/css/utilities.css" />
+  
+</head>
+<body>
+  <header class="bf-header">
+  <div class="bf-header__inner">
+    <a class="bf-brand" href="../index.html">
+      <img src="../assets/logos/logo-bank-fratern-portal.svg" class="bf-brand__logo" alt="Bank Fratern" />
+    </a>
+    <nav class="bf-nav">
+      <a href="../docs/design-system.html">Documentação</a>
+      <a href="../examples/home-final.html">Home final</a>
+      <a href="../examples/journey-integrated.html">Jornada</a>
+      <a href="../CODEX.md">Codex</a>
+    </nav>
+  </div>
+</header>
+  <main class="bf-container">
+    <section class="bf-hero bf-hero--split">
+      <div>
+        <div class="bf-kicker">Documentação oficial</div>
+        <h1 class="bf-title">Design System Bank Fratern</h1>
+        <p class="bf-lead">Sistema visual para marca, jornada do consorciado, simulador, dashboard e apresentações executivas.</p>
+      </div>
+      <div class="bf-panel"><img src="../assets/photos/photo-10-dashboard.png" alt="Dashboard Bank Fratern"></div>
+    </section>
+
+    <section class="bf-section" id="principios">
+      <div class="bf-section__head">
+        <span class="bf-section__kicker">01 • Princípios</span>
+        <h2 class="bf-section__title">Clareza, confiança e direção.</h2>
+        <p class="bf-section__desc">O produto deve explicar antes de convencer. A identidade visual serve à tomada de decisão, com elegância e responsabilidade.</p>
+      </div>
+      <div class="bf-section__body">
+        <div class="bf-grid-4">
+          <article class="bf-card"><h3>Capital</h3><p>Dourado, gráficos, moedas e visual de patrimônio.</p></article>
+          <article class="bf-card"><h3>Trust</h3><p>Azul profundo, segurança, documentação e estabilidade.</p></article>
+          <article class="bf-card"><h3>Legac</h3><p>Arquitetura, tradição, continuidade e longo prazo.</p></article>
+          <article class="bf-card"><h3>Direction</h3><p>Bússola, jornada guiada, etapas e orientação.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="bf-section" id="tokens">
+      <div class="bf-section__head"><span class="bf-section__kicker">02 • Tokens</span><h2 class="bf-section__title">Paleta oficial.</h2></div>
+      <div class="bf-section__body">
+        <div class="bf-grid-4">
+          <article class="bf-card"><div style="height:86px;border-radius:18px;background:#061A2E"></div><h3>Navy 950</h3><p>#061A2E</p></article>
+          <article class="bf-card"><div style="height:86px;border-radius:18px;background:#0A2540"></div><h3>Navy 900</h3><p>#0A2540</p></article>
+          <article class="bf-card"><div style="height:86px;border-radius:18px;background:#143B66"></div><h3>Navy 700</h3><p>#143B66</p></article>
+          <article class="bf-card"><div style="height:86px;border-radius:18px;background:#C5A047"></div><h3>Gold 500</h3><p>#C5A047</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="bf-section" id="logos">
+      <div class="bf-section__head"><span class="bf-section__kicker">03 • Logos</span><h2 class="bf-section__title">Sistema de marcas e sub-marcas.</h2></div>
+      <div class="bf-section__body"><div class="bf-asset-grid"><article class="bf-asset"><div class="bf-asset__preview "><img src="../assets/logos/logo-bank-fratern-compass.svg" alt="logo-bank-fratern-compass.svg"></div><div class="bf-asset__meta"><strong>logo-bank-fratern-compass.svg</strong><span>Marca principal institucional, dashboards, apresentações executivas.</span></div></article>
+<article class="bf-asset"><div class="bf-asset__preview "><img src="../assets/logos/logo-bank-fratern-portal.svg" alt="logo-bank-fratern-portal.svg"></div><div class="bf-asset__meta"><strong>logo-bank-fratern-portal.svg</strong><span>Home, onboarding, abertura da jornada e landing pages.</span></div></article>
+<article class="bf-asset"><div class="bf-asset__preview dark"><img src="../assets/logos/logo-bank-fratern-dark.svg" alt="logo-bank-fratern-dark.svg"></div><div class="bf-asset__meta"><strong>logo-bank-fratern-dark.svg</strong><span>Fundos escuros, banners hero e slides premium.</span></div></article>
+<article class="bf-asset"><div class="bf-asset__preview "><img src="../assets/logos/logo-bank-fratern-icon.svg" alt="logo-bank-fratern-icon.svg"></div><div class="bf-asset__meta"><strong>logo-bank-fratern-icon.svg</strong><span>Favicon, menu mobile, avatar, selo e uso compacto.</span></div></article>
+<article class="bf-asset"><div class="bf-asset__preview "><img src="../assets/logos/logo-bf-journey.svg" alt="logo-bf-journey.svg"></div><div class="bf-asset__meta"><strong>logo-bf-journey.svg</strong><span>Submarca da jornada do consorciado.</span></div></article>
+<article class="bf-asset"><div class="bf-asset__preview "><img src="../assets/logos/logo-bf-simulator.svg" alt="logo-bf-simulator.svg"></div><div class="bf-asset__meta"><strong>logo-bf-simulator.svg</strong><span>Submarca para simulador financeiro.</span></div></article>
+<article class="bf-asset"><div class="bf-asset__preview "><img src="../assets/logos/logo-bf-intelligence.svg" alt="logo-bf-intelligence.svg"></div><div class="bf-asset__meta"><strong>logo-bf-intelligence.svg</strong><span>Submarca para dashboard e inteligência.</span></div></article>
+<article class="bf-asset"><div class="bf-asset__preview "><img src="../assets/logos/logo-bf-advisory.svg" alt="logo-bf-advisory.svg"></div><div class="bf-asset__meta"><strong>logo-bf-advisory.svg</strong><span>Submarca para consultoria e relacionamento premium.</span></div></article></div></div>
+    </section>
+
+    <section class="bf-section" id="journey-icons">
+      <div class="bf-section__head"><span class="bf-section__kicker">04 • Ícones de jornada</span><h2 class="bf-section__title">12 etapas do consorciado.</h2></div>
+      <div class="bf-section__body"><div class="bf-grid-4"><article class="bf-stage-card"><div class="bf-stage-card__icon"><img src="../assets/icons/journey/01-visao-geral.svg" alt=""></div><div><h3>Visão geral</h3><p>Etapa da jornada do consorciado.</p></div></article>
+<article class="bf-stage-card"><div class="bf-stage-card__icon"><img src="../assets/icons/journey/02-adesao.svg" alt=""></div><div><h3>Adesão</h3><p>Etapa da jornada do consorciado.</p></div></article>
+<article class="bf-stage-card"><div class="bf-stage-card__icon"><img src="../assets/icons/journey/03-parcelas.svg" alt=""></div><div><h3>Parcelas</h3><p>Etapa da jornada do consorciado.</p></div></article>
+<article class="bf-stage-card"><div class="bf-stage-card__icon"><img src="../assets/icons/journey/04-reajuste.svg" alt=""></div><div><h3>Reajuste</h3><p>Etapa da jornada do consorciado.</p></div></article>
+<article class="bf-stage-card"><div class="bf-stage-card__icon"><img src="../assets/icons/journey/05-assembleia.svg" alt=""></div><div><h3>Assembleia</h3><p>Etapa da jornada do consorciado.</p></div></article>
+<article class="bf-stage-card"><div class="bf-stage-card__icon"><img src="../assets/icons/journey/06-lance.svg" alt=""></div><div><h3>Lance</h3><p>Etapa da jornada do consorciado.</p></div></article>
+<article class="bf-stage-card"><div class="bf-stage-card__icon"><img src="../assets/icons/journey/07-contemplacao.svg" alt=""></div><div><h3>Contemplação</h3><p>Etapa da jornada do consorciado.</p></div></article>
+<article class="bf-stage-card"><div class="bf-stage-card__icon"><img src="../assets/icons/journey/08-credito-documentos.svg" alt=""></div><div><h3>Crédito e documentos</h3><p>Etapa da jornada do consorciado.</p></div></article>
+<article class="bf-stage-card"><div class="bf-stage-card__icon"><img src="../assets/icons/journey/09-faturamento.svg" alt=""></div><div><h3>Faturamento</h3><p>Etapa da jornada do consorciado.</p></div></article>
+<article class="bf-stage-card"><div class="bf-stage-card__icon"><img src="../assets/icons/journey/10-pos-contemplacao.svg" alt=""></div><div><h3>Pós-contemplação</h3><p>Etapa da jornada do consorciado.</p></div></article>
+<article class="bf-stage-card"><div class="bf-stage-card__icon"><img src="../assets/icons/journey/11-cancelamento.svg" alt=""></div><div><h3>Cancelamento</h3><p>Etapa da jornada do consorciado.</p></div></article>
+<article class="bf-stage-card"><div class="bf-stage-card__icon"><img src="../assets/icons/journey/12-encerramento.svg" alt=""></div><div><h3>Encerramento</h3><p>Etapa da jornada do consorciado.</p></div></article></div></div>
+    </section>
+
+    <section class="bf-section" id="ui-icons">
+      <div class="bf-section__head"><span class="bf-section__kicker">05 • Ícones UI</span><h2 class="bf-section__title">Componentes, ações e status.</h2></div>
+      <div class="bf-section__body"><div class="bf-grid-4"><article class="bf-stage-card"><div class="bf-stage-card__icon"><img src="../assets/icons/ui/ui-shield.svg" alt=""></div><div><h3>Shield</h3><p>Ícone UI para componentes da plataforma.</p></div></article>
+<article class="bf-stage-card"><div class="bf-stage-card__icon"><img src="../assets/icons/ui/ui-key.svg" alt=""></div><div><h3>Key</h3><p>Ícone UI para componentes da plataforma.</p></div></article>
+<article class="bf-stage-card"><div class="bf-stage-card__icon"><img src="../assets/icons/ui/ui-compass.svg" alt=""></div><div><h3>Compass</h3><p>Ícone UI para componentes da plataforma.</p></div></article>
+<article class="bf-stage-card"><div class="bf-stage-card__icon"><img src="../assets/icons/ui/ui-portal.svg" alt=""></div><div><h3>Portal</h3><p>Ícone UI para componentes da plataforma.</p></div></article>
+<article class="bf-stage-card"><div class="bf-stage-card__icon"><img src="../assets/icons/ui/ui-vault.svg" alt=""></div><div><h3>Vault</h3><p>Ícone UI para componentes da plataforma.</p></div></article>
+<article class="bf-stage-card"><div class="bf-stage-card__icon"><img src="../assets/icons/ui/ui-graph.svg" alt=""></div><div><h3>Graph</h3><p>Ícone UI para componentes da plataforma.</p></div></article>
+<article class="bf-stage-card"><div class="bf-stage-card__icon"><img src="../assets/icons/ui/ui-document.svg" alt=""></div><div><h3>Document</h3><p>Ícone UI para componentes da plataforma.</p></div></article>
+<article class="bf-stage-card"><div class="bf-stage-card__icon"><img src="../assets/icons/ui/ui-calculator.svg" alt=""></div><div><h3>Calculator</h3><p>Ícone UI para componentes da plataforma.</p></div></article>
+<article class="bf-stage-card"><div class="bf-stage-card__icon"><img src="../assets/icons/ui/ui-users.svg" alt=""></div><div><h3>Users</h3><p>Ícone UI para componentes da plataforma.</p></div></article>
+<article class="bf-stage-card"><div class="bf-stage-card__icon"><img src="../assets/icons/ui/ui-lock.svg" alt=""></div><div><h3>Lock</h3><p>Ícone UI para componentes da plataforma.</p></div></article>
+<article class="bf-stage-card"><div class="bf-stage-card__icon"><img src="../assets/icons/ui/ui-scale.svg" alt=""></div><div><h3>Scale</h3><p>Ícone UI para componentes da plataforma.</p></div></article>
+<article class="bf-stage-card"><div class="bf-stage-card__icon"><img src="../assets/icons/ui/ui-building.svg" alt=""></div><div><h3>Building</h3><p>Ícone UI para componentes da plataforma.</p></div></article>
+<article class="bf-stage-card"><div class="bf-stage-card__icon"><img src="../assets/icons/ui/ui-arrow.svg" alt=""></div><div><h3>Arrow</h3><p>Ícone UI para componentes da plataforma.</p></div></article>
+<article class="bf-stage-card"><div class="bf-stage-card__icon"><img src="../assets/icons/ui/ui-handshake.svg" alt=""></div><div><h3>Handshake</h3><p>Ícone UI para componentes da plataforma.</p></div></article>
+<article class="bf-stage-card"><div class="bf-stage-card__icon"><img src="../assets/icons/ui/ui-coin.svg" alt=""></div><div><h3>Coin</h3><p>Ícone UI para componentes da plataforma.</p></div></article>
+<article class="bf-stage-card"><div class="bf-stage-card__icon"><img src="../assets/icons/ui/ui-ai.svg" alt=""></div><div><h3>AI</h3><p>Ícone UI para componentes da plataforma.</p></div></article></div></div>
+    </section>
+
+    <section class="bf-section" id="photos">
+      <div class="bf-section__head"><span class="bf-section__kicker">06 • Fotos/imagens</span><h2 class="bf-section__title">Imagens autorais 16:9 para a ferramenta.</h2></div>
+      <div class="bf-section__body"><div class="bf-asset-grid"><article class="bf-asset"><div class="bf-asset__preview"><img src="../assets/photos/photo-01-direction.png" alt="Direção estratégica" style="max-height:120px;width:100%;object-fit:cover;border-radius:14px;"></div><div class="bf-asset__meta"><strong>Direção estratégica</strong><span>Bússola, decisão e orientação • 16:9 PNG</span></div></article>
+<article class="bf-asset"><div class="bf-asset__preview"><img src="../assets/photos/photo-02-access.png" alt="Acesso premium" style="max-height:120px;width:100%;object-fit:cover;border-radius:14px;"></div><div class="bf-asset__meta"><strong>Acesso premium</strong><span>Entrada para oportunidades • 16:9 PNG</span></div></article>
+<article class="bf-asset"><div class="bf-asset__preview"><img src="../assets/photos/photo-03-security.png" alt="Segurança patrimonial" style="max-height:120px;width:100%;object-fit:cover;border-radius:14px;"></div><div class="bf-asset__meta"><strong>Segurança patrimonial</strong><span>Proteção, cofre e garantias • 16:9 PNG</span></div></article>
+<article class="bf-asset"><div class="bf-asset__preview"><img src="../assets/photos/photo-04-data.png" alt="Inteligência financeira" style="max-height:120px;width:100%;object-fit:cover;border-radius:14px;"></div><div class="bf-asset__meta"><strong>Inteligência financeira</strong><span>Dados, cenário e crescimento • 16:9 PNG</span></div></article>
+<article class="bf-asset"><div class="bf-asset__preview"><img src="../assets/photos/photo-05-legacy.png" alt="Legado institucional" style="max-height:120px;width:100%;object-fit:cover;border-radius:14px;"></div><div class="bf-asset__meta"><strong>Legado institucional</strong><span>Arquitetura, tempo e tradição • 16:9 PNG</span></div></article>
+<article class="bf-asset"><div class="bf-asset__preview"><img src="../assets/photos/photo-06-capital.png" alt="Capital planejado" style="max-height:120px;width:100%;object-fit:cover;border-radius:14px;"></div><div class="bf-asset__meta"><strong>Capital planejado</strong><span>Valor, patrimônio e reserva • 16:9 PNG</span></div></article>
+<article class="bf-asset"><div class="bf-asset__preview"><img src="../assets/photos/photo-07-documents.png" alt="Crédito e documentos" style="max-height:120px;width:100%;object-fit:cover;border-radius:14px;"></div><div class="bf-asset__meta"><strong>Crédito e documentos</strong><span>Análise, contratos e clareza • 16:9 PNG</span></div></article>
+<article class="bf-asset"><div class="bf-asset__preview"><img src="../assets/photos/photo-08-assembly.png" alt="Assembleia" style="max-height:120px;width:100%;object-fit:cover;border-radius:14px;"></div><div class="bf-asset__meta"><strong>Assembleia</strong><span>Grupo, sorteio e governança • 16:9 PNG</span></div></article>
+<article class="bf-asset"><div class="bf-asset__preview"><img src="../assets/photos/photo-09-partnership.png" alt="Parceria" style="max-height:120px;width:100%;object-fit:cover;border-radius:14px;"></div><div class="bf-asset__meta"><strong>Parceria</strong><span>Confiança e relacionamento • 16:9 PNG</span></div></article>
+<article class="bf-asset"><div class="bf-asset__preview"><img src="../assets/photos/photo-10-dashboard.png" alt="Dashboard" style="max-height:120px;width:100%;object-fit:cover;border-radius:14px;"></div><div class="bf-asset__meta"><strong>Dashboard</strong><span>Indicadores e decisão executiva • 16:9 PNG</span></div></article>
+<article class="bf-asset"><div class="bf-asset__preview"><img src="../assets/photos/photo-11-onboarding.png" alt="Onboarding" style="max-height:120px;width:100%;object-fit:cover;border-radius:14px;"></div><div class="bf-asset__meta"><strong>Onboarding</strong><span>Primeiros passos na jornada • 16:9 PNG</span></div></article>
+<article class="bf-asset"><div class="bf-asset__preview"><img src="../assets/photos/photo-12-closure.png" alt="Encerramento" style="max-height:120px;width:100%;object-fit:cover;border-radius:14px;"></div><div class="bf-asset__meta"><strong>Encerramento</strong><span>Quitação e continuidade • 16:9 PNG</span></div></article></div></div>
+    </section>
+
+    <section class="bf-section" id="creatives">
+      <div class="bf-section__head"><span class="bf-section__kicker">07 • Criativos</span><h2 class="bf-section__title">Banners SVG 16:9.</h2></div>
+      <div class="bf-section__body"><div class="bf-asset-grid"><article class="bf-asset"><div class="bf-asset__preview"><img src="../assets/creatives/hero-direction.svg" alt="Direção estratégica" style="max-height:120px;width:100%;object-fit:cover;border-radius:14px;"></div><div class="bf-asset__meta"><strong>Direção estratégica</strong><span>Banner SVG 16:9 para produto e apresentação.</span></div></article>
+<article class="bf-asset"><div class="bf-asset__preview"><img src="../assets/creatives/hero-access.svg" alt="Acesso premium" style="max-height:120px;width:100%;object-fit:cover;border-radius:14px;"></div><div class="bf-asset__meta"><strong>Acesso premium</strong><span>Banner SVG 16:9 para produto e apresentação.</span></div></article>
+<article class="bf-asset"><div class="bf-asset__preview"><img src="../assets/creatives/hero-security.svg" alt="Segurança patrimonial" style="max-height:120px;width:100%;object-fit:cover;border-radius:14px;"></div><div class="bf-asset__meta"><strong>Segurança patrimonial</strong><span>Banner SVG 16:9 para produto e apresentação.</span></div></article>
+<article class="bf-asset"><div class="bf-asset__preview"><img src="../assets/creatives/hero-data.svg" alt="Inteligência financeira" style="max-height:120px;width:100%;object-fit:cover;border-radius:14px;"></div><div class="bf-asset__meta"><strong>Inteligência financeira</strong><span>Banner SVG 16:9 para produto e apresentação.</span></div></article>
+<article class="bf-asset"><div class="bf-asset__preview"><img src="../assets/creatives/hero-legacy.svg" alt="Legado institucional" style="max-height:120px;width:100%;object-fit:cover;border-radius:14px;"></div><div class="bf-asset__meta"><strong>Legado institucional</strong><span>Banner SVG 16:9 para produto e apresentação.</span></div></article>
+<article class="bf-asset"><div class="bf-asset__preview"><img src="../assets/creatives/hero-capital.svg" alt="Capital e patrimônio" style="max-height:120px;width:100%;object-fit:cover;border-radius:14px;"></div><div class="bf-asset__meta"><strong>Capital e patrimônio</strong><span>Banner SVG 16:9 para produto e apresentação.</span></div></article>
+<article class="bf-asset"><div class="bf-asset__preview"><img src="../assets/creatives/hero-documents.svg" alt="Documentação e crédito" style="max-height:120px;width:100%;object-fit:cover;border-radius:14px;"></div><div class="bf-asset__meta"><strong>Documentação e crédito</strong><span>Banner SVG 16:9 para produto e apresentação.</span></div></article>
+<article class="bf-asset"><div class="bf-asset__preview"><img src="../assets/creatives/hero-partnership.svg" alt="Parceria e confiança" style="max-height:120px;width:100%;object-fit:cover;border-radius:14px;"></div><div class="bf-asset__meta"><strong>Parceria e confiança</strong><span>Banner SVG 16:9 para produto e apresentação.</span></div></article>
+<article class="bf-asset"><div class="bf-asset__preview"><img src="../assets/creatives/hero-dashboard.svg" alt="Dashboard executivo" style="max-height:120px;width:100%;object-fit:cover;border-radius:14px;"></div><div class="bf-asset__meta"><strong>Dashboard executivo</strong><span>Banner SVG 16:9 para produto e apresentação.</span></div></article>
+<article class="bf-asset"><div class="bf-asset__preview"><img src="../assets/creatives/hero-closure.svg" alt="Encerramento" style="max-height:120px;width:100%;object-fit:cover;border-radius:14px;"></div><div class="bf-asset__meta"><strong>Encerramento</strong><span>Banner SVG 16:9 para produto e apresentação.</span></div></article></div></div>
+    </section>
+
+    <section class="bf-section" id="implementacao">
+      <div class="bf-section__head"><span class="bf-section__kicker">08 • Implementação</span><h2 class="bf-section__title">Ordem recomendada de CSS.</h2></div>
+      <div class="bf-section__body">
+        <pre class="bf-code"><code>&lt;link rel="stylesheet" href="assets/css/tokens.css"&gt;
+&lt;link rel="stylesheet" href="assets/css/components.css"&gt;
+&lt;link rel="stylesheet" href="assets/css/utilities.css"&gt;
+&lt;link rel="stylesheet" href="assets/css/home.css"&gt;
+&lt;link rel="stylesheet" href="assets/css/journey.css"&gt;</code></pre>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

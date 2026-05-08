@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bank Fratern — Acompanhamento de Assembleias</title>
+  <meta name="description"
+    content="Dashboard premium de acompanhamento das assembleias do grupo de consórcio, com histórico de contemplações e comportamento dos lances.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <link rel="icon" href="../assets/logos/bank-fratern-icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/shared-site.css">
+  <link rel="stylesheet" href="../css/bank-fratern-design-system.css">
+  <link rel="stylesheet" href="../assets/css/platform.css">
+  <link rel="stylesheet" href="../assets/css/bf-design-system-v8.css">
+  <style>
+    :root {
+      --bg-dark: #0B2C52;
+      --bg-dark-2: #102f55;
+      --brand: #143B66;
+      --brand-2: #0B2C52;
+      --muted: #64748b;
+      --line: #dbe5f0;
+    }
+
+    body {
+      background:
+        radial-gradient(circle at top right, rgba(197, 160, 71, .12), transparent 24%),
+        radial-gradient(circle at top left, rgba(20, 59, 102, .10), transparent 20%),
+        linear-gradient(180deg, #f6f9fc 0%, #eef4fb 100%);
+    }
+
+    .premium-shell {
+      display: grid;
+      gap: 18px;
+    }
+
+    .hero-premium {
+      position: relative;
+      overflow: hidden;
+      border-radius: 32px;
+      padding: 30px;
+      background:
+        radial-gradient(circle at 88% 14%, rgba(34, 211, 238, .22), transparent 18%),
+        radial-gradient(circle at 12% 0%, rgba(99, 102, 241, .26), transparent 20%),
+        linear-gradient(145deg, #081120 0%, #102347 56%, #122b56 100%);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, .08);
+      box-shadow: 0 30px 80px rgba(15, 23, 42, .24);
+    }
+
+    .hero-premium::after {
+      content: '';
+      position: absolute;
+      right: -90px;
+      bottom: -90px;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 255, 255, .18), transparent 58%);
+      pointer-events: none;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 18px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .08);
+      border: 1px solid rgba(255, 255, 255, .12);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .hero-premium h1 {
+      margin: 16px 0 14px;
+      font-size: clamp(2rem, 3vw, 3.3rem);
+      line-height: 1.02;
+      max-width: 12ch;
+    }
+
+    .hero-premium p {
+      margin: 0;
+      color: rgba(255, 255, 255, .82);
+      line-height: 1.8;
+      font-size: 15px;
+      max-width: 68ch;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .ghost-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, .14);
+      background: rgba(255, 255, 255, .06);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .hero-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .hero-mini {
+      background: rgba(255, 255, 255, .06);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, .08);
+      border-radius: 22px;
+      padding: 18px;
+    }
+
+    .hero-mini span {
+      display: block;
+      font-size: 12px;
+      color: rgba(255, 255, 255, .68);
+      margin-bottom: 8px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .hero-mini strong {
+      display: block;
+      font-size: 1.75rem;
+      line-height: 1.05;
+      margin-bottom: 6px;
+    }
+
+    .hero-mini small {
+      display: block;
+      color: rgba(255, 255, 255, .78);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .executive-strip {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .kpi {
+      position: relative;
+      overflow: hidden;
+      background: rgba(255, 255, 255, .94);
+      border: 1px solid rgba(148, 163, 184, .14);
+      border-radius: 24px;
+      padding: 18px;
+      box-shadow: 0 18px 44px rgba(15, 23, 42, .08);
+    }
+
+    .kpi::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: linear-gradient(180deg, var(--brand), var(--brand-2));
+    }
+
+    .kpi .label {
+      display: block;
+      font-size: 12px;
+      color: #64748b;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-bottom: 10px;
+    }
+
+    .kpi strong {
+      display: block;
+      font-size: 1.75rem;
+      line-height: 1;
+      margin-bottom: 7px;
+      color: #0f172a;
+    }
+
+    .kpi small {
+      display: block;
+      color: #64748b;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .kpi .trend {
+      display: inline-flex;
+      margin-top: 10px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .up {
+      color: #15803d;
+    }
+
+    .warn {
+      color: #b45309;
+    }
+
+    .neutral {
+      color: #475569;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 18px;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 96px;
+      align-self: start;
+      background: rgba(255, 255, 255, .92);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 18px;
+      box-shadow: 0 14px 32px rgba(15, 23, 42, .05);
+    }
+
+    .sidebar h4 {
+      margin: 0 0 6px;
+      font-size: 14px;
+    }
+
+    .sidebar p {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .page-content {
+      display: grid;
+      gap: 18px;
+    }
+
+    .premium-card {
+      background: rgba(255, 255, 255, .94);
+      border: 1px solid rgba(148, 163, 184, .14);
+      border-radius: 28px;
+      padding: 22px;
+      box-shadow: 0 20px 52px rgba(15, 23, 42, .07);
+    }
+
+    .premium-card h2,
+    .premium-card h3 {
+      margin: 0 0 8px;
+      color: #0f172a;
+    }
+
+    .premium-card>p {
+      margin: 0;
+      color: #64748b;
+      line-height: 1.75;
+      font-size: 14px;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .three-col {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .sub-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 22px;
+      padding: 16px;
+      background: linear-gradient(180deg, #fff, #f8fbff);
+    }
+
+    .sub-card .k {
+      display: block;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-bottom: 8px;
+    }
+
+    .sub-card strong {
+      display: block;
+      font-size: 1.45rem;
+      margin-bottom: 6px;
+    }
+
+    .sub-card small {
+      display: block;
+      color: #64748b;
+      line-height: 1.55;
+      font-size: 12px;
+    }
+
+    .insight-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .insight-item {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 12px;
+      align-items: center;
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      border-radius: 20px;
+      padding: 14px 16px;
+    }
+
+    .insight-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .i-trend {
+      background: #eef2ff;
+      color: #4338ca;
+    }
+
+    .i-alert {
+      background: #fff7ed;
+      color: #c2410c;
+    }
+
+    .i-win {
+      background: #ecfdf5;
+      color: #047857;
+    }
+
+    .insight-text strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .insight-text span {
+      display: block;
+      font-size: 12px;
+      line-height: 1.55;
+      color: #64748b;
+    }
+
+    .insight-chip {
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      font-size: 11px;
+      font-weight: 800;
+      color: #334155;
+    }
+
+    .chart-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 24px;
+      background: #fff;
+      overflow: hidden;
+      margin-top: 18px;
+    }
+
+    .chart-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 18px 20px;
+      border-bottom: 1px solid #e2e8f0;
+      background: linear-gradient(180deg, #fbfdff, #f8fbff);
+    }
+
+    .chart-head strong {
+      display: block;
+      font-size: 15px;
+      margin-bottom: 4px;
+    }
+
+    .chart-head span {
+      font-size: 12px;
+      color: #64748b;
+      line-height: 1.55;
+    }
+
+    .chart-meta {
+      padding: 8px 10px;
+      border-radius: 16px;
+      background: #eef2ff;
+      color: #3730a3;
+      font-size: 11px;
+      font-weight: 800;
+      border: 1px solid #c7d2fe;
+      white-space: nowrap;
+    }
+
+    .chart-body {
+      padding: 14px 18px 18px;
+    }
+
+    .legend {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #475569;
+      font-weight: 700;
+    }
+
+    .legend i {
+      width: 12px;
+      height: 12px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    .legend .sort {
+      background: #4f46e5;
+    }
+
+    .legend .lan {
+      background: #22c55e;
+    }
+
+    .legend .min {
+      background: #2563eb;
+    }
+
+    .legend .max {
+      background: #ef4444;
+    }
+
+    .chart-box {
+      width: 100%;
+      overflow: auto;
+    }
+
+    .chart-box svg {
+      width: 100%;
+      min-width: 760px;
+      height: auto;
+      display: block;
+    }
+
+    .table-shell {
+      margin-top: 18px;
+      border: 1px solid #dde6f0;
+      border-radius: 28px;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 18px 48px rgba(15, 23, 42, .06);
+    }
+
+    .table-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 18px 20px;
+      border-bottom: 1px solid #e2e8f0;
+      background: linear-gradient(180deg, #fbfdff, #f8fbff);
+    }
+
+    .table-head strong {
+      font-size: 15px;
+      display: block;
+    }
+
+    .table-head span {
+      font-size: 13px;
+      color: #64748b;
+    }
+
+    .mini-btn {
+      padding: 9px 12px;
+      border-radius: 14px;
+      border: 1px solid #dbe5f0;
+      background: #fff;
+      font-size: 12px;
+      font-weight: 800;
+      color: #334155;
+    }
+
+    .table-wrap {
+      overflow: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1120px;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      background: #f8fbff;
+      color: #475569;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+      z-index: 1;
+    }
+
+    tbody td {
+      padding: 15px 16px;
+      border-bottom: 1px solid #eef2f7;
+      font-size: 14px;
+      vertical-align: middle;
+    }
+
+    tbody tr {
+      transition: background .16s ease;
+      cursor: pointer;
+    }
+
+    tbody tr:hover {
+      background: #f8fbff;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 11px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .03em;
+    }
+
+    .pill-neutral {
+      background: #eef2ff;
+      color: #4338ca;
+    }
+
+    .pill-positive {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .pill-alert {
+      background: #fff7ed;
+      color: #c2410c;
+    }
+
+    .money {
+      font-weight: 900;
+      color: #0f172a;
+    }
+
+    .drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, .52);
+      backdrop-filter: blur(6px);
+      display: none;
+      z-index: 40;
+    }
+
+    .drawer-backdrop.is-open {
+      display: block;
+    }
+
+    .drawer {
+      position: fixed;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: min(540px, 94vw);
+      background: #fff;
+      box-shadow: -30px 0 80px rgba(15, 23, 42, .20);
+      padding: 24px;
+      overflow: auto;
+      transform: translateX(100%);
+      transition: transform .22s ease;
+      z-index: 41;
+    }
+
+    .drawer.is-open {
+      transform: translateX(0);
+    }
+
+    .drawer-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+
+    .drawer-top h3 {
+      margin: 0 0 4px;
+      font-size: 1.35rem;
+    }
+
+    .drawer-top p {
+      margin: 0;
+      color: #64748b;
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .drawer-close {
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-weight: 900;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .detail-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      background: #f8fbff;
+      padding: 14px 16px;
+    }
+
+    .detail-card span {
+      display: block;
+      font-size: 11px;
+      font-weight: 900;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-bottom: 6px;
+    }
+
+    .detail-card strong {
+      display: block;
+      font-size: 14px;
+      color: #0f172a;
+      line-height: 1.5;
+    }
+
+    .drawer-section {
+      margin-top: 18px;
+    }
+
+    .drawer-section h4 {
+      margin: 0 0 8px;
+      font-size: 14px;
+    }
+
+    .drawer-section p {
+      margin: 0;
+      color: #64748b;
+      font-size: 13px;
+      line-height: 1.75;
+    }
+
+    .signal-row {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .signal {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      font-size: 13px;
+    }
+
+    .signal b {
+      color: #0f172a;
+    }
+
+    @media (max-width:1180px) {
+
+      .hero-grid,
+      .executive-strip,
+      .main-grid,
+      .two-col,
+      .three-col {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+      }
+    }
+
+    @media (max-width:960px) {
+      .page-shell {
+        padding-top: 88px;
+      }
+
+      .hero-meta-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body class="assemblies-page bf-platform-body bf-v8-body" data-bf-page="assembleias" data-bf-archetype="dashboard"
+  data-bf-visual-version="8">
+  <div data-shell-header></div>
+
+  <div class="page-shell container premium-shell">
+    <section class="hero-premium">
+      <div class="hero-grid">
+        <div>
+          <span class="hero-badge">◆ monitor de assembleias ◆ grupo 000079 ◆ imóveis</span>
+          <h1>Acompanhamento premium das assembleias.</h1>
+          <p>Uma visão executiva para o consultor acompanhar cada assembleia do grupo, entender o ritmo de contemplação
+            e monitorar o comportamento dos lances mínimos e máximos ao longo do tempo. A página usa como base o
+            histórico enviado do grupo <strong>000079</strong>, com <strong>13 assembleias</strong> observadas entre
+            fevereiro de 2024 e fevereiro de 2025.</p>
+          <div class="hero-actions">
+            <a class="btn btn--primary" href="#historico">Abrir histórico executivo</a>
+            <a class="ghost-cta" href="#decisao-operacional">Ver decisao operacional</a>
+            <a class="ghost-cta" href="#tabela-assembleias">Explorar base detalhada</a>
+          </div>
+        </div>
+        <div class="hero-meta-grid" id="heroMeta"></div>
+      </div>
+    </section>
+
+    <section class="bf-v8-stagebar bf-v8-stagebar--inside" aria-label="Atalhos do monitor de assembleias" data-v8-stagebar>
+      <div class="bf-v8-stagebar__intro">
+        <span>Assembleias v8</span>
+        <strong>Historico, lances e sinais para decisao do consultor.</strong>
+      </div>
+      <a class="bf-v8-stagebar__item" href="#historico" data-step="1">
+        <span>Contexto</span>
+        <strong>Leitura executiva</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="#grafico-contemplacoes" data-step="2">
+        <span>Volume</span>
+        <strong>Contemplacoes</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="#grafico-lances" data-step="3">
+        <span>Disputa</span>
+        <strong>Faixa de lances</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="#tabela-assembleias" data-step="4">
+        <span>Auditoria</span>
+        <strong>Tabela analitica</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="#decisao-operacional" data-step="5">
+        <span>Decisao</span>
+        <strong>Acao consultiva</strong>
+      </a>
+    </section>
+
+    <section class="bf-v8-decision-strip" id="decisao-operacional" data-assembly-decision-strip
+      aria-label="Resumo de decisao operacional"></section>
+
+    <section class="executive-strip" id="kpiStrip"></section>
+
+    <div class="main-grid">
+      <aside class="sidebar">
+        <h4>Monitor da AGO</h4>
+        <p>Leitura rápida para saber quantas cotas saíram por sorteio, qual foi a pressão dos lances e onde o
+          comportamento do grupo mudou.</p>
+        <nav class="side-nav">
+          <a href="#historico">Histórico executivo</a>
+          <a href="#grafico-contemplacoes">Contemplações por assembleia</a>
+          <a href="#grafico-lances">Lance mínimo x máximo</a>
+          <a href="#tabela-assembleias">Tabela analítica</a>
+        </nav>
+      </aside>
+
+      <main class="page-content">
+        <section class="premium-card" id="historico">
+          <h2>Leitura executiva do ciclo de assembleias</h2>
+          <p>Este bloco organiza o acompanhamento em três camadas. A primeira mostra o volume de contemplações. A
+            segunda mostra a mudança de temperatura competitiva dos lances. A terceira traduz o que isso significa para
+            o consultor: janela de oportunidade, pressão do grupo e necessidade de recalibrar a estratégia comercial.
+          </p>
+
+          <div class="three-col" id="summaryCards"></div>
+          <div class="insight-list" id="insights"></div>
+        </section>
+
+        <section class="two-col">
+          <article class="premium-card" id="grafico-contemplacoes">
+            <h3>Quantidade de cotas contempladas por assembleia</h3>
+            <p>O gráfico separa sorteio e lance, para mostrar se o volume total está sendo sustentado mais pelo
+              mecanismo aleatório ou pela competitividade dos ofertantes.</p>
+            <div class="chart-card">
+              <div class="chart-head">
+                <div>
+                  <strong>Evolução do volume contemplado</strong>
+                  <span>Empilhamento por assembleia com diferenciação entre cotas contempladas por sorteio e por
+                    lance.</span>
+                </div>
+                <div class="chart-meta" id="volumeMeta"></div>
+              </div>
+              <div class="chart-body">
+                <div class="legend">
+                  <span><i class="sort"></i>Sorteio</span>
+                  <span><i class="lan"></i>Lance</span>
+                </div>
+                <div class="chart-box" id="stackedChart"></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="premium-card" id="grafico-lances">
+            <h3>Percentual de lance mínimo e máximo</h3>
+            <p>O gráfico de faixa mostra a abertura de preço competitivo de cada assembleia. Quando mínimo e máximo
+              ficam muito próximos, a disputa tende a estar mais concentrada.</p>
+            <div class="chart-card">
+              <div class="chart-head">
+                <div>
+                  <strong>Faixa competitiva por assembleia</strong>
+                  <span>Segmento vertical com ponto inferior no lance mínimo e ponto superior no lance máximo de cada
+                    assembleia.</span>
+                </div>
+                <div class="chart-meta" id="rangeMeta"></div>
+              </div>
+              <div class="chart-body">
+                <div class="legend">
+                  <span><i class="min"></i>Lance mínimo</span>
+                  <span><i class="max"></i>Lance máximo</span>
+                </div>
+                <div class="chart-box" id="rangeChart"></div>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="premium-card" id="tabela-assembleias">
+          <h2>Tabela analítica das assembleias</h2>
+          <p>A tabela detalha cada assembleia e permite abrir um painel lateral com o resumo operacional do evento. O
+            objetivo é ajudar o consultor a sair do histórico bruto e chegar rapidamente à leitura acionável.</p>
+          <div class="table-shell">
+            <div class="table-head">
+              <div>
+                <strong id="tableCount"></strong>
+                <span>Grupo 000079 · produto imóveis · base demonstrativa carregada localmente.</span>
+              </div>
+              <div><button class="mini-btn" type="button">Visão executiva</button></div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Assembleia</th>
+                    <th>Data</th>
+                    <th>Sorteio</th>
+                    <th>Lance</th>
+                    <th>Total contemplado</th>
+                    <th>Lance mínimo</th>
+                    <th>Lance máximo</th>
+                    <th>Faixa</th>
+                    <th>Pressão competitiva</th>
+                  </tr>
+                </thead>
+                <tbody id="assemblyTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+  <aside class="drawer" id="drawer">
+    <div class="drawer-top">
+      <div>
+        <h3 id="drawerTitle">Assembleia</h3>
+        <p id="drawerSubtitle">Resumo operacional</p>
+      </div>
+      <button class="drawer-close" id="drawerClose" type="button">✕</button>
+    </div>
+
+    <div class="detail-grid" id="drawerGrid"></div>
+
+    <section class="drawer-section">
+      <h4>Leitura executiva</h4>
+      <p id="drawerNarrative"></p>
+      <div class="signal-row" id="drawerSignals"></div>
+    </section>
+  </aside>
+
+  <div data-shell-footer></div>
+
+  <script>
+    const assemblies = [{ "idGrupo": 2065, "codigoGrupo": "000079", "tipoProduto": "IMÓVEIS", "dataAnterior": "04/02/2025", "dataAtual": "07/03/2025", "qtdMaxParticipantes": 800, "prazoOriginal": 200, "prazoRestante": 38, "qtdFaturamentos": 769, "qtdNaoFaturadas": 71, "qtdAContemplar": 57, "qtdAtivas": 736, "qtdAtraso": 23, "qtdRecuperacao": 0, "qtdCanceladas": 759, "qtdContempladas": 840, "qtdQuitadas": 391, "qtdVagas": 64, "idAssembleia": 10524, "numeroAssembleia": 150, "dataContemplacao": "06/02/2024", "qtdSorteio": 1, "qtdLance": 2, "pctMin": 25.0, "pctMax": 25.0, "ordem": 13, "pctMinAlpha": 25.0, "pctMaxAlpha": 25.0 }, { "idGrupo": 2065, "codigoGrupo": "000079", "tipoProduto": "IMÓVEIS", "dataAnterior": "04/02/2025", "dataAtual": "07/03/2025", "qtdMaxParticipantes": 800, "prazoOriginal": 200, "prazoRestante": 38, "qtdFaturamentos": 769, "qtdNaoFaturadas": 71, "qtdAContemplar": 57, "qtdAtivas": 736, "qtdAtraso": 23, "qtdRecuperacao": 0, "qtdCanceladas": 759, "qtdContempladas": 840, "qtdQuitadas": 391, "qtdVagas": 64, "idAssembleia": 10525, "numeroAssembleia": 151, "dataContemplacao": "05/03/2024", "qtdSorteio": 1, "qtdLance": 2, "pctMin": 24.5, "pctMax": 24.5, "ordem": 12, "pctMinAlpha": 24.5, "pctMaxAlpha": 24.5 }, { "idGrupo": 2065, "codigoGrupo": "000079", "tipoProduto": "IMÓVEIS", "dataAnterior": "04/02/2025", "dataAtual": "07/03/2025", "qtdMaxParticipantes": 800, "prazoOriginal": 200, "prazoRestante": 38, "qtdFaturamentos": 769, "qtdNaoFaturadas": 71, "qtdAContemplar": 57, "qtdAtivas": 736, "qtdAtraso": 23, "qtdRecuperacao": 0, "qtdCanceladas": 759, "qtdContempladas": 840, "qtdQuitadas": 391, "qtdVagas": 64, "idAssembleia": 10526, "numeroAssembleia": 152, "dataContemplacao": "05/04/2024", "qtdSorteio": 1, "qtdLance": 3, "pctMin": 24.0, "pctMax": 24.0, "ordem": 11, "pctMinAlpha": 24.0, "pctMaxAlpha": 24.0 }, { "idGrupo": 2065, "codigoGrupo": "000079", "tipoProduto": "IMÓVEIS", "dataAnterior": "04/02/2025", "dataAtual": "07/03/2025", "qtdMaxParticipantes": 800, "prazoOriginal": 200, "prazoRestante": 38, "qtdFaturamentos": 769, "qtdNaoFaturadas": 71, "qtdAContemplar": 57, "qtdAtivas": 736, "qtdAtraso": 23, "qtdRecuperacao": 0, "qtdCanceladas": 759, "qtdContempladas": 840, "qtdQuitadas": 391, "qtdVagas": 64, "idAssembleia": 10527, "numeroAssembleia": 153, "dataContemplacao": "03/05/2024", "qtdSorteio": 1, "qtdLance": 2, "pctMin": 23.5, "pctMax": 23.5, "ordem": 10, "pctMinAlpha": 23.5, "pctMaxAlpha": 23.5 }, { "idGrupo": 2065, "codigoGrupo": "000079", "tipoProduto": "IMÓVEIS", "dataAnterior": "04/02/2025", "dataAtual": "07/03/2025", "qtdMaxParticipantes": 800, "prazoOriginal": 200, "prazoRestante": 38, "qtdFaturamentos": 769, "qtdNaoFaturadas": 71, "qtdAContemplar": 57, "qtdAtivas": 736, "qtdAtraso": 23, "qtdRecuperacao": 0, "qtdCanceladas": 759, "qtdContempladas": 840, "qtdQuitadas": 391, "qtdVagas": 64, "idAssembleia": 10528, "numeroAssembleia": 154, "dataContemplacao": "04/06/2024", "qtdSorteio": 1, "qtdLance": 2, "pctMin": 23.0, "pctMax": 23.0, "ordem": 9, "pctMinAlpha": 23.0, "pctMaxAlpha": 23.0 }, { "idGrupo": 2065, "codigoGrupo": "000079", "tipoProduto": "IMÓVEIS", "dataAnterior": "04/02/2025", "dataAtual": "07/03/2025", "qtdMaxParticipantes": 800, "prazoOriginal": 200, "prazoRestante": 38, "qtdFaturamentos": 769, "qtdNaoFaturadas": 71, "qtdAContemplar": 57, "qtdAtivas": 736, "qtdAtraso": 23, "qtdRecuperacao": 0, "qtdCanceladas": 759, "qtdContempladas": 840, "qtdQuitadas": 391, "qtdVagas": 64, "idAssembleia": 10529, "numeroAssembleia": 155, "dataContemplacao": "05/07/2024", "qtdSorteio": 1, "qtdLance": 5, "pctMin": 22.5, "pctMax": 22.5, "ordem": 8, "pctMinAlpha": 22.5, "pctMaxAlpha": 22.5 }, { "idGrupo": 2065, "codigoGrupo": "000079", "tipoProduto": "IMÓVEIS", "dataAnterior": "04/02/2025", "dataAtual": "07/03/2025", "qtdMaxParticipantes": 800, "prazoOriginal": 200, "prazoRestante": 38, "qtdFaturamentos": 769, "qtdNaoFaturadas": 71, "qtdAContemplar": 57, "qtdAtivas": 736, "qtdAtraso": 23, "qtdRecuperacao": 0, "qtdCanceladas": 759, "qtdContempladas": 840, "qtdQuitadas": 391, "qtdVagas": 64, "idAssembleia": 10530, "numeroAssembleia": 156, "dataContemplacao": "06/08/2024", "qtdSorteio": 1, "qtdLance": 3, "pctMin": 22.0, "pctMax": 22.0, "ordem": 7, "pctMinAlpha": 22.0, "pctMaxAlpha": 22.0 }, { "idGrupo": 2065, "codigoGrupo": "000079", "tipoProduto": "IMÓVEIS", "dataAnterior": "04/02/2025", "dataAtual": "07/03/2025", "qtdMaxParticipantes": 800, "prazoOriginal": 200, "prazoRestante": 38, "qtdFaturamentos": 769, "qtdNaoFaturadas": 71, "qtdAContemplar": 57, "qtdAtivas": 736, "qtdAtraso": 23, "qtdRecuperacao": 0, "qtdCanceladas": 759, "qtdContempladas": 840, "qtdQuitadas": 391, "qtdVagas": 64, "idAssembleia": 10531, "numeroAssembleia": 157, "dataContemplacao": "03/09/2024", "qtdSorteio": 1, "qtdLance": 3, "pctMin": 21.5, "pctMax": 21.5, "ordem": 6, "pctMinAlpha": 21.5, "pctMaxAlpha": 21.5 }, { "idGrupo": 2065, "codigoGrupo": "000079", "tipoProduto": "IMÓVEIS", "dataAnterior": "04/02/2025", "dataAtual": "07/03/2025", "qtdMaxParticipantes": 800, "prazoOriginal": 200, "prazoRestante": 38, "qtdFaturamentos": 769, "qtdNaoFaturadas": 71, "qtdAContemplar": 57, "qtdAtivas": 736, "qtdAtraso": 23, "qtdRecuperacao": 0, "qtdCanceladas": 759, "qtdContempladas": 840, "qtdQuitadas": 391, "qtdVagas": 64, "idAssembleia": 10532, "numeroAssembleia": 158, "dataContemplacao": "08/10/2024", "qtdSorteio": 1, "qtdLance": 3, "pctMin": 21.0, "pctMax": 21.0, "ordem": 5, "pctMinAlpha": 21.0, "pctMaxAlpha": 21.0 }, { "idGrupo": 2065, "codigoGrupo": "000079", "tipoProduto": "IMÓVEIS", "dataAnterior": "04/02/2025", "dataAtual": "07/03/2025", "qtdMaxParticipantes": 800, "prazoOriginal": 200, "prazoRestante": 38, "qtdFaturamentos": 769, "qtdNaoFaturadas": 71, "qtdAContemplar": 57, "qtdAtivas": 736, "qtdAtraso": 23, "qtdRecuperacao": 0, "qtdCanceladas": 759, "qtdContempladas": 840, "qtdQuitadas": 391, "qtdVagas": 64, "idAssembleia": 10533, "numeroAssembleia": 159, "dataContemplacao": "05/11/2024", "qtdSorteio": 1, "qtdLance": 2, "pctMin": 32.7999, "pctMax": 36.9125, "ordem": 4, "pctMinAlpha": 32.8, "pctMaxAlpha": 36.913 }, { "idGrupo": 2065, "codigoGrupo": "000079", "tipoProduto": "IMÓVEIS", "dataAnterior": "04/02/2025", "dataAtual": "07/03/2025", "qtdMaxParticipantes": 800, "prazoOriginal": 200, "prazoRestante": 38, "qtdFaturamentos": 769, "qtdNaoFaturadas": 71, "qtdAContemplar": 57, "qtdAtivas": 736, "qtdAtraso": 23, "qtdRecuperacao": 0, "qtdCanceladas": 759, "qtdContempladas": 840, "qtdQuitadas": 391, "qtdVagas": 64, "idAssembleia": 10534, "numeroAssembleia": 160, "dataContemplacao": "03/12/2024", "qtdSorteio": 1, "qtdLance": 2, "pctMin": 39.6516, "pctMax": 41.9999, "ordem": 3, "pctMinAlpha": 39.652, "pctMaxAlpha": 42.0 }, { "idGrupo": 2065, "codigoGrupo": "000079", "tipoProduto": "IMÓVEIS", "dataAnterior": "04/02/2025", "dataAtual": "07/03/2025", "qtdMaxParticipantes": 800, "prazoOriginal": 200, "prazoRestante": 38, "qtdFaturamentos": 769, "qtdNaoFaturadas": 71, "qtdAContemplar": 57, "qtdAtivas": 736, "qtdAtraso": 23, "qtdRecuperacao": 0, "qtdCanceladas": 759, "qtdContempladas": 840, "qtdQuitadas": 391, "qtdVagas": 64, "idAssembleia": 10535, "numeroAssembleia": 161, "dataContemplacao": "07/01/2025", "qtdSorteio": 1, "qtdLance": 3, "pctMin": 40.7815, "pctMax": 43.55, "ordem": 2, "pctMinAlpha": 40.782, "pctMaxAlpha": 43.55 }, { "idGrupo": 2065, "codigoGrupo": "000079", "tipoProduto": "IMÓVEIS", "dataAnterior": "04/02/2025", "dataAtual": "07/03/2025", "qtdMaxParticipantes": 800, "prazoOriginal": 200, "prazoRestante": 38, "qtdFaturamentos": 769, "qtdNaoFaturadas": 71, "qtdAContemplar": 57, "qtdAtivas": 736, "qtdAtraso": 23, "qtdRecuperacao": 0, "qtdCanceladas": 759, "qtdContempladas": 840, "qtdQuitadas": 391, "qtdVagas": 64, "idAssembleia": 10536, "numeroAssembleia": 162, "dataContemplacao": "04/02/2025", "qtdSorteio": 1, "qtdLance": 2, "pctMin": 32.913, "pctMax": 37.841, "ordem": 1, "pctMinAlpha": 32.913, "pctMaxAlpha": 37.841 }];
+
+    const fmtInt = new Intl.NumberFormat('pt-BR');
+    const fmtPct = (v) => `${v.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 3 })}%`;
+    const fmtPctShort = (v) => `${v.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`;
+
+    const totals = assemblies.map(a => a.qtdSorteio + a.qtdLance);
+    const totalContempladas = totals.reduce((acc, v) => acc + v, 0);
+    const totalSorteio = assemblies.reduce((acc, a) => acc + a.qtdSorteio, 0);
+    const totalLance = assemblies.reduce((acc, a) => acc + a.qtdLance, 0);
+    const avgMin = assemblies.reduce((acc, a) => acc + a.pctMin, 0) / assemblies.length;
+    const avgMax = assemblies.reduce((acc, a) => acc + a.pctMax, 0) / assemblies.length;
+    const latest = assemblies[assemblies.length - 1];
+    const highestMax = assemblies.reduce((acc, a) => a.pctMax > acc.pctMax ? a : acc, assemblies[0]);
+    const lowestMin = assemblies.reduce((acc, a) => a.pctMin < acc.pctMin ? a : acc, assemblies[0]);
+    const peakVolume = assemblies.reduce((acc, a) => (a.qtdSorteio + a.qtdLance) > (acc.qtdSorteio + acc.qtdLance) ? a : acc, assemblies[0]);
+    const avgTotal = totalContempladas / assemblies.length;
+    const pressureJump = latest.pctMin - assemblies[8].pctMin;
+    const lateCycle = assemblies.slice(-4);
+    const lateAvgMin = lateCycle.reduce((acc, a) => acc + a.pctMin, 0) / lateCycle.length;
+    const earlyCycle = assemblies.slice(0, 4);
+    const earlyAvgMin = earlyCycle.reduce((acc, a) => acc + a.pctMin, 0) / earlyCycle.length;
+
+    document.getElementById('heroMeta').innerHTML = `
+      <div class="hero-mini">
+        <span>Grupo monitorado</span>
+        <strong>${latest.codigoGrupo}</strong>
+        <small>ID grupo 2065 · produto imóveis · prazo original de 200 meses.</small>
+      </div>
+      <div class="hero-mini">
+        <span>Base observada</span>
+        <strong>${assemblies.length} AGOs</strong>
+        <small>Da assembleia 150 até a 162, entre fev/2024 e fev/2025.</small>
+      </div>
+      <div class="hero-mini">
+        <span>Cotas ativas</span>
+        <strong>${fmtInt.format(latest.qtdAtivas)}</strong>
+        <small>Snapshot operacional da base na fotografia enviada.</small>
+      </div>
+      <div class="hero-mini">
+        <span>Cotas a contemplar</span>
+        <strong>${fmtInt.format(latest.qtdAContemplar)}</strong>
+        <small>Grupo ainda carrega uma fila relevante para as próximas assembleias.</small>
+      </div>
+    `;
+
+    const kpis = [
+      { label: 'Cotas contempladas', value: fmtInt.format(totalContempladas), detail: 'Soma de contemplações por sorteio e lance em 13 assembleias.', trend: `${fmtInt.format(totalLance)} via lance`, klass: 'up' },
+      { label: 'Média por assembleia', value: avgTotal.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }), detail: 'Ritmo médio de saída de cotas no período observado.', trend: `Pico: AGO ${peakVolume.numeroAssembleia} com ${peakVolume.qtdSorteio + peakVolume.qtdLance}`, klass: 'neutral' },
+      { label: 'Lance mínimo médio', value: fmtPctShort(avgMin), detail: 'Nível médio de entrada competitivo para contemplação por lance.', trend: `Piso: ${fmtPctShort(lowestMin.pctMin)}`, klass: 'warn' },
+      { label: 'Lance máximo médio', value: fmtPctShort(avgMax), detail: 'Faixa média do teto competitivo nas assembleias observadas.', trend: `Pico: ${fmtPctShort(highestMax.pctMax)}`, klass: 'up' },
+      { label: 'Último mínimo', value: fmtPctShort(latest.pctMin), detail: 'Percentual mínimo da AGO mais recente da base.', trend: `${pressureJump >= 0 ? '+' : ''}${fmtPctShort(pressureJump)} vs out/24`, klass: pressureJump > 0 ? 'warn' : 'neutral' },
+      { label: 'Último máximo', value: fmtPctShort(latest.pctMax), detail: 'Percentual máximo da AGO mais recente da base.', trend: `Assembleia ${latest.numeroAssembleia}`, klass: 'up' }
+    ];
+
+    document.getElementById('kpiStrip').innerHTML = kpis.map(k => `
+      <article class="kpi">
+        <span class="label">${k.label}</span>
+        <strong>${k.value}</strong>
+        <small>${k.detail}</small>
+        <span class="trend ${k.klass}">${k.trend}</span>
+      </article>
+    `).join('');
+
+    const decisionPriority = latest.pctMin >= 32 || pressureJump >= 8 ? 'Alta prioridade' : 'Monitorar';
+    const decisionTone = decisionPriority === 'Alta prioridade' ? 'warning' : 'stable';
+    const decisionCards = [
+      {
+        eyebrow: 'Decisao agora',
+        title: decisionPriority,
+        body: `Lance minimo recente em ${fmtPctShort(latest.pctMin)} e salto de ${fmtPctShort(pressureJump)} frente a out/24.`,
+        action: 'Recalibrar expectativa de lance',
+        tone: decisionTone
+      },
+      {
+        eyebrow: 'Fila comercial',
+        title: `${fmtInt.format(latest.qtdAContemplar)} cotas a contemplar`,
+        body: `A base ainda tem ${fmtInt.format(latest.qtdAtivas)} cotas ativas e exige leitura ativa por proximas AGOs.`,
+        action: 'Priorizar clientes com capacidade',
+        tone: 'info'
+      },
+      {
+        eyebrow: 'Faturamento',
+        title: `${fmtInt.format(latest.qtdNaoFaturadas)} nao faturadas`,
+        body: 'Contempladas sem faturamento pedem acompanhamento documental e follow-up consultivo.',
+        action: 'Abrir checklist operacional',
+        tone: 'warning'
+      },
+      {
+        eyebrow: 'Liquidez do grupo',
+        title: `Pico AGO ${peakVolume.numeroAssembleia}`,
+        body: `${peakVolume.qtdSorteio + peakVolume.qtdLance} cotas contempladas no maior evento da serie observada.`,
+        action: 'Comparar janelas de oportunidade',
+        tone: 'stable'
+      }
+    ];
+
+    document.querySelector('[data-assembly-decision-strip]').innerHTML = `
+      <div class="bf-v8-decision-strip__head">
+        <span class="bf-badge bf-badge--gold">Decisao operacional</span>
+        <div>
+          <h2>O que o consultor deve observar antes da proxima AGO.</h2>
+          <p>O painel traduz o historico em acoes: lance, fila, faturamento e janela de oportunidade.</p>
+        </div>
+      </div>
+      <div class="bf-v8-decision-strip__grid">
+        ${decisionCards.map((card) => `
+          <article class="bf-v8-decision-card bf-v8-decision-card--${card.tone}">
+            <span>${card.eyebrow}</span>
+            <strong>${card.title}</strong>
+            <p>${card.body}</p>
+            <small>${card.action}</small>
+          </article>
+        `).join('')}
+      </div>
+    `;
+
+    document.getElementById('summaryCards').innerHTML = `
+      <article class="sub-card">
+        <span class="k">Pressão de lance</span>
+        <strong>${fmtPctShort(lateAvgMin)}</strong>
+        <small>Nos quatro eventos mais recentes, o lance mínimo médio ficou acima do início da série, que era de ${fmtPctShort(earlyAvgMin)}.</small>
+      </article>
+      <article class="sub-card">
+        <span class="k">Dependência de lance</span>
+        <strong>${fmtPctShort((totalLance / totalContempladas) * 100)}</strong>
+        <small>Maior parte das contemplações do período foi conquistada por lance, não por sorteio.</small>
+      </article>
+      <article class="sub-card">
+        <span class="k">Volume não faturado</span>
+        <strong>${fmtInt.format(latest.qtdNaoFaturadas)}</strong>
+        <small>A base também carrega cotas contempladas ainda não faturadas, o que exige monitoramento comercial e documental.</small>
+      </article>
+    `;
+
+    const insights = [
+      {
+        iconClass: 'i-trend',
+        icon: 'TR',
+        title: 'Mudança de patamar a partir de novembro',
+        body: `Até outubro de 2024 os lances mínimos vinham em trajetória decrescente, chegando a ${fmtPctShort(lowestMin.pctMin)}. A partir de novembro, a série salta para a casa de 32% a 40%, mudando o custo de competitividade do grupo.`,
+        chip: 'Reprecificar expectativa'
+      },
+      {
+        iconClass: 'i-win',
+        icon: 'AL',
+        title: 'Assembleia 155 foi o maior evento de volume',
+        body: `A AGO ${peakVolume.numeroAssembleia} concentrou ${peakVolume.qtdSorteio + peakVolume.qtdLance} cotas contempladas, com 5 delas saindo por lance. Isso mostra uma janela específica de liquidez maior dentro do histórico observado.`,
+        chip: 'Ler padrão de liquidez'
+      },
+      {
+        iconClass: 'i-alert',
+        icon: '!',
+        title: 'Fila operacional ainda relevante',
+        body: `Mesmo com ${fmtInt.format(latest.qtdContempladas)} cotas contempladas no retrato geral do grupo, ainda existem ${fmtInt.format(latest.qtdAContemplar)} cotas a contemplar e ${fmtInt.format(latest.qtdNaoFaturadas)} contempladas não faturadas.`,
+        chip: 'Atuar em faturamento'
+      }
+    ];
+
+    document.getElementById('insights').innerHTML = insights.map(i => `
+      <article class="insight-item">
+        <div class="insight-icon ${i.iconClass}">${i.icon}</div>
+        <div class="insight-text">
+          <strong>${i.title}</strong>
+          <span>${i.body}</span>
+        </div>
+        <div class="insight-chip">${i.chip}</div>
+      </article>
+    `).join('');
+
+    document.getElementById('volumeMeta').textContent = `Total observado: ${fmtInt.format(totalContempladas)} cotas`;
+    document.getElementById('rangeMeta').textContent = `Faixa histórica: ${fmtPctShort(lowestMin.pctMin)} até ${fmtPctShort(highestMax.pctMax)}`;
+    document.getElementById('tableCount').textContent = `${assemblies.length} assembleias carregadas`;
+
+    function renderStackedChart(containerId, rows) {
+      const width = 960, height = 340, margin = { top: 18, right: 18, bottom: 70, left: 46 };
+      const innerW = width - margin.left - margin.right;
+      const innerH = height - margin.top - margin.bottom;
+      const maxY = Math.max(...rows.map(r => r.qtdSorteio + r.qtdLance)) + 1;
+      const step = innerW / rows.length;
+      const barW = Math.min(34, step * 0.56);
+      const y = (value) => margin.top + innerH - (value / maxY) * innerH;
+      const x = (index) => margin.left + index * step + (step - barW) / 2;
+
+      const gridLines = Array.from({ length: maxY + 1 }, (_, i) => i).map(i => {
+        const yy = y(i);
+        return `<g><line x1="${margin.left}" y1="${yy}" x2="${width - margin.right}" y2="${yy}" stroke="#e2e8f0" stroke-width="1"/><text x="${margin.left - 10}" y="${yy + 4}" fill="#64748b" font-size="11" text-anchor="end">${i}</text></g>`;
+      }).join('');
+
+      const bars = rows.map((r, i) => {
+        const total = r.qtdSorteio + r.qtdLance;
+        const sortH = (r.qtdSorteio / maxY) * innerH;
+        const lanH = (r.qtdLance / maxY) * innerH;
+        const bx = x(i);
+        const yLan = y(total);
+        const ySort = y(r.qtdSorteio);
+        const showLabel = total >= avgTotal;
+        return `
+          <g>
+            <rect x="${bx}" y="${yLan}" width="${barW}" height="${lanH}" rx="8" fill="#22c55e"></rect>
+            <rect x="${bx}" y="${ySort}" width="${barW}" height="${sortH}" rx="8" fill="#4f46e5"></rect>
+            ${showLabel ? `<text x="${bx + barW / 2}" y="${yLan - 8}" fill="#0f172a" font-size="11" text-anchor="middle" font-weight="800">${total}</text>` : ''}
+            <text x="${bx + barW / 2}" y="${height - 30}" fill="#64748b" font-size="10.5" text-anchor="middle" transform="rotate(-28 ${bx + barW / 2} ${height - 30})">AGO ${r.numeroAssembleia}</text>
+          </g>
+        `;
+      }).join('');
+
+      const svg = `
+        <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Gráfico de cotas contempladas por assembleia">
+          ${gridLines}
+          <line x1="${margin.left}" y1="${margin.top + innerH}" x2="${width - margin.right}" y2="${margin.top + innerH}" stroke="#cbd5e1" stroke-width="1.2"/>
+          ${bars}
+        </svg>
+      `;
+      document.getElementById(containerId).innerHTML = svg;
+    }
+
+    function renderRangeChart(containerId, rows) {
+      const width = 960, height = 360, margin = { top: 20, right: 18, bottom: 78, left: 52 };
+      const innerW = width - margin.left - margin.right;
+      const innerH = height - margin.top - margin.bottom;
+      const minYValue = Math.floor(Math.min(...rows.map(r => r.pctMin)) - 1);
+      const maxYValue = Math.ceil(Math.max(...rows.map(r => r.pctMax)) + 1);
+      const step = innerW / rows.length;
+
+      const y = (value) => margin.top + innerH - ((value - minYValue) / (maxYValue - minYValue)) * innerH;
+      const x = (index) => margin.left + index * step + step / 2;
+
+      const ticks = [];
+      for (let t = minYValue; t <= maxYValue; t += 2) ticks.push(t);
+
+      const gridLines = ticks.map(t => {
+        const yy = y(t);
+        return `<g><line x1="${margin.left}" y1="${yy}" x2="${width - margin.right}" y2="${yy}" stroke="#e2e8f0" stroke-width="1"/><text x="${margin.left - 10}" y="${yy + 4}" fill="#64748b" font-size="11" text-anchor="end">${t}%</text></g>`;
+      }).join('');
+
+      const ranges = rows.map((r, i) => {
+        const xx = x(i);
+        const yMin = y(r.pctMin);
+        const yMax = y(r.pctMax);
+        const show = i % 2 === 0 || i === rows.length - 1;
+        return `
+          <g>
+            <line x1="${xx}" y1="${yMax}" x2="${xx}" y2="${yMin}" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+            <circle cx="${xx}" cy="${yMin}" r="6" fill="#2563eb" stroke="#ffffff" stroke-width="3"></circle>
+            <circle cx="${xx}" cy="${yMax}" r="6" fill="#ef4444" stroke="#ffffff" stroke-width="3"></circle>
+            <text x="${xx}" y="${height - 30}" fill="#64748b" font-size="10.5" text-anchor="middle" transform="rotate(-28 ${xx} ${height - 30})">AGO ${r.numeroAssembleia}</text>
+            ${show ? `<text x="${xx}" y="${yMax - 10}" fill="#b91c1c" font-size="10.5" text-anchor="middle" font-weight="800">${r.pctMax.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%</text>` : ''}
+          </g>
+        `;
+      }).join('');
+
+      const svg = `
+        <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Gráfico de faixa de lance mínimo e máximo por assembleia">
+          ${gridLines}
+          <line x1="${margin.left}" y1="${margin.top + innerH}" x2="${width - margin.right}" y2="${margin.top + innerH}" stroke="#cbd5e1" stroke-width="1.2"/>
+          ${ranges}
+        </svg>
+      `;
+      document.getElementById(containerId).innerHTML = svg;
+    }
+
+    function competitivePressure(row) {
+      const total = row.qtdSorteio + row.qtdLance;
+      if (row.pctMin >= 35 || row.pctMax >= 40) return 'Alta';
+      if (total >= 5 || row.pctMin >= 25) return 'Moderada';
+      return 'Controlada';
+    }
+
+    function rangeLabel(row) {
+      const diff = row.pctMax - row.pctMin;
+      return diff === 0 ? 'Faixa fechada' : `${fmtPctShort(diff)} de abertura`;
+    }
+
+    function pressurePill(row) {
+      const label = competitivePressure(row);
+      const klass = label === 'Alta' ? 'pill-alert' : label === 'Moderada' ? 'pill-neutral' : 'pill-positive';
+      return `<span class="pill ${klass}">${label}</span>`;
+    }
+
+    document.getElementById('assemblyTable').innerHTML = assemblies.map(row => {
+      const total = row.qtdSorteio + row.qtdLance;
+      return `
+        <tr data-id="${row.idAssembleia}">
+          <td><strong>AGO ${row.numeroAssembleia}</strong><br><span style="color:#64748b;font-size:12px">ID ${row.idAssembleia}</span></td>
+          <td>${row.dataContemplacao}</td>
+          <td>${row.qtdSorteio}</td>
+          <td>${row.qtdLance}</td>
+          <td class="money">${total}</td>
+          <td>${fmtPct(row.pctMin)}</td>
+          <td>${fmtPct(row.pctMax)}</td>
+          <td>${rangeLabel(row)}</td>
+          <td>${pressurePill(row)}</td>
+        </tr>
+      `;
+    }).join('');
+
+    renderStackedChart('stackedChart', assemblies);
+    renderRangeChart('rangeChart', assemblies);
+
+    const drawer = document.getElementById('drawer');
+    const drawerBackdrop = document.getElementById('drawerBackdrop');
+    const drawerClose = document.getElementById('drawerClose');
+
+    function openDrawer(row) {
+      const total = row.qtdSorteio + row.qtdLance;
+      const diff = row.pctMax - row.pctMin;
+      document.getElementById('drawerTitle').textContent = `AGO ${row.numeroAssembleia} · ${row.dataContemplacao}`;
+      document.getElementById('drawerSubtitle').textContent = `Grupo ${row.codigoGrupo} · ID assembleia ${row.idAssembleia} · pressão ${competitivePressure(row).toLowerCase()}`;
+
+      document.getElementById('drawerGrid').innerHTML = `
+        <div class="detail-card"><span>Total contemplado</span><strong>${total} cotas</strong></div>
+        <div class="detail-card"><span>Contempladas por lance</span><strong>${row.qtdLance} cotas</strong></div>
+        <div class="detail-card"><span>Lance mínimo</span><strong>${fmtPct(row.pctMin)}</strong></div>
+        <div class="detail-card"><span>Lance máximo</span><strong>${fmtPct(row.pctMax)}</strong></div>
+        <div class="detail-card"><span>Cotas ativas</span><strong>${fmtInt.format(row.qtdAtivas)}</strong></div>
+        <div class="detail-card"><span>Cotas a contemplar</span><strong>${fmtInt.format(row.qtdAContemplar)}</strong></div>
+        <div class="detail-card"><span>Contempladas não faturadas</span><strong>${fmtInt.format(row.qtdNaoFaturadas)}</strong></div>
+        <div class="detail-card"><span>Prazo restante</span><strong>${fmtInt.format(row.prazoRestante)} meses</strong></div>
+      `;
+
+      const narrative = diff === 0
+        ? `Nesta assembleia, a faixa competitiva ficou completamente fechada em ${fmtPctShort(row.pctMin)}. Isso costuma indicar menor dispersão entre as ofertas vencedoras e uma leitura mais previsível do corte do grupo.`
+        : `Nesta assembleia, a faixa competitiva abriu ${fmtPctShort(diff)}, saindo de um mínimo de ${fmtPctShort(row.pctMin)} até um máximo de ${fmtPctShort(row.pctMax)}. Isso mostra uma disputa mais espalhada e ajuda a calibrar expectativas comerciais.`;
+      document.getElementById('drawerNarrative').textContent = narrative;
+
+      document.getElementById('drawerSignals').innerHTML = `
+        <div class="signal"><span>Leitura de competitividade</span><b>${competitivePressure(row)}</b></div>
+        <div class="signal"><span>Participação do lance no total</span><b>${fmtPctShort((row.qtdLance / total) * 100)}</b></div>
+        <div class="signal"><span>Fila remanescente do grupo</span><b>${fmtInt.format(row.qtdAContemplar)} cotas</b></div>
+        <div class="signal"><span>Snapshot de faturamento</span><b>${fmtInt.format(row.qtdFaturamentos)} já faturadas</b></div>
+      `;
+
+      drawer.classList.add('is-open');
+      drawerBackdrop.classList.add('is-open');
+    }
+
+    document.querySelectorAll('#assemblyTable tr').forEach(tr => {
+      tr.addEventListener('click', () => {
+        const row = assemblies.find(a => String(a.idAssembleia) === tr.dataset.id);
+        if (row) openDrawer(row);
+      });
+    });
+
+    function closeDrawer() {
+      drawer.classList.remove('is-open');
+      drawerBackdrop.classList.remove('is-open');
+    }
+    drawerClose.addEventListener('click', closeDrawer);
+    drawerBackdrop.addEventListener('click', closeDrawer);
+  </script>
+  <script src="../js/storage.js"></script>
+  <script src="../js/assemblies-live.js"></script>
+  <script src="../js/auth.js"></script><script src="../js/shared-layout.js"></script>
+</body>
+
+</html>
+
+
+

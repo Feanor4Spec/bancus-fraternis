@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 230" role="img" aria-label="BF Intelligence Logo" >
+  <title>BF Intelligence Logo</title>
+  
+  <rect x="32" y="34" width="86" height="86" rx="20" fill="#0B2C52"/>
+  <path d="M50 96 L66 78 L80 86 L100 56" fill="none" stroke="#D2AA49" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M50 104 H104" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+  <text x="145" y="76" font-size="30" font-weight="850" fill="#0A2540" font-family="Inter, Arial, sans-serif">BF Intelligence</text>
+  <text x="145" y="106" font-size="15" font-weight="700" fill="#C5A047" font-family="Inter, Arial, sans-serif" letter-spacing="1.8">DADOS • INSIGHTS • DECISÃO</text>
+
+</svg>

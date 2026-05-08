@@ -1,0 +1,26 @@
+[
+  {
+    "id": "bank-fratern",
+    "nome": "Bank Fratern",
+    "tipo": "plataforma",
+    "papel": "Educacao, simulacao, comparacao e marketplace assistido"
+  },
+  {
+    "id": "administradoras-consorcio",
+    "nome": "Administradoras de consorcio",
+    "tipo": "parceiros",
+    "papel": "Oferta e gestao de grupos de consorcio"
+  },
+  {
+    "id": "bancos-financiamento",
+    "nome": "Bancos e financeiras",
+    "tipo": "parceiros",
+    "papel": "Financiamento, CDC, consignado e credito com garantia"
+  },
+  {
+    "id": "banco-central",
+    "nome": "Banco Central do Brasil",
+    "tipo": "fonte_publica",
+    "papel": "Dados abertos, taxas medias, IFData e series temporais"
+  }
+]

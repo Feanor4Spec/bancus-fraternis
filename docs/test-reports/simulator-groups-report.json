@@ -1,0 +1,63 @@
+{
+  "ok": true,
+  "database": {
+    "path": "data_base/Tab_Grupos_Consorcio.json",
+    "rawRecords": 17418,
+    "validGroups": 17396,
+    "excludedByMinimumData": 22,
+    "excludedReasons": {
+      "valorCartaRef<=0": 22
+    },
+    "segments": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "admins": 120
+  },
+  "loader": {
+    "returned": 17396,
+    "status": {
+      "loaded": true,
+      "error": null,
+      "source": "real-json",
+      "count": 17396,
+      "stats": {
+        "total": 17418,
+        "valid": 17396,
+        "path": "../data_base/Tab_Grupos_Consorcio.json",
+        "loadedAt": "2026-05-08T19:58:43.083Z"
+      }
+    }
+  },
+  "shelfEngine": {
+    "catalogCount": 17396,
+    "emptyFilteredCount": 17396,
+    "sortedCount": 17396,
+    "scoredCount": 17396,
+    "pageSize": 500,
+    "totalPages": 35,
+    "firstPageRows": 500,
+    "lastPageRows": 396,
+    "paginatedCount": 17396,
+    "uniqueAdmins": 120,
+    "segments": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ]
+  },
+  "uiContract": {
+    "simulatorUsesRealJson": true,
+    "bootCallsLoadRealDatabase": true,
+    "bootCallsInitialSearch": true,
+    "hasPagination": true
+  },
+  "failures": []
+}

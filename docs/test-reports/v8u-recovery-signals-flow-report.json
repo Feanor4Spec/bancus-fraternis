@@ -1,0 +1,32 @@
+{
+  "ok": true,
+  "signals": {
+    "open": 4,
+    "total": 5,
+    "types": [
+      "saved-no-simulator",
+      "decision-no-continuity",
+      "comparator-no-matrix",
+      "selection-no-comparator"
+    ],
+    "summary": {
+      "total": 5,
+      "open": 4,
+      "readyForHandoff": 5,
+      "high": 2,
+      "medium": 1,
+      "low": 2,
+      "owners": 5,
+      "topType": "saved-no-simulator"
+    }
+  },
+  "handoff": {
+    "createdId": "LEAD-MOX83S95-BCG",
+    "sourceSignalId": "SIG-cliente-salvo-bankfratern-local-saved-no-simulator-EV-comparator-saved-28",
+    "priority": "alta",
+    "checklist": 4,
+    "total": 1,
+    "audit": 2
+  },
+  "failures": []
+}

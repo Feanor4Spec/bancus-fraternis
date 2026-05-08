@@ -1,0 +1,8 @@
+{
+  "ok": true,
+  "journeySteps": 10,
+  "localRefs": 18,
+  "requiredValidators": 9,
+  "warnings": [],
+  "failures": []
+}

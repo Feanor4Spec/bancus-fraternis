@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Bank Fratern - Decisao financeira inteligente</title>
+  <meta name="description"
+    content="Bank Fratern conecta perfil financeiro, diagnostico, simulacoes e recomendacoes para ajudar voce a tomar melhores decisoes.">
+  <meta name="theme-color" content="#0B2C52">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+  <link rel="icon" href="../assets/logos/bank-fratern-icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/home.css">
+  <link rel="stylesheet" href="../css/bank-fratern-design-system.css">
+  <link rel="stylesheet" href="../assets/css/bf-design-system-v8.css">
+</head>
+
+<body class="home-body home-body--institutional institutional-journey-page bf-v8-body" data-bf-page="index" data-bf-archetype="institutional"
+  data-bf-visual-version="8">
+  <header class="hm-header bf-header" id="hm-header">
+    <div class="hm-header__inner bf-header__inner">
+      <a href="index.html" class="hm-logo bf-brand" aria-label="Bank Fratern - inicio">
+        <img src="../assets/logos/logo-bank-fratern-portal.svg" alt="Bank Fratern" class="hm-logo__image bf-brand__logo">
+      </a>
+
+      <nav class="hm-nav" id="hm-nav" aria-label="Navegacao principal">
+        <a href="index.html" class="hm-nav__link hm-nav__link--active">Inicio</a>
+        <a href="#perfil-unico" class="hm-nav__link">Perfil</a>
+        <a href="#home-cockpit" class="hm-nav__link">Continuidade</a>
+        <a href="calculadoras.html" class="hm-nav__link">Calculadoras</a>
+        <a href="educacao.html" class="hm-nav__link">Educacao</a>
+        <a href="produtos.html" class="hm-nav__link">Produtos</a>
+        <a href="compliance.html" class="hm-nav__link">Compliance</a>
+        <a href="componentes-v8.html" class="hm-nav__link">Design</a>
+        <a href="calculadoras.html" class="hm-nav__link hm-nav__link--cta">Comecar diagnostico</a>
+      </nav>
+
+      <div class="hm-header__actions">
+        <a href="login.html" class="btn btn--ghost btn--sm">Entrar</a>
+        <a href="dashboard-cliente.html" class="btn btn--primary btn--sm">Meu painel</a>
+      </div>
+
+      <button class="hm-hamburger" id="hm-hamburger" type="button" aria-label="Abrir menu" aria-controls="hm-nav"
+        onclick="document.getElementById('hm-nav').classList.toggle('open')">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <div class="hm-layout">
+    <main class="hm-main hm-main--institutional">
+      <section class="hm-user-hero" data-home-hero-contextual>
+        <div class="hm-user-hero__content">
+          <span class="hm-hero__badge bf-hero__kicker" data-home-hero-badge>Perfil financeiro unico</span>
+          <h1 data-home-hero-title>Entenda sua vida financeira antes de escolher credito, consorcio ou investimento.</h1>
+          <p data-home-hero-copy>
+            O Bank Fratern transforma dados simples do seu momento financeiro em diagnostico, simulacoes conectadas,
+            comparacao de alternativas e proximas acoes explicaveis.
+          </p>
+          <div class="hm-user-hero__actions">
+            <a href="calculadora-custos-fixos.html" class="btn btn--primary btn--lg" data-home-hero-primary>Criar meu diagnostico</a>
+            <a href="calculadoras.html" class="btn btn--secondary btn--lg" data-home-hero-secondary>Explorar calculadoras</a>
+          </div>
+          <div class="hm-hero-context-strip" data-home-hero-context-strip>
+            <span data-home-hero-state>Diagnostico inicial</span>
+            <strong data-home-hero-next>Comece por custos fixos</strong>
+            <small data-home-hero-origin>Sem historico local neste navegador</small>
+          </div>
+          <div class="hm-live-status" id="home-live-status" aria-live="polite">
+            <span class="hm-live-status__dot"></span>
+            <span data-home-status>Conectando a base real...</span>
+          </div>
+        </div>
+
+        <aside class="hm-user-hero__panel" aria-label="Resumo da jornada financeira">
+          <div class="hm-profile-card">
+            <div class="hm-profile-card__head">
+              <div>
+                <span>Seu perfil</span>
+                <strong data-home-hero-panel-title>Uma entrada. Varias decisoes.</strong>
+              </div>
+              <img src="../assets/icons/ui/ui-ai.svg" alt="">
+            </div>
+            <div class="hm-profile-card__grid">
+              <div><small>Renda</small><strong data-home-hero-panel-income>Capacidade</strong></div>
+              <div><small>Parcela segura</small><strong data-home-hero-panel-capacity>Margem</strong></div>
+              <div><small>Reserva</small><strong data-home-hero-panel-reserve>Protecao</strong></div>
+              <div><small>Prontidao</small><strong data-home-hero-panel-score>Plano</strong></div>
+            </div>
+            <div class="hm-profile-card__decision">
+              <span class="bf-badge bf-badge--ok" data-home-hero-panel-badge>Recomendacao explicavel</span>
+              <p data-home-hero-panel-note>Organizar reserva, comparar custo de credito e simular investimento com os mesmos dados.</p>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="bf-v8-stagebar bf-v8-stagebar--inside" aria-label="Atalhos institucionais da home" data-v8-stagebar>
+        <div class="bf-v8-stagebar__intro"><span>Entrada</span><strong>Conheca, confie, crie perfil e avance com contexto.</strong></div>
+        <a class="bf-v8-stagebar__item" href="#plataforma" data-step="1"><span>Empresa</span><strong>Produtos</strong></a>
+        <a class="bf-v8-stagebar__item" href="#perfil-unico" data-step="2"><span>Perfil</span><strong>Diagnostico</strong></a>
+        <a class="bf-v8-stagebar__item" href="#solucoes" data-step="3"><span>Jornada</span><strong>Decisao</strong></a>
+        <a class="bf-v8-stagebar__item" href="#proof-title" data-step="4"><span>Prova</span><strong>Base e historico</strong></a>
+        <a class="bf-v8-stagebar__item" href="componentes-v8.html" data-step="5"><span>Design</span><strong>Contrato v8</strong></a>
+      </section>
+
+      <section class="bf-v8-decision-strip bf-v8-decision-strip--outer" id="home-decisao" aria-label="Resumo institucional da home" data-home-decision-strip>
+        <div class="bf-v8-decision-strip__head">
+          <span class="bf-badge bf-badge--navy">Home institucional</span>
+          <div>
+            <h2>Uma entrada para entender a empresa, montar perfil e escolher o proximo passo.</h2>
+            <p>A Home agora usa o mesmo contrato visual das paginas de confianca: contexto, decisao, continuidade e evidencia operacional.</p>
+            <div class="bf-inline-actions">
+              <a class="btn btn--primary btn--sm" href="#perfil-unico">Montar perfil</a>
+              <a class="btn btn--ghost btn--sm" href="produtos.html">Ver produtos</a>
+              <a class="btn btn--ghost btn--sm" href="duvidas.html">Tirar duvidas</a>
+            </div>
+          </div>
+        </div>
+        <div class="bf-v8-decision-strip__grid">
+          <article class="bf-v8-decision-card bf-v8-decision-card--stable"><span>Empresa</span><strong>Banco de decisao</strong><p>Apresenta proposta, produtos e confianca antes da simulacao.</p><small>Visao do usuario</small></article>
+          <article class="bf-v8-decision-card bf-v8-decision-card--info"><span>Perfil</span><strong>Dados reutilizaveis</strong><p>Renda, gastos e reserva conectam credito, investimento e planejamento.</p><small>Entrada unica</small></article>
+          <article class="bf-v8-decision-card bf-v8-decision-card--warning"><span>Risco</span><strong>Recomendacao educativa</strong><p>O sistema orienta sem prometer credito ou investimento personalizado.</p><small>Compliance visivel</small></article>
+          <article class="bf-v8-decision-card bf-v8-decision-card--stable"><span>Continuidade</span><strong>Dashboard e historico</strong><p>O usuario retoma simulacoes, comparacoes e trilha assistida.</p><small>Jornada rastreavel</small></article>
+        </div>
+      </section>
+
+      <section class="bf-platform-panel bf-platform-section" id="home-linha-decisao">
+        <div class="bf-admin-panel-heading">
+          <div><span class="bf-badge bf-badge--gold">Continuidade</span><h2>Como a Home conduz a jornada.</h2></div>
+          <a class="btn btn--ghost btn--sm" href="trilha-decisao.html">Abrir trilha</a>
+        </div>
+        <div class="bf-client-timeline" data-home-institutional-timeline>
+          <a class="bf-client-timeline__item is-done" href="#plataforma"><span>1</span><div><small>Conhecer</small><strong>Empresa e produtos</strong><p>O usuario entende o que a plataforma resolve.</p></div></a>
+          <a class="bf-client-timeline__item is-active" href="#perfil-unico"><span>2</span><div><small>Diagnosticar</small><strong>Perfil financeiro</strong><p>Dados simples viram capacidade e prioridade.</p></div></a>
+          <a class="bf-client-timeline__item is-pending" href="calculadoras.html"><span>3</span><div><small>Simular</small><strong>Calculadoras</strong><p>Credito e investimento reaproveitam o mesmo contexto.</p></div></a>
+          <a class="bf-client-timeline__item is-pending" href="comparador.html"><span>4</span><div><small>Comparar</small><strong>Matriz de decisao</strong><p>Alternativas aparecem lado a lado com memoria.</p></div></a>
+          <a class="bf-client-timeline__item is-pending" href="dashboard-cliente.html"><span>5</span><div><small>Retomar</small><strong>Dashboard</strong><p>Historico e handoff fecham a continuidade.</p></div></a>
+        </div>
+      </section>
+
+      <section class="hm-continuity-cockpit" id="home-cockpit" aria-labelledby="home-cockpit-title" data-home-continuity-cockpit>
+        <div class="hm-continuity-cockpit__head">
+          <div>
+            <span class="bf-badge bf-badge--navy">Cockpit de continuidade</span>
+            <h2 id="home-cockpit-title">Retome sua decisao a partir do que ja existe neste navegador.</h2>
+            <p>A Home agora le perfil financeiro, historico de calculadoras e simulacoes locais para sugerir o proximo passo sem recomecar a jornada.</p>
+          </div>
+          <div class="hm-continuity-cockpit__actions">
+            <a class="btn btn--primary btn--sm" href="dashboard-cliente.html">Abrir painel</a>
+            <a class="btn btn--ghost btn--sm" href="simulador.html">Simular agora</a>
+          </div>
+        </div>
+        <div class="hm-continuity-metrics" data-home-continuity-metrics>
+          <div class="hm-skeleton"></div>
+          <div class="hm-skeleton"></div>
+          <div class="hm-skeleton"></div>
+          <div class="hm-skeleton"></div>
+          <div class="hm-skeleton"></div>
+        </div>
+        <div class="hm-continuity-cards" data-home-continuity-cards>
+          <div class="hm-empty-state">Carregando continuidade local...</div>
+        </div>
+        <div class="hm-next-actions" data-home-next-actions></div>
+      </section>
+
+      <div data-home-settings-anchor></div>
+
+      <section class="hm-user-pillars" aria-label="Como o Bank Fratern ajuda o usuario">
+        <article class="hm-user-pillar">
+          <img src="../assets/icons/ui/ui-users.svg" alt="">
+          <h2>Perfil unico</h2>
+          <p>Renda, despesas, dividas, patrimonio e objetivo deixam de ser informacoes soltas.</p>
+        </article>
+        <article class="hm-user-pillar">
+          <img src="../assets/icons/ui/ui-scale.svg" alt="">
+          <h2>Diagnostico claro</h2>
+          <p>Voce enxerga sobra mensal, comprometimento, reserva necessaria e capacidade segura.</p>
+        </article>
+        <article class="hm-user-pillar">
+          <img src="../assets/icons/ui/ui-calculator.svg" alt="">
+          <h2>Simulacoes conectadas</h2>
+          <p>Credito, consorcio, renda fixa, metas e aposentadoria reaproveitam o mesmo contexto.</p>
+        </article>
+        <article class="hm-user-pillar">
+          <img src="../assets/icons/ui/ui-compass.svg" alt="">
+          <h2>Proxima acao</h2>
+          <p>A plataforma mostra o passo mais coerente com sua situacao financeira atual.</p>
+        </article>
+      </section>
+
+      <section class="hm-decision-flow" id="solucoes" data-settings-journey aria-labelledby="flow-title">
+        <div class="hm-section-head">
+          <span class="bf-badge bf-badge--navy">Jornada do usuario</span>
+          <h2 class="hm-section-title" id="flow-title">Da informacao ao plano de acao.</h2>
+        </div>
+        <div class="hm-flow-grid">
+          <article>
+            <span>1</span>
+            <h3>Informar contexto</h3>
+            <p>Voce registra renda, gastos, dividas, reserva e objetivo financeiro.</p>
+          </article>
+          <article>
+            <span>2</span>
+            <h3>Receber diagnostico</h3>
+            <p>O sistema calcula sobra, comprometimento, reserva e capacidade de pagamento.</p>
+          </article>
+          <article>
+            <span>3</span>
+            <h3>Simular caminhos</h3>
+            <p>Credito, consorcio, investimentos e metas usam os mesmos dados de base.</p>
+          </article>
+          <article>
+            <span>4</span>
+            <h3>Decidir com clareza</h3>
+            <p>Cada recomendacao vem com motivo, lacunas e proximo passo sugerido.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="hm-ecosystem hm-user-ecosystem" id="plataforma" aria-labelledby="ecosystem-title">
+        <div class="hm-section-head">
+          <span class="bf-badge bf-badge--gold">Empresa e produtos</span>
+          <h2 class="hm-section-title" id="ecosystem-title">Conheca o Bank Fratern antes de criar seu perfil.</h2>
+          <p class="hm-section-desc">A empresa conecta educacao financeira, simuladores, comparadores e planejamento para ajudar voce a decidir com dados, memoria de calculo e contexto.</p>
+        </div>
+        <div class="hm-module-grid">
+          <a class="hm-module-card" href="calculadora-custos-fixos.html">
+            <img src="../assets/photos/photo-11-onboarding.png" alt="Pessoa iniciando diagnostico financeiro">
+            <div>
+              <span class="bf-badge bf-badge--navy">BF Diagnostico</span>
+              <h3>Organizacao financeira</h3>
+              <p>Mapeia gastos fixos, capacidade de aporte, reserva e comprometimento.</p>
+            </div>
+          </a>
+          <a class="hm-module-card" href="comparador.html">
+            <img src="../assets/photos/photo-04-data.png" alt="Analise de dados financeiros">
+            <div>
+              <span class="bf-badge bf-badge--gold">BF Credito</span>
+              <h3>Credito, consorcio e comparacao</h3>
+              <p>Compara parcela, custo total, prazo, alternativas e impacto na renda.</p>
+            </div>
+          </a>
+          <a class="hm-module-card" href="calculadora-renda-fixa.html">
+            <img src="../assets/photos/photo-06-capital.png" alt="Planejamento de capital">
+            <div>
+              <span class="bf-badge bf-badge--ok">BF Investimentos</span>
+              <h3>Planejamento patrimonial</h3>
+              <p>Projeta aportes, rendimento, metas, reserva e renda futura com memoria de calculo.</p>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <section class="hm-profile-demo" id="perfil-unico" aria-labelledby="profile-demo-title">
+        <div class="hm-section-head">
+          <span class="bf-badge bf-badge--gold">Perfil financeiro unico</span>
+          <h2 class="hm-section-title" id="profile-demo-title">Agora, monte seu diagnostico pessoal.</h2>
+          <p class="hm-section-desc">Depois de conhecer a empresa e os produtos, use esta previa para ver como seus dados conectam diagnostico, credito, investimentos e metas.</p>
+        </div>
+
+        <div class="hm-profile-demo__grid">
+          <form class="hm-profile-demo__form" id="home-profile-form">
+            <div class="hm-demo-field">
+              <label for="homeIncome">Renda mensal liquida</label>
+              <input id="homeIncome" type="number" min="0" step="100" value="8000">
+            </div>
+            <div class="hm-demo-field">
+              <label for="homeExpenses">Despesas mensais</label>
+              <input id="homeExpenses" type="number" min="0" step="100" value="4200">
+            </div>
+            <div class="hm-demo-field">
+              <label for="homeDebts">Parcelas e dividas atuais</label>
+              <input id="homeDebts" type="number" min="0" step="100" value="700">
+            </div>
+            <div class="hm-demo-field">
+              <label for="homeInvestments">Reserva e investimentos</label>
+              <input id="homeInvestments" type="number" min="0" step="100" value="45000">
+            </div>
+            <div class="hm-demo-field">
+              <label for="homeReserveMonths">Meses de reserva desejados</label>
+              <input id="homeReserveMonths" type="number" min="1" max="24" step="1" value="6">
+            </div>
+            <div class="hm-demo-field">
+              <label for="homeGoal">Objetivo principal</label>
+              <select id="homeGoal">
+                <option>Comprar imovel</option>
+                <option>Trocar veiculo</option>
+                <option>Formar reserva</option>
+                <option>Investir melhor</option>
+                <option>Primeiro milhao</option>
+                <option>Reduzir dividas</option>
+              </select>
+            </div>
+          </form>
+
+          <div class="hm-profile-demo__result">
+            <div class="hm-score-card">
+              <div class="hm-score-ring" id="homeScoreRing" style="--scoreDeg: 0deg;">
+                <div>
+                  <strong id="homeScoreValue">0</strong>
+                  <span>saude financeira</span>
+                </div>
+              </div>
+              <p id="homeDemoRecommendation">Calculando recomendacao...</p>
+            </div>
+            <div class="hm-demo-result-grid">
+              <div><span>Sobra mensal</span><strong id="homeDemoLeftover">R$ 0</strong></div>
+              <div><span>Comprometimento</span><strong id="homeDemoCommitment">0%</strong></div>
+              <div><span>Reserva necessaria</span><strong id="homeDemoReserve">R$ 0</strong></div>
+              <div><span>Gap da reserva</span><strong id="homeDemoReserveGap">R$ 0</strong></div>
+            </div>
+            <div class="hm-profile-demo__notice">
+              Previa educativa. Simulacoes completas devem mostrar memoria de calculo, premissas e alertas de risco.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="hm-live-proof" aria-labelledby="proof-title">
+        <div class="hm-section-head">
+          <span class="bf-badge bf-badge--navy">Prova de plataforma</span>
+          <h2 class="hm-section-title" id="proof-title">Dados, historico e acompanhamento quando voce avanca.</h2>
+        </div>
+
+        <div class="hm-kpi-bar">
+          <div class="hm-kpi">
+            <span class="hm-kpi__value" data-home-kpi="groups">...</span>
+            <span class="hm-kpi__label">Grupos disponiveis</span>
+          </div>
+          <div class="hm-kpi">
+            <span class="hm-kpi__value" data-home-kpi="segments">...</span>
+            <span class="hm-kpi__label">Segmentos ativos</span>
+          </div>
+          <div class="hm-kpi">
+            <span class="hm-kpi__value" data-home-kpi="saved">0</span>
+            <span class="hm-kpi__label">Simulacoes salvas</span>
+          </div>
+          <div class="hm-kpi">
+            <span class="hm-kpi__value" data-home-kpi="maxCarta">...</span>
+            <span class="hm-kpi__label">Maior carta disponivel</span>
+          </div>
+        </div>
+
+        <div class="hm-radar__grid">
+          <article class="hm-radar-card">
+            <div class="hm-radar-card__head">
+              <img src="../assets/icons/ui/ui-graph.svg" alt="">
+              <div>
+                <h3>Exemplos da base conectada</h3>
+                <p>Grupos encontrados na base local usada pelo simulador.</p>
+              </div>
+            </div>
+            <div class="hm-live-list" id="home-featured-groups">
+              <div class="hm-skeleton"></div>
+              <div class="hm-skeleton"></div>
+              <div class="hm-skeleton"></div>
+            </div>
+          </article>
+          <article class="hm-radar-card">
+            <div class="hm-radar-card__head">
+              <img src="../assets/icons/ui/ui-document.svg" alt="">
+              <div>
+                <h3>Historico local</h3>
+                <p>Cenarios salvos neste navegador aparecem aqui e no painel do cliente.</p>
+              </div>
+            </div>
+            <div class="hm-live-list" id="home-recent-simulations">
+              <div class="hm-empty-state">Nenhuma simulacao salva ainda.</div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="hm-governance-strip" aria-label="Confianca e governanca">
+        <article>
+          <img src="../assets/icons/ui/ui-lock.svg" alt="">
+          <h3>Privacidade e consentimento</h3>
+          <p>Dados pessoais e historico precisam de finalidade clara, controle e possibilidade de revisao.</p>
+        </article>
+        <article>
+          <img src="../assets/icons/ui/ui-document.svg" alt="">
+          <h3>Memoria de calculo</h3>
+          <p>Resultados devem explicar formula, premissas, versao da regra e lacunas como CET, IOF ou impostos.</p>
+        </article>
+        <article>
+          <img src="../assets/icons/ui/ui-shield.svg" alt="">
+          <h3>Recomendacao responsavel</h3>
+          <p>O produto orienta proximas acoes sem tratar score educativo como score de credito.</p>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <footer class="hm-footer">
+    <div class="hm-footer__inner">
+      <div class="hm-footer__brand">
+        <img src="../assets/logos/logo-bank-fratern-dark.svg" alt="Bank Fratern" class="hm-footer__logo">
+        <p>Inteligencia financeira acessivel para diagnosticar, simular, comparar e decidir.</p>
+      </div>
+      <div class="hm-footer__links">
+        <div>
+          <h5>Para voce</h5>
+          <a href="calculadora-custos-fixos.html">Diagnostico financeiro</a>
+          <a href="calculadoras.html">Calculadoras</a>
+          <a href="educacao.html">Educacao financeira</a>
+          <a href="dashboard-cliente.html">Meu painel</a>
+        </div>
+        <div>
+          <h5>Solucoes</h5>
+          <a href="simulador.html">Simulador de consorcio</a>
+          <a href="produtos.html">Produtos</a>
+          <a href="comparador.html">Comparador</a>
+          <a href="dados-abertos.html">Dados abertos</a>
+        </div>
+        <div>
+          <h5>Confianca</h5>
+          <a href="compliance.html">Compliance</a>
+          <a href="duvidas.html">Duvidas</a>
+          <a href="sobre-nos.html">Sobre nos</a>
+          <a href="componentes-v8.html">Design system</a>
+          <a href="api-docs.html">API Docs</a>
+        </div>
+      </div>
+    </div>
+    <div class="hm-footer__bottom">
+      © 2026 Bank Fratern S.A. - Plataforma educativa de decisao financeira.
+    </div>
+  </footer>
+
+  <script src="../js/settings.js"></script>
+  <script src="../js/storage.js"></script>
+  <script src="../assets/js/services/decision-context.service.js"></script>
+  <script src="../assets/js/services/trilha-decisao.service.js"></script>
+  <script src="../js/home.js"></script>
+</body>
+
+</html>

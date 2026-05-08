@@ -1,0 +1,35 @@
+{
+  "ok": true,
+  "activeDocs": {
+    "readme": "docs/README.md",
+    "calculatorCount": 19,
+    "expectedCalculatorCount": 19
+  },
+  "historicalDocs": [
+    {
+      "doc": "docs/ARQUITETURA.md",
+      "isMarkedHistorical": true,
+      "namesCurrentPlatform": true,
+      "controlsLegacyName": true
+    },
+    {
+      "doc": "docs/ATA_PROJETO.md",
+      "isMarkedHistorical": true,
+      "namesCurrentPlatform": true,
+      "controlsLegacyName": true
+    },
+    {
+      "doc": "docs/FOLDER_PROJETO.md",
+      "isMarkedHistorical": true,
+      "namesCurrentPlatform": true,
+      "controlsLegacyName": true
+    },
+    {
+      "doc": "docs/implementation_plan.md",
+      "isMarkedHistorical": true,
+      "namesCurrentPlatform": true,
+      "controlsLegacyName": true
+    }
+  ],
+  "failures": []
+}

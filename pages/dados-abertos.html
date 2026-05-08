@@ -1,0 +1,85 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dados Abertos - Bank Fratern</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="icon" href="../assets/logos/bank-fratern-icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/styles.css"><link rel="stylesheet" href="../css/bank-fratern-design-system.css"><link rel="stylesheet" href="../assets/css/platform.css">
+</head>
+<body class="bf-platform-body trust-page" data-bf-page="dados">
+  <div data-shell-header></div>
+  <main class="bf-platform-shell">
+    <section class="bf-platform-hero">
+      <div class="bf-platform-hero__content">
+        <span class="bf-badge bf-badge--ok">Banco de dados financeiro</span>
+        <h1>Datasets para produtos, indices, instituicoes e regras.</h1>
+        <p>A plataforma comeca com JSON local curado e esta preparada para evoluir para API propria, Banco Central, IFData, taxas medias e Open Finance consentido.</p>
+      </div>
+      <aside class="bf-platform-hero__rail">
+        <a href="api-docs.html">API Docs <span>API</span></a>
+        <a href="compliance.html">Compliance <span>LG</span></a>
+      </aside>
+    </section>
+    <section class="bf-v8-stagebar bf-v8-stagebar--inside" aria-label="Atalhos de dados abertos" data-v8-stagebar>
+      <div class="bf-v8-stagebar__intro"><span>Dados v8</span><strong>Catalogo local, premissas, formulas, API e governanca.</strong></div>
+      <a class="bf-v8-stagebar__item" href="#decisao-dados" data-step="1"><span>Resumo</span><strong>Base local</strong></a>
+      <a class="bf-v8-stagebar__item" href="#dados-catalogo" data-step="2"><span>Catalogo</span><strong>Datasets</strong></a>
+      <a class="bf-v8-stagebar__item" href="calculadoras-governanca.html" data-step="3"><span>Premissas</span><strong>Governanca</strong></a>
+      <a class="bf-v8-stagebar__item" href="api-docs.html" data-step="4"><span>API</span><strong>Contratos</strong></a>
+      <a class="bf-v8-stagebar__item" href="compliance.html" data-step="5"><span>Compliance</span><strong>Uso dos dados</strong></a>
+    </section>
+    <section class="bf-v8-decision-strip bf-v8-decision-strip--outer" id="decisao-dados" aria-label="Ponte de dados abertos" data-trust-decision-strip>
+      <div class="bf-v8-decision-strip__head">
+        <span class="bf-badge bf-badge--ok">Base auditavel</span>
+        <div>
+          <h2>Os dados locais explicam o que a plataforma calcula.</h2>
+          <p>Produtos, calculadoras, premissas, formulas, indices e modelos padrao estao em JSON local para facilitar QA, versionamento e futura migracao para API.</p>
+          <div class="bf-inline-actions">
+            <a class="btn btn--primary btn--sm" href="#dados-catalogo">Ver catalogo</a>
+            <a class="btn btn--ghost btn--sm" href="calculadoras-governanca.html">Governar premissas</a>
+            <a class="btn btn--ghost btn--sm" href="api-docs.html">Ver contratos</a>
+          </div>
+        </div>
+      </div>
+      <div class="bf-v8-decision-strip__grid">
+        <article class="bf-v8-decision-card bf-v8-decision-card--stable"><span>Produtos</span><strong>Catalogo curado</strong><p>Produtos financeiros alimentam cards, filtros, simuladores e comparador.</p><small>assets/data/produtos.json</small></article>
+        <article class="bf-v8-decision-card bf-v8-decision-card--info"><span>Premissas</span><strong>Taxas locais</strong><p>Selic, CDI, IPCA, TR e IR regressivo ficam documentados como demonstrativos.</p><small>Sem API viva nesta fase</small></article>
+        <article class="bf-v8-decision-card bf-v8-decision-card--stable"><span>QA</span><strong>Golden tests</strong><p>Formulas possuem testes deterministas para reduzir regressao.</p><small>validate-calculadoras</small></article>
+        <article class="bf-v8-decision-card bf-v8-decision-card--info"><span>Evolucao</span><strong>API propria</strong><p>A estrutura esta pronta para backend, banco e integrações públicas no futuro.</p><small>Contrato progressivo</small></article>
+      </div>
+    </section>
+    <section class="bf-platform-panel bf-platform-section" id="dados-timeline">
+      <div class="bf-admin-panel-heading">
+        <div><span class="bf-badge bf-badge--navy">Linha de dados</span><h2>Da fonte ao uso na jornada</h2></div>
+        <a class="btn btn--ghost btn--sm" href="api-docs.html">Ver API Docs</a>
+      </div>
+      <div class="bf-client-timeline" data-trust-timeline>
+        <a class="bf-client-timeline__item is-done" href="#dados-catalogo"><span>1</span><div><small>Fonte</small><strong>JSON local</strong><p>Arquivos curados ficam versionaveis e auditaveis.</p></div></a>
+        <a class="bf-client-timeline__item is-active" href="calculadoras.html"><span>2</span><div><small>Calculo</small><strong>Formulas</strong><p>Servicos JS usam premissas e registram memoria.</p></div></a>
+        <a class="bf-client-timeline__item is-pending" href="comparador.html"><span>3</span><div><small>Decisao</small><strong>Comparador</strong><p>Produtos e taxas viram matriz lado a lado.</p></div></a>
+        <a class="bf-client-timeline__item is-pending" href="dashboard-admin.html"><span>4</span><div><small>Governanca</small><strong>Admin</strong><p>Auditoria local prepara publicacao controlada.</p></div></a>
+        <a class="bf-client-timeline__item is-pending" href="compliance.html"><span>5</span><div><small>Limite</small><strong>Privacidade</strong><p>Dados pessoais ficam fora da base aberta.</p></div></a>
+      </div>
+    </section>
+    <section class="bf-platform-grid" id="dados-catalogo" data-datasets></section>
+    <section class="bf-platform-panel bf-platform-section">
+      <div class="bf-admin-panel-heading">
+        <div>
+          <span class="bf-badge bf-badge--navy">Calculadoras</span>
+          <h2>Novos datasets locais</h2>
+        </div>
+        <a class="btn btn--ghost btn--sm" href="../assets/data/calculadoras.json">Catalogo JSON</a>
+      </div>
+      <p>O ecossistema usa <code>calculadoras.json</code> para campos, formulas, riscos e relacoes entre paginas, <code>calculadoras-premissas.json</code> para Selic, CDI, IPCA, TR, IR regressivo, cartoes, faixas de renda e ativos demonstrativos, e <code>calculadoras-golden-tests.json</code> para QA deterministico das formulas.</p>
+    </section>
+  </main>
+  <div data-shell-footer></div>
+  <script src="../js/auth.js"></script><script src="../js/shared-layout.js"></script><script src="../assets/js/formatters.js"></script><script src="../assets/js/validators.js"></script><script src="../assets/js/services/dados.service.js"></script><script src="../assets/js/components/cards.js"></script><script src="../assets/js/components/tables.js"></script><script src="../assets/js/components/alerts.js"></script><script src="../assets/js/components/tooltips.js"></script><script src="../assets/js/components/charts.js"></script><script src="../assets/js/formulas/price.formulas.js"></script><script src="../assets/js/formulas/sac.formulas.js"></script><script src="../assets/js/formulas/consorcio.formulas.js"></script><script src="../assets/js/formulas/comparison.formulas.js"></script><script src="../assets/js/services/financiamento.service.js"></script><script src="../assets/js/services/cdc.service.js"></script><script src="../assets/js/services/consorcio.service.js"></script><script src="../assets/js/services/comparador.service.js"></script><script src="../assets/js/services/recomendacao.service.js"></script><script src="../assets/js/bf-platform.js"></script>
+</body>
+</html>
+
+
+

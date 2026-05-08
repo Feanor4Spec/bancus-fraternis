@@ -1,0 +1,878 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bank Fratern — Carteira de Clientes</title>
+  <meta name="description"
+    content="Dashboard executivo para o consultor acompanhar carteira, grupos, cotas, status e valores pagos dos clientes.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="../css/shared-site.css">
+  <link rel="stylesheet" href="../css/bank-fratern-design-system.css">
+  <link rel="stylesheet" href="../assets/css/platform.css">
+  <link rel="stylesheet" href="../assets/css/bf-design-system-v8.css">
+  <style>
+    .portfolio-hero-grid {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 18px;
+      align-items: stretch
+    }
+
+    .portfolio-panel {
+      background: linear-gradient(180deg, #0B2C52, #102f55);
+      color: #fff;
+      border-radius: 26px;
+      padding: 22px;
+      border: 1px solid rgba(255, 255, 255, .06)
+    }
+
+    .portfolio-panel h3 {
+      margin: 0 0 14px;
+      font-size: 1rem
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px
+    }
+
+    .pill {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .08);
+      border: 1px solid rgba(255, 255, 255, .08);
+      font-size: 12px;
+      font-weight: 700
+    }
+
+    .kpi-grid-6 {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 12px
+    }
+
+    .exec-kpi {
+      background: linear-gradient(180deg, #fff, #f8fafc);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: var(--shadow-soft)
+    }
+
+    .exec-kpi strong {
+      display: block;
+      font-size: 1.7rem;
+      line-height: 1;
+      margin-bottom: 6px
+    }
+
+    .exec-kpi span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5
+    }
+
+    .exec-kpi small {
+      display: block;
+      margin-top: 10px;
+      font-size: 12px;
+      color: #64748b
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1.4fr repeat(3, .9fr);
+      gap: 12px;
+      margin-top: 18px
+    }
+
+    .toolbar input,
+    .toolbar select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid #cbd5e1;
+      background: #fff
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 11px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800
+    }
+
+    .status-ativo {
+      background: #dcfce7;
+      color: #166534
+    }
+
+    .status-contemplado {
+      background: #dbeafe;
+      color: #1d4ed8
+    }
+
+    .status-analise {
+      background: #ede9fe;
+      color: #6d28d9
+    }
+
+    .status-atraso {
+      background: #fef3c7;
+      color: #b45309
+    }
+
+    .status-quitado {
+      background: #e0f2fe;
+      color: #0f766e
+    }
+
+    .status-cancelado {
+      background: #fee2e2;
+      color: #b91c1c
+    }
+
+    .table-shell {
+      margin-top: 18px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      overflow: hidden;
+      background: #fff
+    }
+
+    .table-wrap {
+      overflow: auto
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1180px
+    }
+
+    thead th {
+      background: #f8fafc;
+      color: #475569;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--line)
+    }
+
+    tbody td {
+      padding: 14px 16px;
+      border-bottom: 1px solid #eef2f7;
+      font-size: 14px;
+      vertical-align: middle
+    }
+
+    tbody tr:hover {
+      background: #f8fafc
+    }
+
+    .client-cell strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 4px
+    }
+
+    .client-cell span {
+      color: #64748b;
+      font-size: 12px
+    }
+
+    .money {
+      font-weight: 800
+    }
+
+    .progress {
+      height: 10px;
+      border-radius: 999px;
+      background: #e2e8f0;
+      overflow: hidden;
+      min-width: 140px
+    }
+
+    .progress>span {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, #1d4ed8, #3730a3);
+      border-radius: 999px
+    }
+
+    .progress-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 6px;
+      font-size: 12px;
+      color: #64748b
+    }
+
+    .split-grid {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 16px
+    }
+
+    .ranking-list,
+    .agenda-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px
+    }
+
+    .rank-item,
+    .agenda-item {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--surface-2);
+      padding: 14px 16px
+    }
+
+    .rank-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 8px
+    }
+
+    .rank-top strong,
+    .agenda-item strong {
+      font-size: 14px
+    }
+
+    .rank-top span,
+    .agenda-item span {
+      color: #64748b;
+      font-size: 12px;
+      line-height: 1.55
+    }
+
+    .bar-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px
+    }
+
+    .bar-item {
+      display: grid;
+      grid-template-columns: 170px minmax(0, 1fr) 90px;
+      gap: 12px;
+      align-items: center
+    }
+
+    .bar-item label {
+      font-size: 13px;
+      font-weight: 700
+    }
+
+    .bar-track {
+      height: 12px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden
+    }
+
+    .bar-track span {
+      display: block;
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #1d4ed8, #2563eb)
+    }
+
+    .bar-value {
+      text-align: right;
+      font-size: 12px;
+      color: #64748b;
+      font-weight: 700
+    }
+
+    .insight-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px
+    }
+
+    .insight-card {
+      background: linear-gradient(180deg, #fff, #f8fafc);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 18px
+    }
+
+    .insight-card h3 {
+      margin: 0 0 8px;
+      font-size: 15px
+    }
+
+    .insight-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.75;
+      font-size: 14px
+    }
+
+    .muted {
+      color: #64748b
+    }
+
+    @media (max-width: 1080px) {
+
+      .portfolio-hero-grid,
+      .split-grid,
+      .toolbar,
+      .insight-grid,
+      .kpi-grid-6 {
+        grid-template-columns: 1fr
+      }
+
+      .bar-item {
+        grid-template-columns: 1fr
+      }
+
+      .page-shell {
+        padding-top: 88px
+      }
+    }
+  </style>
+</head>
+
+<body class="portfolio-page bf-platform-body bf-v8-body" data-bf-page="carteira" data-bf-archetype="dashboard"
+  data-bf-visual-version="8">
+  <div data-shell-header></div>
+
+  <div class="page-shell container">
+    <section class="hero">
+      <div class="hero__card">
+        <div>
+          <span class="hero__eyebrow">Gestão da carteira</span>
+          <h1>Visão executiva da base de clientes do consultor.</h1>
+          <p>Uma página desenhada para acompanhar carteira ativa, cotas, grupos, risco de atraso, clientes contemplados
+            e oportunidade comercial. A seção de simulações mostra dados reais salvos no simulador; abaixo, uma base
+            demonstrativa com 30 clientes ilustra o fluxo completo do portal.</p>
+          <div class="hero__actions">
+            <a class="btn btn--primary" href="#decisao-carteira">Ver decisão operacional</a>
+            <a class="btn btn--secondary" href="#base-clientes">Ir para a base completa</a>
+          </div>
+          <div class="tag-row">
+            <span class="tag" id="tag-sims">0 simulações</span>
+            <span class="tag">Status da carteira</span>
+            <span class="tag">Grupos e cotas</span>
+            <span class="tag">Leitura executiva</span>
+          </div>
+        </div>
+        <div class="portfolio-panel">
+          <h3>Leitura rápida para o consultor</h3>
+          <div class="mini-list" id="hero-highlights"></div>
+          <div class="pill-row">
+            <span class="pill">Carteira consolidada</span>
+            <span class="pill">Clientes em atraso</span>
+            <span class="pill">Próximas assembleias</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="bf-v8-stagebar bf-v8-stagebar--inside" aria-label="Atalhos da jornada da carteira" data-v8-stagebar>
+      <div class="bf-v8-stagebar__intro">
+        <span>Carteira v8</span>
+        <strong>Da simulação salva ao acompanhamento comercial.</strong>
+      </div>
+      <a class="bf-v8-stagebar__item" href="#simulacoes-salvas" data-step="1">
+        <span>Origem</span>
+        <strong>Simulações salvas</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="#visao-executiva" data-step="2">
+        <span>Resumo</span>
+        <strong>Indicadores executivos</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="#carteira" data-step="3">
+        <span>Prioridade</span>
+        <strong>Clientes e oportunidades</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="#agenda" data-step="4">
+        <span>Ação</span>
+        <strong>Agenda comercial</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="#decisao-carteira" data-step="5">
+        <span>Decisão</span>
+        <strong>Próxima ação</strong>
+      </a>
+    </section>
+
+    <div class="main-grid">
+      <aside class="sidebar">
+        <h4>Gestão do consultor</h4>
+        <p>Esta área foi pensada para leitura comercial, acompanhamento operacional e priorização de clientes.</p>
+        <nav class="side-nav">
+          <a href="#simulacoes-salvas">Simulações salvas</a>
+          <a href="#decisao-carteira">Decisão operacional</a>
+          <a href="#visao-executiva">Visão executiva</a>
+          <a href="#carteira">Carteira consolidada</a>
+          <a href="#grupos">Performance por grupos</a>
+          <a href="#agenda">Agenda comercial</a>
+          <a href="#base-clientes">Base completa</a>
+        </nav>
+      </aside>
+
+      <main class="page-content">
+        <section class="bf-v8-decision-strip" id="decisao-carteira"
+          aria-label="Resumo de decisão operacional da carteira" data-portfolio-decision-strip>
+        </section>
+
+        <!-- ── SIMULAÇÕES SALVAS (dados reais do Storage) ── -->
+        <section class="card" id="simulacoes-salvas">
+          <h2>Simulações salvas no simulador</h2>
+          <p>Este bloco mostra as simulações que foram salvas diretamente no motor de simulação. Para adicionar novas,
+            acesse o <a href="simulador.html" style="color:var(--brand);font-weight:700;">Simulador</a>, monte uma
+            operação e clique em Salvar.</p>
+          <div class="kpi-grid-6" id="sim-kpi-grid" style="grid-template-columns:repeat(4,minmax(0,1fr));"></div>
+          <div class="ranking-list" id="sim-list" style="margin-top:18px;"></div>
+        </section>
+
+        <section class="card" id="visao-executiva">
+          <h2>Visão executiva da carteira</h2>
+          <p>O painel combina indicadores de volume, qualidade e risco. A ideia é permitir que o consultor entenda
+            rapidamente o tamanho da carteira, quanto já foi pago pelos clientes, quais grupos exigem atenção e onde
+            estão as melhores oportunidades de atuação comercial.</p>
+          <div class="kpi-grid-6" id="kpi-grid"></div>
+        </section>
+
+        <section class="card" id="carteira">
+          <h2>Carteira consolidada e prioridades</h2>
+          <p>Neste bloco, a carteira é traduzida em leitura gerencial. De um lado ficam os status da base; do outro, a
+            fila de maior potencial de trabalho comercial e a fila de maior risco operacional.</p>
+          <div class="split-grid">
+            <div class="info-card">
+              <h3>Status da base</h3>
+              <p class="muted">Distribuição dos clientes por estágio operacional.</p>
+              <div class="bar-list" id="status-bars"></div>
+            </div>
+            <div class="info-card">
+              <h3>Top oportunidades</h3>
+              <p class="muted">Clientes ativos com bom percentual pago e espaço para abordagem de estratégia de lance,
+                contemplação ou faturamento.</p>
+              <div class="ranking-list" id="opportunity-list"></div>
+            </div>
+          </div>
+          <div class="split-grid" style="margin-top:16px;">
+            <div class="info-card">
+              <h3>Administradoras na carteira</h3>
+              <p class="muted">Leitura para entender concentração por origem do grupo.</p>
+              <div class="bar-list" id="admin-bars"></div>
+            </div>
+            <div class="info-card">
+              <h3>Clientes que pedem atenção</h3>
+              <p class="muted">Fila de acompanhamento com foco em atraso, análise pendente ou risco de perda de timing
+                comercial.</p>
+              <div class="ranking-list" id="attention-list"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" id="grupos">
+          <h2>Leitura por grupo e por segmento</h2>
+          <p>Este bloco ajuda o consultor a enxergar onde a carteira está concentrada e quais frentes geram maior valor.
+            Além do volume por grupo, a página destaca o mix entre imóveis, veículos leves, pesados e serviços.</p>
+          <div class="split-grid">
+            <div class="info-card">
+              <h3>Grupos com maior volume financeiro</h3>
+              <div class="ranking-list" id="group-ranking"></div>
+            </div>
+            <div class="info-card">
+              <h3>Mix por segmento</h3>
+              <div class="bar-list" id="segment-bars"></div>
+            </div>
+          </div>
+          <div class="insight-grid" style="margin-top:16px;" id="insight-grid"></div>
+        </section>
+
+        <section class="card" id="agenda">
+          <h2>Agenda comercial e próximos movimentos</h2>
+          <p>O objetivo aqui é transformar a base em rotina. O consultor consegue enxergar quem tem assembleia próxima,
+            quem está em fase de análise e quem merece abordagem consultiva sobre lance, faturamento ou regularização.
+          </p>
+          <div class="agenda-list" id="agenda-list"></div>
+        </section>
+
+        <section class="card" id="base-clientes">
+          <h2>Base operacional dos clientes</h2>
+          <p>Abaixo está a base detalhada com pelo menos 30 clientes, incluindo grupo, cota, status, estratégia de
+            lance, carta, valores pagos e percentual acumulado da jornada financeira.</p>
+          <div class="toolbar">
+            <input type="search" id="search-input" placeholder="Buscar cliente, grupo, cota ou administradora">
+            <select id="status-filter">
+              <option value="">Todos os status</option>
+            </select>
+            <select id="admin-filter">
+              <option value="">Todas as administradoras</option>
+            </select>
+            <select id="segment-filter">
+              <option value="">Todos os segmentos</option>
+            </select>
+          </div>
+          <div class="table-shell">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Cliente</th>
+                    <th>Administradora</th>
+                    <th>Grupo / Cota</th>
+                    <th>Status</th>
+                    <th>Segmento</th>
+                    <th>Carta</th>
+                    <th>Valor pago</th>
+                    <th>Progresso</th>
+                    <th>Estratégia</th>
+                    <th>Próxima assembleia</th>
+                  </tr>
+                </thead>
+                <tbody id="client-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div data-shell-footer></div>
+  <script src="../js/storage.js"></script>
+  <script>
+    const clients = [
+      { cliente: 'Ana Beatriz Lima', administradora: 'Itaú', grupo: '4217', cota: '018', status: 'Ativo', segmento: 'Imóveis', carta: 280000, valorPago: 68400, parcelasPagas: 24, totalParcelas: 180, estrategia: 'Lance embutido + RP', assembleia: '2026-04-18' },
+      { cliente: 'Bruno Martins', administradora: 'Itaú', grupo: '4217', cota: '044', status: 'Contemplado', segmento: 'Imóveis', carta: 320000, valorPago: 138900, parcelasPagas: 51, totalParcelas: 180, estrategia: 'Lance livre', assembleia: '2026-04-18' },
+      { cliente: 'Camila Rocha', administradora: 'BB Consórcios', grupo: '8821', cota: '109', status: 'Em análise', segmento: 'Imóveis', carta: 240000, valorPago: 59200, parcelasPagas: 28, totalParcelas: 200, estrategia: 'Sem lance', assembleia: '2026-04-22' },
+      { cliente: 'Daniel Freitas', administradora: 'Porto', grupo: '3309', cota: '023', status: 'Em atraso', segmento: 'Autos', carta: 98000, valorPago: 31200, parcelasPagas: 19, totalParcelas: 84, estrategia: 'Lance fixo', assembleia: '2026-04-16' },
+      { cliente: 'Eduarda Nogueira', administradora: 'Itaú', grupo: '5170', cota: '052', status: 'Ativo', segmento: 'Autos', carta: 125000, valorPago: 46600, parcelasPagas: 26, totalParcelas: 100, estrategia: 'Lance livre', assembleia: '2026-04-17' },
+      { cliente: 'Felipe Azevedo', administradora: 'Embracon', grupo: '7098', cota: '011', status: 'Ativo', segmento: 'Pesados', carta: 450000, valorPago: 128700, parcelasPagas: 31, totalParcelas: 120, estrategia: 'Recursos próprios', assembleia: '2026-04-25' },
+      { cliente: 'Gabriela Torres', administradora: 'BB Consórcios', grupo: '9012', cota: '076', status: 'Contemplado', segmento: 'Autos', carta: 86000, valorPago: 54400, parcelasPagas: 40, totalParcelas: 84, estrategia: 'Lance embutido', assembleia: '2026-04-20' },
+      { cliente: 'Henrique Silva', administradora: 'Itaú', grupo: '6104', cota: '021', status: 'Ativo', segmento: 'Serviços', carta: 55000, valorPago: 17400, parcelasPagas: 15, totalParcelas: 72, estrategia: 'Sem lance', assembleia: '2026-04-19' },
+      { cliente: 'Isabela Costa', administradora: 'Santander', grupo: '7451', cota: '067', status: 'Em análise', segmento: 'Imóveis', carta: 410000, valorPago: 157600, parcelasPagas: 54, totalParcelas: 200, estrategia: 'Lance livre', assembleia: '2026-04-26' },
+      { cliente: 'João Pedro Alves', administradora: 'Itaú', grupo: '5170', cota: '081', status: 'Ativo', segmento: 'Autos', carta: 132000, valorPago: 50900, parcelasPagas: 29, totalParcelas: 100, estrategia: 'Lance fixo', assembleia: '2026-04-17' },
+      { cliente: 'Karina Duarte', administradora: 'Bradesco', grupo: '2880', cota: '015', status: 'Quitado', segmento: 'Autos', carta: 79000, valorPago: 94200, parcelasPagas: 80, totalParcelas: 80, estrategia: 'Quitação antecipada', assembleia: '2026-04-14' },
+      { cliente: 'Leonardo Mota', administradora: 'Itaú', grupo: '4217', cota: '097', status: 'Ativo', segmento: 'Imóveis', carta: 300000, valorPago: 82400, parcelasPagas: 29, totalParcelas: 180, estrategia: 'Lance embutido', assembleia: '2026-04-18' },
+      { cliente: 'Mariana Farias', administradora: 'Porto', grupo: '4481', cota: '031', status: 'Em atraso', segmento: 'Imóveis', carta: 215000, valorPago: 37600, parcelasPagas: 16, totalParcelas: 180, estrategia: 'Sem lance', assembleia: '2026-04-23' },
+      { cliente: 'Nathan Ribeiro', administradora: 'Itaú', grupo: '6104', cota: '038', status: 'Ativo', segmento: 'Serviços', carta: 48000, valorPago: 20500, parcelasPagas: 21, totalParcelas: 72, estrategia: 'Sem lance', assembleia: '2026-04-19' },
+      { cliente: 'Olivia Mendes', administradora: 'BB Consórcios', grupo: '8821', cota: '141', status: 'Ativo', segmento: 'Imóveis', carta: 265000, valorPago: 73100, parcelasPagas: 31, totalParcelas: 200, estrategia: 'Lance livre', assembleia: '2026-04-22' },
+      { cliente: 'Paulo Henrique', administradora: 'Embracon', grupo: '7098', cota: '054', status: 'Contemplado', segmento: 'Pesados', carta: 520000, valorPago: 213400, parcelasPagas: 45, totalParcelas: 120, estrategia: 'Recursos próprios', assembleia: '2026-04-25' },
+      { cliente: 'Queila Barros', administradora: 'Itaú', grupo: '7116', cota: '063', status: 'Ativo', segmento: 'Imóveis', carta: 355000, valorPago: 96400, parcelasPagas: 34, totalParcelas: 180, estrategia: 'FGTS + RP', assembleia: '2026-04-21' },
+      { cliente: 'Rafael Teixeira', administradora: 'Santander', grupo: '7451', cota: '089', status: 'Em análise', segmento: 'Imóveis', carta: 390000, valorPago: 149800, parcelasPagas: 49, totalParcelas: 200, estrategia: 'Lance embutido', assembleia: '2026-04-26' },
+      { cliente: 'Sabrina Pires', administradora: 'Itaú', grupo: '5170', cota: '099', status: 'Ativo', segmento: 'Autos', carta: 118000, valorPago: 62200, parcelasPagas: 38, totalParcelas: 100, estrategia: 'Lance livre', assembleia: '2026-04-17' },
+      { cliente: 'Tiago Correia', administradora: 'Rodobens', grupo: '5530', cota: '012', status: 'Cancelado', segmento: 'Autos', carta: 94000, valorPago: 22800, parcelasPagas: 12, totalParcelas: 84, estrategia: 'Sem lance', assembleia: '2026-04-15' },
+      { cliente: 'Ursula Vieira', administradora: 'Itaú', grupo: '7116', cota: '074', status: 'Contemplado', segmento: 'Imóveis', carta: 365000, valorPago: 186300, parcelasPagas: 57, totalParcelas: 180, estrategia: 'FGTS + lance livre', assembleia: '2026-04-21' },
+      { cliente: 'Vinicius Lemos', administradora: 'Porto', grupo: '3309', cota: '045', status: 'Ativo', segmento: 'Autos', carta: 105000, valorPago: 40200, parcelasPagas: 24, totalParcelas: 84, estrategia: 'Lance fixo', assembleia: '2026-04-16' },
+      { cliente: 'Wesley Andrade', administradora: 'Bradesco', grupo: '2880', cota: '049', status: 'Ativo', segmento: 'Autos', carta: 88000, valorPago: 33700, parcelasPagas: 23, totalParcelas: 80, estrategia: 'Sem lance', assembleia: '2026-04-14' },
+      { cliente: 'Yasmin Castro', administradora: 'BB Consórcios', grupo: '9012', cota: '098', status: 'Ativo', segmento: 'Autos', carta: 92000, valorPago: 28100, parcelasPagas: 18, totalParcelas: 84, estrategia: 'Lance embutido', assembleia: '2026-04-20' },
+      { cliente: 'Zeca Moura', administradora: 'Itaú', grupo: '6104', cota: '066', status: 'Em atraso', segmento: 'Serviços', carta: 62000, valorPago: 16800, parcelasPagas: 14, totalParcelas: 72, estrategia: 'Sem lance', assembleia: '2026-04-19' },
+      { cliente: 'Aline Gonçalves', administradora: 'Itaú', grupo: '4217', cota: '122', status: 'Ativo', segmento: 'Imóveis', carta: 295000, valorPago: 90800, parcelasPagas: 33, totalParcelas: 180, estrategia: 'Lance livre', assembleia: '2026-04-18' },
+      { cliente: 'Breno Cardoso', administradora: 'Santander', grupo: '8120', cota: '027', status: 'Ativo', segmento: 'Pesados', carta: 610000, valorPago: 171500, parcelasPagas: 29, totalParcelas: 120, estrategia: 'Recursos próprios', assembleia: '2026-04-24' },
+      { cliente: 'Cecília Ramos', administradora: 'Itaú', grupo: '7116', cota: '115', status: 'Em análise', segmento: 'Imóveis', carta: 340000, valorPago: 141200, parcelasPagas: 46, totalParcelas: 180, estrategia: 'FGTS', assembleia: '2026-04-21' },
+      { cliente: 'Diego Santana', administradora: 'Embracon', grupo: '6402', cota: '018', status: 'Ativo', segmento: 'Autos', carta: 136000, valorPago: 49100, parcelasPagas: 27, totalParcelas: 96, estrategia: 'Lance fixo', assembleia: '2026-04-27' },
+      { cliente: 'Elisa Prado', administradora: 'BB Consórcios', grupo: '8821', cota: '166', status: 'Ativo', segmento: 'Imóveis', carta: 275000, valorPago: 104500, parcelasPagas: 39, totalParcelas: 200, estrategia: 'Lance livre', assembleia: '2026-04-22' }
+    ].map(c => ({ ...c, percentualPago: Math.min(100, (c.valorPago / c.carta) * 100) }));
+
+    const statusClass = {
+      'Ativo': 'status-ativo',
+      'Contemplado': 'status-contemplado',
+      'Em análise': 'status-analise',
+      'Em atraso': 'status-atraso',
+      'Quitado': 'status-quitado',
+      'Cancelado': 'status-cancelado'
+    };
+
+    const currency = value => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+    const dateFmt = value => new Date(value + 'T00:00:00').toLocaleDateString('pt-BR');
+    const byCountDesc = obj => Object.entries(obj).sort((a, b) => b[1] - a[1]);
+
+    function renderDashboard(data) {
+      const totalClientes = data.length;
+      const totalCarta = data.reduce((s, c) => s + c.carta, 0);
+      const totalPago = data.reduce((s, c) => s + c.valorPago, 0);
+      const contemplados = data.filter(c => c.status === 'Contemplado').length;
+      const emRisco = data.filter(c => ['Em atraso', 'Em análise'].includes(c.status)).length;
+      const gruposAtivos = new Set(data.map(c => `${c.administradora}-${c.grupo}`)).size;
+      const ticketMedioCarta = totalCarta / totalClientes;
+      const kpis = [
+        { value: totalClientes, label: 'Clientes na carteira', hint: 'Base acompanhada pelo consultor.' },
+        { value: currency(totalCarta), label: 'Carteira total de crédito', hint: 'Soma de todas as cartas.' },
+        { value: currency(totalPago), label: 'Valor já pago', hint: 'Acumulado pago pelos clientes.' },
+        { value: contemplados, label: 'Clientes contemplados', hint: 'Base já com direito ao crédito.' },
+        { value: emRisco, label: 'Clientes em atenção', hint: 'Em atraso ou em análise.' },
+        { value: currency(ticketMedioCarta), label: 'Carta média', hint: 'Ticket médio da carteira.' }
+      ];
+      document.getElementById('kpi-grid').innerHTML = kpis.map(k => `
+        <article class="exec-kpi">
+          <strong>${k.value}</strong>
+          <span>${k.label}</span>
+          <small>${k.hint}</small>
+        </article>
+      `).join('');
+
+      const statusCounts = data.reduce((acc, c) => ((acc[c.status] = (acc[c.status] || 0) + 1), acc), {});
+      const adminCounts = data.reduce((acc, c) => ((acc[c.administradora] = (acc[c.administradora] || 0) + 1), acc), {});
+      const segmentCounts = data.reduce((acc, c) => ((acc[c.segmento] = (acc[c.segmento] || 0) + 1), acc), {});
+      const maxStatus = Math.max(1, ...Object.values(statusCounts));
+      const maxAdmin = Math.max(1, ...Object.values(adminCounts));
+      const maxSegment = Math.max(1, ...Object.values(segmentCounts));
+
+      function bars(targetId, entries, max) {
+        document.getElementById(targetId).innerHTML = entries.map(([name, count]) => `
+          <div class="bar-item">
+            <label>${name}</label>
+            <div class="bar-track"><span style="width:${(count / max) * 100}%"></span></div>
+            <div class="bar-value">${count} cliente${count > 1 ? 's' : ''}</div>
+          </div>
+        `).join('');
+      }
+
+      bars('status-bars', byCountDesc(statusCounts), maxStatus);
+      bars('admin-bars', byCountDesc(adminCounts), maxAdmin);
+      bars('segment-bars', byCountDesc(segmentCounts), maxSegment);
+
+      const opportunities = data
+        .filter(c => ['Ativo', 'Em análise'].includes(c.status))
+        .sort((a, b) => (b.percentualPago + (b.segmento === 'Imóveis' ? 6 : 0)) - (a.percentualPago + (a.segmento === 'Imóveis' ? 6 : 0)))
+        .slice(0, 5);
+      document.getElementById('opportunity-list').innerHTML = opportunities.map(c => `
+        <div class="rank-item">
+          <div class="rank-top">
+            <div>
+              <strong>${c.cliente}</strong>
+              <span>${c.administradora} • Grupo ${c.grupo} / Cota ${c.cota}</span>
+            </div>
+            <span class="status-badge ${statusClass[c.status]}">${c.status}</span>
+          </div>
+          <div class="progress"><span style="width:${Math.min(100, c.percentualPago)}%"></span></div>
+          <div class="progress-meta"><span>${c.estrategia}</span><span>${c.percentualPago.toFixed(1)}% pago sobre a carta</span></div>
+        </div>
+      `).join('');
+
+      const attention = data
+        .filter(c => ['Em atraso', 'Em análise', 'Cancelado'].includes(c.status))
+        .sort((a, b) => new Date(a.assembleia) - new Date(b.assembleia))
+        .slice(0, 5);
+      document.getElementById('attention-list').innerHTML = attention.map(c => `
+        <div class="rank-item">
+          <div class="rank-top">
+            <div>
+              <strong>${c.cliente}</strong>
+              <span>${c.segmento} • assembleia em ${dateFmt(c.assembleia)}</span>
+            </div>
+            <span class="status-badge ${statusClass[c.status]}">${c.status}</span>
+          </div>
+          <div class="progress-meta"><span>${c.administradora} • Grupo ${c.grupo} / Cota ${c.cota}</span><span>${currency(c.valorPago)} pago</span></div>
+        </div>
+      `).join('');
+
+      const grouped = {};
+      data.forEach(c => {
+        const key = `${c.administradora} • Grupo ${c.grupo}`;
+        if (!grouped[key]) grouped[key] = { clientes: 0, carta: 0, pago: 0, contemplados: 0 };
+        grouped[key].clientes += 1;
+        grouped[key].carta += c.carta;
+        grouped[key].pago += c.valorPago;
+        if (c.status === 'Contemplado') grouped[key].contemplados += 1;
+      });
+      const topGroups = Object.entries(grouped)
+        .sort((a, b) => b[1].carta - a[1].carta)
+        .slice(0, 6);
+      document.getElementById('group-ranking').innerHTML = topGroups.map(([name, v]) => `
+        <div class="rank-item">
+          <div class="rank-top">
+            <div>
+              <strong>${name}</strong>
+              <span>${v.clientes} cliente${v.clientes > 1 ? 's' : ''} • ${v.contemplados} contemplado${v.contemplados !== 1 ? 's' : ''}</span>
+            </div>
+            <strong>${currency(v.carta)}</strong>
+          </div>
+          <div class="progress"><span style="width:${Math.min(100, (v.pago / v.carta) * 100)}%"></span></div>
+          <div class="progress-meta"><span>${currency(v.pago)} já pago</span><span>${((v.pago / v.carta) * 100).toFixed(1)}% de maturidade financeira</span></div>
+        </div>
+      `).join('');
+
+      const atrasoPct = (data.filter(c => c.status === 'Em atraso').length / totalClientes) * 100;
+      const contempladoPct = (contemplados / totalClientes) * 100;
+      const imovelPct = ((segmentCounts['Imóveis'] || 0) / totalClientes) * 100;
+      document.getElementById('insight-grid').innerHTML = `
+        <article class="insight-card"><h3>Carteira concentrada em imóveis</h3><p>${imovelPct.toFixed(1)}% da base está ligada ao segmento de imóveis, o que tende a exigir acompanhamento mais consultivo sobre documentação, análise de crédito, FGTS e faturamento.</p></article>
+        <article class="insight-card"><h3>Espaço para conversão comercial</h3><p>${contempladoPct.toFixed(1)}% da base já está contemplada. Isso indica boa oportunidade de atuar em faturamento, utilização do crédito e aceleração de fechamento do bem.</p></article>
+        <article class="insight-card"><h3>Risco controlado, mas monitorável</h3><p>${atrasoPct.toFixed(1)}% da carteira está em atraso. O volume ainda é administrável, porém merece rotina de contato antes de contaminar assembleias e reduzir elegibilidade para contemplação.</p></article>
+      `;
+
+      const agenda = data
+        .slice()
+        .sort((a, b) => new Date(a.assembleia) - new Date(b.assembleia))
+        .slice(0, 8);
+      document.getElementById('agenda-list').innerHTML = agenda.map(c => `
+        <div class="agenda-item">
+          <strong>${dateFmt(c.assembleia)} • ${c.cliente}</strong>
+          <span>${c.administradora} • Grupo ${c.grupo} / Cota ${c.cota} • ${c.segmento} • ${c.estrategia}</span>
+        </div>
+      `).join('');
+
+      const topPotential = opportunities[0];
+      const delayed = data.filter(c => c.status === 'Em atraso').length;
+      document.getElementById('hero-highlights').innerHTML = `
+        <div class="mini-item"><strong>${currency(totalCarta)}</strong><span>é o volume consolidado de cartas acompanhado nesta base.</span></div>
+        <div class="mini-item"><strong>${topPotential ? topPotential.cliente : 'Sem oportunidade no filtro atual'}</strong><span>${topPotential ? 'é hoje a principal oportunidade comercial para abordagem de contemplação e estratégia.' : 'Ajuste os filtros para voltar a identificar prioridades comerciais.'}</span></div>
+        <div class="mini-item"><strong>${delayed} cliente${delayed > 1 ? 's' : ''} em atraso</strong><span>pedem ação rápida para preservar elegibilidade e saúde da carteira.</span></div>
+      `;
+    }
+
+    function renderTable(data) {
+      if (!data.length) {
+        document.getElementById('client-table').innerHTML = `<tr><td colspan="10" style="padding:24px 16px; text-align:center; color:#64748b;">Nenhum cliente encontrado para os filtros aplicados.</td></tr>`;
+        return;
+      }
+      document.getElementById('client-table').innerHTML = data.map(c => `
+        <tr>
+          <td>
+            <div class="client-cell">
+              <strong>${c.cliente}</strong>
+              <span>${c.parcelasPagas}/${c.totalParcelas} parcelas pagas</span>
+            </div>
+          </td>
+          <td>${c.administradora}</td>
+          <td><strong>${c.grupo}</strong> / ${c.cota}</td>
+          <td><span class="status-badge ${statusClass[c.status]}">${c.status}</span></td>
+          <td>${c.segmento}</td>
+          <td class="money">${currency(c.carta)}</td>
+          <td class="money">${currency(c.valorPago)}</td>
+          <td>
+            <div class="progress"><span style="width:${Math.min(100, c.percentualPago)}%"></span></div>
+            <div class="progress-meta"><span>${c.percentualPago.toFixed(1)}%</span><span>${currency(c.carta - c.valorPago)} ainda não pago</span></div>
+          </td>
+          <td>${c.estrategia}</td>
+          <td>${dateFmt(c.assembleia)}</td>
+        </tr>
+      `).join('');
+    }
+
+    function fillFilter(id, values) {
+      const el = document.getElementById(id);
+      values.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v; opt.textContent = v; el.appendChild(opt);
+      });
+    }
+
+    fillFilter('status-filter', [...new Set(clients.map(c => c.status))].sort());
+    fillFilter('admin-filter', [...new Set(clients.map(c => c.administradora))].sort());
+    fillFilter('segment-filter', [...new Set(clients.map(c => c.segmento))].sort());
+
+    function applyFilters() {
+      const q = document.getElementById('search-input').value.trim().toLowerCase();
+      const status = document.getElementById('status-filter').value;
+      const admin = document.getElementById('admin-filter').value;
+      const segment = document.getElementById('segment-filter').value;
+
+      const filtered = clients.filter(c => {
+        const matchesQ = !q || [c.cliente, c.administradora, c.grupo, c.cota, c.segmento, c.estrategia].join(' ').toLowerCase().includes(q);
+        return matchesQ && (!status || c.status === status) && (!admin || c.administradora === admin) && (!segment || c.segmento === segment);
+      });
+      renderDashboard(filtered);
+      renderTable(filtered);
+    }
+
+    ['search-input', 'status-filter', 'admin-filter', 'segment-filter'].forEach(id => {
+      document.getElementById(id).addEventListener(id === 'search-input' ? 'input' : 'change', applyFilters);
+    });
+
+    renderDashboard(clients);
+    renderTable(clients);
+
+    // ── Integração com Storage.js (simulações reais) ──
+    function renderSavedSimulations() {
+      if (typeof Storage === 'undefined' || !Storage.getPortfolioStats) {
+        document.getElementById('sim-kpi-grid').innerHTML = '<p style="color:var(--muted);font-size:14px;">Módulo de persistência não disponível.</p>';
+        return;
+      }
+
+      const stats = Storage.getPortfolioStats();
+      const sims = Storage.loadSimulations();
+
+      document.getElementById('tag-sims').textContent = `${stats.total} simulaç${stats.total === 1 ? 'ão' : 'ões'}`;
+
+      if (stats.total === 0) {
+        document.getElementById('sim-kpi-grid').innerHTML = '';
+        document.getElementById('sim-list').innerHTML = `
+          <div style="text-align:center;padding:24px;color:var(--muted);">
+            <p style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin:0 0 12px;color:var(--muted);">Estado vazio</p>
+            <p style="margin:0;font-size:14px;line-height:1.7;">Nenhuma simulação salva ainda.<br>Acesse o <a href="simulador.html" style="color:var(--brand);font-weight:700;">Simulador</a>, monte uma operação e clique em <strong>Salvar</strong>.</p>
+          </div>`;
+        return;
+      }
+
+      const segLabels = Object.entries(stats.segmentos).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} (${v})`).join(', ') || '—';
+
+      document.getElementById('sim-kpi-grid').innerHTML = [
+        { v: stats.total, l: 'Simulações salvas', h: 'Total de simulações persistidas no ambiente.' },
+        { v: currency(stats.cartaTotal), l: 'Volume total de crédito', h: 'Soma das cartas de todas as simulações.' },
+        { v: currency(stats.ticketMedio), l: 'Ticket médio', h: 'Carta média por simulação.' },
+        { v: segLabels, l: 'Segmentos', h: 'Distribuição de segmentos das simulações.' }
+      ].map(k => `
+        <article class="exec-kpi">
+          <strong>${k.v}</strong>
+          <span>${k.l}</span>
+          <small>${k.h}</small>
+        </article>
+      `).join('');
+
+      document.getElementById('sim-list').innerHTML = sims.map(s => {
+        const dt = new Date(s.criadoEm).toLocaleString('pt-BR');
+        const segs = (s.segmentos || []).join(', ') || '—';
+        return `
+          <div class="rank-item">
+            <div class="rank-top">
+              <div>
+                <strong>${s.nome}</strong>
+                <span>${s.consultor || 'Consultor'} • ${s.cliente || 'Cliente'} • ${dt}</span>
+              </div>
+              <strong>${currency(s.totalCarta || 0)}</strong>
+            </div>
+            <div class="progress-meta">
+              <span>${s.totalGrupos || 0} grupo(s) • ${segs}</span>
+              <span>
+                <a href="simulador.html?simulationId=${encodeURIComponent(s.id)}" style="color:var(--brand);font-weight:700;font-size:12px;">Retomar simulação</a>
+                <button onclick="excluirSimulacao('${s.id}')" style="margin-left:8px;background:none;border:none;color:#dc2626;font-weight:700;font-size:12px;cursor:pointer;" title="Excluir simulação">Excluir</button>
+              </span>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    // Função global para excluir simulação
+    window.excluirSimulacao = function(id) {
+      if (!confirm('Tem certeza que deseja excluir esta simulação?')) return;
+      Storage.deleteSimulation(id);
+      renderSavedSimulations();
+    };
+
+    renderSavedSimulations();
+  </script>
+  <script src="../js/portfolio-live.js"></script>
+  <script src="../js/auth.js"></script><script src="../js/shared-layout.js"></script>
+</body>
+
+</html>
+
+
+

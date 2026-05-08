@@ -1,0 +1,109 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Cliente - Bank Fratern</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="icon" href="../assets/logos/bank-fratern-icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/styles.css"><link rel="stylesheet" href="../css/bank-fratern-design-system.css"><link rel="stylesheet" href="../assets/css/platform.css">
+</head>
+<body class="bf-platform-body client-dashboard-page" data-bf-page="dashboard-cliente" data-auth-required="true" data-auth-roles="admin,consultor,cliente">
+  <div data-shell-header></div>
+  <main class="bf-platform-shell">
+    <section class="bf-platform-hero"><div class="bf-platform-hero__content"><span class="bf-badge bf-badge--ok">Area do cliente</span><h1>Historico, simulacoes e recomendacoes.</h1><p>Primeira camada de dashboard conectada ao Storage local do simulador e ao motor de recomendacao.</p></div><aside class="bf-platform-hero__rail"><a href="trilha-decisao.html?from=dashboard">Trilha <span>TR</span></a><a href="modelos-biblioteca.html?from=dashboard">Modelos <span>MB</span></a><a href="simulador.html?from=dashboard">Consorcio V7 <span>SI</span></a><a href="produtos.html?from=dashboard">Produtos <span>PR</span></a></aside></section>
+    <section class="bf-v8-stagebar bf-v8-stagebar--inside" aria-label="Atalhos da central de continuidade do cliente" data-v8-stagebar>
+      <div class="bf-v8-stagebar__intro">
+        <span>Dashboard v8</span>
+        <strong>Perfil, historico, decisao e handoff em uma unica central.</strong>
+      </div>
+      <a class="bf-v8-stagebar__item" href="#continuidade-cliente" data-step="1">
+        <span>Continuidade</span>
+        <strong>Proximo passo</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="#perfil-financeiro" data-step="2">
+        <span>Perfil</span>
+        <strong>Dados reutilizaveis</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="#atividade-recente" data-step="3">
+        <span>Historico</span>
+        <strong>Eventos recentes</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="#trilha-cliente" data-step="4">
+        <span>Decisao</span>
+        <strong>Trilha assistida</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="handoff-consultivo.html" data-step="5">
+        <span>Handoff</span>
+        <strong>Atendimento</strong>
+      </a>
+    </section>
+    <section class="bf-platform-panel" data-client-session></section>
+    <section class="bf-v8-decision-strip bf-v8-decision-strip--outer bf-client-continuity-strip" id="continuidade-cliente" aria-label="Resumo de continuidade do cliente" data-client-continuity-strip></section>
+    <section class="bf-platform-panel bf-platform-section" data-dashboard-stats></section>
+    <section class="bf-platform-panel bf-platform-section" id="metricas-jornada" data-journey-analytics data-analytics-context="dashboard"></section>
+    <section class="bf-platform-panel bf-platform-section" id="retomadas-cliente" data-client-recovery-signals></section>
+    <section class="bf-platform-panel bf-platform-section" id="perfil-financeiro" data-client-financial-profile></section>
+    <section class="bf-platform-panel bf-platform-section" id="atividade-recente">
+      <div class="bf-admin-panel-heading">
+        <div>
+          <span class="bf-badge bf-badge--navy">Atividade recente</span>
+          <h2>Linha do tempo da jornada</h2>
+        </div>
+        <a class="btn btn--ghost btn--sm" href="carteira.html#simulacoes-salvas">Ver carteira</a>
+      </div>
+      <div class="bf-client-timeline" data-client-continuity-timeline></div>
+      <div class="bf-client-activity" data-client-activity></div>
+    </section>
+    <section class="bf-platform-panel bf-platform-section" id="trilha-cliente" data-client-decision-journey></section>
+    <section class="bf-platform-panel bf-platform-section">
+      <div class="bf-admin-panel-heading">
+        <div>
+          <span class="bf-badge bf-badge--ok">Biblioteca padrao</span>
+          <h2>Modelos publicados para comecar rapido</h2>
+        </div>
+        <a class="btn btn--ghost btn--sm" href="modelos-biblioteca.html">Abrir biblioteca</a>
+      </div>
+      <div class="bf-calculator-history" data-client-standard-models></div>
+    </section>
+    <section class="bf-platform-panel bf-platform-section">
+      <div class="bf-admin-panel-heading">
+        <div>
+          <span class="bf-badge bf-badge--navy">Modelos de comparacao</span>
+          <h2>Atalhos de decisao salvos</h2>
+        </div>
+        <a class="btn btn--ghost btn--sm" href="comparador.html">Criar modelo</a>
+      </div>
+      <div class="bf-calculator-history" data-client-comparator-models></div>
+    </section>
+    <section class="bf-platform-panel bf-platform-section">
+      <div class="bf-admin-panel-heading">
+        <div>
+          <span class="bf-badge bf-badge--gold">Calculadoras</span>
+          <h2>Historico financeiro unificado</h2>
+        </div>
+        <a class="btn btn--ghost btn--sm" href="calculadoras.html">Abrir hub</a>
+      </div>
+      <div class="bf-calculator-history" data-client-calculator-history></div>
+    </section>
+    <section class="bf-platform-panel bf-platform-section">
+      <h2>Recomendacao por perfil</h2>
+      <form class="bf-platform-form" data-recommendation-form>
+        <label>Objetivo<select name="objetivo"><option value="comprar">Comprar bem</option><option value="liquidez">Liquidez</option></select></label>
+        <label>Urgencia<select name="urgencia"><option value="baixa">Baixa</option><option value="media">Media</option><option value="alta">Alta</option></select></label>
+        <label>Risco<select name="risco"><option value="conservador">Conservador</option><option value="moderado">Moderado</option><option value="arrojado">Arrojado</option></select></label>
+        <label>Renda<input name="renda" type="number" value="9000"></label>
+        <label>Entrada<input name="entrada" type="number" value="30000"></label>
+        <label>Garantia<select name="garantia"><option value="">Nao</option><option value="1">Sim</option></select></label>
+        <button class="btn btn--primary" type="submit">Atualizar ranking</button>
+      </form>
+      <div class="bf-platform-grid bf-platform-section" data-recommendation-result></div>
+    </section>
+  </main>
+  <div data-shell-footer></div>
+  <script src="../js/auth.js"></script><script src="../js/storage.js"></script><script src="../js/shared-layout.js"></script><script src="../assets/js/formatters.js"></script><script src="../assets/js/validators.js"></script><script src="../assets/js/services/dados.service.js"></script><script src="../assets/js/components/cards.js"></script><script src="../assets/js/components/tables.js"></script><script src="../assets/js/components/alerts.js"></script><script src="../assets/js/components/tooltips.js"></script><script src="../assets/js/components/charts.js"></script><script src="../assets/js/formulas/price.formulas.js"></script><script src="../assets/js/formulas/sac.formulas.js"></script><script src="../assets/js/formulas/consorcio.formulas.js"></script><script src="../assets/js/formulas/comparison.formulas.js"></script><script src="../assets/js/formulas/financial.formulas.js"></script><script src="../assets/js/services/financiamento.service.js"></script><script src="../assets/js/services/cdc.service.js"></script><script src="../assets/js/services/consorcio.service.js"></script><script src="../assets/js/services/comparador.service.js"></script><script src="../assets/js/services/recomendacao.service.js"></script><script src="../assets/js/services/modelos-recomendacao.service.js"></script><script src="../assets/js/services/trilha-decisao.service.js"></script><script src="../assets/js/services/handoff-consultivo.service.js"></script><script src="../assets/js/services/calculadoras.service.js"></script><script src="../assets/js/services/decision-context.service.js"></script><script src="../assets/js/bf-platform.js"></script><script src="../assets/js/services/journey-recovery.service.js"></script><script src="../assets/js/client-dashboard.js"></script>
+</body>
+</html>
+
+
+

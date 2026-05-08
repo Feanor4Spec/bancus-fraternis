@@ -1,0 +1,38 @@
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Node / Python / caches
+node_modules/
+npm-debug.log
+__pycache__/
+*.pyc
+.venv/
+venv/
+.cache/
+tmp/
+temp/
+
+# Ambiente e segredos
+.env
+.env.local
+*.key
+*.pem
+
+# Runtime local e logs
+.runtime/
+server-8080.err
+server-8080.err.log
+server-8080.out
+server-8080.out.log
+
+# Backups/checkpoints pesados
+versions/
+
+# Bases auxiliares fora do runtime online
+data_base/*
+!data_base/Tab_Grupos_Consorcio.json

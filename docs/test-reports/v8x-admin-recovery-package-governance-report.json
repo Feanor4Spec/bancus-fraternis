@@ -1,0 +1,16 @@
+{
+  "ok": true,
+  "exportPackage": {
+    "schema": "bank-fratern.admin-recovery-export.v1",
+    "items": 1,
+    "filterSeverity": "alta"
+  },
+  "importPackage": {
+    "imported": true,
+    "duplicate": true,
+    "packages": 1,
+    "audit": 4,
+    "rejected": true
+  },
+  "failures": []
+}

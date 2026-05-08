@@ -1,0 +1,1433 @@
+<h1 class="sr-only">Mapa completo da jornada do consorciado</h1>
+
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: linear-gradient(180deg, #F8FBFF 0%, #EEF3F8 100%);
+    color: #263241;
+  }
+
+  :root {
+    --card: #ffffff;
+    --line: #E7ECF3;
+    --muted: #5B6572;
+    --soft: #F6F9FC;
+    --primary: #143B66;
+    --bf-navy-950: #061A2E;
+    --bf-navy-900: #0A2540;
+    --bf-navy-850: #0B2C52;
+    --bf-navy-800: #102F55;
+    --bf-gold-700: #9C7524;
+    --bf-gold-500: #C5A047;
+    --bf-gold-300: #E6C76E;
+    --bf-gold-100: #FBF2CB;
+    --warning-bg: #fff7ed;
+    --warning-bd: #fdba74;
+    --warning-tx: #9a3412;
+    --success-bg: #ecfdf5;
+    --success-bd: #86efac;
+    --success-tx: #166534;
+    --info-bg: #eff6ff;
+    --info-bd: #93c5fd;
+    --info-tx: #1d4ed8;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .wrapper {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .hero {
+    background: linear-gradient(135deg, var(--bf-navy-950) 0%, var(--bf-navy-800) 58%, #061426 100%);
+    color: #fff;
+    border-radius: 24px;
+    padding: 24px;
+    margin-bottom: 18px;
+    box-shadow: 0 28px 70px rgba(10, 37, 64, 0.16);
+  }
+
+  .hero-title {
+    margin: 0 0 8px;
+    font-size: 26px;
+    line-height: 1.2;
+  }
+
+  .journey-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 10px 12px;
+    border: 1px solid rgba(255, 255, 255, .14);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, .08);
+  }
+
+  .journey-brand img {
+    width: 196px;
+    height: auto;
+  }
+
+  .hero-desc {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.65;
+    color: rgba(255, 255, 255, .84);
+    max-width: 920px;
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+  }
+
+  .summary-cards {
+    margin-top: 16px;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .summary-card {
+    background: rgba(255, 255, 255, .09);
+    border: 1px solid rgba(255, 255, 255, .12);
+    border-radius: 16px;
+    padding: 12px 14px;
+  }
+
+  .summary-kicker {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: rgba(255, 255, 255, .66);
+    margin-bottom: 4px;
+  }
+
+  .summary-value {
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .summary-text {
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: rgba(255, 255, 255, .84);
+  }
+
+  .hero-side {
+    background: rgba(255, 255, 255, .09);
+    border: 1px solid rgba(255, 255, 255, .12);
+    border-radius: 18px;
+    padding: 14px;
+  }
+
+  .hero-side-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: rgba(255, 255, 255, .66);
+    margin-bottom: 10px;
+  }
+
+  .mini-flow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .mini-pill {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .12);
+    border: 1px solid rgba(255, 255, 255, .14);
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: 310px minmax(0, 1fr);
+    gap: 18px;
+  }
+
+  .sidebar {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 14px;
+    position: sticky;
+    top: 16px;
+    height: fit-content;
+  }
+
+  .sidebar-title {
+    margin: 0 0 6px;
+    font-size: 16px;
+  }
+
+  .sidebar-desc {
+    margin: 0 0 14px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+  .nav {
+    display: grid;
+    gap: 8px;
+  }
+
+  .nav-btn {
+    width: 100%;
+    text-align: left;
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 16px;
+    padding: 12px;
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 10px;
+    cursor: pointer;
+    transition: .18s ease;
+  }
+
+  .nav-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+  }
+
+  .nav-btn.active {
+    border-color: #F0D890;
+    background: var(--bf-gold-100);
+  }
+
+  .nav-emoji {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    background: #f3f4f6;
+  }
+
+  .nav-emoji img {
+    width: 25px;
+    height: 25px;
+    display: block;
+  }
+
+  .nav-label {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 3px;
+  }
+
+  .nav-sub {
+    font-size: 11px;
+    line-height: 1.45;
+    color: var(--muted);
+  }
+
+  .panel {
+    min-width: 0;
+  }
+
+  .stage {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 22px;
+    box-shadow: 0 18px 42px rgba(10, 37, 64, .08);
+  }
+
+  .stage-head {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    margin-bottom: 18px;
+  }
+
+  .stage-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+
+  .stage-icon img {
+    width: 34px;
+    height: 34px;
+    display: block;
+  }
+
+  .stage-kicker {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--bf-gold-700);
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+
+  .stage-title {
+    margin: 0 0 6px;
+    font-size: 24px;
+    line-height: 1.2;
+  }
+
+  .stage-desc {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.68;
+  }
+
+  .badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 14px 0 0;
+  }
+
+  .badge {
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    border: 1px solid var(--line);
+    background: #fff;
+  }
+
+  .badge.info {
+    background: #eef2ff;
+    border-color: #c7d2fe;
+    color: #4338ca;
+  }
+
+  .badge.warn {
+    background: #fff7ed;
+    border-color: #fed7aa;
+    color: #9a3412;
+  }
+
+  .badge.ok {
+    background: #ecfdf5;
+    border-color: #bbf7d0;
+    color: #166534;
+  }
+
+  .section-title {
+    margin: 18px 0 8px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--muted);
+  }
+
+  .grid-2,
+  .grid-3 {
+    display: grid;
+    gap: 10px;
+  }
+
+  .grid-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .card {
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 18px;
+    padding: 14px;
+    min-width: 0;
+  }
+
+  .card.soft {
+    background: var(--soft);
+  }
+
+  .card.warning {
+    background: var(--warning-bg);
+    border-color: var(--warning-bd);
+  }
+
+  .card.success {
+    background: var(--success-bg);
+    border-color: var(--success-bd);
+  }
+
+  .card.info {
+    background: var(--info-bg);
+    border-color: var(--info-bd);
+  }
+
+  .card-title {
+    margin: 0 0 6px;
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .card.warning .card-title {
+    color: var(--warning-tx);
+  }
+
+  .card.success .card-title {
+    color: var(--success-tx);
+  }
+
+  .card.info .card-title {
+    color: var(--info-tx);
+  }
+
+  .card-body {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.65;
+    color: #374151;
+  }
+
+  .formula {
+    margin-top: 8px;
+    border-radius: 12px;
+    background: #111827;
+    color: #f9fafb;
+    padding: 10px 12px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+  }
+
+  .explain-box {
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 16px;
+    background: linear-gradient(180deg, #fafaff 0%, #ffffff 100%);
+  }
+
+  .explain-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .explain-title {
+    margin: 0;
+    font-size: 15px;
+  }
+
+  .explain-list {
+    display: grid;
+    gap: 8px;
+  }
+
+  .explain-item {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 12px;
+    background: #fff;
+  }
+
+  .explain-label {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--muted);
+    margin-bottom: 5px;
+  }
+
+  .explain-text {
+    font-size: 13px;
+    line-height: 1.65;
+    color: #374151;
+  }
+
+  .field-table {
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: minmax(0, 220px) minmax(0, 1fr);
+    gap: 12px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .field-row:last-child {
+    border-bottom: 0;
+  }
+
+  .field-name {
+    font-size: 12px;
+    font-weight: 800;
+    color: #111827;
+  }
+
+  .field-value {
+    font-size: 13px;
+    color: #374151;
+    line-height: 1.55;
+  }
+
+  .flow {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .flow-step {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 8px 10px;
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    background: #fff;
+  }
+
+  .flow-arrow {
+    align-self: center;
+    color: var(--muted);
+  }
+
+  .qa-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .qa-item {
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 13px;
+    background: #fff;
+  }
+
+  .qa-q {
+    font-size: 12px;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 6px;
+  }
+
+  .qa-a {
+    font-size: 13px;
+    line-height: 1.62;
+    color: #374151;
+  }
+
+  @media (max-width: 1024px) {
+
+    .hero-grid,
+    .board,
+    .grid-3 {
+      grid-template-columns: 1fr;
+    }
+
+    .summary-cards {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .sidebar {
+      position: static;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .wrapper {
+      padding: 14px;
+    }
+
+    .summary-cards,
+    .grid-2,
+    .qa-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .field-row {
+      grid-template-columns: 1fr;
+    }
+
+    .stage {
+      padding: 16px;
+    }
+
+    .stage-title {
+      font-size: 21px;
+    }
+  }
+</style>
+
+<div class="wrapper">
+  <section class="hero">
+    <div class="hero-grid">
+      <div>
+        <div class="journey-brand" aria-label="BF Journey">
+          <img src="../assets/logos/logo-bf-journey.svg" alt="BF Journey">
+        </div>
+        <h2 class="hero-title">Jornada completa do consorciado</h2>
+        <p class="hero-desc">Este mapa foi reestruturado para explicar o produto de consórcio como uma jornada
+          financeira completa: entrada no grupo, composição das parcelas, reajuste, assembleia, lances, contemplação,
+          análise de crédito, faturamento, uso do crédito, cancelamento e encerramento. O foco é transformar regras
+          contratuais e operacionais em linguagem simples, sem perder a lógica financeira.</p>
+
+        <div class="summary-cards">
+          <div class="summary-card">
+            <div class="summary-kicker">Pergunta central</div>
+            <div class="summary-value">Quando o cliente recebe o bem?</div>
+            <div class="summary-text">Somente após contemplação e aprovação da etapa de documentação e crédito.</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-kicker">Erro mais comum</div>
+            <div class="summary-value">Confundir parcela com financiamento</div>
+            <div class="summary-text">Na parcela existem fundo comum, taxa de administração, fundo de reserva e, em
+              alguns casos, seguro.</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-kicker">Atenção crítica</div>
+            <div class="summary-value">Contemplação não é compra</div>
+            <div class="summary-text">A contemplação libera o direito ao crédito. A compra depende de análise, garantia
+              e faturamento.</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-kicker">Objetivo pedagógico</div>
+            <div class="summary-value">Explicar com clareza</div>
+            <div class="summary-text">Cada etapa mostra o que acontece, o que o usuário precisa entender, custos e
+              exemplos práticos.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="hero-side">
+        <div class="hero-side-title">Fluxo resumido</div>
+        <div class="mini-flow">
+          <span class="mini-pill">Entrada no grupo</span>
+          <span class="mini-pill">Parcelas e reajuste</span>
+          <span class="mini-pill">Assembleia</span>
+          <span class="mini-pill">Lance ou sorteio</span>
+          <span class="mini-pill">Contemplação</span>
+          <span class="mini-pill">Crédito e documentos</span>
+          <span class="mini-pill">Faturamento</span>
+          <span class="mini-pill">Encerramento</span>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <div class="board">
+    <aside class="sidebar">
+      <h3 class="sidebar-title">Etapas do produto</h3>
+      <p class="sidebar-desc">A navegação foi reorganizada para refletir a jornada real do cliente e os principais
+        pontos de explicação financeira que costumam gerar dúvida.</p>
+      <div class="nav" id="nav"></div>
+    </aside>
+
+    <main class="panel">
+      <article class="stage" id="panel"></article>
+    </main>
+  </div>
+</div>
+
+<script>
+  const stages = [
+    {
+      id: 'visao-geral',
+      navLabel: '1. Visão geral',
+      navSub: 'O que é, o que não é e quais expectativas precisam ser alinhadas logo no começo.',
+      icon: 'ðŸ§­',
+      color: '#eef2ff',
+      iconColor: '#4338ca',
+      iconSrc: 'assets/icons/journey/01-visao-geral.svg',
+      title: 'Visão geral do produto',
+      desc: 'Consórcio é uma forma de aquisição planejada em grupo. O cliente entra em uma cota, paga parcelas mensais e participa de assembleias até ser contemplado por sorteio ou lance. A carta de crédito existe para aquisição do bem ou, em algumas hipóteses, faturamento em espécie, mas isso não significa dinheiro imediato como um empréstimo.',
+      badges: [
+        { text: 'Alinhamento de expectativa', type: 'warn' },
+        { text: 'Compra planejada', type: 'ok' },
+        { text: 'Não é crédito imediato', type: 'info' }
+      ],
+      flow: ['Entrada no grupo', 'Pagamento mensal', 'Assembleia', 'Contemplação', 'Documentos', 'Faturamento', 'Uso do bem', 'Quitação'],
+      whatUserNeeds: [
+        'Entender que o produto funciona por autofinanciamento coletivo e que o recebimento do crédito depende da contemplação.',
+        'Entender que a parcela não representa apenas “o valor do bem dividido pelo prazo”.',
+        'Entender que contemplação, análise de crédito e faturamento são momentos diferentes da jornada.'
+      ],
+      simpleExplain: 'Em linguagem simples: o consorciado entra em uma fila organizada em grupo. Todo mês o grupo forma caixa com as parcelas. Esse caixa é usado para contemplar participantes. Quem é contemplado recebe o direito de usar a carta, mas ainda precisa cumprir as regras para comprar o bem.',
+      cards: [
+        {
+          title: 'Dois objetivos principais após a contemplação',
+          body: 'Na cartilha do Itaú de veículos, o cliente contemplado é orientado a escolher entre faturar um bem ou faturar em espécie, conforme a situação da sua cota e das regras aplicáveis.',
+          formula: 'Objetivo pós-contemplação\n1) Faturar um bem\n2) Faturar em espécie'
+        },
+        {
+          title: 'O que o usuário costuma perguntar aqui',
+          body: '“Eu recebo o dinheiro na hora?”, “a parcela é fixa?”, “se eu for contemplado já pego o bem?”, “posso usar o crédito para qualquer coisa?”. Essas perguntas precisam ser tratadas logo na abertura da jornada.',
+          formula: null
+        }
+      ],
+      qa: [
+        {
+          q: 'O consórcio entrega dinheiro como um empréstimo?',
+          a: 'Não. A lógica principal é a aquisição do bem por meio da carta de crédito. Em alguns cenários específicos existe faturamento em espécie, mas ele segue regras próprias e não equivale a um CDC.'
+        },
+        {
+          q: 'Quando o cliente começa a ter obrigações financeiras?',
+          a: 'Desde a adesão. A obrigação começa com o ingresso no grupo e com o pagamento das parcelas mensais até a quitação.'
+        }
+      ],
+      fields: [
+        ['Objetivo do cliente', 'Imóvel, veículo, serviço ou estratégia patrimonial.'],
+        ['Urgência da compra', 'Define se consórcio faz sentido ou se o cliente precisa de crédito imediato.'],
+        ['Horizonte de tempo', 'Curto, médio ou longo prazo para aquisição.']
+      ]
+    },
+    {
+      id: 'adesao',
+      navLabel: '2. Adesão',
+      navSub: 'Parâmetros contratuais que definem o desenho financeiro da cota.',
+      icon: '✍ï¸',
+      color: '#ede9fe',
+      iconColor: '#6d28d9',
+      iconSrc: 'assets/icons/journey/02-adesao.svg',
+      title: 'Adesão ao grupo',
+      desc: 'Na adesão, o consorciado escolhe a carta, o prazo, o grupo e aceita a estrutura de custos da operação. É aqui que nascem as referências que depois serão usadas em parcela, saldo devedor, reajuste, lance e contemplação.',
+      badges: [
+        { text: 'Contrato', type: 'info' },
+        { text: 'Custos definidos aqui', type: 'warn' },
+        { text: 'Ponto de partida do simulador', type: 'ok' }
+      ],
+      whatUserNeeds: [
+        'Qual é o valor da carta de crédito contratada.',
+        'Quantos meses terá o grupo.',
+        'Qual índice fará o reajuste.',
+        'Qual é a taxa de administração, o fundo de reserva e se existe seguro.'
+      ],
+      simpleExplain: 'A melhor forma de explicar esta etapa é dizer: o cliente está escolhendo o tamanho do projeto e o custo de participar dele. Quanto maior a carta ou menor o prazo, maior tende a ser a parcela. Quanto maior a taxa administrativa e demais encargos, maior será o custo total da jornada.',
+      cards: [
+        {
+          title: 'Saldo devedor inicial',
+          body: 'O saldo devedor inicial representa o valor econômico que será distribuído ao longo da jornada da cota. Ele normalmente nasce da carta somada aos encargos previstos no plano.',
+          formula: 'Saldo_devedor_inicial = Carta_adesão × (1 + % taxa_administração + % fundo_reserva + % seguro, se houver)'
+        },
+        {
+          title: 'Direito de arrependimento',
+          body: 'No contrato analisado, o consorciado tem direito de retirada em até 7 dias quando a contratação ocorrer fora do estabelecimento comercial, com devolução das quantias pagas atualizadas.',
+          formula: 'Prazo de arrependimento = 7 dias (contratação fora do estabelecimento)'
+        }
+      ],
+      qa: [
+        {
+          q: 'Quais informações não podem faltar na venda?',
+          a: 'Valor da carta, prazo, data de vencimento, índice de reajuste, forma de contemplação, custos do plano e regras de cancelamento.'
+        },
+        {
+          q: 'Como explicar taxa de administração sem confundir com juros?',
+          a: 'Diga que não é juro por empréstimo. É a remuneração da administradora por organizar e gerir o grupo ao longo de todo o prazo.'
+        }
+      ],
+      fields: [
+        ['Carta de crédito de adesão', 'Valor contratado que servirá de base para a operação.'],
+        ['Prazo do grupo', 'Quantidade total de meses do plano.'],
+        ['Taxa de administração', 'Percentual de remuneração da administradora.'],
+        ['Fundo de reserva', 'Percentual para estabilidade financeira do grupo.'],
+        ['Seguro', 'Opcional ou contratado conforme o plano.'],
+        ['Índice de reajuste', 'IPCA, INCC, FIPE ou outro índice contratual.'],
+        ['Data de aniversário do grupo', 'Marco em que o reajuste costuma ocorrer.']
+      ]
+    },
+    {
+      id: 'parcelas',
+      navLabel: '3. Parcelas',
+      navSub: 'Composição do pagamento mensal e seus efeitos na habilitação do cliente.',
+      icon: 'ðŸ’³',
+      color: '#eff6ff',
+      iconColor: '#1d4ed8',
+      iconSrc: 'assets/icons/journey/03-parcelas.svg',
+      title: 'Pagamento mensal das parcelas',
+      desc: 'A prestação é a engrenagem financeira da jornada. Ela forma o fundo comum do grupo, remunera a administradora, alimenta o fundo de reserva e pode incluir seguro. O pagamento em dia é condição prática para disputar sorteio e lance.',
+      badges: [
+        { text: 'Parcela ≠ só amortização', type: 'warn' },
+        { text: 'Pagamento em dia habilita', type: 'ok' },
+        { text: 'Ciclo mensal do grupo', type: 'info' }
+      ],
+      whatUserNeeds: [
+        'Saber que a parcela tem vários componentes.',
+        'Entender que atraso gera custo adicional e pode bloquear participação na assembleia.',
+        'Perceber que a parcela pode ser reajustada ao longo da vida do grupo.'
+      ],
+      simpleExplain: 'Explique a parcela como uma cesta de componentes. Uma parte vai para o caixa comum do grupo, outra remunera a administradora, outra cria uma reserva de segurança e outra pode ser seguro. O cliente não está só “pagando o bem”, está financiando a operação coletiva do grupo.',
+      cards: [
+        {
+          title: 'Composição financeira da prestação',
+          body: 'No contrato consultado, a parcela contempla fundo comum, fundo de reserva, taxa de administração e, quando contratado, prêmio de seguro.',
+          formula: 'Prestação = Fundo comum + Taxa de administração + Fundo de reserva + Seguro (se houver)'
+        },
+        {
+          title: 'Cálculo contratual da parcela',
+          body: 'O trecho contratual analisado indica que a parte destinada ao fundo comum resulta do valor atualizado do bem dividido pelo prazo do grupo; o fundo de reserva e a taxa de administração também incidem sobre a base atualizada, fracionados ao longo do prazo.',
+          formula: 'Parcela_FC = Bem_atualizado ÷ Prazo\nParcela_FR = (% FR × Bem_atualizado) ÷ Prazo\nParcela_TA = (% TA × Bem_atualizado) ÷ Prazo'
+        },
+        {
+          title: 'Atraso e impacto prático',
+          body: 'Se o cliente atrasa, ele pode ter multa e juros e perde competitividade na jornada, porque a adimplência é o filtro natural para participação nas contemplações mensais.',
+          formula: 'Valor em atraso = Parcela vencida + multa + juros moratórios'
+        }
+      ],
+      qa: [
+        {
+          q: 'Se eu já fui contemplado, continuo pagando?',
+          a: 'Sim. A contemplação antecipa o direito ao crédito, mas a obrigação de pagar continua até a quitação total da cota.'
+        },
+        {
+          q: 'O que mais pesa na parcela?',
+          a: 'Normalmente, a maior parte é fundo comum. Depois entram taxa de administração, fundo de reserva e seguro, quando houver.'
+        }
+      ],
+      fields: [
+        ['Prestação mensal', 'Soma dos componentes financeiros da parcela.'],
+        ['Fundo comum', 'Parcela da prestação que financia contemplações e restituições.'],
+        ['Taxa de administração', 'Remuneração da gestão do grupo.'],
+        ['Fundo de reserva', 'Proteção para estabilidade financeira do grupo.'],
+        ['Seguro', 'Cobertura contratada, quando aplicável.'],
+        ['Situação do pagamento', 'Em dia, em atraso, suspenso ou quitado.']
+      ]
+    },
+    {
+      id: 'reajuste',
+      navLabel: '4. Reajuste',
+      navSub: 'Atualização da carta e da parcela para manter o poder de compra.',
+      icon: 'ðŸ“',
+      color: '#eefafc',
+      iconColor: '#0f766e',
+      iconSrc: 'assets/icons/journey/04-reajuste.svg',
+      title: 'Reajuste da carta e das parcelas',
+      desc: 'Consórcio não cobra juros como financiamento, mas a carta e as parcelas podem ser atualizadas por índice contratual. O objetivo é preservar o poder de compra do crédito no tempo.',
+      badges: [
+        { text: 'Proteção do poder de compra', type: 'ok' },
+        { text: 'Índice contratual', type: 'info' },
+        { text: 'Precisa ser explicado com cuidado', type: 'warn' }
+      ],
+      whatUserNeeds: [
+        'Entender que reajuste não é o mesmo que juros.',
+        'Saber qual índice será usado e em que momento do grupo ele será aplicado.',
+        'Entender que o valor da carta aumenta junto com a parcela para manter equivalência econômica.'
+      ],
+      simpleExplain: 'A explicação mais didática é esta: a carta representa poder de compra futuro. Se o bem encarece com o tempo, a carta precisa ser atualizada. Como a carta sobe, a parcela também pode subir para manter o equilíbrio do grupo.',
+      cards: [
+        {
+          title: 'Carta atualizada',
+          body: 'A documentação-base traz a lógica de que a carta atual é a carta da adesão multiplicada pelo fator de reajuste acumulado.',
+          formula: 'Carta_atual = Carta_adesão × Fator_de_reajuste'
+        },
+        {
+          title: 'Pergunta pedagógica-chave',
+          body: 'O usuário precisa ouvir que “reajuste” não é punição. É a forma de o grupo preservar o valor econômico do crédito ao longo do prazo.',
+          formula: null
+        }
+      ],
+      qa: [
+        {
+          q: 'Se a carta sobe, a parcela sobe também?',
+          a: 'Em regra, sim. Isso acontece porque a base econômica do plano foi atualizada.'
+        },
+        {
+          q: 'Qual índice costuma ser usado?',
+          a: 'Depende do produto e do contrato. Em materiais de mercado e na documentação analisada aparecem referências como INCC, IPCA e FIPE.'
+        }
+      ],
+      fields: [
+        ['Carta atual', 'Carta original atualizada pelo fator de reajuste.'],
+        ['Índice contratual', 'Índice que rege a atualização econômica da cota.'],
+        ['Data de aniversário', 'Data em que a atualização costuma ser aplicada.'],
+        ['Parcela reajustada', 'Nova parcela após a atualização da base econômica.']
+      ]
+    },
+    {
+      id: 'assembleia',
+      navLabel: '5. Assembleia',
+      navSub: 'Momento mensal em que o grupo realiza sorteios e apuração de lances.',
+      icon: 'ðŸŽ²',
+      color: '#ecfdf5',
+      iconColor: '#166534',
+      iconSrc: 'assets/icons/journey/05-assembleia.svg',
+      title: 'Assembleia mensal e elegibilidade',
+      desc: 'A AGO é o momento em que o grupo materializa a lógica do consórcio. O cliente em dia participa do sorteio e também pode ofertar lance. A assembleia produz a lista de contemplados do mês e reinicia o ciclo do grupo.',
+      badges: [
+        { text: 'AGO', type: 'info' },
+        { text: 'Adimplência importa', type: 'warn' },
+        { text: 'Ciclo mensal do grupo', type: 'ok' }
+      ],
+      whatUserNeeds: [
+        'Saber quando é a assembleia.',
+        'Entender que só participa plenamente quem está adimplente.',
+        'Entender que primeiro existe a lógica do sorteio e depois a lógica dos lances, conforme a regra do grupo.'
+      ],
+      simpleExplain: 'Explique a assembleia como a reunião mensal em que o caixa do grupo vira contemplação. É ali que o dinheiro acumulado durante o mês ganha destino: sorteio, lances e continuidade do ciclo.',
+      cards: [
+        {
+          title: 'O que acontece dentro da AGO',
+          body: 'No material técnico analisado, a assembleia contempla sorteio, análise dos lances ofertados e divulgação dos resultados. A primeira assembleia também constitui formalmente o grupo.',
+          formula: 'Pagamento do mês → validação de adimplência → sorteio → apuração de lances → resultado'
+        },
+        {
+          title: 'Resultado da assembleia',
+          body: 'Depois da assembleia, o cliente sabe se foi contemplado e, se for o caso, qual lance venceu e quanto terá de pagar ou cumprir na fase seguinte.',
+          formula: null
+        }
+      ],
+      qa: [
+        {
+          q: 'A assembleia garante que alguém será contemplado todo mês?',
+          a: 'A lógica do grupo é organizar contemplações periódicas conforme os recursos disponíveis e as regras contratuais. O fluxo real depende do caixa e do regulamento do grupo.'
+        },
+        {
+          q: 'A presença física é necessária?',
+          a: 'Não necessariamente. O importante é respeitar as regras operacionais do grupo e acompanhar o resultado pelos canais disponibilizados pela administradora.'
+        }
+      ],
+      fields: [
+        ['Data da AGO', 'Data mensal da assembleia do grupo.'],
+        ['Situação de elegibilidade', 'Cliente apto ou não apto a participar plenamente.'],
+        ['Resultado do sorteio', 'Cota sorteada conforme regra do grupo.'],
+        ['Resultado dos lances', 'Lances vencedores e contemplações adicionais.']
+      ]
+    },
+    {
+      id: 'lances',
+      navLabel: '6. Lance',
+      navSub: 'Estratégias para antecipar a contemplação e seus efeitos financeiros.',
+      icon: 'ðŸ“ˆ',
+      color: '#fff7ed',
+      iconColor: '#c2410c',
+      iconSrc: 'assets/icons/journey/06-lance.svg',
+      title: 'Simulação e estratégia de lance',
+      desc: 'Lance é a principal alavanca estratégica do consorciado que quer acelerar a contemplação. Ele antecipa recursos e altera o comportamento financeiro da cota, seja por redução de prazo, seja por redução de parcela, conforme a regra contratual.',
+      badges: [
+        { text: 'Estratégia', type: 'ok' },
+        { text: 'Pagamento em curto prazo', type: 'warn' },
+        { text: 'Pode reduzir prazo ou parcela', type: 'info' }
+      ],
+      whatUserNeeds: [
+        'Qual tipo de lance existe no grupo.',
+        'Quanto ele consegue pagar com recursos próprios.',
+        'Se a administradora permite lance embutido, lance fixo ou outras formas contratuais.',
+        'O que acontece com o saldo devedor depois do lance.'
+      ],
+      simpleExplain: 'A forma mais simples de explicar é dizer: o lance funciona como um adiantamento da própria jornada. O cliente oferece antecipar parte da obrigação para tentar receber antes o direito de usar a carta.',
+      cards: [
+        {
+          title: 'Lance livre, fixo e embutido',
+          body: 'No contrato de imóveis analisado aparece a existência de lance fixo e lance embutido. O lance embutido usa parte do crédito previsto para recebimento como pagamento do próprio lance, reduzindo o crédito líquido disponível para a compra.',
+          formula: 'Crédito líquido após lance embutido = Carta prevista − parcela embutida do lance'
+        },
+        {
+          title: 'Prazo para pagamento do lance',
+          body: 'Na cartilha de veículos do Itaú e no contrato de imóveis analisado, a contemplação por lance exige pagamento do valor devido em até 5 dias úteis após a AGO.',
+          formula: 'Prazo de pagamento do lance = até 5 dias úteis após a assembleia'
+        },
+        {
+          title: 'Destino financeiro do lance vencedor',
+          body: 'O contrato analisado indica que o valor do lance deve ser direcionado para quitação ou amortização do saldo devedor, permitindo ao cliente optar por reduzir prazo ou diluir a redução nas parcelas vincendas.',
+          formula: 'Opção A: reduzir prazo\nOpção B: reduzir valor das parcelas vincendas'
+        }
+      ],
+      qa: [
+        {
+          q: 'Dar lance significa perder dinheiro?',
+          a: 'Não. O lance é uma antecipação estratégica. O ponto de atenção é que ele reduz liquidez do cliente e, em caso de embutido, reduz o crédito líquido disponível para a compra.'
+        },
+        {
+          q: 'Qual é a melhor estratégia?',
+          a: 'Depende do objetivo. Quem precisa de caixa mensal menor tende a preferir redução de parcela. Quem quer sair do grupo mais rápido pode preferir redução de prazo.'
+        }
+      ],
+      fields: [
+        ['Tipo de lance', 'Livre, fixo, embutido e outras variações contratuais.'],
+        ['Valor ofertado', 'Montante que o cliente oferece antecipar.'],
+        ['Origem dos recursos', 'Recursos próprios, embutido ou composição autorizada pelo contrato.'],
+        ['Opção pós-lance', 'Redução de prazo ou redução da prestação.'],
+        ['Prazo de pagamento', 'Prazo operacional para confirmar a contemplação por lance.']
+      ]
+    },
+    {
+      id: 'contemplacao',
+      navLabel: '7. Contemplação',
+      navSub: 'Nascimento do direito ao crédito e mudança de fase da jornada.',
+      icon: 'ðŸ†',
+      color: '#f0fdf4',
+      iconColor: '#15803d',
+      iconSrc: 'assets/icons/journey/07-contemplacao.svg',
+      title: 'Contemplação',
+      desc: 'A contemplação é o marco que transforma expectativa em direito ao crédito. Ela pode ocorrer por sorteio ou por lance. Mesmo assim, ainda não é a etapa final: o cliente entra na fase de habilitação, análise e uso da carta.',
+      badges: [
+        { text: 'Direito ao crédito', type: 'ok' },
+        { text: 'Não é liberação automática', type: 'warn' },
+        { text: 'Muda o estágio da cota', type: 'info' }
+      ],
+      whatUserNeeds: [
+        'Entender que a contemplação libera o direito, não a compra instantânea.',
+        'Saber qual é o valor da carta naquele momento.',
+        'Entender como o lance, se houver, impactou o saldo e o crédito líquido.'
+      ],
+      simpleExplain: 'A melhor metáfora é: a contemplação entrega a chave do cofre, mas o dinheiro só sai do cofre depois que a administradora verifica se tudo está regular para a compra do bem.',
+      cards: [
+        {
+          title: 'Mudança de status da cota',
+          body: 'No contrato analisado, o consorciado contemplado é aquele que adquiriu o direito de utilizar o valor do crédito mediante sorteio ou lance.',
+          formula: 'Status da cota: ativa não contemplada → contemplada'
+        },
+        {
+          title: 'Ponto crítico de comunicação',
+          body: 'Muitos clientes entendem a contemplação como “já posso comprar agora”. O mapa precisa explicar que, após a contemplação, ainda existem análise de crédito, documentos, garantias e aprovação do bem.',
+          formula: null
+        }
+      ],
+      qa: [
+        {
+          q: 'Se fui contemplado, posso parar de pagar?',
+          a: 'Não. A obrigação financeira continua até a quitação da cota.'
+        },
+        {
+          q: 'Posso transferir uma cota contemplada?',
+          a: 'A documentação-base indica que a cessão a terceiros pode ocorrer mediante anuência da administradora e cumprimento dos trâmites formais.'
+        }
+      ],
+      fields: [
+        ['Modalidade de contemplação', 'Sorteio ou lance.'],
+        ['Carta no momento da contemplação', 'Valor do crédito na data em que o direito foi adquirido.'],
+        ['Saldo devedor remanescente', 'Quanto ainda falta pagar após a contemplação.'],
+        ['Crédito líquido disponível', 'Especialmente relevante quando há lance embutido.']
+      ]
+    },
+    {
+      id: 'credito-docs',
+      navLabel: '8. Crédito e documentos',
+      navSub: 'Habilitação, análise de crédito, garantias e documentação do vendedor e do bem.',
+      icon: 'ðŸ“‘',
+      color: '#eff6ff',
+      iconColor: '#2563eb',
+      iconSrc: 'assets/icons/journey/08-credito-documentos.svg',
+      title: 'Análise de crédito e documentação',
+      desc: 'Depois da contemplação, a administradora entra em uma fase parecida com uma esteira de concessão. Ela precisa confirmar dados cadastrais, capacidade de pagamento, regularidade do bem e documentação do vendedor. Essa etapa é decisiva para a liberação do crédito.',
+      badges: [
+        { text: 'Habilitação', type: 'info' },
+        { text: 'Pode exigir garantia complementar', type: 'warn' },
+        { text: 'Fase operacional crítica', type: 'ok' }
+      ],
+      whatUserNeeds: [
+        'Quais documentos pessoais e do vendedor serão pedidos.',
+        'Que tipo de análise financeira será feita.',
+        'Quais impedimentos podem travar a liberação do crédito.',
+        'Qual canal usar para iniciar o processo.'
+      ],
+      simpleExplain: 'Explique que a administradora precisa proteger o grupo. Por isso ela confere se o cliente consegue seguir pagando, se o bem é aceito como garantia e se a documentação do vendedor e da operação está correta.',
+      cards: [
+        {
+          title: 'Veículos: dados e documentos operacionais',
+          body: 'Na cartilha do Itaú, o cliente precisa informar placa ou chassi, dados bancários do vendedor e quanto da carta deseja usar. Para veículos usados podem ser solicitados CRV/DUT ou documento digital equivalente, além da nota fiscal quando houver revenda.',
+          formula: 'Entrada operacional: placa/chassi + vendedor + valor a usar da carta'
+        },
+        {
+          title: 'Imóveis: documentação robusta',
+          body: 'No contrato analisado aparecem CPF, identidade, comprovante de renda, comprovante de residência, estado civil e formulários de aquisição, avaliação do imóvel, informações do vendedor e propostas de seguros vinculados à operação.',
+          formula: 'Pessoa física: CPF + identidade + renda + residência + estado civil\nOperação: proposta do imóvel + avaliação + dados do vendedor + seguros'
+        },
+        {
+          title: 'Garantia complementar e responsabilidade documental',
+          body: 'O contrato também indica que pode ser exigida garantia complementar e que a apresentação da documentação completa e válida é responsabilidade do consorciado contemplado.',
+          formula: null
+        }
+      ],
+      qa: [
+        {
+          q: 'O crédito pode ser negado depois da contemplação?',
+          a: 'A contemplação pode existir, mas a liberação do uso do crédito depende da aprovação operacional e documental da etapa seguinte.'
+        },
+        {
+          q: 'Quem recebe o dinheiro?',
+          a: 'O crédito é transferido ao vendedor ou fornecedor indicado, não ao consorciado, salvo hipóteses específicas previstas em contrato.'
+        }
+      ],
+      fields: [
+        ['Documentos do consorciado', 'Identidade, CPF, renda, residência e demais documentos cadastrais.'],
+        ['Documentos do vendedor', 'Dados bancários e documentação de regularidade da operação.'],
+        ['Documentos do bem', 'Placa/chassi, CRV/DUT, matrícula, avaliação e documentos correlatos.'],
+        ['Canal operacional', 'App, central de atendimento, portal ou rede parceira, conforme a situação.'],
+        ['Garantias', 'Alienação fiduciária e possíveis reforços complementares.']
+      ]
+    },
+    {
+      id: 'faturamento',
+      navLabel: '9. Aquisição e faturamento',
+      navSub: 'Uso da carta para compra do bem, pagamento ao vendedor e formalização da garantia.',
+      icon: 'ðŸ ',
+      color: '#fff7ed',
+      iconColor: '#b45309',
+      iconSrc: 'assets/icons/journey/09-faturamento.svg',
+      title: 'Aquisição do bem e faturamento da carta',
+      desc: 'Com a documentação aprovada, o crédito é direcionado ao vendedor e a operação vira compra efetiva. Aqui entram avaliação do bem, despesas acessórias, prazo de pagamento, registro de contrato e emissão dos documentos finais.',
+      badges: [
+        { text: 'Pagamento ao vendedor', type: 'ok' },
+        { text: 'Despesas acessórias', type: 'warn' },
+        { text: 'Formalização da garantia', type: 'info' }
+      ],
+      whatUserNeeds: [
+        'Saber que o pagamento é feito diretamente ao vendedor.',
+        'Entender quais despesas podem ser pagas com a sobra de crédito.',
+        'Entender prazo operacional de pagamento e de emissão de documentos.',
+        'Entender o que acontece com a alienação fiduciária.'
+      ],
+      simpleExplain: 'A carta não vira dinheiro livre na mão do cliente. Ela é usada para pagar a aquisição do bem. Depois disso, o bem costuma ficar em garantia para a administradora até a quitação da cota.',
+      cards: [
+        {
+          title: 'Transferência ao vendedor',
+          body: 'Na documentação-base e no contrato, a lógica é clara: a administradora transfere o crédito ao vendedor ou fornecedor indicado, após aprovação da operação.',
+          formula: 'Carta aprovada → pagamento ao vendedor → compra efetivada'
+        },
+        {
+          title: 'Até 10% para despesas acessórias',
+          body: 'Na cartilha do Itaú para veículos, se houver sobra de crédito, o cliente pode usar até 10% do crédito para avaliação de bens, despesas com documentação e seguro.',
+          formula: 'Uso acessório máximo = até 10% do crédito, quando houver sobra'
+        },
+        {
+          title: 'Tarifas e prazos operacionais em veículos',
+          body: 'A cartilha do Itaú cita tarifa de avaliação para usados e registro de contrato no Detran. Também informa que, para correntista em cenário simplificado, o pagamento pode ocorrer em até 1 dia útil, e que o documento do veículo deve ser emitido em até 30 dias após nota fiscal ou CRV/DUT.',
+          formula: 'Pagamento simplificado: até 1 dia útil\nEmissão de documento: até 30 dias'
+        }
+      ],
+      qa: [
+        {
+          q: 'Posso comprar qualquer veículo ou imóvel?',
+          a: 'Não. O bem precisa respeitar as regras da administradora. Na cartilha de veículos aparecem restrições como histórico de leilão, ônus, restrições e alienação.'
+        },
+        {
+          q: 'O que acontece depois do pagamento ao vendedor?',
+          a: 'A operação é formalizada, a garantia é registrada e o cliente segue pagando as parcelas até a quitação total da cota.'
+        }
+      ],
+      fields: [
+        ['Valor faturado', 'Valor efetivamente direcionado ao vendedor.'],
+        ['Saldo acessório', 'Parcela do crédito remanescente destinada a despesas permitidas.'],
+        ['Prazo de pagamento', 'Prazo operacional para transferência ao vendedor.'],
+        ['Registro de garantia', 'Alienação fiduciária ou gravame correspondente.'],
+        ['Prazo documental', 'Prazo para emissão de documentos finais do bem.']
+      ]
+    },
+    {
+      id: 'pos-contemplacao',
+      navLabel: '10. Pós-contemplação',
+      navSub: 'Uso do crédito, faturamento em espécie e intervalo entre contemplação e uso efetivo.',
+      icon: 'ðŸ’¼',
+      color: '#f5f3ff',
+      iconColor: '#7c3aed',
+      iconSrc: 'assets/icons/journey/10-pos-contemplacao.svg',
+      title: 'Utilização do crédito após a contemplação',
+      desc: 'Nem todo cliente usa a carta no mesmo instante em que é contemplado. Essa etapa precisa explicar o intervalo entre contemplação e faturamento, a continuidade das parcelas e a possibilidade de faturamento em espécie quando as regras permitirem.',
+      badges: [
+        { text: 'Continuidade das parcelas', type: 'warn' },
+        { text: 'Carta não usada exige gestão', type: 'info' },
+        { text: 'Pode haver faturamento em espécie', type: 'ok' }
+      ],
+      whatUserNeeds: [
+        'Saber que continua pagando mesmo contemplado.',
+        'Entender o que acontece se demorar para usar a carta.',
+        'Entender quando pode faturar em espécie e o que não é devolvido nessa opção.'
+      ],
+      simpleExplain: 'Depois da contemplação, o cliente entra em uma fase de decisão. Ele pode usar a carta na compra do bem ou, em situações previstas, pedir faturamento em espécie. Em ambos os casos, o custo do consórcio já percorrido não desaparece.',
+      cards: [
+        {
+          title: 'Cliente contemplado continua pagando',
+          body: 'A documentação-base reforça que o contemplado segue pagando as parcelas normalmente até quitar a cota, mesmo depois de receber o bem ou de estar com a carta disponível para uso.',
+          formula: null
+        },
+        {
+          title: 'Faturamento em espécie no Itaú veículos',
+          body: 'A cartilha informa que, se o cliente não desejar comprar um bem, pode resgatar valores em dinheiro sem multa, desde que esteja contemplado há pelo menos 180 dias. Também informa que não é possível sacar os valores já pagos de taxa de administração e fundo de reserva.',
+          formula: 'Condição operacional: contemplado há pelo menos 180 dias\nNão resgatável: taxa de administração + fundo de reserva já pagos'
+        },
+        {
+          title: 'Explicação financeira necessária',
+          body: 'Esta é a fase em que o cliente precisa entender a diferença entre crédito bruto, crédito líquido e custos que já foram consumidos ao longo da jornada. É aqui que muitos acreditam, de forma incorreta, que recuperarão 100% de tudo o que pagaram.',
+          formula: null
+        }
+      ],
+      qa: [
+        {
+          q: 'Se eu pedir faturamento em espécie, recebo tudo que paguei?',
+          a: 'Não necessariamente. A cartilha analisada deixa claro que taxa de administração e fundo de reserva já pagos não entram nesse saque em espécie.'
+        },
+        {
+          q: 'Posso ficar muito tempo com a carta parada?',
+          a: 'Operacionalmente o cliente precisa observar o regulamento do grupo e a vigência da cota. A carta não deve ser tratada como um valor livre sem regra de uso.'
+        }
+      ],
+      fields: [
+        ['Status pós-contemplação', 'Carta disponível para uso, em análise ou faturada.'],
+        ['Intervalo entre contemplação e faturamento', 'Tempo entre ganhar o direito ao crédito e efetivamente utilizá-lo.'],
+        ['Elegibilidade para espécie', 'Condição operacional prevista no regulamento aplicável.'],
+        ['Componentes não resgatáveis', 'Custos já consumidos na operação.']
+      ]
+    },
+    {
+      id: 'cancelamento',
+      navLabel: '11. Cancelamento e inadimplência',
+      navSub: 'Saída do grupo, suspensão, multa e restituição.',
+      icon: '↩ï¸',
+      color: '#fef2f2',
+      iconColor: '#b91c1c',
+      iconSrc: 'assets/icons/journey/11-cancelamento.svg',
+      title: 'Cancelamento, inadimplência e restituição',
+      desc: 'Esta é uma das etapas que mais exige transparência. O cliente precisa saber o que acontece se desistir, atrasar ou deixar de pagar. A consequência financeira não é neutra: pode haver suspensão, multa, espera para restituição e até cancelamento da contemplação, conforme o estágio da cota e a regra contratual.',
+      badges: [
+        { text: 'Tema sensível', type: 'warn' },
+        { text: 'Exige transparência', type: 'info' },
+        { text: 'Decisão financeira relevante', type: 'ok' }
+      ],
+      whatUserNeeds: [
+        'Qual é a regra de suspensão por inadimplência.',
+        'Qual multa pode ser descontada da restituição.',
+        'Quando o dinheiro retorna e quais parcelas do custo não voltam.'
+      ],
+      simpleExplain: 'A forma mais honesta de explicar é: sair do consórcio antes do fim normalmente custa dinheiro e tempo. O cliente não sai ileso porque o grupo já foi estruturado para contar com a contribuição daquela cota.',
+      cards: [
+        {
+          title: 'Suspensão por inadimplência',
+          body: 'No contrato de imóveis analisado, a inadimplência por três vencimentos caracteriza hipótese de suspensão do consorciado. Antes da suspensão efetiva, ele ainda pode restabelecer direitos se regularizar as obrigações com os devidos encargos.',
+          formula: 'Regra contratual analisada: 3 vencimentos em atraso → hipótese de suspensão'
+        },
+        {
+          title: 'Multa na restituição',
+          body: 'O contrato analisado prevê multa compensatória equivalente a 10% do valor do crédito a que o consorciado fizer jus, sendo metade destinada ao fundo comum do grupo e metade à administradora.',
+          formula: 'Multa = 10% do crédito a restituir\n50% → Fundo comum\n50% → Administradora'
+        },
+        {
+          title: 'Cancelamento da contemplação',
+          body: 'O mesmo contrato mostra que, em determinadas hipóteses de inadimplência, a AGO pode apreciar o cancelamento da contemplação, com retorno do crédito ao fundo comum do grupo.',
+          formula: null
+        }
+      ],
+      qa: [
+        {
+          q: 'Se eu desistir, recebo tudo na hora?',
+          a: 'Não. A restituição costuma obedecer à lógica do grupo e pode depender de sorteio de excluídos ou do encerramento do grupo, conforme o regulamento.'
+        },
+        {
+          q: 'Vale mais excluir ou vender a cota?',
+          a: 'Muitas vezes a cessão da cota pode ser financeiramente mais interessante que a exclusão direta, mas isso depende da aprovação da administradora e das condições de mercado.'
+        }
+      ],
+      fields: [
+        ['Situação da cota', 'Ativa, suspensa, contemplada, cancelada ou cedida.'],
+        ['Multa compensatória', 'Percentual contratual incidente sobre o valor a restituir.'],
+        ['Prazo estimado de restituição', 'Conforme sorteio dos excluídos ou encerramento do grupo.'],
+        ['Encargos de atraso', 'Multa e juros moratórios sobre parcelas vencidas.'],
+        ['Cessão de direitos', 'Alternativa de saída mediante aprovação da administradora.']
+      ]
+    },
+    {
+      id: 'encerramento',
+      navLabel: '12. Encerramento',
+      navSub: 'Quitação final, baixa da garantia, sobras e recursos não procurados.',
+      icon: 'ðŸŽ¯',
+      color: '#ecfdf5',
+      iconColor: '#047857',
+      iconSrc: 'assets/icons/journey/12-encerramento.svg',
+      title: 'Encerramento do grupo',
+      desc: 'No encerramento, a jornada financeira é fechada. Todos os participantes já percorreram suas etapas, o grupo presta contas, sobras são tratadas e a administradora formaliza a quitação e o desligamento da garantia do bem quando cabível.',
+      badges: [
+        { text: 'Prestação de contas', type: 'info' },
+        { text: 'Liberação da garantia', type: 'ok' },
+        { text: 'Não esquecer valores residuais', type: 'warn' }
+      ],
+      whatUserNeeds: [
+        'Entender quando o bem fica livre da alienação fiduciária.',
+        'Saber que pode existir devolução de sobra do fundo de reserva.',
+        'Manter cadastro atualizado para não deixar recursos parados.'
+      ],
+      simpleExplain: 'Explique o encerramento como a “prestação de contas final” da jornada. O grupo fecha a conta coletiva, o cliente quita a cota e o bem deixa de servir como garantia quando a obrigação termina.',
+      cards: [
+        {
+          title: 'Liberação da garantia',
+          body: 'A documentação-base registra que, após a última parcela ou quitação antecipada, a administradora emite os documentos de quitação para retirada da alienação fiduciária do bem.',
+          formula: 'Última parcela paga → quitação → baixa da garantia'
+        },
+        {
+          title: 'Fundo de reserva e recursos não procurados',
+          body: 'O material técnico utilizado para a documentação do simulador destaca a devolução proporcional de sobras do fundo de reserva e chama atenção para recursos não procurados no encerramento.',
+          formula: 'Sobra do fundo de reserva → devolução proporcional conforme regra do grupo'
+        }
+      ],
+      qa: [
+        {
+          q: 'Depois que quito, o bem ainda fica preso?',
+          a: 'Não. Após a formalização da quitação, a administradora libera a baixa da alienação fiduciária ou do gravame correspondente.'
+        },
+        {
+          q: 'Por que preciso manter cadastro atualizado até o fim?',
+          a: 'Porque qualquer valor residual, devolução ou comunicação final depende de a administradora conseguir localizar o consorciado.'
+        }
+      ],
+      fields: [
+        ['Situação final da cota', 'Quitada e encerrada.'],
+        ['Status da garantia', 'Ativa durante a obrigação e baixada após a quitação.'],
+        ['Sobra de fundo de reserva', 'Valor eventual a devolver conforme regulamento.'],
+        ['Recursos não procurados', 'Valores residuais que exigem ação do cliente para resgate.']
+      ]
+    }
+  ];
+
+  let activeIndex = 0;
+
+  function renderFlow(flow = []) {
+    if (!flow.length) return '';
+    return `
+    <div class="section-title">Fluxo resumido</div>
+    <div class="flow">
+      ${flow.map((step, idx) => `
+        <span class="flow-step">${step}</span>
+        ${idx < flow.length - 1 ? '<span class="flow-arrow">→</span>' : ''}
+      `).join('')}
+    </div>
+  `;
+  }
+
+  function renderStageIcon(stage) {
+    if (!stage.iconSrc) return stage.icon;
+    return `<img src="${stage.iconSrc}" alt="" aria-hidden="true">`;
+  }
+
+  function renderNav() {
+    const nav = document.getElementById('nav');
+    nav.innerHTML = stages.map((stage, index) => `
+    <button class="nav-btn ${index === activeIndex ? 'active' : ''}" onclick="setActive(${index})">
+      <span class="nav-emoji" style="background:${stage.color}; color:${stage.iconColor}">${renderStageIcon(stage)}</span>
+      <span>
+        <div class="nav-label">${stage.navLabel}</div>
+        <div class="nav-sub">${stage.navSub}</div>
+      </span>
+    </button>
+  `).join('');
+  }
+
+  function renderPanel() {
+    const stage = stages[activeIndex];
+    const panel = document.getElementById('panel');
+
+    panel.innerHTML = `
+    <div class="stage-head">
+      <div class="stage-icon" style="background:${stage.color}; color:${stage.iconColor}">${renderStageIcon(stage)}</div>
+      <div>
+        <div class="stage-kicker">Etapa detalhada da jornada</div>
+        <h2 class="stage-title">${stage.title}</h2>
+        <p class="stage-desc">${stage.desc}</p>
+        <div class="badge-row">
+          ${(stage.badges || []).map(b => `<span class="badge ${b.type}">${b.text}</span>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    ${renderFlow(stage.flow || [])}
+
+    <div class="section-title">O que o usuário precisa entender nesta etapa</div>
+    <div class="grid-3">
+      ${(stage.whatUserNeeds || []).map(item => `
+        <div class="card soft">
+          <div class="card-title">Ponto de esclarecimento</div>
+          <p class="card-body">${item}</p>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="section-title">Como explicar para o usuário</div>
+    <div class="explain-box">
+      <div class="explain-head">
+        <h3 class="explain-title">Tradução didática da etapa</h3>
+        <span class="badge info">Foco pedagógico</span>
+      </div>
+      <div class="explain-list">
+        <div class="explain-item">
+          <div class="explain-label">Explicação simples</div>
+          <div class="explain-text">${stage.simpleExplain}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Pontos financeiros e operacionais</div>
+    <div class="grid-3">
+      ${(stage.cards || []).map(card => `
+        <div class="card ${card.title.toLowerCase().includes('prazo') || card.title.toLowerCase().includes('multa') || card.title.toLowerCase().includes('atenção') ? 'warning' : ''}">
+          <div class="card-title">${card.title}</div>
+          <p class="card-body">${card.body}</p>
+          ${card.formula ? `<div class="formula">${card.formula}</div>` : ''}
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="section-title">Perguntas que o usuário tende a fazer</div>
+    <div class="qa-grid">
+      ${(stage.qa || []).map(item => `
+        <div class="qa-item">
+          <div class="qa-q">${item.q}</div>
+          <div class="qa-a">${item.a}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="section-title">Campos que o simulador deve expor ou considerar</div>
+    <div class="field-table">
+      ${(stage.fields || []).map(row => `
+        <div class="field-row">
+          <div class="field-name">${row[0]}</div>
+          <div class="field-value">${row[1]}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  }
+
+  function setActive(index) {
+    activeIndex = index;
+    renderNav();
+    renderPanel();
+  }
+
+  renderNav();
+  renderPanel();
+</script>
+
+

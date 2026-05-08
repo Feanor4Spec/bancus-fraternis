@@ -1,0 +1,28 @@
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Node
+node_modules/
+npm-debug.log
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Dados sensíveis
+.env
+.env.local
+*.key
+*.pem
+
+# Arquivos temporários
+tmp/
+temp/
+.cache/
