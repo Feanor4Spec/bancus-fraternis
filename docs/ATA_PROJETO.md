@@ -1,6 +1,6 @@
 # Ata do Projeto - ConsorcioPro (historico)
 
-> Status 2026-05-08: documento historico. A plataforma atual e Bank Fratern; ConsorcioPro permanece como nome legado do simulador de consorcio e referencia de origem.
+> Status 2026-05-08: documento historico. A plataforma atual e Bancus Fraternis; ConsorcioPro permanece como nome legado do simulador de consorcio e referencia de origem.
 
 > Ata de criação e primeira entrega do projeto de Simulador de Consórcio
 
@@ -226,7 +226,7 @@ Adicionado um layout premium bancário como página inicial do projeto, reposici
 | # | Funcionalidade | Status |
 |---|---------------|--------|
 | 1 | Separação da arquitetura: `index.html` (Landing) vs `simulador.html` (Sistema) | ✅ |
-| 2 | Layout Institucional Bank Fratern (Design System consistente com `styles.css`) | ✅ |
+| 2 | Layout Institucional Bancus Fraternis (Design System consistente com `styles.css`) | ✅ |
 | 3 | Menu interativo "Produtos Especializados" (Dropdown via CSS puro) | ✅ |
 | 4 | Hero Section com logo e copy institucional | ✅ |
 | 5 | Grid de produtos (Cross-sell) com acesso dinâmico à Engenharia de Consórcio | ✅ |

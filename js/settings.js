@@ -1,6 +1,6 @@
 /**
  * ============================================
- * Bank Fratern V7 - Modulo de Configuracoes
+ * Bancus Fraternis V7 - Modulo de Configuracoes
  * ============================================
  * Persiste preferencias do consultor e aplica
  * configuracoes globais nas paginas do portal.

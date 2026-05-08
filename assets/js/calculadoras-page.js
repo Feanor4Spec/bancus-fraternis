@@ -453,7 +453,7 @@
     }
 
     const defaults = window.BFCalculadoras.profileDefaults(meta);
-    document.title = `${meta.nome} - Bank Fratern`;
+    document.title = `${meta.nome} - Bancus Fraternis`;
     qs('[data-calculator-badge]').textContent = meta.badge;
     qs('[data-calculator-title]').textContent = meta.nome;
     qs('[data-calculator-description]').textContent = meta.resumo;

@@ -295,7 +295,7 @@ const ProposalSummary = (() => {
       status,
       statusLabel: acceptance && acceptance.statusLabel ? acceptance.statusLabel : (labels[status] || labels.pending),
       proposalId: acceptance && acceptance.proposalId ? acceptance.proposalId : (data && data.id) || 'PROP-PENDENTE',
-      reviewer: acceptance && acceptance.reviewer ? acceptance.reviewer : (data && data.consultor) || 'Consultor Bank Fratern',
+      reviewer: acceptance && acceptance.reviewer ? acceptance.reviewer : (data && data.consultor) || 'Consultor Bancus Fraternis',
       reviewerRole: acceptance && acceptance.reviewerRole ? acceptance.reviewerRole : 'Consultor responsavel',
       validUntil: acceptance && acceptance.validUntil ? acceptance.validUntil : valid.toISOString().slice(0, 10),
       notes: acceptance && acceptance.notes ? acceptance.notes : 'Aguardando validacao das premissas antes do encaminhamento.',
@@ -548,7 +548,7 @@ const ProposalSummary = (() => {
       grupo: descriptor.grupo,
       cota: descriptor.totalCotas ? `${descriptor.totalCotas} cota(s)` : (params && params.cota) || 'Cota a definir',
       cliente: (params && params.nomeCliente) || 'Cliente em analise',
-      consultor: (params && params.consultor) || 'Consultor Bank Fratern',
+      consultor: (params && params.consultor) || 'Consultor Bancus Fraternis',
       administradora: descriptor.administradora,
       segmento: descriptor.segmento,
       generatedAt: new Date(),
@@ -637,7 +637,7 @@ const ProposalSummary = (() => {
     return mapSimulationToProposal({
       params: {
         nomeCliente: 'Andre Dias',
-        consultor: 'Equipe Bank Fratern',
+        consultor: 'Equipe Bancus Fraternis',
         dataSimulacao: '2026-04-24',
         mesContemplacao: 18,
         prazoTotal: 198
@@ -676,7 +676,7 @@ const ProposalSummary = (() => {
     return `
       <header class="ps-header ps-print-page">
         <div class="ps-header__main">
-          <img src="${assetPath('assets/logos/logo-bank-fratern-icon.svg')}" alt="Bank Fratern" class="ps-mark">
+          <img src="${assetPath('assets/logos/logo-bank-fratern-icon.svg')}" alt="Bancus Fraternis" class="ps-mark">
           <div>
             <div class="ps-eyebrow">Proposta ${escapeHTML(data.id)} | ${escapeHTML(data.status)}</div>
             <h2>${escapeHTML(data.title)}</h2>
@@ -1238,7 +1238,7 @@ const ProposalSummary = (() => {
         </div>
         <div class="ps-footer__meta">
           <span>Gerado em ${formatDate(data.generatedAt)}</span>
-          <span>Versao da simulacao: Bank Fratern ConsorcioPro v7</span>
+          <span>Versao da simulacao: Bancus Fraternis ConsorcioPro v7</span>
           <span>Responsavel: ${escapeHTML(data.consultor)}</span>
         </div>
       </footer>

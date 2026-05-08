@@ -1,5 +1,5 @@
 /**
- * Bank Fratern - Phase 1 database progress controller.
+ * Bancus Fraternis - Phase 1 database progress controller.
  * Keeps boot, database status and shelf journey bars in sync.
  */
 (function () {

@@ -286,7 +286,7 @@ const ExportManager = (() => {
       <div id="proposta-exportavel" style="font-family:'Inter',sans-serif;color:#1f2937;max-width:800px;margin:0 auto;">
         <!-- Cabeçalho -->
         <div style="background:linear-gradient(135deg,#0B2C52,#143B66);color:white;padding:40px;text-align:center;border-radius:12px 12px 0 0;">
-          <div style="font-size:28px;font-weight:800;letter-spacing:-0.5px;">Bank Fratern</div>
+          <div style="font-size:28px;font-weight:800;letter-spacing:-0.5px;">Bancus Fraternis</div>
           <div style="font-size:14px;color:#d8b75b;margin-top:4px;">Proposta Comercial de Consórcio</div>
           <div style="font-size:12px;color:#e9d79d;margin-top:8px;">Data: ${today}</div>
         </div>

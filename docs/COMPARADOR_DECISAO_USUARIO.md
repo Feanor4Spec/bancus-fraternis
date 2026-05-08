@@ -1,4 +1,4 @@
-# Comparador de Decisao do Usuario - Bank Fratern
+# Comparador de Decisao do Usuario - Bancus Fraternis
 
 Atualizado em 2026-04-26.
 

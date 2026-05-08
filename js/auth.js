@@ -1,5 +1,5 @@
 /**
- * Bank Fratern - Local Auth Service
+ * Bancus Fraternis - Local Auth Service
  * Camada estatica para prototipo: usuarios, sessao e papeis em localStorage.
  * Trocar por API segura antes de uso produtivo com dados pessoais reais.
  */
@@ -24,7 +24,7 @@
 
   const SEED_USERS = [
     {
-      name: 'Administrador Bank Fratern',
+      name: 'Administrador Bancus Fraternis',
       email: 'admin@bankfratern.local',
       role: 'admin',
       status: 'active',
@@ -161,7 +161,7 @@
 
     const normalized = users.map((user) => ({
       id: user.id || makeId('USR'),
-      name: String(user.name || 'Usuario Bank Fratern').trim(),
+      name: String(user.name || 'Usuario Bancus Fraternis').trim(),
       email: normalizeEmail(user.email),
       role: normalizeRole(user.role),
       status: normalizeStatus(user.status),

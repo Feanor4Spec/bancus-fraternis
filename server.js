@@ -120,5 +120,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`Bank Fratern local server running at http://localhost:${PORT}/pages/index.html`);
+  console.log(`Bancus Fraternis local server running at http://localhost:${PORT}/pages/index.html`);
 });

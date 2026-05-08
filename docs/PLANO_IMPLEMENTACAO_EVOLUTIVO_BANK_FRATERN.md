@@ -1,10 +1,10 @@
-# Plano de Implementacao Evolutivo - Bank Fratern
+# Plano de Implementacao Evolutivo - Bancus Fraternis
 
 Atualizado em 2026-04-27.
 
 ## Estado Atual
 
-O portal entrou em um ciclo de paginas vivas. A home, a carteira e o monitor de assembleias ja carregam dados reais ou persistidos no navegador, preservando fallback demonstrativo quando ainda nao existe base transacional completa. A versao v8 inicia a unificacao visual do Bank Fratern para manter a mesma linguagem em paginas institucionais, calculadoras, simuladores, comparador, dashboards, governanca e handoff.
+O portal entrou em um ciclo de paginas vivas. A home, a carteira e o monitor de assembleias ja carregam dados reais ou persistidos no navegador, preservando fallback demonstrativo quando ainda nao existe base transacional completa. A versao v8 inicia a unificacao visual do Bancus Fraternis para manter a mesma linguagem em paginas institucionais, calculadoras, simuladores, comparador, dashboards, governanca e handoff.
 
 ### Fase 8AK executada neste ciclo - Produtos com contexto preservado
 
@@ -501,7 +501,7 @@ O portal entrou em um ciclo de paginas vivas. A home, a carteira e o monitor de 
 ### Fase 4B executada neste ciclo - Home institucional do usuario
 
 - `pages/index.html` foi reposicionada como tela institucional para o usuario final.
-- A primeira dobra agora apresenta o Bank Fratern como jornada de decisao financeira, com perfil unico, diagnostico, simulacoes conectadas e recomendacao explicavel.
+- A primeira dobra agora apresenta o Bancus Fraternis como jornada de decisao financeira, com perfil unico, diagnostico, simulacoes conectadas e recomendacao explicavel.
 - A Home recebeu um diagnostico rapido local com renda, despesas, dividas, reserva, objetivo, score educativo e proxima acao.
 - A prova operacional da plataforma continua presente, mas foi deslocada para uma secao posterior, depois da narrativa do usuario.
 - `js/home.js` calcula a previa do diagnostico sem salvar os dados e mantem a conexao com base real, historico local e configuracoes globais.

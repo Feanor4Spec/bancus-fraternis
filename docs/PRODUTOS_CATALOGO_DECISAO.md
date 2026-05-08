@@ -1,4 +1,4 @@
-# Produtos 2.0 - Catalogo de Decisao Bank Fratern
+# Produtos 2.0 - Catalogo de Decisao Bancus Fraternis
 
 Atualizado em 2026-04-25.
 

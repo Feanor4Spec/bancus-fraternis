@@ -1,12 +1,12 @@
-# Prompt para Codex — Implementar Design System Bank Fratern
+# Prompt para Codex — Implementar Design System Bancus Fraternis
 
-Você é um agente de código responsável por implementar o Design System Bank Fratern em um projeto HTML/CSS/JS.
+Você é um agente de código responsável por implementar o Design System Bancus Fraternis em um projeto HTML/CSS/JS.
 
 ## Objetivo
-Aplicar a identidade visual Bank Fratern na ferramenta, usando os assets, componentes e documentação deste pacote.
+Aplicar a identidade visual Bancus Fraternis na ferramenta, usando os assets, componentes e documentação deste pacote.
 
 ## Contexto de marca
-Nome: Bank Fratern  
+Nome: Bancus Fraternis
 Lema: CAPITAL • TRUST • LEGAC  
 Pilares: capital, trust, legacy, direção, acesso, segurança e clareza financeira.
 
@@ -45,7 +45,7 @@ Pilares: capital, trust, legacy, direção, acesso, segurança e clareza finance
 - Todos os caminhos de assets funcionam.
 - A navegação é responsiva.
 - A página da jornada usa ícones SVG, não emojis.
-- O resultado usa a identidade Bank Fratern: navy + gold + cards premium.
+- O resultado usa a identidade Bancus Fraternis: navy + gold + cards premium.
 - O código está separado em HTML, CSS e JS quando fizer sentido.
 
 ## Saída esperada

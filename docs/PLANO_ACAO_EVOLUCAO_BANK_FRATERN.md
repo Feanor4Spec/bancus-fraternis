@@ -1,14 +1,14 @@
-# Plano de Acao de Evolucao Bank Fratern
+# Plano de Acao de Evolucao Bancus Fraternis
 
 Atualizado em 2026-05-08.
 
 Prioridade definida: produto e jornada.
 
-Entrega deste documento: transformar o mapa completo do projeto em um roteiro implementavel para evoluir a experiencia Bank Fratern sem iniciar ainda a migracao para backend/API.
+Entrega deste documento: transformar o mapa completo do projeto em um roteiro implementavel para evoluir a experiencia Bancus Fraternis sem iniciar ainda a migracao para backend/API.
 
 ## Principios do Ciclo
 
-- Tratar o Bank Fratern como plataforma de decisao financeira integrada.
+- Tratar o Bancus Fraternis como plataforma de decisao financeira integrada.
 - Priorizar continuidade do usuario sobre novas telas isoladas.
 - Preservar dados locais e contratos existentes.
 - Nao alterar APIs funcionais sem necessidade clara.
@@ -286,7 +286,7 @@ Status em 2026-05-08:
 - Criado `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md` como matriz viva de `localStorage`, `data-*`, deep links, `window.BF*`, validadores e Definition of Done.
 - Criado `tools/validate-public-contracts.mjs`.
 - Governanca de contratos publicos ganhou registro no changelog v8.44.0.
-- Governanca documental modernizada: `docs/README.md` virou porta atual do Bank Fratern, docs historicos receberam banner de legado controlado e referencias ativas de 17 calculadoras foram atualizadas para 19.
+- Governanca documental modernizada: `docs/README.md` virou porta atual do Bancus Fraternis, docs historicos receberam banner de legado controlado e referencias ativas de 17 calculadoras foram atualizadas para 19.
 - Criado `tools/validate-docs-modernization.mjs` com relatorio em `docs/test-reports/docs-modernization-report.json`.
 - `pages/lousa-navegacao.html` agora aponta contratos/docs e consultor com aging como estabilizados, preparando o proximo ciclo de teste navegavel ponta a ponta.
 - `pages/lousa-navegacao.html` ganhou o roteiro de teste navegavel com 10 etapas, criterios de aceite e links profundos para cada superficie critica.
@@ -315,7 +315,7 @@ Arquivos provaveis:
 Criterios de aceite:
 
 - Toda fase nova tem teste ou validador associado.
-- Docs principais usam Bank Fratern como plataforma atual.
+- Docs principais usam Bancus Fraternis como plataforma atual.
 - Catalogo de calculadoras e docs concordam em 19 calculadoras.
 - Contratos publicos ficam documentados antes de mudancas funcionais.
 - Roteiro navegavel da lousa cobre Auth, Home, Produtos, Calculadoras, Trilha, Comparador, Simulador, Proposta, Handoff e Dashboards.

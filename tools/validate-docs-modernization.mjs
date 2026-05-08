@@ -39,7 +39,7 @@ const [
 const calculators = JSON.parse(calculatorsJson);
 const calculatorCount = Array.isArray(calculators) ? calculators.length : 0;
 
-assert(readme.startsWith('# Bank Fratern - Plataforma de decisao financeira'), 'README ativo nao abre com Bank Fratern.');
+assert(readme.startsWith('# Bancus Fraternis - Plataforma de decisao financeira'), 'README ativo nao abre com Bancus Fraternis.');
 assert(readme.includes('19 calculadoras'), 'README ativo nao registra o catalogo de 19 calculadoras.');
 assert(readme.includes('17.396 grupos validos'), 'README ativo nao registra a base real do simulador.');
 assert(readme.includes('Lousa de proposta/PDF'), 'README ativo nao registra a lousa seletiva de proposta/PDF.');
@@ -68,11 +68,11 @@ const historicalStatus = [];
 for (const doc of historicalDocs) {
   const text = await read(doc);
   const isMarkedHistorical = text.includes('Status 2026-05-08: documento historico');
-  const namesCurrentPlatform = text.includes('A plataforma atual e Bank Fratern');
+  const namesCurrentPlatform = text.includes('A plataforma atual e Bancus Fraternis');
   const controlsLegacyName = text.includes('ConsorcioPro permanece como nome legado');
 
   assert(isMarkedHistorical, `${doc} sem banner de documento historico.`);
-  assert(namesCurrentPlatform, `${doc} nao aponta Bank Fratern como plataforma atual.`);
+  assert(namesCurrentPlatform, `${doc} nao aponta Bancus Fraternis como plataforma atual.`);
   assert(controlsLegacyName, `${doc} nao trata ConsorcioPro como nome legado controlado.`);
 
   historicalStatus.push({

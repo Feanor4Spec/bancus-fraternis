@@ -1,6 +1,6 @@
 # Folder do Projeto - ConsorcioPro (historico)
 
-> Status 2026-05-08: documento historico. A plataforma atual e Bank Fratern; ConsorcioPro permanece como nome legado do simulador de consorcio e referencia de origem.
+> Status 2026-05-08: documento historico. A plataforma atual e Bancus Fraternis; ConsorcioPro permanece como nome legado do simulador de consorcio e referencia de origem.
 
 > Folder executivo para apresentação e contextualização do projeto
 

@@ -7,9 +7,9 @@
     {
       "scenario": "desktop",
       "status": 200,
-      "screenshot": "C:\\Users\\gustavo.pinheiro\\.gemini\\antigravity\\scratch\\Bank Fratern\\docs\\test-prints\\v8f-dashboard-cliente-continuidade-desktop.png",
+      "screenshot": "C:\\Users\\gustavo.pinheiro\\.gemini\\antigravity\\scratch\\Bancus Fraternis\\docs\\test-prints\\v8f-dashboard-cliente-continuidade-desktop.png",
       "consoleErrors": [],
-      "title": "Dashboard Cliente - Bank Fratern",
+      "title": "Dashboard Cliente - Bancus Fraternis",
       "currentUrl": "http://127.0.0.1:8080/pages/dashboard-cliente.html#continuidade-cliente",
       "hasContinuityStrip": true,
       "decisionCards": 4,
@@ -27,9 +27,9 @@
     {
       "scenario": "mobile",
       "status": 200,
-      "screenshot": "C:\\Users\\gustavo.pinheiro\\.gemini\\antigravity\\scratch\\Bank Fratern\\docs\\test-prints\\v8f-dashboard-cliente-continuidade-mobile.png",
+      "screenshot": "C:\\Users\\gustavo.pinheiro\\.gemini\\antigravity\\scratch\\Bancus Fraternis\\docs\\test-prints\\v8f-dashboard-cliente-continuidade-mobile.png",
       "consoleErrors": [],
-      "title": "Dashboard Cliente - Bank Fratern",
+      "title": "Dashboard Cliente - Bancus Fraternis",
       "currentUrl": "http://127.0.0.1:8080/pages/dashboard-cliente.html#continuidade-cliente",
       "hasContinuityStrip": true,
       "decisionCards": 4,

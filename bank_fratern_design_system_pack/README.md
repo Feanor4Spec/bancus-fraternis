@@ -1,6 +1,6 @@
-# Bank Fratern — Design System Pack
+# Bancus Fraternis — Design System Pack
 
-Pack técnico para aplicar a identidade Bank Fratern em HTML, jornada do consorciado, simulador, dashboards e apresentações.
+Pack técnico para aplicar a identidade Bancus Fraternis em HTML, jornada do consorciado, simulador, dashboards e apresentações.
 
 ## Conteúdo
 
@@ -21,7 +21,7 @@ Pack técnico para aplicar a identidade Bank Fratern em HTML, jornada do consorc
 <link rel="stylesheet" href="assets/css/components.css">
 <link rel="stylesheet" href="assets/css/utilities.css">
 
-<img src="assets/logos/bank-fratern-portal.svg" alt="Bank Fratern" class="bf-brand__logo">
+<img src="assets/logos/bank-fratern-portal.svg" alt="Bancus Fraternis" class="bf-brand__logo">
 ```
 
 ## Mapa de uso

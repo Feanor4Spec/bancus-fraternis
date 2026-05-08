@@ -1,4 +1,4 @@
-# Trilha Assistida de Decisao - Bank Fratern
+# Trilha Assistida de Decisao - Bancus Fraternis
 
 Atualizado em 2026-04-25.
 

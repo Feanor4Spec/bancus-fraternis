@@ -1,6 +1,6 @@
 /**
  * ============================================
- * Bank Fratern - Shared Layout
+ * Bancus Fraternis - Shared Layout
  * ============================================
  * Injeta header e footer globais nas paginas que
  * usam os placeholders data-shell-header/footer.
@@ -147,8 +147,8 @@
   const HEADER_HTML = `
     <header class="header bf-header">
       <div class="header__inner bf-header__inner">
-        <a href="${rootDir}index.html" class="logo bf-brand" aria-label="Bank Fratern - inicio">
-          <img src="${rootDir}assets/logos/logo-bank-fratern-portal.svg" alt="Bank Fratern" class="logo__image bf-brand__logo">
+        <a href="${rootDir}index.html" class="logo bf-brand" aria-label="Bancus Fraternis - inicio">
+          <img src="${rootDir}assets/logos/logo-bank-fratern-portal.svg" alt="Bancus Fraternis" class="logo__image bf-brand__logo">
         </a>
         <nav class="nav bf-nav" aria-label="Navegacao principal">
           ${navLink(`${pageDir}index.html`, 'Inicio')}
@@ -173,7 +173,7 @@
       <div class="container">
         <div class="footer__grid">
           <div>
-            <img src="${rootDir}assets/logos/logo-bank-fratern-dark.svg" alt="Bank Fratern" class="footer__logo">
+            <img src="${rootDir}assets/logos/logo-bank-fratern-dark.svg" alt="Bancus Fraternis" class="footer__logo">
             <p>Plataforma de engenharia de consorcio, educacao financeira aplicada e construcao de propostas estruturadas com foco em clareza, confianca e eficiencia operacional.</p>
           </div>
           <div class="footer__links">
@@ -203,7 +203,7 @@
             </div>
           </div>
         </div>
-        <div class="footer__bottom">© 2026 Bank Fratern - Portal de engenharia de consorcio v.8</div>
+        <div class="footer__bottom">© 2026 Bancus Fraternis - Portal de engenharia de consorcio v.8</div>
       </div>
     </footer>
   `;

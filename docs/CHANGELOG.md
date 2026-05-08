@@ -1,6 +1,24 @@
-# 📝 CHANGELOG — ConsórcioPro
+# CHANGELOG - Bancus Fraternis
 
 > Histórico de todas as versões do projeto
+
+---
+
+## [v8.49.0] - 2026-05-08
+
+### Rebrand publico para Bancus Fraternis
+
+#### Modificado
+- Marca visivel do produto atualizada de Bank Fratern para Bancus Fraternis em paginas, titulos, descricoes, layout compartilhado, proposta e documentacao ativa.
+- Logos SVG passaram a exibir Bancus Fraternis nos textos e metadados acessiveis, mantendo nomes de arquivos `bank-fratern-*` para compatibilidade.
+- Validadores e documentos de governanca passaram a reconhecer Bancus Fraternis como plataforma atual.
+- Caminhos fisicos locais e contratos tecnicos `bank-fratern.*`, `BANK_FRATERN` em nomes de arquivo e chaves de schema foram preservados para nao quebrar dados locais, rotas, assets ou validadores.
+
+#### Validado
+- `node tools/validate-design-system.mjs`
+- `node tools/validate-public-contracts.mjs`
+- `node tools/validate-docs-modernization.mjs`
+- `node tools/validate-navigable-journey.mjs`
 
 ---
 
@@ -80,7 +98,7 @@
 
 #### Adicionado
 - Criado `tools/validate-docs-modernization.mjs` com relatorio em `docs/test-reports/docs-modernization-report.json`.
-- `docs/README.md` foi recriado como porta atual do Bank Fratern, com estado do produto, mapa rapido, rotas, validadores e contratos preservados.
+- `docs/README.md` foi recriado como porta atual do Bancus Fraternis, com estado do produto, mapa rapido, rotas, validadores e contratos preservados.
 - Docs historicos `docs/ARQUITETURA.md`, `docs/ATA_PROJETO.md`, `docs/FOLDER_PROJETO.md` e `docs/implementation_plan.md` receberam banner de documento historico.
 
 #### Modificado
@@ -1444,7 +1462,7 @@
 
 #### Modificado
 - O bloco `#perfil-unico` foi movido para depois do bloco institucional de empresa e produtos.
-- A secao de produtos passou a explicitar o Bank Fratern, suas frentes de diagnostico, credito/consorcio/comparacao e investimentos.
+- A secao de produtos passou a explicitar o Bancus Fraternis, suas frentes de diagnostico, credito/consorcio/comparacao e investimentos.
 - O diagnostico pessoal agora entra como etapa posterior: primeiro o usuario entende a empresa e as solucoes; depois informa dados para montar o perfil financeiro.
 
 #### Validado
@@ -1577,13 +1595,13 @@
 
 ## [v7.0.0] - 2026-04-24
 
-### Evolucao estruturada Bank Fratern
+### Evolucao estruturada Bancus Fraternis
 
 **Tipo:** Consolidacao de boot, base real, proposta executiva, PDF e identidade visual.
 
 #### Adicionado
 - `server.js` na raiz para execucao padronizada com `node server.js`.
-- Logos SVG Bank Fratern em `assets/logos/` e ponte CSS em `assets/css/styles.css`.
+- Logos SVG Bancus Fraternis em `assets/logos/` e ponte CSS em `assets/css/styles.css`.
 - Pacote `bank_fratern_design_system_pack` promovido para o projeto: logos, icones de jornada, criativos hero e CSS-base em `assets/`.
 - Camada de integracao `css/bank-fratern-design-system.css`, mapeando tokens `--bf-*` para a interface existente sem substituir a arquitetura atual.
 - Camadas vivas `js/portfolio-live.js` e `js/assemblies-live.js` para evoluir carteira e assembleias sem reescrever as paginas inteiras.
@@ -1607,11 +1625,11 @@
 - Documentacao `docs/AUTH_ADMIN_LOCAL.md` para operar e evoluir a autenticacao local.
 
 #### Modificado
-- Portal `index.html` passou a usar identidade Bank Fratern, logos oficiais e atalhos com codigos visuais institucionais.
-- `simulador.html` recebeu cabecalho com marca Bank Fratern + produto ConsorcioPro, botoes mais consistentes e microcopy mais executiva.
+- Portal `index.html` passou a usar identidade Bancus Fraternis, logos oficiais e atalhos com codigos visuais institucionais.
+- `simulador.html` recebeu cabecalho com marca Bancus Fraternis + produto ConsorcioPro, botoes mais consistentes e microcopy mais executiva.
 - Paginas principais passaram a carregar a camada `bank-fratern-design-system.css` para consolidar paleta, foco, cards, botoes, tabelas e headers.
 - Home passou a usar o criativo `hero-access.svg`; simulador passou a usar o logo `bank-fratern-compass.svg`; layout compartilhado passou a usar os logos oficiais do pacote.
-- Mapa de jornada `consorcio_user_journey_map_v2.html` recebeu paleta Bank Fratern e os 12 icones SVG de etapa.
+- Mapa de jornada `consorcio_user_journey_map_v2.html` recebeu paleta Bancus Fraternis e os 12 icones SVG de etapa.
 - Home passou a aplicar componentes oficiais do design system no header, hero, atalhos e cards de jornada.
 - Home passou a usar a composicao projetada do design-system: hero com foto oficial, modulos BF Journey/BF Simulator/BF Intelligence e radar operacional com dados carregados.
 - `carteira.html` passou a combinar base demonstrativa, simulacoes salvas em `Storage` e resumo do catalogo real em um painel de carteira viva.
@@ -1788,7 +1806,7 @@ Abaixo, documentamos cada um dos componentes analisados para seguirmos com clare
 O portal ganhou uma nova porta de entrada (index_v4_paginas.html, além de iterações em index_2.html e index_v3_jornada_topo.html), estruturando-se em diferentes blocos navegacionais que acompanham toda a jornada de conscientização pré-simulação:
 
 Home (Início): Atua como o ponto focal. Agora traz destaque em seções como a Jornada Completa do Consorciado. A ideia de "educar antes de vender" está mais clara: o consorciado entende as 12 etapas do mapa (Adesão, Parcelas, Assembleia, Contemplação, Faturamento, Encerramento) logo no topo, desmistificando o produto.
-Sobre nós (sobre-nos.html): Apresenta o posicionamento do Bank Fratern, seu propósito e atributos de marca.
+Sobre nós (sobre-nos.html): Apresenta o posicionamento do Bancus Fraternis, seu propósito e atributos de marca.
 Dúvidas (duvidas.html): Central de FAQ cobrindo os gargalos e as dores mais comuns identificadas em vendas de consórcios.
 Configurações (configuracoes.html): Uma tela desenhada para governança do simulador e parametrização padrão. Possui toggles/switches para a interface (como exibir jornada no topo, scroll suave) e regras negociais iniciais (administradora padrão, categoria sugerida, limite de lance embutido, etc).
 Mapa da Jornada (consorcio_user_journey_map_v2.html): Experiência em "tela cheia" educacional que detalha passo a passo o que o cliente enfrenta até o encerramento do grupo financeiro.

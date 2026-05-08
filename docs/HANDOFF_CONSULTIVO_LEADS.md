@@ -1,4 +1,4 @@
-# Handoff Consultivo e Leads Locais - Bank Fratern
+# Handoff Consultivo e Leads Locais - Bancus Fraternis
 
 Atualizado em 2026-04-25.
 

@@ -1,6 +1,6 @@
-# Bank Fratern — Codex Design System Pack
+# Bancus Fraternis — Codex Design System Pack
 
-Pacote completo para implementar a identidade Bank Fratern com Codex/agente de código.
+Pacote completo para implementar a identidade Bancus Fraternis com Codex/agente de código.
 
 ## Conteúdo
 - **8 logos SVG**

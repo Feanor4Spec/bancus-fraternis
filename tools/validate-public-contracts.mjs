@@ -64,7 +64,7 @@ assert(await exists('docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md'), 'Documento de co
 assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contratos publicos ausente.');
 
 [
-  '# Contratos Publicos - Bank Fratern',
+  '# Contratos Publicos - Bancus Fraternis',
   '## Persistencia Local',
   '## Marcadores Data',
   '## Exports Globais',

@@ -1,6 +1,6 @@
 # Plano de Implementacao - ConsorcioPro v6 para v7 (historico)
 
-> Status 2026-05-08: documento historico. A plataforma atual e Bank Fratern; ConsorcioPro permanece como nome legado do simulador de consorcio e referencia de origem.
+> Status 2026-05-08: documento historico. A plataforma atual e Bancus Fraternis; ConsorcioPro permanece como nome legado do simulador de consorcio e referencia de origem.
 
 > Evolução estruturada do simulador: da base simulada à inteligência real com 17.000+ grupos
 
@@ -8,7 +8,7 @@
 
 ## Atualizacao de status - 2026-04-24
 
-Esta secao registra o estado real da implementacao v7 apos leitura da documentacao e conferencia direta dos arquivos do projeto Bank Fratern em 2026-04-24. O plano historico das fases continua abaixo, mas o quadro a seguir passa a orientar os proximos ciclos.
+Esta secao registra o estado real da implementacao v7 apos leitura da documentacao e conferencia direta dos arquivos do projeto Bancus Fraternis em 2026-04-24. O plano historico das fases continua abaixo, mas o quadro a seguir passa a orientar os proximos ciclos.
 
 ### Atualizacao do ciclo de paginas vivas - 2026-04-24
 
@@ -51,7 +51,7 @@ Esta secao registra o estado real da implementacao v7 apos leitura da documentac
 - Persistencia local: `Storage.saveSimulation()`, `Storage.loadSimulations()`, `Storage.loadSimulation()`, `Storage.deleteSimulation()` e `Storage.getPortfolioStats()` sustentam salvar/retomar simulacoes e alimentar carteira.
 - Resumo da Proposta Estruturada: tela de resultados passou a contar a proposta por blocos executivos, jornada, composicao financeira, lances, parcelas, projecoes, cronograma mensal e proximos passos.
 - PDF executivo: exportacao usa a mesma tela de resultados, inclui cronograma mensal detalhado e aplica estilo print-friendly para leitura do cliente.
-- Identidade visual Bank Fratern: logos SVG adicionados, paleta institucional azul-marinho/dourado aplicada ao portal, simulador, proposta/PDF e paginas auxiliares.
+- Identidade visual Bancus Fraternis: logos SVG adicionados, paleta institucional azul-marinho/dourado aplicada ao portal, simulador, proposta/PDF e paginas auxiliares.
 - Design system pack integrado: assets do `bank_fratern_design_system_pack` foram promovidos para `assets/`, a ponte `css/bank-fratern-design-system.css` foi ligada nas paginas principais, e o mapa de jornada passou a usar os 12 icones SVG oficiais.
 - Design system aplicado em componentes reais: home usa `bf-header`, `bf-brand`, `bf-hero`, `bf-stage-card` e `bf-badge`; simulador usa stepper iconografico com SVGs oficiais; paginas auxiliares usam header compartilhado com classes `bf-*`.
 - Pagina inicial dinamica concluida: `index.html` agora usa KPIs reais da base, status vivo de carregamento, hero com foto oficial, modulos do ecossistema BF e radar com grupos em destaque/simulacoes salvas via `js/home.js`.
@@ -61,12 +61,12 @@ Esta secao registra o estado real da implementacao v7 apos leitura da documentac
 ### Otimizacoes visuais aplicadas
 
 - Substituicao de emojis funcionais por badges institucionais curtos em botoes, cards, menus, comparador e atalhos.
-- Header e footer compartilhados com marca Bank Fratern e links locais corrigidos.
+- Header e footer compartilhados com marca Bancus Fraternis e links locais corrigidos.
 - Home/portal alinhado a linguagem financeira mais premium, com navegacao por codigos visuais (`SI`, `GR`, `CP`, `PF`) em vez de icones soltos.
 - Home recebeu composicao mais dinamica do design-system projetado, com cards fotográficos de produto, seções de plataforma, radar operacional e estados vazios claros.
 - Carteira e assembleias receberam paineis de fonte viva (`.bf-live-source`) para separar dado real, dado salvo e base demonstrativa.
-- Simulador alinhado ao produto `ConsorcioPro` sob a marca Bank Fratern, com acoes mais consistentes para salvar, carregar, calcular, exportar e comparar.
-- Proposta/PDF com logo Bank Fratern, blocos semanticamente agrupados e cronograma mensal completo.
+- Simulador alinhado ao produto `ConsorcioPro` sob a marca Bancus Fraternis, com acoes mais consistentes para salvar, carregar, calcular, exportar e comparar.
+- Proposta/PDF com logo Bancus Fraternis, blocos semanticamente agrupados e cronograma mensal completo.
 
 ### Pendencias tecnicas atualizadas
 

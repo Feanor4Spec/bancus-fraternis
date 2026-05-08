@@ -1,8 +1,8 @@
-# Bank Fratern - Plataforma de decisao financeira
+# Bancus Fraternis - Plataforma de decisao financeira
 
 Atualizado em 2026-05-08.
 
-O Bank Fratern e uma plataforma estatica/progressiva para apoiar decisao financeira, simulacao de consorcio, comparacao de produtos, proposta consultiva e handoff comercial. O antigo ConsorcioPro permanece como nome legado do simulador de consorcio e de algumas chaves locais, mas a linguagem de produto atual e Bank Fratern.
+O Bancus Fraternis e uma plataforma estatica/progressiva para apoiar decisao financeira, simulacao de consorcio, comparacao de produtos, proposta consultiva e handoff comercial. O antigo ConsorcioPro permanece como nome legado do simulador de consorcio e de algumas chaves locais, mas a linguagem de produto atual e Bancus Fraternis.
 
 ## Estado Atual
 

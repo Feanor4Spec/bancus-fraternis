@@ -1,4 +1,4 @@
-# Mapa de Uso — Bank Fratern
+# Mapa de Uso — Bancus Fraternis
 
 | Ativo | Usar quando | Evitar |
 |---|---|---|

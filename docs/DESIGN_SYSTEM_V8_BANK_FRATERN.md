@@ -1,10 +1,10 @@
-# Design System v8 - Bank Fratern
+# Design System v8 - Bancus Fraternis
 
 Atualizado em 2026-04-26.
 
 ## Objetivo
 
-Unificar a linguagem visual do Bank Fratern em toda a jornada do usuario sem alterar formulas financeiras, dados locais, chaves de `localStorage` ou regras de negocio ja existentes.
+Unificar a linguagem visual do Bancus Fraternis em toda a jornada do usuario sem alterar formulas financeiras, dados locais, chaves de `localStorage` ou regras de negocio ja existentes.
 
 ## Fonte visual
 

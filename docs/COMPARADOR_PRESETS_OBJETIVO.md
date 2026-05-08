@@ -1,4 +1,4 @@
-# Presets de Comparacao por Objetivo - Bank Fratern
+# Presets de Comparacao por Objetivo - Bancus Fraternis
 
 Atualizado em 2026-04-25.
 

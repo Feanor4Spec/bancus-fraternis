@@ -1,4 +1,4 @@
-# Autenticacao Local e Administracao - Bank Fratern
+# Autenticacao Local e Administracao - Bancus Fraternis
 
 Atualizado em 2026-04-24.
 

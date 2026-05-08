@@ -1,5 +1,5 @@
 /**
- * Bank Fratern - Governanca local da proposta
+ * Bancus Fraternis - Governanca local da proposta
  * Registra revisoes e aceite operacional da proposta em localStorage.
  */
 
@@ -90,7 +90,7 @@ const BFProposalAcceptance = (() => {
       id: '',
       proposalId: proposal.id || 'PROP-PENDENTE',
       status: 'pending',
-      reviewer: proposal.consultor || 'Consultor Bank Fratern',
+      reviewer: proposal.consultor || 'Consultor Bancus Fraternis',
       reviewerRole: 'Consultor responsavel',
       validUntil: valid.toISOString().slice(0, 10),
       notes: 'Aguardando validacao das premissas antes do encaminhamento.',
@@ -146,7 +146,7 @@ const BFProposalAcceptance = (() => {
       id: `REV-${Date.now().toString(36).toUpperCase()}-${version}`,
       proposalId,
       status: statusFromChecklist(safeChecklist),
-      reviewer: cleanText(reviewer || base.consultor || 'Consultor Bank Fratern', 120),
+      reviewer: cleanText(reviewer || base.consultor || 'Consultor Bancus Fraternis', 120),
       reviewerRole: cleanText(reviewerRole || 'Consultor responsavel', 90),
       validUntil: cleanText(validUntil || '', 20),
       notes: cleanText(notes || '', 420),

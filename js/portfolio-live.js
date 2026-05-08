@@ -1,5 +1,5 @@
 /**
- * Bank Fratern portfolio live layer.
+ * Bancus Fraternis portfolio live layer.
  * Re-renders carteira.html with saved simulations plus the current demo base.
  */
 (function () {

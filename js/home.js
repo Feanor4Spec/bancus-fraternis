@@ -1,5 +1,5 @@
 /**
- * Bank Fratern home dashboard.
+ * Bancus Fraternis home dashboard.
  * Loads real catalog stats and local portfolio state for the portal home.
  */
 (function () {

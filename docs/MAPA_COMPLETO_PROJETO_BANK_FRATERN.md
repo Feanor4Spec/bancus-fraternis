@@ -1,8 +1,8 @@
-# Mapa Completo do Projeto Bank Fratern
+# Mapa Completo do Projeto Bancus Fraternis
 
 Atualizado em 2026-05-07.
 
-Este mapa foi recriado a partir da leitura real do workspace. Ele documenta o Bank Fratern como plataforma de decisao financeira, nao apenas como simulador de consorcio. O objetivo e permitir que uma pessoa ou agente entenda a superficie atual do produto antes de evoluir Home, produtos, calculadoras, trilha assistida, comparador, simulador, proposta, handoff, dashboard cliente e dashboard admin.
+Este mapa foi recriado a partir da leitura real do workspace. Ele documenta o Bancus Fraternis como plataforma de decisao financeira, nao apenas como simulador de consorcio. O objetivo e permitir que uma pessoa ou agente entenda a superficie atual do produto antes de evoluir Home, produtos, calculadoras, trilha assistida, comparador, simulador, proposta, handoff, dashboard cliente e dashboard admin.
 
 ## Sumario Executivo
 
@@ -81,7 +81,7 @@ Contrato confirmado:
 | `assets/js/components/` | Ativo | Componentes pequenos para cards, tabelas, alertas, graficos simples e tooltips. |
 | `assets/data/` | Ativo | Datasets publicos/demonstrativos da plataforma. |
 | `data_base/` | Ativo | Base grande de grupos de consorcio e conversor. |
-| `css/` | Ativo | CSS historico/canonico do simulador, home e bridge visual Bank Fratern. |
+| `css/` | Ativo | CSS historico/canonico do simulador, home e bridge visual Bancus Fraternis. |
 | `assets/css/` | Ativo | CSS modular, tokens e design system v8. |
 | `assets/icons/`, `assets/logos/`, `assets/photos/`, `assets/creatives/` | Ativo | Identidade visual, fotos, icones e SVGs. |
 | `docs/` | Ativo | Planos, arquitetura, changelog, protocolo de teste e mapas. |
@@ -98,7 +98,7 @@ Contrato confirmado:
 | Pagina | Estado | Conteudo |
 | --- | --- | --- |
 | `pages/index.html` | Ativa | Home institucional, hero contextual, cockpit de continuidade, perfil, trilha ativa e proximos passos. |
-| `pages/sobre-nos.html` | Ativa | Posicionamento institucional do Bank Fratern. |
+| `pages/sobre-nos.html` | Ativa | Posicionamento institucional do Bancus Fraternis. |
 | `pages/duvidas.html` | Ativa | FAQ e orientacao de continuidade. |
 | `pages/educacao.html` | Ativa | Conceitos financeiros antes da simulacao. |
 | `pages/compliance.html` | Ativa | Separacao entre dados publicos, privados e consentidos. |
@@ -435,7 +435,7 @@ Padroes existentes:
 | Arquivo | Papel |
 | --- | --- |
 | `css/styles.css` | Base historica do simulador e muitos componentes. |
-| `css/bank-fratern-design-system.css` | Bridge visual Bank Fratern. |
+| `css/bank-fratern-design-system.css` | Bridge visual Bancus Fraternis. |
 | `css/home.css` | Home contextual e cockpit. |
 | `css/shared-site.css` | Layout compartilhado. |
 | `assets/css/platform.css` | UI modular da plataforma. |
@@ -483,7 +483,7 @@ Scripts confirmados em `tools/`:
 
 | Documento | Uso |
 | --- | --- |
-| `docs/README.md` | Porta atual do Bank Fratern, com rotas, estado do produto, validadores e contratos preservados. |
+| `docs/README.md` | Porta atual do Bancus Fraternis, com rotas, estado do produto, validadores e contratos preservados. |
 | `docs/CHANGELOG.md` | Historico ate v8.48. |
 | `docs/PLANO_IMPLEMENTACAO_EVOLUTIVO_BANK_FRATERN.md` | Evolucao detalhada de fases v8. |
 | `docs/PLANO_SALTO_PLATAFORMA_BANK_FRATERN.md` | Salto de simulador para plataforma. |
@@ -496,7 +496,7 @@ Scripts confirmados em `tools/`:
 | `docs/CODEX_TEST_PROTOCOL.md` | Protocolo de testes/evidencias. |
 | `docs/ARQUITETURA.md`, `docs/ATA_PROJETO.md`, `docs/FOLDER_PROJETO.md` e `docs/implementation_plan.md` | Historico ConsorcioPro marcado como documento historico/legado controlado. |
 
-Governanca documental: docs ativos passaram a usar Bank Fratern como plataforma atual e 19 calculadoras; docs historicos preservam contexto antigo com aviso explicito de legado controlado.
+Governanca documental: docs ativos passaram a usar Bancus Fraternis como plataforma atual e 19 calculadoras; docs historicos preservam contexto antigo com aviso explicito de legado controlado.
 
 ## Pontos de Atencao
 

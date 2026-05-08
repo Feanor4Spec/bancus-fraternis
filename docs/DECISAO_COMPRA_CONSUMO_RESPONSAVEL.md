@@ -1,4 +1,4 @@
-# Decisao de Compra Responsavel - Bank Fratern
+# Decisao de Compra Responsavel - Bancus Fraternis
 
 Atualizado em 2026-04-25.
 

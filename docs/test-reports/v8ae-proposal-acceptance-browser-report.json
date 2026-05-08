@@ -2,11 +2,11 @@
   "ok": true,
   "url": "http://127.0.0.1:8080/pages/simulador.html",
   "screenshots": {
-    "desktop": "C:\\Users\\gustavo.pinheiro\\.gemini\\antigravity\\scratch\\Bank Fratern\\docs\\test-prints\\v8ae-proposta-aceite-desktop.png",
-    "mobile": "C:\\Users\\gustavo.pinheiro\\.gemini\\antigravity\\scratch\\Bank Fratern\\docs\\test-prints\\v8ae-proposta-aceite-mobile.png"
+    "desktop": "C:\\Users\\gustavo.pinheiro\\.gemini\\antigravity\\scratch\\Bancus Fraternis\\docs\\test-prints\\v8ae-proposta-aceite-desktop.png",
+    "mobile": "C:\\Users\\gustavo.pinheiro\\.gemini\\antigravity\\scratch\\Bancus Fraternis\\docs\\test-prints\\v8ae-proposta-aceite-mobile.png"
   },
   "pdf": {
-    "path": "C:\\Users\\gustavo.pinheiro\\.gemini\\antigravity\\scratch\\Bank Fratern\\docs\\test-prints\\v8ae-proposta-aceite-exportada.pdf",
+    "path": "C:\\Users\\gustavo.pinheiro\\.gemini\\antigravity\\scratch\\Bancus Fraternis\\docs\\test-prints\\v8ae-proposta-aceite-exportada.pdf",
     "downloaded": true,
     "sizeBytes": 5156743,
     "roughPageCount": 11,

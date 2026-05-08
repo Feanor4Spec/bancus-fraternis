@@ -1,7 +1,7 @@
-# Bank Fratern — Brand Brief
+# Bancus Fraternis — Brand Brief
 
 ## Essência
-A Bank Fratern combina **capital**, **trust** e **legacy** em uma experiência financeira premium, guiada e didática.
+A Bancus Fraternis combina **capital**, **trust** e **legacy** em uma experiência financeira premium, guiada e didática.
 
 ## Proposta
 Transformar produtos financeiros complexos, especialmente a jornada de consórcio, em uma experiência visual clara, segura e orientada à decisão.

@@ -6,7 +6,7 @@
   </defs>
   <rect width="960" height="540" fill="url(#bg)"/>
   <rect width="960" height="540" fill="url(#glow)"/>
-  <text x="56" y="92" fill="#E6C76E" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="800" letter-spacing="4">BANK FRATERN</text>
+  <text x="56" y="92" fill="#E6C76E" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="800" letter-spacing="4">BANCUS FRATERNIS</text>
   <text x="56" y="178" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="54" font-weight="850">Direção estratégica</text>
   <text x="56" y="240" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="54" font-weight="850">para decisões patrimoniais.</text>
   <circle cx="680" cy="270" r="120" fill="none" stroke="#D4AF37" stroke-width="12"/><path d="M680 100 L712 250 L680 270 L648 250 Z" fill="#D4AF37"/><path d="M680 440 L648 290 L680 270 L712 290 Z" fill="#FFFFFF" opacity=".86"/><path d="M510 270 L660 302 L680 270 L660 238 Z" fill="#FFFFFF" opacity=".86"/><path d="M850 270 L700 238 L680 270 L700 302 Z" fill="#D4AF37"/>

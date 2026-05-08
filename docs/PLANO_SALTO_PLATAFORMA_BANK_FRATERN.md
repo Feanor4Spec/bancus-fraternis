@@ -1,10 +1,10 @@
-# Plano do Salto de Plataforma - Bank Fratern
+# Plano do Salto de Plataforma - Bancus Fraternis
 
 Atualizado em 2026-04-24.
 
 ## Objetivo
 
-Transformar o Bank Fratern de um conjunto de paginas e simulador de consorcio em uma plataforma digital modular com:
+Transformar o Bancus Fraternis de um conjunto de paginas e simulador de consorcio em uma plataforma digital modular com:
 
 - Educacao financeira.
 - Simuladores financeiros.

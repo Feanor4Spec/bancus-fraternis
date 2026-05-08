@@ -1,5 +1,5 @@
 /**
- * Bank Fratern assemblies live layer.
+ * Bancus Fraternis assemblies live layer.
  * Connects assembleias.html to the real commercial catalog and saved simulations.
  */
 (function () {

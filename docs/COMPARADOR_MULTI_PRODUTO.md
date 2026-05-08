@@ -1,4 +1,4 @@
-# Comparador Multi-Produto - Bank Fratern
+# Comparador Multi-Produto - Bancus Fraternis
 
 Atualizado em 2026-04-25.
 

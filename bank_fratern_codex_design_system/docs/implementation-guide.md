@@ -1,4 +1,4 @@
-# Guia de Implementação — Bank Fratern Design System
+# Guia de Implementação — Bancus Fraternis Design System
 
 ## 1. Instalação rápida
 
@@ -18,12 +18,12 @@ Inclua os arquivos CSS nesta ordem:
 
 ### Home e onboarding
 ```html
-<img src="assets/logos/logo-bank-fratern-portal.svg" alt="Bank Fratern" class="bf-brand__logo">
+<img src="assets/logos/logo-bank-fratern-portal.svg" alt="Bancus Fraternis" class="bf-brand__logo">
 ```
 
 ### Dashboard e apresentação executiva
 ```html
-<img src="assets/logos/logo-bank-fratern-compass.svg" alt="Bank Fratern">
+<img src="assets/logos/logo-bank-fratern-compass.svg" alt="Bancus Fraternis">
 ```
 
 ### Jornada do consorciado
@@ -48,7 +48,7 @@ Inclua os arquivos CSS nesta ordem:
 ## 4. Uso de fotos/imagens
 
 ```html
-<img src="assets/photos/photo-01-direction.png" alt="Direção estratégica Bank Fratern">
+<img src="assets/photos/photo-01-direction.png" alt="Direção estratégica Bancus Fraternis">
 ```
 
 ## 5. Uso de criativos

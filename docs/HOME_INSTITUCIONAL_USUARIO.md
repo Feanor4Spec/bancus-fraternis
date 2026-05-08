@@ -4,7 +4,7 @@ Atualizado em 2026-04-25.
 
 ## Objetivo
 
-Reposicionar a pagina inicial do Bank Fratern como uma porta institucional orientada ao usuario final. A Home deixa de abrir como painel operacional e passa a explicar o valor principal do produto: transformar informacoes financeiras em diagnostico, simulacoes conectadas e proximas acoes claras.
+Reposicionar a pagina inicial do Bancus Fraternis como uma porta institucional orientada ao usuario final. A Home deixa de abrir como painel operacional e passa a explicar o valor principal do produto: transformar informacoes financeiras em diagnostico, simulacoes conectadas e proximas acoes claras.
 
 ## Referencia usada
 
@@ -16,7 +16,7 @@ Reposicionar a pagina inicial do Bank Fratern como uma porta institucional orien
 | Bloco | Entrega |
 | --- | --- |
 | Hero institucional | Mensagem centrada no usuario: entender vida financeira antes de escolher credito, consorcio ou investimento. |
-| Empresa e produtos | Apresenta o Bank Fratern e suas frentes de diagnostico, credito/consorcio/comparacao e investimentos antes de pedir dados pessoais. |
+| Empresa e produtos | Apresenta o Bancus Fraternis e suas frentes de diagnostico, credito/consorcio/comparacao e investimentos antes de pedir dados pessoais. |
 | Perfil financeiro unico | Card conceitual que conecta renda, gastos, reserva e metas. |
 | Diagnostico rapido | Formulario local com renda, despesas, dividas, investimentos, meses de reserva e objetivo. |
 | Score educativo | Indicador prototipado de saude financeira com recomendacao contextual. |

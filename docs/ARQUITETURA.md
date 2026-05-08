@@ -1,6 +1,6 @@
 # Arquitetura Tecnica - ConsorcioPro (historico)
 
-> Status 2026-05-08: documento historico. A plataforma atual e Bank Fratern; ConsorcioPro permanece como nome legado do simulador de consorcio e referencia de origem.
+> Status 2026-05-08: documento historico. A plataforma atual e Bancus Fraternis; ConsorcioPro permanece como nome legado do simulador de consorcio e referencia de origem.
 
 > Documentação detalhada de cada arquivo do projeto, suas responsabilidades, funções expostas e decisões de design.
 
@@ -27,7 +27,7 @@
 ```
 ┌──────────────────────────────────────────────────┐
 │                  index.html                       │
-│      (Landing Page Institucional Bank Fratern)    │
+│      (Landing Page Institucional Bancus Fraternis)    │
 ├──────────────────────────────────────────────────┤
 │                simulador.html                     │
 │  (Estrutura HTML, formulários, stepper, layout)   │
@@ -71,7 +71,7 @@
 
 **Caminho:** `./index.html`  
 **Tamanho:** ~150 linhas  
-**Responsabilidade:** Portal de entrada institucional (Bank Fratern). Possui navegação de alto nível e cards de acesso rápido que direcionam o usuário para o `simulador.html`.
+**Responsabilidade:** Portal de entrada institucional (Bancus Fraternis). Possui navegação de alto nível e cards de acesso rápido que direcionam o usuário para o `simulador.html`.
 
 ---
 

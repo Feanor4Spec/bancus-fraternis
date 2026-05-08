@@ -1,4 +1,4 @@
-# Proposta de Produto - Ecossistema Integrado de Calculadoras Financeiras Bank Fratern
+# Proposta de Produto - Ecossistema Integrado de Calculadoras Financeiras Bancus Fraternis
 
 Atualizado em 2026-04-24.
 
@@ -6,7 +6,7 @@ Fonte-base: `docs/Ecossistema integrado de calculadoras financeiras para crédit
 
 ## 1. Visao de Produto
 
-O Bank Fratern deve transformar calculadoras financeiras isoladas em uma experiencia continua de decisao financeira. A proposta e criar um **hub inteligente de credito, investimento e planejamento**, onde cada simulacao deixa de ser uma pagina solta e passa a alimentar um perfil financeiro unico, historico de cenarios, comparacoes e recomendacoes personalizadas.
+O Bancus Fraternis deve transformar calculadoras financeiras isoladas em uma experiencia continua de decisao financeira. A proposta e criar um **hub inteligente de credito, investimento e planejamento**, onde cada simulacao deixa de ser uma pagina solta e passa a alimentar um perfil financeiro unico, historico de cenarios, comparacoes e recomendacoes personalizadas.
 
 Pergunta central respondida pelo produto:
 
@@ -16,7 +16,7 @@ Pergunta central respondida pelo produto:
 
 - Calculadora isolada entrega uma resposta pontual.
 - Calculadora integrada captura contexto, cria memoria e orienta a proxima melhor acao.
-- O diferencial do Bank Fratern deve ser conectar credito e investimento em uma unica jornada: **caixa, divida, reserva, aporte, patrimonio e renda futura**.
+- O diferencial do Bancus Fraternis deve ser conectar credito e investimento em uma unica jornada: **caixa, divida, reserva, aporte, patrimonio e renda futura**.
 
 ## 2. Mapeamento de Calculadoras Identificadas
 
@@ -52,7 +52,7 @@ A pesquisa nao encontrou, com o mesmo grau de detalhe, calculadoras completas pa
 - Inflacao e rentabilidade real.
 - Financiamento SAC versus Price.
 
-Para o Bank Fratern, essas lacunas sao oportunidades naturais de expansao, principalmente porque o projeto ja possui base de simuladores de consorcio, financiamento, CDC, garantia e consignado.
+Para o Bancus Fraternis, essas lacunas sao oportunidades naturais de expansao, principalmente porque o projeto ja possui base de simuladores de consorcio, financiamento, CDC, garantia e consignado.
 
 ## 3. Classificacao por Tipo
 
@@ -177,7 +177,7 @@ O perfil financeiro deve ser a memoria viva do produto.
 
 ```text
 ------------------------+
-| Web / App Bank Fratern|
+| Web / App Bancus Fraternis|
 +-----------+------------+
             |
             v
@@ -264,7 +264,7 @@ O perfil financeiro deve ser a memoria viva do produto.
 - Complexidade tecnica.
 - Risco regulatorio.
 - Potencial de monetizacao.
-- Aderencia ao Bank Fratern atual.
+- Aderencia ao Bancus Fraternis atual.
 
 | Prioridade | Funcionalidade | Justificativa |
 |---|---|---|
@@ -322,7 +322,7 @@ O perfil financeiro deve ser a memoria viva do produto.
 - Implementar Calculadora de Renda.
 - Criar plano de metas com aportes mensais e alertas.
 
-### Fase 5 - Credito ampliado Bank Fratern
+### Fase 5 - Credito ampliado Bancus Fraternis
 
 - Conectar simuladores existentes de consorcio, financiamento, CDC, garantia e consignado ao perfil financeiro.
 - Criar comparador entre credito, consorcio e investimento.
@@ -394,7 +394,7 @@ Links oficiais consultados:
 
 ### Nome de trabalho
 
-**Bank Fratern Financial Intelligence Hub**
+**Bancus Fraternis Financial Intelligence Hub**
 
 ### Modulos
 
@@ -423,4 +423,4 @@ A experiencia vencedora deve:
 - Salvar historico e evoluir o perfil financeiro.
 - Separar simulacao educativa de recomendacao regulada.
 
-Com isso, o Bank Fratern deixa de ser um conjunto de simuladores e passa a ser um **sistema de decisao financeira personalizada**, capaz de orientar usuarios entre preservar liquidez, reduzir custo financeiro, investir melhor, tomar credito com consciencia e planejar patrimonio de longo prazo.
+Com isso, o Bancus Fraternis deixa de ser um conjunto de simuladores e passa a ser um **sistema de decisao financeira personalizada**, capaz de orientar usuarios entre preservar liquidez, reduzir custo financeiro, investir melhor, tomar credito com consciencia e planejar patrimonio de longo prazo.

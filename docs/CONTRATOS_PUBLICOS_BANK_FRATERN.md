@@ -1,8 +1,8 @@
-# Contratos Publicos - Bank Fratern
+# Contratos Publicos - Bancus Fraternis
 
 Atualizado em 2026-05-08.
 
-Este documento e a matriz viva dos contratos que novas evolucoes devem preservar. O Bank Fratern e uma plataforma estatica/progressiva de decisao financeira; por isso, compatibilidade local importa tanto quanto visual e jornada.
+Este documento e a matriz viva dos contratos que novas evolucoes devem preservar. O Bancus Fraternis e uma plataforma estatica/progressiva de decisao financeira; por isso, compatibilidade local importa tanto quanto visual e jornada.
 
 ## Regra Mestra
 

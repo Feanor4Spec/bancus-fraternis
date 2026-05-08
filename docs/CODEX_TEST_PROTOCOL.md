@@ -1,6 +1,6 @@
 # Protocolo de testes preferencial - Codex
 
-Atualizado em 2026-05-08 para o projeto Bank Fratern.
+Atualizado em 2026-05-08 para o projeto Bancus Fraternis.
 
 ## Caminho base
 

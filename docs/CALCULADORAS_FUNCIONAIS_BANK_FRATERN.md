@@ -1,10 +1,10 @@
-# Calculadoras Funcionais Bank Fratern
+# Calculadoras Funcionais Bancus Fraternis
 
 Atualizado em 2026-04-26.
 
 ## Escopo Implementado
 
-O Bank Fratern recebeu o ecossistema estatico/progressivo de calculadoras financeiras em HTML, CSS e JavaScript puro. A implementacao cria uma entrada unica em `pages/calculadoras.html`, 19 paginas individuais, catalogo JSON, premissas locais, motor comum de formulas, servico de simulacao por slug, perfil financeiro consolidado em `localStorage`, historico unificado, contexto de decisao compartilhado e recomendacoes explicaveis.
+O Bancus Fraternis recebeu o ecossistema estatico/progressivo de calculadoras financeiras em HTML, CSS e JavaScript puro. A implementacao cria uma entrada unica em `pages/calculadoras.html`, 19 paginas individuais, catalogo JSON, premissas locais, motor comum de formulas, servico de simulacao por slug, perfil financeiro consolidado em `localStorage`, historico unificado, contexto de decisao compartilhado e recomendacoes explicaveis.
 
 ## Rotas
 

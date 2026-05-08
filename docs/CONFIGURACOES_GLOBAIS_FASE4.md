@@ -4,7 +4,7 @@ Atualizado em 2026-04-24.
 
 ## Objetivo
 
-Transformar `pages/configuracoes.html` em um centro de preferencias realmente aplicado no portal Bank Fratern. A configuracao continua local e progressiva, usando `localStorage`, mas agora altera o comportamento de Home, simulador e paginas com layout compartilhado.
+Transformar `pages/configuracoes.html` em um centro de preferencias realmente aplicado no portal Bancus Fraternis. A configuracao continua local e progressiva, usando `localStorage`, mas agora altera o comportamento de Home, simulador e paginas com layout compartilhado.
 
 ## Preferencias aplicadas
 
