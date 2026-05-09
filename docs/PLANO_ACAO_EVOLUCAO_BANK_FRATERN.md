@@ -50,6 +50,7 @@ Cada etapa deve responder quatro perguntas:
 | Calculadoras com contexto preservado | Concluido | CTAs usam `BFCalculatorJourney`, `from=calculator|calculators`, `calculatorSlug`, `historyId` e `preset`. |
 | Trilha Assistida contextual | Concluido parcial | Entrada reconhece Produtos/Calculadoras e saidas usam `from=journey` com `sourceFrom`. |
 | Proposta/PDF com lousa seletiva | Concluido | Etapa 9 usa `proposal-builder-board`, presets consultivo/tecnico, prontidao de exportacao, selecao por grupos, `builder` em `ProposalSummary` e `tools/validate-proposal-builder.mjs`. |
+| Versionamento de propostas | Concluido | Etapa 9 usa `data-proposal-version-panel`, `BFProposalVersions`, historico por proposta, comparacao entre versoes e travamento da versao antes do handoff. |
 | Handoff por origem | Concluido parcial | Filtro, badge, metricas, origem, aging, SLA, responsavel sugerido e proximo passo operacional. |
 | Dashboards por funil/aging | Concluido parcial | Dashboard Cliente tem timeline/deep links; Dashboard Admin agora tem proximas acoes, funil por origem, aging, prioridade, responsavel sugerido e gargalos. |
 | Navegacao autenticada | Concluido parcial | Login local tem acesso rapido por perfil, redirect preservado e validador dedicado. |
@@ -169,7 +170,9 @@ Status em 2026-05-08:
 - `assets/js/admin-users.js` passou a exibir metricas de propostas e trilhas no resumo administrativo de handoffs.
 - Criado `tools/validate-handoff-origins.mjs`.
 - Etapa 9 do simulador passou a permitir proposta/PDF por lousa, com escolha de blocos, graficos, conceitos e formulas antes da exportacao.
+- Etapa 9 do simulador passou a salvar historico versionado da proposta, comparar mudancas de metricas/lousa e anexar a versao congelada ao handoff.
 - Handoff do consultor ganhou cockpit com aging, SLA, prioridade, responsavel sugerido, filtro por responsavel/aging e proximas acoes.
+- Criado `tools/validate-proposal-versioning.mjs` com relatorio em `docs/test-reports/proposal-versioning-report.json`.
 - Criado `tools/validate-handoff-consultant-operations.mjs` com relatorio em `docs/test-reports/handoff-consultant-operations-report.json`.
 
 Origens prioritarias:
@@ -186,6 +189,8 @@ Entregas:
 - Diferenciar handoff vindo de proposta revisada de handoff vindo de trilha ou retomada. Concluido em 2026-05-07.
 - Mostrar checklist contextual por origem, junto de SLA, responsavel sugerido e proximo passo. Concluido parcialmente em 2026-05-08 no detalhe do handoff.
 - Garantir que segunda criacao da mesma origem atualize o handoff existente, sem duplicidade.
+- Salvar versao da proposta antes de exportar/imprimir e antes de criar handoff. Concluido em 2026-05-08.
+- Exibir comparacao entre a ultima versao e a anterior antes do handoff. Concluido em 2026-05-08.
 
 Arquivos provaveis:
 
@@ -198,6 +203,7 @@ Arquivos provaveis:
 Criterios de aceite:
 
 - Handoff de proposta mostra proposta, versao, validade e status de revisao.
+- Proposta mostra historico versionado, status de mudancas pendentes e comparacao com a versao anterior.
 - Handoff de trilha mostra objetivo, produto, modelo e proxima acao.
 - Handoff de retomada mostra etapa abandonada, severidade e aging.
 - Consultor consegue filtrar e priorizar por origem.
@@ -207,6 +213,7 @@ Testes recomendados:
 
 - `node tools/validate-proposal-acceptance.mjs`
 - `node tools/validate-proposal-builder.mjs`
+- `node tools/validate-proposal-versioning.mjs`
 - `node tools/validate-proposal-handoff.mjs`
 - `node tools/validate-handoff-origins.mjs`
 - `node tools/validate-handoff-consultant-operations.mjs`

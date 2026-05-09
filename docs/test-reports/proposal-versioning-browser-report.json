@@ -1,0 +1,14 @@
+{
+  "ok": true,
+  "url": "http://127.0.0.1:8080/pages/simulador.html?from=codex-versioning",
+  "versions": 2,
+  "latestVersion": 2,
+  "previousVersion": 1,
+  "panelStatus": "saved",
+  "panelCount": "2",
+  "hasComparison": true,
+  "hasHistory": true,
+  "hasItems": 2,
+  "text": "HISTORICO DA PROPOSTA\nVersoes e comparacao antes do handoff\n\nSalve snapshots da proposta para comparar mudancas de numeros, lousa, validade e aceite antes de encaminhar ao atendimento.\n\nSTATUS\nVersao atual salva\nV2\nSalvar versao atual\nLimpar versoes desta proposta\nCLIENTE\nCliente Demonstracao\nPROP-2026-0100\nCREDITO\nR$ 100.000,00\nParcela R$ 1.120,00\nLOUSA\n7/16 blocos | 3/5 graficos | 0/12 conceitos | 0/8 formulas\nSelecao que entra no PDF final.\nNUMEROS\nSem alteracao relevante\nMetricas financeiras preservadas.\nSECTIONS\n16 -> 7\n-9 selecionados\nCHARTS\n5 -> 3\n-2 selecionados\nCONCEPTS\n12 -> 0\n-12 selecionados\nFORMULAS\n8 -> 0\n-8 selecionados\nHistorico versionado\nVERSAO 2 | EM REVISAO\n08/05/2026, 21:33:35 | 7/16 blocos | 3/5 graficos | 0/12 conceitos | 0/8 formulas\nVERSAO 1 | EM REVISAO\n08/05/2026, 21:33:35 | 16/16 blocos | 5/5 graficos | 12/12 conceitos | 8/8 formulas",
+  "screenshot": "docs/test-prints/proposal-versioning-desktop.png"
+}

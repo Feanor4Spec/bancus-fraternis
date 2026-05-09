@@ -188,6 +188,29 @@ $node='<node-runtime>'
 & $node tools\validate-proposal-acceptance.mjs
 ```
 
+## Versionamento local da proposta
+
+Objetivo: validar que a proposta salva snapshots comparaveis antes de PDF, impressao e handoff.
+
+Validacoes obrigatorias:
+
+- Abrir `http://127.0.0.1:8080/pages/simulador.html`.
+- Carregar exemplo, calcular e ir para a etapa 9.
+- Confirmar `data-proposal-version-panel` antes do preview da proposta.
+- Clicar em `Salvar versao atual` e confirmar historico em `data-proposal-version-history`.
+- Alterar a lousa ou registrar nova revisao e confirmar `data-proposal-version-comparison`.
+- Criar handoff e confirmar que a versao congelada foi preservada no lead local.
+
+Comandos:
+
+```powershell
+$node='<node-runtime>'
+& $node --check js\proposal-versioning.js
+& $node --check js\app.js
+& $node --check tools\validate-proposal-versioning.mjs
+& $node tools\validate-proposal-versioning.mjs
+```
+
 ## Handoff consultivo da proposta
 
 Objetivo: validar que uma proposta revisada vira lead local de atendimento consultivo sem duplicidade e sem envio externo.

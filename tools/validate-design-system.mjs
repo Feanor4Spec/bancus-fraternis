@@ -250,6 +250,7 @@ const requiredFiles = [
   'assets/js/services/admin-recovery.service.js',
   'js/shared-layout.js',
   'js/proposal-acceptance.js',
+  'js/proposal-versioning.js',
   'assets/js/services/handoff-consultivo.service.js',
   'tools/validate-calculadoras.mjs',
   'tools/validate-simulator-performance.mjs',
@@ -277,6 +278,7 @@ const requiredFiles = [
   'tools/validate-home-contextual-hero.mjs',
   'tools/validate-proposal-acceptance.mjs',
   'tools/validate-proposal-builder.mjs',
+  'tools/validate-proposal-versioning.mjs',
   'tools/validate-proposal-handoff.mjs'
 ];
 
@@ -303,9 +305,12 @@ const simulatorHtml = await fs.readFile(path.join(root, 'pages/simulador.html'),
 const simulatorAppJs = await fs.readFile(path.join(root, 'js/app.js'), 'utf8');
 const proposalSummaryJs = await fs.readFile(path.join(root, 'js/proposal-summary.js'), 'utf8');
 if (!simulatorHtml.includes('data-proposal-acceptance-panel')) fail('simulador.html sem painel de aceite local da proposta.');
+if (!simulatorHtml.includes('data-proposal-version-panel')) fail('simulador.html sem painel de versoes da proposta.');
 if (!simulatorHtml.includes('../js/proposal-acceptance.js')) fail('simulador.html nao carrega proposal-acceptance.js.');
+if (!simulatorHtml.includes('../js/proposal-versioning.js')) fail('simulador.html nao carrega proposal-versioning.js.');
 if (!simulatorHtml.includes('../assets/js/services/handoff-consultivo.service.js')) fail('simulador.html nao carrega servico de handoff consultivo.');
 if (!simulatorAppJs.includes('salvarRevisaoProposta')) fail('app.js sem acao de salvar revisao da proposta.');
+if (!simulatorAppJs.includes('salvarVersaoProposta')) fail('app.js sem acao de salvar versao da proposta.');
 if (!simulatorAppJs.includes('criarHandoffProposta')) fail('app.js sem acao de criar handoff da proposta.');
 if (!simulatorAppJs.includes('data-proposal-handoff-bridge')) fail('app.js sem ponte visual proposta -> handoff.');
 if (!proposalSummaryJs.includes('ps-section--acceptance')) fail('proposal-summary.js sem bloco de aceite no PDF.');

@@ -11,7 +11,7 @@ O Bancus Fraternis e uma plataforma estatica/progressiva para apoiar decisao fin
 - Simulador conectado a base real com 17.396 grupos validos.
 - Fluxo principal: Home -> Produtos -> Calculadoras -> Trilha Assistida -> Comparador -> Simulador -> Proposta -> Handoff -> Dashboards.
 - Lousa de navegacao em `pages/lousa-navegacao.html` para revisao do produto.
-- Lousa de proposta/PDF no simulador para o consultor selecionar blocos, graficos, conceitos e formulas, com presets consultivo/tecnico e prontidao antes da exportacao.
+- Lousa de proposta/PDF no simulador para o consultor selecionar blocos, graficos, conceitos e formulas, com presets consultivo/tecnico, prontidao e historico versionado antes da exportacao/handoff.
 - Dashboard Cliente e Dashboard Admin com continuidade, origem, aging, prioridade e proximos passos.
 - Publicacao em GitHub Pages com selo de ambiente demo/local, fallback estatico e validador de seguranca publica.
 
@@ -54,7 +54,7 @@ http://localhost:8080/dashboard-admin.html
 | Trilha Assistida | `pages/trilha-decisao.html`, `assets/js/decision-journey-page.js` |
 | Comparador | `pages/comparador.html`, `assets/js/comparador-page.js` |
 | Simulador | `pages/simulador.html`, `js/app.js`, `js/shelf-data.js`, `js/shelf-engine.js` |
-| Proposta/PDF | `js/proposal-summary.js`, `js/export.js`, `js/proposal-acceptance.js` |
+| Proposta/PDF | `js/proposal-summary.js`, `js/export.js`, `js/proposal-acceptance.js`, `js/proposal-versioning.js` |
 | Handoff | `pages/handoff-consultivo.html`, `assets/js/services/handoff-consultivo.service.js` |
 | Dashboard Cliente | `pages/dashboard-cliente.html`, `assets/js/dashboard-cliente.js` |
 | Dashboard Admin | `pages/dashboard-admin.html`, `assets/js/admin-users.js`, `assets/js/services/admin-recovery.service.js` |
@@ -83,6 +83,7 @@ node tools/validate-calculadoras.mjs
 node tools/validate-route-aliases.mjs
 node tools/validate-simulator-groups.mjs
 node tools/validate-simulator-performance.mjs
+node tools/validate-proposal-versioning.mjs
 ```
 
 ## Contratos que Nao Devem Quebrar

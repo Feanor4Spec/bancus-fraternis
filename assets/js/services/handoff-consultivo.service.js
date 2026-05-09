@@ -430,7 +430,9 @@
       cliente,
       lanceTotal: Number(lances.lanceTotal || lances.lanceProprio || 0),
       prazoMeses: Number(metrics.prazo || metrics.prazoTotal || 0),
-      propostaVersao: acceptance && acceptance.version ? acceptance.version : 0,
+      propostaVersao: acceptance && acceptance.proposalVersion && acceptance.proposalVersion.version
+        ? acceptance.proposalVersion.version
+        : (acceptance && acceptance.version ? acceptance.version : 0),
       propostaValidade: acceptance && acceptance.validUntil ? acceptance.validUntil : ''
     };
   }
@@ -595,13 +597,16 @@
     const assignedTo = options && options.assignedTo ? String(options.assignedTo || '').trim() : '';
     const proposalStatus = acceptance && acceptance.status ? acceptance.status : 'pending';
     const proposalStatusLabel = acceptance && acceptance.statusLabel ? acceptance.statusLabel : 'Proposta em revisao';
+    const proposalVersion = acceptance && acceptance.proposalVersion ? acceptance.proposalVersion : null;
     const patch = {
       schema: SCHEMA,
       sourceType: 'proposal',
       sourceLabel: sourceLabels.proposal,
       sourceProposalId: proposal.id,
       sourceProposalStatus: proposalStatus,
-      sourceProposalVersion: acceptance && acceptance.version ? acceptance.version : 0,
+      sourceProposalVersion: proposalVersion && proposalVersion.version ? proposalVersion.version : (acceptance && acceptance.version ? acceptance.version : 0),
+      sourceProposalVersionId: proposalVersion && proposalVersion.id ? proposalVersion.id : '',
+      sourceProposalVersionHash: proposalVersion && proposalVersion.sourceHash ? proposalVersion.sourceHash : '',
       sourceProposalUpdatedAt: acceptance && acceptance.updatedAt ? acceptance.updatedAt : now,
       sourceProposalValidUntil: acceptance && acceptance.validUntil ? acceptance.validUntil : '',
       ownerEmail,

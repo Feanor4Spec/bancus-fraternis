@@ -3908,6 +3908,153 @@ body.sim-body {
   font-size: 12px;
 }
 
+.proposal-version-panel {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 22px;
+  padding: 18px;
+  border: 1px solid #dbe7f5;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+}
+
+.proposal-version-panel__empty {
+  padding: 18px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #64748b;
+  text-align: center;
+}
+
+.proposal-version-panel__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, auto);
+  gap: 18px;
+  align-items: start;
+}
+
+.proposal-version-panel__eyebrow {
+  color: var(--ps-blue);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.proposal-version-panel h3 {
+  margin: 6px 0 4px;
+  color: var(--ps-ink);
+  font-size: 20px;
+}
+
+.proposal-version-panel p {
+  margin: 0;
+  color: var(--ps-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.proposal-version-status {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  border: 1px solid #dbe7f5;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.proposal-version-status span,
+.proposal-version-status small {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.proposal-version-status strong {
+  color: #0f172a;
+  font-size: 16px;
+}
+
+.proposal-version-status--success {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+.proposal-version-status--warning {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.proposal-version-status--info {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.proposal-version-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.proposal-version-current,
+.proposal-version-comparison {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.proposal-version-current article,
+.proposal-version-comparison article,
+.proposal-version-history article {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.proposal-version-current span,
+.proposal-version-comparison span,
+.proposal-version-history span {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.proposal-version-current strong,
+.proposal-version-comparison strong,
+.proposal-version-history strong {
+  color: var(--ps-ink);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.proposal-version-current small,
+.proposal-version-comparison small,
+.proposal-version-history small,
+.proposal-version-history p,
+.proposal-version-panel__muted {
+  color: var(--ps-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.proposal-version-history {
+  display: grid;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.proposal-version-history > strong {
+  color: var(--ps-ink);
+  font-size: 13px;
+}
+
 .ps-page--proposal {
   width: 100%;
 }
@@ -4999,7 +5146,10 @@ body.sim-body {
   .proposal-acceptance-panel__head,
   .proposal-acceptance-form,
   .proposal-acceptance-checks,
-  .proposal-handoff-bridge {
+  .proposal-handoff-bridge,
+  .proposal-version-panel__head,
+  .proposal-version-current,
+  .proposal-version-comparison {
     grid-template-columns: 1fr;
   }
 
@@ -5045,6 +5195,8 @@ body.sim-body {
   .proposal-builder-grid,
   .proposal-builder-options,
   .proposal-builder-readiness,
+  .proposal-version-current,
+  .proposal-version-comparison,
   .ps-pdf-plan__facts,
   .ps-concepts-grid,
   .ps-formula-grid {

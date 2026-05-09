@@ -1195,6 +1195,7 @@ const App = (() => {
     const builder = getProposalBuilderConfig();
     renderProposalBuilderBoard();
     renderProposalAcceptancePanel(acceptance);
+    renderProposalVersionPanel(acceptance, builder);
 
     if (typeof ProposalSummary !== 'undefined' && ProposalSummary.render) {
       ProposalSummary.render(container, {
@@ -1231,6 +1232,178 @@ const App = (() => {
     const proposal = getCurrentProposalData();
     if (!proposal || typeof BFProposalAcceptance === 'undefined') return null;
     return BFProposalAcceptance.latest(proposal.id) || BFProposalAcceptance.createDraft(proposal);
+  }
+
+  function getCurrentSimulationId() {
+    try {
+      const search = new URLSearchParams(window.location.search || '');
+      return search.get('simulationId') || search.get('simulacaoId') || '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function getCurrentProposalVersionContext(acceptance = null, builder = null) {
+    return {
+      acceptance: acceptance || getCurrentProposalAcceptance(),
+      builder: builder || getProposalBuilderConfig(),
+      project: projetoEstruturado,
+      params: currentParams,
+      simulationId: getCurrentSimulationId(),
+      cliente: currentParams ? currentParams.nomeCliente : '',
+      consultor: currentParams ? currentParams.consultor : ''
+    };
+  }
+
+  function proposalVersionMetricValue(key, value) {
+    const n = Number(value || 0);
+    if (key === 'percentualPago') return `${Format.number(n, 1)}%`;
+    if (key === 'prazo' || key === 'prazoRestante') return `${Math.round(n)} meses`;
+    return Format.money(n);
+  }
+
+  function proposalVersionBuilderLabel(builder) {
+    const current = builder || {};
+    return [
+      `${Number(current.sections || 0)}/${Number(current.sectionsTotal || 0)} blocos`,
+      `${Number(current.charts || 0)}/${Number(current.chartsTotal || 0)} graficos`,
+      `${Number(current.concepts || 0)}/${Number(current.conceptsTotal || 0)} conceitos`,
+      `${Number(current.formulas || 0)}/${Number(current.formulasTotal || 0)} formulas`
+    ].join(' | ');
+  }
+
+  function renderProposalVersionComparison(comparison) {
+    if (!comparison) {
+      return '<p class="proposal-version-panel__muted">Salve ao menos duas versoes para comparar as mudancas antes do handoff.</p>';
+    }
+    const metrics = comparison.changedMetrics.slice(0, 4);
+    const builder = comparison.changedBuilder;
+    const status = comparison.statusChanged
+      ? `<article><span>Status</span><strong>${escapeSettingsText(comparison.left.statusLabel)} -> ${escapeSettingsText(comparison.right.statusLabel)}</strong></article>`
+      : '';
+    const metricHtml = metrics.length ? metrics.map((item) => `
+      <article>
+        <span>${escapeSettingsText(item.label)}</span>
+        <strong>${proposalVersionMetricValue(item.key, item.before)} -> ${proposalVersionMetricValue(item.key, item.after)}</strong>
+        <small>${item.delta >= 0 ? '+' : ''}${proposalVersionMetricValue(item.key, item.delta)}</small>
+      </article>
+    `).join('') : '<article><span>Numeros</span><strong>Sem alteracao relevante</strong><small>Metricas financeiras preservadas.</small></article>';
+    const builderHtml = builder.length ? builder.map((item) => `
+      <article>
+        <span>${escapeSettingsText(item.label)}</span>
+        <strong>${item.before} -> ${item.after}</strong>
+        <small>${item.delta >= 0 ? '+' : ''}${item.delta} selecionados</small>
+      </article>
+    `).join('') : '';
+    return `
+      <div class="proposal-version-comparison" data-proposal-version-comparison>
+        ${status}
+        ${metricHtml}
+        ${builderHtml}
+      </div>
+    `;
+  }
+
+  function renderProposalVersionPanel(acceptance = null, builder = null) {
+    const panel = document.getElementById('proposal-version-panel');
+    if (!panel) return;
+    const proposal = getCurrentProposalData();
+    if (!proposal || typeof BFProposalVersions === 'undefined') {
+      panel.innerHTML = '<div class="proposal-version-panel__empty">Calcule a simulacao para salvar versoes e comparar mudancas da proposta.</div>';
+      panel.dataset.proposalVersionStatus = 'empty';
+      return;
+    }
+
+    const context = getCurrentProposalVersionContext(acceptance, builder);
+    const currentSnapshot = BFProposalVersions.snapshot(proposal, context);
+    const history = BFProposalVersions.history(proposal.id, 6);
+    const latest = history[0] || null;
+    const saved = !!(latest && latest.sourceHash === currentSnapshot.sourceHash);
+    const comparison = history.length > 1 ? BFProposalVersions.compareRecords(history[1], history[0]) : null;
+    const latestVersion = latest ? `v${latest.version}` : 'sem versao';
+    const statusLabel = saved ? 'Versao atual salva' : (latest ? 'Mudancas pendentes' : 'Primeira versao pendente');
+    const statusTone = saved ? 'success' : (latest ? 'warning' : 'info');
+
+    panel.dataset.proposalVersionStatus = saved ? 'saved' : 'pending';
+    panel.dataset.proposalVersionCount = String(history.length);
+    panel.innerHTML = `
+      <div class="proposal-version-panel__head">
+        <div>
+          <span class="proposal-version-panel__eyebrow">Historico da proposta</span>
+          <h3>Versoes e comparacao antes do handoff</h3>
+          <p>Salve snapshots da proposta para comparar mudancas de numeros, lousa, validade e aceite antes de encaminhar ao atendimento.</p>
+        </div>
+        <div class="proposal-version-status proposal-version-status--${statusTone}">
+          <span>Status</span>
+          <strong>${escapeSettingsText(statusLabel)}</strong>
+          <small>${escapeSettingsText(latestVersion)}</small>
+        </div>
+      </div>
+      <div class="proposal-version-panel__actions">
+        <button class="btn btn--primary" type="button" onclick="App.salvarVersaoProposta()">Salvar versao atual</button>
+        <button class="btn btn--ghost" type="button" onclick="App.limparVersoesProposta()">Limpar versoes desta proposta</button>
+      </div>
+      <div class="proposal-version-current">
+        <article>
+          <span>Cliente</span>
+          <strong>${escapeSettingsText(currentSnapshot.cliente)}</strong>
+          <small>${escapeSettingsText(currentSnapshot.proposalId)}</small>
+        </article>
+        <article>
+          <span>Credito</span>
+          <strong>${Format.money(currentSnapshot.metrics.creditoTotal)}</strong>
+          <small>Parcela ${Format.money(currentSnapshot.metrics.parcelaAtual)}</small>
+        </article>
+        <article>
+          <span>Lousa</span>
+          <strong>${escapeSettingsText(proposalVersionBuilderLabel(currentSnapshot.builder))}</strong>
+          <small>Selecao que entra no PDF final.</small>
+        </article>
+      </div>
+      ${renderProposalVersionComparison(comparison)}
+      <div class="proposal-version-history" data-proposal-version-history>
+        <strong>Historico versionado</strong>
+        ${history.length ? history.map(item => `
+          <article data-proposal-version-item="${escapeSettingsText(String(item.version || ''))}">
+            <span>${escapeSettingsText(item.versionLabel)} | ${escapeSettingsText(item.statusLabel || item.status)}</span>
+            <small>${escapeSettingsText(item.savedAtLabel)} | ${escapeSettingsText(proposalVersionBuilderLabel(item.builder))}</small>
+          </article>
+        `).join('') : '<p>Nenhuma versao salva para esta proposta.</p>'}
+      </div>
+    `;
+  }
+
+  function salvarVersaoProposta(options = {}) {
+    const proposal = getCurrentProposalData();
+    if (!proposal || typeof BFProposalVersions === 'undefined') {
+      if (!options.silent) showToast('Calcule a simulacao antes de salvar uma versao.', 'error');
+      return null;
+    }
+    const acceptance = options.acceptance || getCurrentProposalAcceptance();
+    const builder = getProposalBuilderConfig();
+    const record = BFProposalVersions.save(proposal, {
+      ...getCurrentProposalVersionContext(acceptance, builder),
+      forceNew: !!options.forceNew,
+      label: options.label || ''
+    });
+    if (!record) {
+      if (!options.silent) showToast('Nao foi possivel salvar a versao da proposta.', 'error');
+      return null;
+    }
+    if (!options.skipRender) renderProposalVersionPanel(acceptance, builder);
+    if (!options.silent) {
+      showToast(record.unchanged ? 'A versao atual ja estava salva.' : `Versao ${record.version} da proposta salva.`, record.unchanged ? 'info' : 'success');
+    }
+    return record;
+  }
+
+  function limparVersoesProposta() {
+    const proposal = getCurrentProposalData();
+    if (!proposal || typeof BFProposalVersions === 'undefined') return;
+    if (!confirm('Limpar o historico versionado desta proposta?')) return;
+    BFProposalVersions.clear(proposal.id);
+    renderProposalVersionPanel();
+    showToast('Versoes locais desta proposta foram limpas.', 'warning');
   }
 
   function proposalAcceptanceField(id) {
@@ -1364,6 +1537,7 @@ const App = (() => {
       return;
     }
 
+    salvarVersaoProposta({ silent: true, acceptance: record, forceNew: true, skipRender: true });
     renderResultados();
     renderProposta();
     showToast(`Revisao registrada: ${record.statusLabel}.`, 'success');
@@ -1394,7 +1568,16 @@ const App = (() => {
       return null;
     }
 
-    const handoff = BFHandoffConsultivoService.createFromProposal(proposal, acceptance, {
+    const proposalVersion = salvarVersaoProposta({ silent: true, acceptance, skipRender: true });
+    if (!proposalVersion) {
+      showToast('Nao foi possivel travar a versao atual antes do handoff.', 'error');
+      return null;
+    }
+
+    const handoff = BFHandoffConsultivoService.createFromProposal(proposal, {
+      ...acceptance,
+      proposalVersion
+    }, {
       ownerName: proposal.cliente || acceptance.reviewer || proposal.consultor || 'Cliente local',
       assignedTo: acceptance.reviewer || proposal.consultor || ''
     });
@@ -1617,6 +1800,7 @@ const App = (() => {
     if (prop) prop.innerHTML = '';
     renderProposalBuilderBoard();
     renderProposalAcceptancePanel();
+    renderProposalVersionPanel();
     goToStep(1);
     renderSimulatorDecision();
     showToast('Simulação resetada.', 'warning');
@@ -1668,6 +1852,7 @@ const App = (() => {
       return;
     }
     showToast('Gerando PDF...', 'info');
+    salvarVersaoProposta({ silent: true });
     renderResultados();
     renderProposta();
     await new Promise(resolve => setTimeout(resolve, 120));
@@ -1683,6 +1868,7 @@ const App = (() => {
       showToast('Calcule a simulação antes de imprimir.', 'error');
       return;
     }
+    salvarVersaoProposta({ silent: true });
     renderResultados();
     renderProposta();
     window.setTimeout(() => ExportManager.imprimirProposta(currentParams, resultado), 120);
@@ -1694,6 +1880,7 @@ const App = (() => {
     renderConceitos();
     renderProposalBuilderBoard();
     renderProposalAcceptancePanel();
+    renderProposalVersionPanel();
 
     // Aplicar máscaras monetárias
     document.querySelectorAll('[data-money="true"]').forEach(Format.applyMoneyMask);
@@ -3179,10 +3366,13 @@ const App = (() => {
     imprimirProposta,
     renderProposta,
     renderProposalBuilderBoard,
+    renderProposalVersionPanel,
     toggleProposalBuilderOption,
     setProposalBuilderGroup,
     setProposalBuilderAll,
     applyProposalBuilderPreset,
+    salvarVersaoProposta,
+    limparVersoesProposta,
     salvarRevisaoProposta,
     limparRevisaoProposta,
     criarHandoffProposta,

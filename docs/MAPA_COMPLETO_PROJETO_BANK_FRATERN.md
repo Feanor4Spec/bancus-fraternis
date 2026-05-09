@@ -244,10 +244,11 @@ Simulador completo
   -> calculo e graficos
   -> proposta espelhada no PDF
   -> aceite/revisao local
+  -> versionamento e comparacao da proposta
   -> handoff consultivo de proposta
 ```
 
-Contratos principais: `data-simulator-readiness`, `data-proposal-acceptance-panel`, `data-proposal-handoff-bridge`, `App`, `ConsorcioEngine`, `ProposalSummary`, `BFProposalAcceptance`, `BFHandoffConsultivoService`.
+Contratos principais: `data-simulator-readiness`, `data-proposal-acceptance-panel`, `data-proposal-version-panel`, `data-proposal-handoff-bridge`, `App`, `ConsorcioEngine`, `ProposalSummary`, `BFProposalAcceptance`, `BFProposalVersions`, `BFHandoffConsultivoService`.
 
 ### Jornada de operacao
 
@@ -268,6 +269,7 @@ Melhoria implementada em 2026-05-07:
 - A Trilha Assistida passou a expor `BFDecisionJourneyContext`, reconhecer contexto vindo de Produtos/Calculadoras e sair com `from=journey` preservando a origem anterior em `sourceFrom`.
 - Dashboard Cliente passou a usar `from=dashboard` na continuidade, com linha do tempo Diagnostico -> Calculadora -> Trilha -> Comparador -> Simulacao -> Proposta -> Handoff.
 - Handoffs agora possuem origem inferida ou explicita: proposta revisada, trilha assistida, sinal de retomada, pacote importado ou origem local.
+- Propostas agora possuem historico versionado local, comparacao entre versoes e versao congelada antes do handoff.
 - O painel consultivo filtra por origem e mostra badge/resumo da origem nos cards e no detalhe.
 - O dashboard admin mostra metricas de propostas e trilhas na fila de handoff.
 - O contrato e coberto por `tools/validate-handoff-origins.mjs`.
@@ -288,6 +290,7 @@ Melhoria implementada em 2026-05-07:
 | `js/export.js` | Exportacao PDF e impressao. |
 | `js/proposal-summary.js` | Renderer da proposta comercial e graficos do PDF/preview. |
 | `js/proposal-acceptance.js` | Aceite e revisao local da proposta. |
+| `js/proposal-versioning.js` | Historico versionado, snapshots e comparacao da proposta antes do handoff. |
 | `js/storage.js` | Simulacoes salvas e estatisticas de carteira. |
 | `js/settings.js` | Preferencias locais e defaults. |
 | `js/auth.js` | Usuarios locais, sessao, papeis e guardas. |
@@ -372,6 +375,7 @@ Chaves `localStorage` confirmadas:
 | `consorciopro_settings` | Preferencias do simulador/plataforma. |
 | `consorciopro_simulations` | Simulacoes salvas. |
 | `bank_fratern_proposal_acceptances_v1` | Aceites/revisoes de proposta. |
+| `bank_fratern_proposal_versions_v1` | Snapshots versionados da proposta, lousa e metricas. |
 | `bf_financial_profile_v1` | Perfil financeiro consolidado. |
 | `bf_calculator_history_v1` | Historico de calculadoras. |
 | `bf_calculator_premissas_override_v1` | Override de premissas. |
@@ -405,7 +409,7 @@ Os marcadores mais importantes por area:
 | Trilha | `data-decision-journey-form`, `data-decision-journey-state`, `data-decision-journey-steps`, `data-decision-journey-actions`. |
 | Comparador | `data-comparator-form`, `data-comparator-result`, `data-comparator-preset-summary`, `data-comparator-model-recommendation`. |
 | Simulador | `data-simulator-readiness`, `data-simulator-decision-strip`, `data-shelf-col`. |
-| Proposta | `data-proposal-acceptance-panel`, `data-proposal-handoff-bridge`, `data-proposal-builder-board`, `data-proposal-builder-readiness`, `data-proposal-builder-option`. |
+| Proposta | `data-proposal-acceptance-panel`, `data-proposal-handoff-bridge`, `data-proposal-builder-board`, `data-proposal-builder-readiness`, `data-proposal-builder-option`, `data-proposal-version-panel`, `data-proposal-version-history`, `data-proposal-version-comparison`. |
 | Handoff | `data-handoff-list`, `data-handoff-detail`, `data-handoff-metrics`, `data-handoff-recovery-signals`. |
 | Cliente | `data-client-continuity-strip`, `data-client-decision-journey`, `data-client-recovery-signals`. |
 | Admin | `data-admin-next-actions`, `data-admin-source-funnel`, `data-admin-bottleneck-board`, `data-admin-recovery-queue`, `data-admin-recovery-packages`, `data-admin-journey-funnel`, `data-admin-operational-alerts`. |
@@ -416,7 +420,7 @@ Os marcadores mais importantes por area:
 
 Exports principais confirmados:
 
-`BFAuth`, `Settings`, `BFHome`, `BFDecisionContext`, `BFCalculadoras`, `BFCalculatorJourney`, `BFFinancialFormulas`, `BFDadosService`, `BFProductsJourney`, `BFComparadorService`, `BFComparatorModels`, `BFTrilhaDecisaoService`, `BFDecisionJourneyContext`, `BFModelosRecomendacaoService`, `BFHandoffConsultivoService`, `BFJourneyRecoveryService`, `BFAdminRecoveryService`, `BFProposalAcceptance`, `BankFraternProgress`.
+`BFAuth`, `Settings`, `BFHome`, `BFDecisionContext`, `BFCalculadoras`, `BFCalculatorJourney`, `BFFinancialFormulas`, `BFDadosService`, `BFProductsJourney`, `BFComparadorService`, `BFComparatorModels`, `BFTrilhaDecisaoService`, `BFDecisionJourneyContext`, `BFModelosRecomendacaoService`, `BFHandoffConsultivoService`, `BFJourneyRecoveryService`, `BFAdminRecoveryService`, `BFProposalAcceptance`, `BFProposalVersions`, `BankFraternProgress`.
 
 ### Deep links e rotas funcionais
 
@@ -473,6 +477,7 @@ Scripts confirmados em `tools/`:
 | `validate-home-continuity-cockpit.mjs` | Cockpit de continuidade, incluindo trilha ativa e deep link da proxima acao. |
 | `validate-home-contextual-hero.mjs` | Hero contextual, incluindo estado de trilha ativa. |
 | `validate-proposal-acceptance.mjs` | Aceite da proposta. |
+| `validate-proposal-versioning.mjs` | Versionamento e comparacao local da proposta. |
 | `validate-proposal-handoff.mjs` | Proposta -> handoff. |
 | `validate-recovery-signals-flow.mjs` | Sinais de retomada. |
 | `validate-handoff-consultant-operations.mjs` | Handoff do consultor com aging, SLA, prioridade, responsavel e proximas acoes. |

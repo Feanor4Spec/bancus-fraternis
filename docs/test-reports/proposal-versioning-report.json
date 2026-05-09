@@ -1,0 +1,19 @@
+{
+  "ok": true,
+  "uiContract": {
+    "htmlPanel": true,
+    "serviceScript": true,
+    "appSave": true,
+    "comparisonMarker": true,
+    "cssPanel": true
+  },
+  "serviceContract": {
+    "storageKey": "bank_fratern_proposal_versions_v1",
+    "firstVersion": 1,
+    "repeatUnchanged": true,
+    "secondVersion": 2,
+    "changedMetrics": 2,
+    "changedBuilder": 1
+  },
+  "failures": []
+}

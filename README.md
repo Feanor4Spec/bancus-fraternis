@@ -1,6 +1,6 @@
 # Bancus Fraternis
 
-Plataforma estatica de decisao financeira, simulacao, proposta com lousa consultiva de PDF, handoff consultivo e dashboards.
+Plataforma estatica de decisao financeira, simulacao, proposta com lousa consultiva de PDF, versionamento local, handoff consultivo e dashboards.
 
 Ambiente publico de demonstracao: login, dashboards, propostas e dados operacionais rodam em `localStorage` no navegador. Nao use dados pessoais reais neste prototipo publicado.
 
@@ -37,5 +37,6 @@ Validacao do deploy:
 node tools/validate-public-release-safety.mjs
 node tools/validate-online-journey-smoke.mjs
 node tools/validate-simulator-performance.mjs
+node tools/validate-proposal-versioning.mjs
 node tools/validate-github-pages-deploy.mjs
 ```

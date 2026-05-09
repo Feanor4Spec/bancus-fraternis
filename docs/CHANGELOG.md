@@ -4,6 +4,27 @@
 
 ---
 
+## [v8.55.0] - 2026-05-08
+
+### Versionamento local da proposta
+
+#### Adicionado
+- Criado `js/proposal-versioning.js` com `BFProposalVersions` e chave `bank_fratern_proposal_versions_v1`.
+- Etapa 9 ganhou `data-proposal-version-panel`, historico por proposta, status de mudancas pendentes e comparacao entre a ultima versao salva e a anterior.
+- Criado `tools/validate-proposal-versioning.mjs` com relatorio em `docs/test-reports/proposal-versioning-report.json`.
+
+#### Modificado
+- Exportar PDF, imprimir e criar handoff agora salvam/travam a versao atual da proposta quando ha mudancas.
+- O handoff de proposta passa a preservar `sourceProposalVersionId` e `sourceProposalVersionHash` quando nasce de uma versao congelada.
+- Contratos publicos, plano, README e CI passaram a registrar o novo contrato de versionamento.
+
+#### Validado
+- `node --check js/proposal-versioning.js`
+- `node --check js/app.js`
+- `node tools/validate-proposal-versioning.mjs`
+
+---
+
 ## [v8.54.0] - 2026-05-08
 
 ### Lousa consultiva avancada da proposta/PDF

@@ -77,6 +77,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'bf_auth_users_v1',
   'consorciopro_simulations',
   'bank_fratern_proposal_acceptances_v1',
+  'bank_fratern_proposal_versions_v1',
   'bank_fratern_proposal_builder_v1',
   'bf_financial_profile_v1',
   'bf_calculator_history_v1',
@@ -90,6 +91,9 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
 
 [
   'data-proposal-builder-board',
+  'data-proposal-version-panel',
+  'data-proposal-version-history',
+  'data-proposal-version-comparison',
   'data-proposal-builder-readiness',
   'data-proposal-builder-option',
   'data-admin-next-actions',
@@ -116,6 +120,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'BFHandoffConsultivoService',
   'BFAdminRecoveryService',
   'BFProposalAcceptance',
+  'BFProposalVersions',
   'ProposalSummary',
   'BankFraternProgress'
 ].forEach((globalName) => assert(contracts.includes(globalName), `Export global nao documentado: ${globalName}.`));
@@ -139,6 +144,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'tools/validate-calculadoras.mjs',
   'tools/validate-admin-dashboard-source-funnel.mjs',
   'tools/validate-proposal-builder.mjs',
+  'tools/validate-proposal-versioning.mjs',
   'tools/validate-simulator-groups.mjs',
   'tools/validate-simulator-performance.mjs',
   'tools/validate-docs-modernization.mjs',
@@ -157,7 +163,9 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
 
 assert(adminDashboard.includes('href="#admin-proximos-passos"'), 'dashboard-admin.html sem atalho para proximos passos.');
 assert(simulator.includes('data-proposal-builder-board'), 'simulador.html sem lousa de proposta documentada.');
+assert(simulator.includes('data-proposal-version-panel'), 'simulador.html sem painel de versionamento da proposta.');
 assert(app.includes('bank_fratern_proposal_builder_v1'), 'app.js sem chave da lousa de proposta.');
+assert(app.includes('salvarVersaoProposta'), 'app.js sem acao publica de salvar versao da proposta.');
 assert(proposalSummary.includes('proposalBuilderDefaults'), 'proposal-summary.js sem defaults publicos da lousa.');
 assert(contracts.includes('data-handoff-assignee-filter'), 'Contrato publico nao documenta filtro de responsavel do handoff.');
 assert(contracts.includes('data-handoff-aging-filter'), 'Contrato publico nao documenta filtro de aging do handoff.');
@@ -208,11 +216,11 @@ if (legacyHits.length) {
 const report = {
   ok: failures.length === 0,
   contracts: {
-    localStorageKeys: 12,
-    dataMarkers: 15,
-    globals: 11,
+    localStorageKeys: 13,
+    dataMarkers: 18,
+    globals: 12,
     deepLinks: 9,
-    validators: 14,
+    validators: 15,
     calculatorCount
   },
   warnings,

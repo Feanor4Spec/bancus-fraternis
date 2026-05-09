@@ -22,6 +22,7 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | `consorciopro_settings` | `Settings` | Preferencias historicas do simulador. | Nome legado controlado; nao renomear sem migracao. |
 | `consorciopro_simulations` | `Storage` / `App` | Simulacoes salvas do simulador completo. | Manter leitura de simulacoes antigas. |
 | `bank_fratern_proposal_acceptances_v1` | `BFProposalAcceptance` | Revisoes, aceite local e status de proposta. | Preservar `proposalId`, `status`, `version` e `snapshot`. |
+| `bank_fratern_proposal_versions_v1` | `BFProposalVersions` | Snapshots versionados da proposta, lousa, metricas e comparacao antes do handoff. | Preservar `proposalId`, `version`, `sourceHash`, `builder` e `metrics`. |
 | `bank_fratern_proposal_builder_v1` | `ProposalSummary` / `App` | Lousa seletiva de exportacao da proposta. | Novas opcoes devem ter default compativel. |
 | `bf_financial_profile_v1` | `BFDecisionContext` | Perfil financeiro consolidado. | Sanitizar campos pessoais e preservar campos de prontidao. |
 | `bf_calculator_history_v1` | `BFCalculadoras` | Historico de calculadoras e simuladores leves. | Preservar `calculatorSlug`, `historyId` e `profilePatch`. |
@@ -52,7 +53,7 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | Trilha | `data-decision-journey-form`, `data-decision-journey-state`, `data-decision-journey-steps`, `data-decision-journey-actions`. |
 | Comparador | `data-comparator-form`, `data-comparator-result`, `data-comparator-preset-summary`, `data-comparator-model-recommendation`. |
 | Simulador | `data-simulator-readiness`, `data-simulator-decision-strip`, `data-v8-stagebar`, `data-shelf-col`. |
-| Proposta | `data-proposal-acceptance-panel`, `data-proposal-handoff-bridge`, `data-proposal-builder-board`, `data-proposal-builder-readiness`, `data-proposal-builder-option`. |
+| Proposta | `data-proposal-acceptance-panel`, `data-proposal-handoff-bridge`, `data-proposal-builder-board`, `data-proposal-builder-readiness`, `data-proposal-builder-option`, `data-proposal-version-panel`, `data-proposal-version-history`, `data-proposal-version-comparison`. |
 | Handoff | `data-handoff-list`, `data-handoff-detail`, `data-handoff-metrics`, `data-handoff-recovery-signals`, `data-handoff-consultant-cockpit`, `data-handoff-assignee-filter`, `data-handoff-aging-filter`. |
 | Dashboard Cliente | `data-client-continuity-strip`, `data-client-continuity-timeline`, `data-client-decision-journey`, `data-client-recovery-signals`. |
 | Dashboard Admin | `data-admin-next-actions`, `data-admin-source-funnel`, `data-admin-bottleneck-board`, `data-admin-journey-funnel`, `data-admin-operational-alerts`, `data-admin-recovery-queue`, `data-admin-recovery-packages`. |
@@ -78,6 +79,7 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | `BFHandoffConsultivoService` | Handoff por proposta, trilha, sinal, pacote ou manual. |
 | `BFJourneyRecoveryService`, `BFAdminRecoveryService` | Sinais de retomada, pacotes, roteamento e metas. |
 | `BFProposalAcceptance` | Revisao local, aceite e versionamento da proposta. |
+| `BFProposalVersions` | Historico versionado, snapshots comparaveis e hash local da proposta antes de PDF/handoff. |
 | `ProposalSummary` | Renderizacao da proposta/PDF e lousa seletiva. |
 | `BankFraternProgress` | Progresso/loader do simulador. |
 | `BFCards`, `BFTables`, `BFAlerts`, `BFCharts`, `BFTooltips`, `BFFormatters` | Componentes e utilitarios visuais. |
@@ -113,6 +115,7 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | `tools/validate-simulator-groups.mjs` | Base real do simulador: 17.396 grupos validos. |
 | `tools/validate-simulator-performance.mjs` | Base compacta do simulador, peso online e fallback para JSON legado. |
 | `tools/validate-proposal-builder.mjs` | Lousa seletiva de proposta/PDF. |
+| `tools/validate-proposal-versioning.mjs` | Historico versionado da proposta e comparacao antes do handoff. |
 | `tools/validate-proposal-acceptance.mjs` | Revisao e aceite local da proposta. |
 | `tools/validate-proposal-handoff.mjs` | Proposta revisada para handoff. |
 | `tools/validate-handoff-origins.mjs` | Origem dos handoffs. |
