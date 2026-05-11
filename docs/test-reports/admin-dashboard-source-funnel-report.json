@@ -11,6 +11,7 @@
     "consultantPortfolio": true,
     "consultantPortfolioExport": true,
     "commercialPipeline": true,
+    "commercialPipelineExport": true,
     "commercialStageMove": true,
     "commercialStageInsights": true,
     "simulatorBottomStagebar": true

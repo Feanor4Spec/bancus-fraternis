@@ -4,6 +4,28 @@
 
 ---
 
+## [v8.68.0] - 2026-05-11
+
+### Exportacao sanitizada do funil comercial
+
+#### Adicionado
+- Dashboard Admin ganhou `data-admin-commercial-pipeline-export`.
+- Criado o payload `bank-fratern.admin-commercial-pipeline.v1` para reuniao diaria comercial.
+- O export consolida totais por etapa, leads anonimizados, leads parados e movimentacoes recentes.
+
+#### Modificado
+- `assets/js/admin-users.js` passou a registrar `window.__lastAdminCommercialPipelineExport` para QA e evidencia browser.
+- Contratos publicos, mapa, plano e protocolo de testes foram atualizados para proteger o novo contrato.
+
+#### Validado
+- `node --check assets/js/admin-users.js`
+- `node --check tools/run-v8af-browser-evidence.mjs`
+- `node tools/validate-admin-dashboard-source-funnel.mjs`
+- `node tools/validate-public-contracts.mjs`
+- `node tools/run-v8af-browser-evidence.mjs`
+
+---
+
 ## [v8.67.0] - 2026-05-11
 
 ### Cockpit acionavel no Dashboard Cliente

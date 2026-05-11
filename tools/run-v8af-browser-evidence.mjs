@@ -369,6 +369,32 @@ try {
   assert(adminCommercialStageMove.summaries === 5, 'Cadencia comercial nao preservou resumo das 5 etapas apos mover lead.', failures);
   assert(/Movido para Follow-up|Follow-up/i.test(adminCommercialStageMove.text), 'Funil comercial nao refletiu a etapa movida para Follow-up.', failures);
   assert(/Movimentacoes recentes|Retomadas sugeridas/i.test(adminCommercialStageMove.text), 'Cadencia comercial nao exibiu blocos de gestao comercial.', failures);
+  const adminCommercialPipelineExport = await page.evaluate(() => {
+    document.querySelector('[data-admin-commercial-pipeline-export]')?.click();
+    const payload = window.__lastAdminCommercialPipelineExport || {};
+    const text = JSON.stringify(payload);
+    const sensitivePattern = new RegExp('[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}|\\b\\d{3}\\.?\\d{3}\\.?\\d{3}-?\\d{2}\\b|\\(?\\d{2}\\)?\\s?\\d{4,5}-\\d{4}\\b', 'i');
+    const stageLeads = (payload.stages || []).flatMap((stage) => stage.leads || []);
+    return {
+      schema: payload.schema,
+      stages: payload.stages ? payload.stages.length : 0,
+      leads: payload.summary ? payload.summary.leads : 0,
+      stageLeads: stageLeads.length,
+      movements: payload.recentMovements ? payload.recentMovements.length : 0,
+      stuck: payload.stuckLeads ? payload.stuckLeads.length : 0,
+      anonymized: payload.privacy && payload.privacy.anonymized === true,
+      leadRefsOk: stageLeads.every((lead) => /^lead-\d{3}$/.test(lead.leadRef || '')),
+      containsSensitivePattern: sensitivePattern.test(text)
+    };
+  });
+  assert(adminCommercialPipelineExport.schema === 'bank-fratern.admin-commercial-pipeline.v1', 'Export do funil comercial com schema inesperado.', failures);
+  assert(adminCommercialPipelineExport.stages === 5, 'Export do funil comercial deveria preservar 5 etapas.', failures);
+  assert(adminCommercialPipelineExport.leads >= 1, 'Export do funil comercial nao incluiu leads no resumo.', failures);
+  assert(adminCommercialPipelineExport.stageLeads >= 1, 'Export do funil comercial nao incluiu leads anonimizados por etapa.', failures);
+  assert(adminCommercialPipelineExport.movements >= 1, 'Export do funil comercial nao incluiu movimentacoes recentes.', failures);
+  assert(adminCommercialPipelineExport.anonymized === true, 'Export do funil comercial nao marcou anonimizacao.', failures);
+  assert(adminCommercialPipelineExport.leadRefsOk === true, 'Export do funil comercial nao gerou referencias anonimas de lead.', failures);
+  assert(adminCommercialPipelineExport.containsSensitivePattern === false, 'Export do funil comercial contem email, CPF ou telefone.', failures);
   await page.locator('[data-admin-commercial-pipeline]').scrollIntoViewIfNeeded();
   await page.screenshot({ path: screenshots.adminCommercialPipelineDesktop, fullPage: false });
 
@@ -415,6 +441,7 @@ try {
     adminPortfolioExport,
     adminCommercialPipeline,
     adminCommercialStageMove,
+    adminCommercialPipelineExport,
     handoffCommercialStage,
     screenshots: reportScreenshots(),
     consoleErrors: consoleErrors.slice(0, 20),

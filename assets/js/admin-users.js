@@ -1793,6 +1793,15 @@
     return sanitizeAdminPortfolioExport(payload);
   }
 
+  function adminCommercialAliasFactory(prefix) {
+    const aliases = new Map();
+    return (value) => {
+      const key = String(value || '').trim() || 'local';
+      if (!aliases.has(key)) aliases.set(key, `${prefix}-${String(aliases.size + 1).padStart(3, '0')}`);
+      return aliases.get(key);
+    };
+  }
+
   function adminCommercialStageDefinitions() {
     return [
       { key: 'contato', label: 'Contato', status: 'novo', next: 'Iniciar atendimento' },
@@ -2105,6 +2114,101 @@
     };
   }
 
+  function buildAdminCommercialPipelineExport(pipeline) {
+    const resolvedPipeline = pipeline || buildAdminCommercialPipeline();
+    const insights = buildAdminCommercialStageInsights(resolvedPipeline);
+    const leadAlias = adminCommercialAliasFactory('lead');
+    const ownerAlias = adminCommercialAliasFactory('consultor');
+    const allLeads = Array.isArray(resolvedPipeline.allLeads) ? resolvedPipeline.allLeads : [];
+    const stageMetrics = new Map((resolvedPipeline.rows || []).map((stage) => [stage.key, stage]));
+
+    allLeads.forEach((lead) => {
+      leadAlias(lead.id || lead.href || lead.title);
+      ownerAlias(lead.owner || 'sem responsavel');
+    });
+
+    const exportLead = (lead) => ({
+      leadRef: leadAlias(lead.id || lead.href || lead.title),
+      ownerRef: ownerAlias(lead.owner || 'sem responsavel'),
+      source: lead.source || 'Origem local',
+      status: lead.status || 'Novo',
+      priority: lead.priority || 'Media',
+      age: lead.age || eventAgeLabel(lead.hours),
+      stageAge: eventAgeLabel(lead.stageAgeHours),
+      nextStep: lead.nextStep || 'Definir proximo passo',
+      tone: lead.tone || 'baixa',
+      overdue: !!lead.overdue
+    });
+
+    const payload = {
+      schema: 'bank-fratern.admin-commercial-pipeline.v1',
+      exportedAt: new Date().toISOString(),
+      privacy: {
+        anonymized: true,
+        excludes: ['actorEmail', 'clientName', 'cpf', 'email', 'handoffId', 'href', 'owner', 'phone', 'title']
+      },
+      summary: {
+        leads: resolvedPipeline.total || 0,
+        open: resolvedPipeline.open || 0,
+        closed: resolvedPipeline.closed || 0,
+        highPriority: resolvedPipeline.high || 0,
+        overdue: resolvedPipeline.overdue || 0,
+        stages: adminCommercialStageDefinitions().length,
+        moved24h: insights.moved24h || 0,
+        moved7d: insights.moved7d || 0,
+        stuckLeads: insights.stuck.length || 0,
+        avgStageAge: insights.avgStageHours ? eventAgeLabel(insights.avgStageHours) : 'sem base'
+      },
+      stages: insights.stageSummary.map((stage) => {
+        const metrics = stageMetrics.get(stage.key) || {};
+        return {
+          key: stage.key,
+          label: stage.label,
+          leads: allLeads
+            .filter((lead) => lead.stageKey === stage.key)
+            .sort((a, b) => (Number(b.overdue) - Number(a.overdue)) || (alertWeight(b.tone) - alertWeight(a.tone)) || (Number(b.stageAgeHours || 0) - Number(a.stageAgeHours || 0)))
+            .map(exportLead),
+          totals: {
+            leads: stage.leads || 0,
+            highPriority: metrics.high || 0,
+            overdue: metrics.overdue || 0,
+            blocked: stage.blocked || 0,
+            movedIn: stage.movedIn || 0,
+            movedOut: stage.movedOut || 0,
+            avgStageAge: stage.avgHours ? eventAgeLabel(stage.avgHours) : 'sem lead',
+            deadline: `${adminCommercialStageDeadlineHours(stage.key)}h`
+          }
+        };
+      }),
+      stuckLeads: insights.stuck.map((lead) => ({
+        leadRef: leadAlias(lead.id || lead.href || lead.title),
+        ownerRef: ownerAlias(lead.owner || 'sem responsavel'),
+        stage: lead.stageKey,
+        stageLabel: lead.stageLabel,
+        source: lead.source || 'Origem local',
+        priority: lead.priority || 'Media',
+        stageAge: eventAgeLabel(lead.stageAgeHours),
+        nextStep: lead.nextStep || 'Retomar lead',
+        overdue: true
+      })),
+      recentMovements: insights.recentMoves.map((event, index) => ({
+        movementRef: `mov-${String(index + 1).padStart(3, '0')}`,
+        leadRef: leadAlias(event.handoffId || event.id),
+        from: event.fromLabel || 'Entrada',
+        to: event.toLabel || 'Contato',
+        age: event.age || 'agora'
+      })),
+      governance: {
+        source: 'Dashboard Admin local',
+        useCase: 'reuniao diaria comercial',
+        generatedFrom: ['bf_consultive_handoffs_v1', ADMIN_COMMERCIAL_STAGE_STATE_KEY, ADMIN_COMMERCIAL_STAGE_AUDIT_KEY],
+        compatibility: 'Mantem referencias anonimas para preservar dados locais e permitir leitura do funil sem expor cliente.'
+      }
+    };
+
+    return sanitizeAdminPortfolioExport(payload);
+  }
+
   function renderAdminCommercialPipeline(pipeline) {
     const resolvedPipeline = pipeline || buildAdminCommercialPipeline();
     return `
@@ -2115,7 +2219,10 @@
             <h3>Etapas comerciais dos leads</h3>
             <p>Organiza a carteira em contato, proposta, follow-up, negociacao e fechamento para orientar a rotina comercial.</p>
           </div>
-          <a class="btn btn--ghost btn--sm" href="handoff-consultivo.html#fila-handoff">Abrir fila consultiva</a>
+          <div class="bf-inline-actions">
+            <button class="btn btn--ghost btn--sm" type="button" data-admin-commercial-pipeline-export>Exportar funil</button>
+            <a class="btn btn--ghost btn--sm" href="handoff-consultivo.html#fila-handoff">Abrir fila consultiva</a>
+          </div>
         </div>
         <div class="bf-platform-metrics">
           ${window.BFCards.metric('Leads no funil', resolvedPipeline.total || 0, resolvedPipeline.total ? 'is-strong' : '')}
@@ -2389,6 +2496,24 @@
       window.URL.revokeObjectURL(url);
     }
     setMessage(`Carteira do dia preparada: ${payload.summary.leads} lead${payload.summary.leads === 1 ? '' : 's'} em ${payload.summary.consultants} consultor${payload.summary.consultants === 1 ? '' : 'es'}.`, 'success');
+    return payload;
+  }
+
+  function downloadAdminCommercialPipeline() {
+    const payload = buildAdminCommercialPipelineExport(buildAdminCommercialPipeline());
+    window.__lastAdminCommercialPipelineExport = payload;
+    const filename = `bank-fratern-funil-comercial-${new Date().toISOString().slice(0, 10)}.json`;
+    const text = JSON.stringify(payload, null, 2);
+    if (typeof Blob !== 'undefined' && window.URL && document.createElement) {
+      const blob = new Blob([text], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    }
+    setMessage(`Funil comercial preparado: ${payload.summary.leads} lead${payload.summary.leads === 1 ? '' : 's'} em ${payload.summary.stages} etapas.`, 'success');
     return payload;
   }
 
@@ -3016,6 +3141,11 @@
     });
 
     qs('[data-admin-journey-funnel]')?.addEventListener('click', (event) => {
+      const commercialPipelineExportButton = event.target.closest('[data-admin-commercial-pipeline-export]');
+      if (commercialPipelineExportButton) {
+        downloadAdminCommercialPipeline();
+        return;
+      }
       const portfolioExportButton = event.target.closest('[data-admin-consultant-portfolio-export]');
       if (portfolioExportButton) {
         downloadAdminConsultantPortfolio();

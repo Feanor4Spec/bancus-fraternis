@@ -123,6 +123,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-admin-commercial-stage-movement',
   'data-admin-commercial-stage-stuck-lead',
   'data-admin-commercial-stage-summary',
+  'data-admin-commercial-pipeline-export',
   'data-admin-source-funnel',
   'data-admin-bottleneck-board',
   'data-handoff-consultant-cockpit',
@@ -147,6 +148,11 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-lousa-journey-checklist',
   'data-lousa-journey-acceptance'
 ].forEach((marker) => assert(contracts.includes(marker), `Marcador data-* nao documentado: ${marker}.`));
+
+[
+  'bank-fratern.admin-consultant-portfolio.v1',
+  'bank-fratern.admin-commercial-pipeline.v1'
+].forEach((schema) => assert(contracts.includes(schema), `Schema publico nao documentado: ${schema}.`));
 
 [
   'BFAuth',
@@ -261,7 +267,7 @@ const report = {
   ok: failures.length === 0,
   contracts: {
     localStorageKeys: 17,
-    dataMarkers: 52,
+    dataMarkers: 53,
     globals: 12,
     deepLinks: 10,
     validators: 15,

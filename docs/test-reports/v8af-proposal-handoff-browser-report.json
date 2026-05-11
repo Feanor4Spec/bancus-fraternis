@@ -2,7 +2,7 @@
   "ok": true,
   "baseUrl": "http://127.0.0.1:8080/pages",
   "flow": {
-    "createdId": "LEAD-MP1LFUSG-EIT",
+    "createdId": "LEAD-MP1MPYW5-JH8",
     "storedHandoffs": 1,
     "sourceProposalId": "PROP-2026-0100",
     "sourceProposalStatus": "reviewed",
@@ -12,27 +12,27 @@
       "proposal-create"
     ],
     "panelReady": "true",
-    "bridgeText": "CONTINUIDADE CONSULTIVA\nHandoff LEAD-MP1LFUSG-EIT criado na fila consultiva.\nAcompanhe checklist, responsavel, notas e auditoria no handoff consultivo.\nAtualizar handoff\nAbrir LEAD-MP1LFUSG-EIT"
+    "bridgeText": "CONTINUIDADE CONSULTIVA\nHandoff LEAD-MP1MPYW5-JH8 criado na fila consultiva.\nAcompanhe checklist, responsavel, notas e auditoria no handoff consultivo.\nAtualizar handoff\nAbrir LEAD-MP1MPYW5-JH8"
   },
   "handoffPage": {
     "ready": "true",
     "cards": 1,
     "actionPlans": 2,
     "expectedFound": true,
-    "text": "Novo\nAlta\nProposta revisada\nagora\nProposta\nProposta PROP-2026-0100\n\nCliente Demonstracao - Consorcio estruturado / Revisada localmente\n\nstatus reviewed - versao 1 - snapshot PV-MP1LFUQQ-1 - validade 14/05/2026, 21:00\nVERSAO 1 TRAVADA\nAcompanhar proposta\nPROPOSTA POSSUI SNAPSHOT LOCAL PRESERVADO PARA ATENDIMENTO CONSULTIVO.\nETAPA COMERCIAL\nProposta\nETAPA DEFINIDA PELA JORNADA - AGORA\nCREDITO\nR$ 100.000,00\nCHECKLIST\n4/5\nAGING\nagora\nPROXIMO\nIniciar atendimento\nAbrir\nComparar",
+    "text": "Novo\nAlta\nProposta revisada\nagora\nProposta\nProposta PROP-2026-0100\n\nCliente Demonstracao - Consorcio estruturado / Revisada localmente\n\nstatus reviewed - versao 1 - snapshot PV-MP1MPYV2-1 - validade 14/05/2026, 21:00\nVERSAO 1 TRAVADA\nAcompanhar proposta\nPROPOSTA POSSUI SNAPSHOT LOCAL PRESERVADO PARA ATENDIMENTO CONSULTIVO.\nETAPA COMERCIAL\nProposta\nETAPA DEFINIDA PELA JORNADA - AGORA\nCREDITO\nR$ 100.000,00\nCHECKLIST\n4/5\nAGING\nagora\nPROXIMO\nIniciar atendimento\nAbrir\nComparar",
     "actionPlanText": "PROPOSTA REVISADA - AGORA\nIniciar atendimento\n\nLead novo ainda nao entrou em atendimento.\n\nPROPOSTA\nCADENCIA OK - AGORA\nDONO\nAnalista de Proposta\nPRAZO\nAte 24h\nSTATUS\nPendente\nAbrir lead"
   },
   "handoffExecution": {
     "states": [
       {
-        "actionKey": "handoff:LEAD-MP1LFUSG-EIT:first-contact",
+        "actionKey": "handoff:LEAD-MP1MPYW5-JH8:first-contact",
         "status": "em_execucao",
         "reason": "Contato iniciado pela evidencia automatizada.",
         "owner": "Analista de Proposta"
       }
     ],
     "auditCount": 1,
-    "panelText": "STATUS DA ACAO\nEm execucao\nMOTIVO OU OBSERVACAO \nIniciar\nAdiar 24h\nConcluir\nEM_EXECUCAO - 11/05/2026, 16:27 - CONSULTOR@BANKFRATERN.LOCAL"
+    "panelText": "STATUS DA ACAO\nEm execucao\nMOTIVO OU OBSERVACAO \nIniciar\nAdiar 24h\nConcluir\nEM_EXECUCAO - 11/05/2026, 17:03 - CONSULTOR@BANKFRATERN.LOCAL"
   },
   "adminActionQueue": {
     "ready": "true",
@@ -43,7 +43,7 @@
   "adminExecution": {
     "states": [
       {
-        "actionKey": "handoff:LEAD-MP1LFUSG-EIT:first-contact",
+        "actionKey": "handoff:LEAD-MP1MPYW5-JH8:first-contact",
         "status": "em_execucao",
         "reason": "Contato iniciado pela evidencia automatizada.",
         "owner": "Analista de Proposta"
@@ -56,13 +56,13 @@
       }
     ],
     "auditCount": 2,
-    "text": "Fila guiada\nQuem faz o que, ate quando\n\nConverte gargalos e sinais por origem em uma fila executavel, com status, motivo, adiamento e historico por responsavel.\n\nVer gargalos\nPENDENTES\n0\nEM EXECUCAO\n0\nADIADAS\n0\nCONCLUIDAS\n1\nANALISTA DE PROPOSTA\n1\n0 EM EXECUCAO - 0 ADIADAS - 1 CONCLUIDAS\n#1\nATE 24H\nPROPOSTA\nRevisar propostas ativas\n\n1 aberto, 1 alta prioridade e 0 SLA vencidos nesta origem.\n\nDONO\nAnalista de Proposta\nALVO\n3 sinais\nSTATUS\nConcluida\nMOTIVO OU OBSERVACAO \nCONCLUIDA - 11/05/2026, 16:27 - ADMIN@BANKFRATERN.LOCAL\nAbrir handoffs\nIniciar\nAdiar\nConcluir\nReabrir"
+    "text": "Fila guiada\nQuem faz o que, ate quando\n\nConverte gargalos e sinais por origem em uma fila executavel, com status, motivo, adiamento e historico por responsavel.\n\nVer gargalos\nPENDENTES\n0\nEM EXECUCAO\n0\nADIADAS\n0\nCONCLUIDAS\n1\nANALISTA DE PROPOSTA\n1\n0 EM EXECUCAO - 0 ADIADAS - 1 CONCLUIDAS\n#1\nATE 24H\nPROPOSTA\nRevisar propostas ativas\n\n1 aberto, 1 alta prioridade e 0 SLA vencidos nesta origem.\n\nDONO\nAnalista de Proposta\nALVO\n3 sinais\nSTATUS\nConcluida\nMOTIVO OU OBSERVACAO \nCONCLUIDA - 11/05/2026, 17:03 - ADMIN@BANKFRATERN.LOCAL\nAbrir handoffs\nIniciar\nAdiar\nConcluir\nReabrir"
   },
   "adminProductivity": {
     "ready": "true",
     "count": 1,
     "rows": 1,
-    "text": "Produtividade\nExecucao por consultor\n\nMostra acoes abertas, adiadas, concluidas, tempo medio e gargalos recorrentes a partir da fila guiada local.\n\nVer fila\nABERTAS\n0\nEM EXECUCAO\n0\nADIADAS\n0\nCONCLUIDAS\n1\nTEMPO MEDIO\nsem base\nANALISTA DE PROPOSTA\n100%\nABERTAS\n0\nADIADAS\n0\nCONCLUIDAS\n1\nTEMPO MEDIO\nsem base\n\nGargalos recorrentes: Proposta (1) | Revisar propostas ativas (1)\n\nCONCLUIDA - 11/05/2026, 16:27"
+    "text": "Produtividade\nExecucao por consultor\n\nMostra acoes abertas, adiadas, concluidas, tempo medio e gargalos recorrentes a partir da fila guiada local.\n\nVer fila\nABERTAS\n0\nEM EXECUCAO\n0\nADIADAS\n0\nCONCLUIDAS\n1\nTEMPO MEDIO\nsem base\nANALISTA DE PROPOSTA\n100%\nABERTAS\n0\nADIADAS\n0\nCONCLUIDAS\n1\nTEMPO MEDIO\nsem base\n\nGargalos recorrentes: Proposta (1) | Revisar propostas ativas (1)\n\nCONCLUIDA - 11/05/2026, 17:03"
   },
   "adminPortfolio": {
     "ready": "true",
@@ -89,10 +89,10 @@
     "history": 1,
     "insights": 1,
     "summaries": 5,
-    "text": "Funil comercial\nEtapas comerciais dos leads\n\nOrganiza a carteira em contato, proposta, follow-up, negociacao e fechamento para orientar a rotina comercial.\n\nAbrir fila consultiva\nLEADS NO FUNIL\n1\nEM ABERTO\n1\nALTA PRIORIDADE\n1\nSLA VENCIDO\n0\nFECHAMENTO\n0\nCONTATO\n0\nALTA\n0\nSLA\n0\nAGING\nsem lead\nIniciar atendimento quando houver lead nesta etapa.\nPROPOSTA\n1\nALTA\n1\nSLA\n0\nAGING\nmenos de 1h\nPROPOSTA REVISADA - ALTA - AGORA\nProposta PROP-2026-0100\nNOVO - INICIAR ATENDIMENTO\nMOVER ETAPA\nContato\nProposta\nFollow-up\nNegociacao\nFechamento\nAbrir lead\nETAPA DEFINIDA AUTOMATICAMENTE PELA JORNADA.\nFOLLOW-UP\n0\nALTA\n0\nSLA\n0\nAGING\nsem lead\nRetomar cliente quando houver lead nesta etapa.\nNEGOCIACAO\n0\nALTA\n0\nSLA\n0\nAGING\nsem lead\nAvancar negociacao quando houver lead nesta etapa.\nFECHAMENTO\n0\nALTA\n0\nSLA\n0\nAGING\nsem lead\nRegistrar decisao quando houver lead nesta etapa.\nCadencia comercial\nMovimentacao e leads parados\n\nUsa o historico local do funil para mostrar velocidade, gargalos por etapa e proximas retomadas comerciais.\n\nVer carteira\nMOVIDOS 24H\n0\nMOVIDOS 7D\n0\nLEADS PARADOS\n0\nAGING DE ETAPA\nmenos de 1h\nResumo por etapa\nCONTATO\n0\n0 ENTRADAS - 0 SAIDAS - SEM LEAD\nPROPOSTA\n1\n0 ENTRADAS - 0 SAIDAS - MENOS DE 1H\nFOLLOW-UP\n0\n0 ENTRADAS - 0 SAIDAS - SEM LEAD\nNEGOCIACAO\n0\n0 ENTRADAS - 0 SAIDAS - SEM LEAD\nFECHAMENTO\n0\n0 ENTRADAS - 0 SAIDAS - SEM LEAD\nRetomadas sugeridas\nNenhum lead ultrapassou o prazo de cadencia da etapa.\nMovimentacoes recentes\nAs movimentacoes do funil aparecerao aqui quando um lead trocar de etapa."
+    "text": "Funil comercial\nEtapas comerciais dos leads\n\nOrganiza a carteira em contato, proposta, follow-up, negociacao e fechamento para orientar a rotina comercial.\n\nExportar funil\nAbrir fila consultiva\nLEADS NO FUNIL\n1\nEM ABERTO\n1\nALTA PRIORIDADE\n1\nSLA VENCIDO\n0\nFECHAMENTO\n0\nCONTATO\n0\nALTA\n0\nSLA\n0\nAGING\nsem lead\nIniciar atendimento quando houver lead nesta etapa.\nPROPOSTA\n1\nALTA\n1\nSLA\n0\nAGING\nmenos de 1h\nPROPOSTA REVISADA - ALTA - AGORA\nProposta PROP-2026-0100\nNOVO - INICIAR ATENDIMENTO\nMOVER ETAPA\nContato\nProposta\nFollow-up\nNegociacao\nFechamento\nAbrir lead\nETAPA DEFINIDA AUTOMATICAMENTE PELA JORNADA.\nFOLLOW-UP\n0\nALTA\n0\nSLA\n0\nAGING\nsem lead\nRetomar cliente quando houver lead nesta etapa.\nNEGOCIACAO\n0\nALTA\n0\nSLA\n0\nAGING\nsem lead\nAvancar negociacao quando houver lead nesta etapa.\nFECHAMENTO\n0\nALTA\n0\nSLA\n0\nAGING\nsem lead\nRegistrar decisao quando houver lead nesta etapa.\nCadencia comercial\nMovimentacao e leads parados\n\nUsa o historico local do funil para mostrar velocidade, gargalos por etapa e proximas retomadas comerciais.\n\nVer carteira\nMOVIDOS 24H\n0\nMOVIDOS 7D\n0\nLEADS PARADOS\n0\nAGING DE ETAPA\nmenos de 1h\nResumo por etapa\nCONTATO\n0\n0 ENTRADAS - 0 SAIDAS - SEM LEAD\nPROPOSTA\n1\n0 ENTRADAS - 0 SAIDAS - MENOS DE 1H\nFOLLOW-UP\n0\n0 ENTRADAS - 0 SAIDAS - SEM LEAD\nNEGOCIACAO\n0\n0 ENTRADAS - 0 SAIDAS - SEM LEAD\nFECHAMENTO\n0\n0 ENTRADAS - 0 SAIDAS - SEM LEAD\nRetomadas sugeridas\nNenhum lead ultrapassou o prazo de cadencia da etapa.\nMovimentacoes recentes\nAs movimentacoes do funil aparecerao aqui quando um lead trocar de etapa."
   },
   "adminCommercialStageMove": {
-    "handoffId": "LEAD-MP1LFUSG-EIT",
+    "handoffId": "LEAD-MP1MPYW5-JH8",
     "savedStage": "followup",
     "savedStatus": "aguardando_cliente",
     "handoffStatus": "aguardando_cliente",
@@ -104,7 +104,18 @@
     "stuckCount": 0,
     "movements": 1,
     "summaries": 5,
-    "text": "Funil comercial\nEtapas comerciais dos leads\n\nOrganiza a carteira em contato, proposta, follow-up, negociacao e fechamento para orientar a rotina comercial.\n\nAbrir fila consultiva\nLEADS NO FUNIL\n1\nEM ABERTO\n1\nALTA PRIORIDADE\n1\nSLA VENCIDO\n0\nFECHAMENTO\n0\nCONTATO\n0\nALTA\n0\nSLA\n0\nAGING\nsem lead\nIniciar atendimento quando houver lead nesta etapa.\nPROPOSTA\n0\nALTA\n0\nSLA\n0\nAGING\nsem lead\nRevisar proposta quando houver lead nesta etapa.\nFOLLOW-UP\n1\nALTA\n1\nSLA\n0\nAGING\nmenos de 1h\nPROPOSTA REVISADA - ALTA - AGORA\nProposta PROP-2026-0100\nAGUARDANDO CLIENTE - AGENDAR RETORNO\nMOVER ETAPA\nContato\nProposta\nFollow-up\nNegociacao\nFechamento\nAbrir lead\nMOVIDO PARA FOLLOW-UP EM 11/05/2026, 16:27.\nNEGOCIACAO\n0\nALTA\n0\nSLA\n0\nAGING\nsem lead\nAvancar negociacao quando houver lead nesta etapa.\nFECHAMENTO\n0\nALTA\n0\nSLA\n0\nAGING\nsem lead\nRegistrar decisao quando houver lead nesta etapa.\nCadencia comercial\nMovimentacao e leads parados\n\nUsa o historico local do funil para mostrar velocidade, gargalos por etapa e proximas retomadas comerciais.\n\nVer carteira\nMOVIDOS 24H\n1\nMOVIDOS 7D\n1\nLEADS PARADOS\n0\nAGING DE ETAPA\nmenos de 1h\nResumo por etapa\nCONTATO\n0\n0 ENTRADAS - 0 SAIDAS - SEM LEAD\nPROPOSTA\n0\n0 ENTRADAS - 1 SAIDAS - SEM LEAD\nFOLLOW-UP\n1\n1 ENTRADAS - 0 SAIDAS - MENOS DE 1H\nNEGOCIACAO\n0\n0 ENTRADAS - 0 SAIDAS - SEM LEAD\nFECHAMENTO\n0\n0 ENTRADAS - 0 SAIDAS - SEM LEAD\nRetomadas sugeridas\nNenhum lead ultrapassou o prazo de cadencia da etapa.\nMovimentacoes recentes\nPROPOSTA -> FOLLOW-UP\nLEAD-MP1LFUSG-EIT\nMENOS DE 1H - ADMIN@BANKFRATERN.LOCAL"
+    "text": "Funil comercial\nEtapas comerciais dos leads\n\nOrganiza a carteira em contato, proposta, follow-up, negociacao e fechamento para orientar a rotina comercial.\n\nExportar funil\nAbrir fila consultiva\nLEADS NO FUNIL\n1\nEM ABERTO\n1\nALTA PRIORIDADE\n1\nSLA VENCIDO\n0\nFECHAMENTO\n0\nCONTATO\n0\nALTA\n0\nSLA\n0\nAGING\nsem lead\nIniciar atendimento quando houver lead nesta etapa.\nPROPOSTA\n0\nALTA\n0\nSLA\n0\nAGING\nsem lead\nRevisar proposta quando houver lead nesta etapa.\nFOLLOW-UP\n1\nALTA\n1\nSLA\n0\nAGING\nmenos de 1h\nPROPOSTA REVISADA - ALTA - AGORA\nProposta PROP-2026-0100\nAGUARDANDO CLIENTE - AGENDAR RETORNO\nMOVER ETAPA\nContato\nProposta\nFollow-up\nNegociacao\nFechamento\nAbrir lead\nMOVIDO PARA FOLLOW-UP EM 11/05/2026, 17:03.\nNEGOCIACAO\n0\nALTA\n0\nSLA\n0\nAGING\nsem lead\nAvancar negociacao quando houver lead nesta etapa.\nFECHAMENTO\n0\nALTA\n0\nSLA\n0\nAGING\nsem lead\nRegistrar decisao quando houver lead nesta etapa.\nCadencia comercial\nMovimentacao e leads parados\n\nUsa o historico local do funil para mostrar velocidade, gargalos por etapa e proximas retomadas comerciais.\n\nVer carteira\nMOVIDOS 24H\n1\nMOVIDOS 7D\n1\nLEADS PARADOS\n0\nAGING DE ETAPA\nmenos de 1h\nResumo por etapa\nCONTATO\n0\n0 ENTRADAS - 0 SAIDAS - SEM LEAD\nPROPOSTA\n0\n0 ENTRADAS - 1 SAIDAS - SEM LEAD\nFOLLOW-UP\n1\n1 ENTRADAS - 0 SAIDAS - MENOS DE 1H\nNEGOCIACAO\n0\n0 ENTRADAS - 0 SAIDAS - SEM LEAD\nFECHAMENTO\n0\n0 ENTRADAS - 0 SAIDAS - SEM LEAD\nRetomadas sugeridas\nNenhum lead ultrapassou o prazo de cadencia da etapa.\nMovimentacoes recentes\nPROPOSTA -> FOLLOW-UP\nLEAD-MP1MPYW5-JH8\nMENOS DE 1H - ADMIN@BANKFRATERN.LOCAL"
+  },
+  "adminCommercialPipelineExport": {
+    "schema": "bank-fratern.admin-commercial-pipeline.v1",
+    "stages": 5,
+    "leads": 1,
+    "stageLeads": 1,
+    "movements": 1,
+    "stuck": 0,
+    "anonymized": true,
+    "leadRefsOk": true,
+    "containsSensitivePattern": false
   },
   "handoffCommercialStage": {
     "ready": "true",
@@ -112,9 +123,9 @@
     "stages": 3,
     "panels": 1,
     "history": 1,
-    "detailText": "Proposta revisada\nProposta PROP-2026-0100\n\nCliente Demonstracao - criado em 11/05/2026, 16:27\n\nRever trilha\nStatus\nNovo\nEm atendimento\nAguardando cliente\nQualificado\nDescartado\nResponsavel local\nORIGEM\nProposta revisada\nPRIORIDADE OPERACIONAL\nAlta\nAGING\nagora\nSLA ALVO\n4h\nRESPONSAVEL SUGERIDO\nAnalista de Proposta\nETAPA COMERCIAL\nFollow-up\nAGING ETAPA\nagora\nPRODUTO\nConsorcio estruturado\nMODELO\nRevisada localmente\nRESERVA\n0.0 meses\nCAPACIDADE SEGURA\nR$ 1.120,00\nProximo passo\nAgendar retorno\n\nExistem itens obrigatorios abertos no checklist consultivo.\n\nDONO\nAnalista de Proposta\nPRAZO\nAte 24h\nSTATUS\nPendente\nSTATUS DA ACAO\nPendente\nMOTIVO OU OBSERVACAO \nIniciar\nAdiar 24h\nConcluir\nNENHUMA EXECUCAO REGISTRADA AINDA.\nCadencia comercial\nFollow-up\n\nLead dentro da cadencia comercial registrada no funil admin.\n\nETAPA\nFollow-up\nAGING ETAPA\nagora\nPRAZO ALVO\n72h\nATUALIZADO POR\nadmin@bankfratern.local\nPROPOSTA -> FOLLOW-UP - 11/05/2026, 16:27\nAbrir funil admin\nOrigem do atendimento\n\nstatus reviewed - versao 1 - snapshot PV-MP1LFUQQ-1 - validade 14/05/2026, 21:00\n\nProposta versionada\nVersao 1 travada\n\nProposta possui snapshot local preservado para atendimento consultivo.\n\nPROPOSTA\nPROP-2026-0100\nVERSAO\n1\nVALIDADE\n2026-05-15\nATUALIZACAO\nagora\nSNAPSHOT PV-MP1LFUQQ-1\nAbrir proposta\nChecklist\nRevisar proposta versionada: PROP-2026-0100\nConfirmar premissas financeiras, taxas, validade e memoria de calculo\nConfirmar contexto do cliente, objetivo declarado e capacidade de pagamento\nPreparar documentacao e observacoes para atendimento consultivo\nDefinir responsavel local e proxima conversa com o cliente\nNotas locais\nAdicionar nota\n\nPremissas conferidas; criar continuidade consultiva local.\n\n11/05/2026, 16:27 - ANALISTA DE PROPOSTA\nHistorico local\nStatus alterado para Aguardando cliente\n11/05/2026, 16:27 - ADMIN@BANKFRATERN.LOCAL\nHandoff criado por proposta\n11/05/2026, 16:27 - ANON",
+    "detailText": "Proposta revisada\nProposta PROP-2026-0100\n\nCliente Demonstracao - criado em 11/05/2026, 17:03\n\nRever trilha\nStatus\nNovo\nEm atendimento\nAguardando cliente\nQualificado\nDescartado\nResponsavel local\nORIGEM\nProposta revisada\nPRIORIDADE OPERACIONAL\nAlta\nAGING\nagora\nSLA ALVO\n4h\nRESPONSAVEL SUGERIDO\nAnalista de Proposta\nETAPA COMERCIAL\nFollow-up\nAGING ETAPA\nagora\nPRODUTO\nConsorcio estruturado\nMODELO\nRevisada localmente\nRESERVA\n0.0 meses\nCAPACIDADE SEGURA\nR$ 1.120,00\nProximo passo\nAgendar retorno\n\nExistem itens obrigatorios abertos no checklist consultivo.\n\nDONO\nAnalista de Proposta\nPRAZO\nAte 24h\nSTATUS\nPendente\nSTATUS DA ACAO\nPendente\nMOTIVO OU OBSERVACAO \nIniciar\nAdiar 24h\nConcluir\nNENHUMA EXECUCAO REGISTRADA AINDA.\nCadencia comercial\nFollow-up\n\nLead dentro da cadencia comercial registrada no funil admin.\n\nETAPA\nFollow-up\nAGING ETAPA\nagora\nPRAZO ALVO\n72h\nATUALIZADO POR\nadmin@bankfratern.local\nPROPOSTA -> FOLLOW-UP - 11/05/2026, 17:03\nAbrir funil admin\nOrigem do atendimento\n\nstatus reviewed - versao 1 - snapshot PV-MP1MPYV2-1 - validade 14/05/2026, 21:00\n\nProposta versionada\nVersao 1 travada\n\nProposta possui snapshot local preservado para atendimento consultivo.\n\nPROPOSTA\nPROP-2026-0100\nVERSAO\n1\nVALIDADE\n2026-05-15\nATUALIZACAO\nagora\nSNAPSHOT PV-MP1MPYV2-1\nAbrir proposta\nChecklist\nRevisar proposta versionada: PROP-2026-0100\nConfirmar premissas financeiras, taxas, validade e memoria de calculo\nConfirmar contexto do cliente, objetivo declarado e capacidade de pagamento\nPreparar documentacao e observacoes para atendimento consultivo\nDefinir responsavel local e proxima conversa com o cliente\nNotas locais\nAdicionar nota\n\nPremissas conferidas; criar continuidade consultiva local.\n\n11/05/2026, 17:03 - ANALISTA DE PROPOSTA\nHistorico local\nStatus alterado para Aguardando cliente\n11/05/2026, 17:03 - ADMIN@BANKFRATERN.LOCAL\nHandoff criado por proposta\n11/05/2026, 17:03 - ANON",
     "cockpitText": "Cockpit do consultor\nAging, prioridade e proximo passo por lead.\n\nA fila destaca SLA vencido, handoff sem responsavel, cliente aguardando retorno e qual acao iniciar agora.\n\nVer admin\nEM ABERTO\n1\nALTA PRIORIDADE\n1\nSLA VENCIDO\nSEM RESPONSAVEL\nAGUARDANDO 48H+\nPROPOSTAS VENCIDAS\nSEM SNAPSHOT\nETAPAS PARADAS\nMOVIDOS 24H\n1\nPROPOSTA REVISADA - AGORA\nAgendar retorno\n\nExistem itens obrigatorios abertos no checklist consultivo.\n\nFOLLOW-UP\nCADENCIA OK - AGORA\nDONO\nAnalista de Proposta\nPRAZO\nAte 24h\nSTATUS\nPendente\nAbrir lead",
-    "panelText": "Cadencia comercial\nFollow-up\n\nLead dentro da cadencia comercial registrada no funil admin.\n\nETAPA\nFollow-up\nAGING ETAPA\nagora\nPRAZO ALVO\n72h\nATUALIZADO POR\nadmin@bankfratern.local\nPROPOSTA -> FOLLOW-UP - 11/05/2026, 16:27\nAbrir funil admin"
+    "panelText": "Cadencia comercial\nFollow-up\n\nLead dentro da cadencia comercial registrada no funil admin.\n\nETAPA\nFollow-up\nAGING ETAPA\nagora\nPRAZO ALVO\n72h\nATUALIZADO POR\nadmin@bankfratern.local\nPROPOSTA -> FOLLOW-UP - 11/05/2026, 17:03\nAbrir funil admin"
   },
   "screenshots": {
     "proposalDesktop": "docs/test-prints/v8af-proposta-handoff-desktop.png",

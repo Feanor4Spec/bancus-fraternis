@@ -1,6 +1,6 @@
 # Bancus Fraternis - Plataforma de decisao financeira
 
-Atualizado em 2026-05-08.
+Atualizado em 2026-05-11.
 
 O Bancus Fraternis e uma plataforma estatica/progressiva para apoiar decisao financeira, simulacao de consorcio, comparacao de produtos, proposta consultiva e handoff comercial. O antigo ConsorcioPro permanece como nome legado do simulador de consorcio e de algumas chaves locais, mas a linguagem de produto atual e Bancus Fraternis.
 
@@ -12,7 +12,7 @@ O Bancus Fraternis e uma plataforma estatica/progressiva para apoiar decisao fin
 - Fluxo principal: Home -> Produtos -> Calculadoras -> Trilha Assistida -> Comparador -> Simulador -> Proposta -> Handoff -> Dashboards.
 - Lousa de navegacao em `pages/lousa-navegacao.html` para revisao do produto.
 - Lousa de proposta/PDF no simulador para o consultor selecionar blocos, graficos, conceitos e formulas, com presets consultivo/tecnico, prontidao e historico versionado antes da exportacao/handoff.
-- Dashboard Cliente, Handoff Consultivo e Dashboard Admin com cockpit de retomada, continuidade, origem, aging, prioridade, propostas versionadas/vencidas, etapa comercial, proximos passos, fila guiada executavel, produtividade, carteira por consultor, filtros comerciais, funil comercial movel por etapa, cadencia comercial e exportacao sanitizada.
+- Dashboard Cliente, Handoff Consultivo e Dashboard Admin com cockpit de retomada, continuidade, origem, aging, prioridade, propostas versionadas/vencidas, etapa comercial, proximos passos, fila guiada executavel, produtividade, carteira por consultor, filtros comerciais, funil comercial movel por etapa, cadencia comercial e exportacoes sanitizadas de carteira e funil.
 - Publicacao em GitHub Pages com selo de ambiente demo/local, fallback estatico e validador de seguranca publica.
 
 ## Entrada Recomendada
