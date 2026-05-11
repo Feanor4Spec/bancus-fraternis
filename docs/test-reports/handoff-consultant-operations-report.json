@@ -10,7 +10,9 @@
   "proposal": {
     "expired": 1,
     "unversioned": 1,
-    "expiredNextStep": "Revisar validade da proposta"
+    "expiredNextStep": "Revisar validade da proposta",
+    "expiredActionType": "proposal",
+    "expiredDeadline": "Hoje"
   },
   "failures": []
 }

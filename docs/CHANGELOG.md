@@ -4,6 +4,30 @@
 
 ---
 
+## [v8.57.0] - 2026-05-11
+
+### Fila guiada de acoes operacionais
+
+#### Adicionado
+- `BFHandoffConsultivoService` ganhou `actionPlan()`, calculando tipo de acao, dono, prazo, CTA e destino para cada lead.
+- O cockpit/detalhe do Handoff passou a expor `data-handoff-action-plan` com dono, prazo e CTA para abrir lead ou proposta.
+- Dashboard Admin ganhou `data-admin-action-queue`, uma fila guiada que converte gargalos e sinais por origem em prioridade, responsavel, alvo e link direto.
+
+#### Modificado
+- Gargalos de proposta/handoff agora carregam alvo e responsavel sugerido para alimentar a fila admin.
+- Links administrativos para handoffs usam `handoffId` e abrem o detalhe do lead.
+- Contratos publicos, mapa e plano de evolucao passaram a registrar a fila guiada.
+
+#### Validado
+- `node --check assets/js/services/handoff-consultivo.service.js`
+- `node --check assets/js/handoff-consultivo.js`
+- `node --check assets/js/admin-users.js`
+- `node tools/validate-handoff-consultant-operations.mjs`
+- `node tools/validate-admin-dashboard-source-funnel.mjs`
+- `node tools/validate-public-contracts.mjs`
+
+---
+
 ## [v8.56.0] - 2026-05-11
 
 ### Inteligencia operacional de propostas versionadas

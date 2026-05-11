@@ -1,6 +1,6 @@
 # Bancus Fraternis
 
-Plataforma estatica de decisao financeira, simulacao, proposta com lousa consultiva de PDF, versionamento local, handoff consultivo e dashboards com alertas operacionais.
+Plataforma estatica de decisao financeira, simulacao, proposta com lousa consultiva de PDF, versionamento local, handoff consultivo e dashboards com alertas e fila guiada de acoes operacionais.
 
 Ambiente publico de demonstracao: login, dashboards, propostas e dados operacionais rodam em `localStorage` no navegador. Nao use dados pessoais reais neste prototipo publicado.
 

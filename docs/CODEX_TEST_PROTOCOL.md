@@ -201,7 +201,9 @@ Validacoes obrigatorias:
 - Alterar a lousa ou registrar nova revisao e confirmar `data-proposal-version-comparison`.
 - Criar handoff e confirmar que a versao congelada foi preservada no lead local.
 - Abrir `handoff-consultivo.html#fila-handoff` e confirmar `data-handoff-proposal-version` com snapshot, validade e proximo passo.
+- Confirmar `data-handoff-action-plan` no cockpit/detalhe com dono, prazo e CTA operacional.
 - Abrir `dashboard-admin.html#admin-gargalos` e confirmar gargalos de proposta vencida ou alterada apos handoff quando existirem dados locais.
+- Abrir `dashboard-admin.html#admin-fila-acao` e confirmar `data-admin-action-queue` com dono, prazo, alvo e CTA direto.
 
 Comandos:
 

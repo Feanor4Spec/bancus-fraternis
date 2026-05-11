@@ -2,7 +2,7 @@
   "ok": true,
   "baseUrl": "http://127.0.0.1:8080/pages",
   "flow": {
-    "createdId": "LEAD-MOHVYURD-P4H",
+    "createdId": "LEAD-MP0NJFE5-U6J",
     "storedHandoffs": 1,
     "sourceProposalId": "PROP-2026-0100",
     "sourceProposalStatus": "reviewed",
@@ -12,18 +12,27 @@
       "proposal-create"
     ],
     "panelReady": "true",
-    "bridgeText": "CONTINUIDADE CONSULTIVA\nHandoff LEAD-MOHVYURD-P4H criado na fila consultiva.\nAcompanhe checklist, responsavel, notas e auditoria no handoff consultivo.\nAtualizar handoff\nAbrir LEAD-MOHVYURD-P4H"
+    "bridgeText": "CONTINUIDADE CONSULTIVA\nHandoff LEAD-MP0NJFE5-U6J criado na fila consultiva.\nAcompanhe checklist, responsavel, notas e auditoria no handoff consultivo.\nAtualizar handoff\nAbrir LEAD-MP0NJFE5-U6J"
   },
   "handoffPage": {
     "ready": "true",
     "cards": 1,
+    "actionPlans": 2,
     "expectedFound": true,
-    "text": "Novo\nAlta\nProposta PROP-2026-0100\n\nGustavo Santana - Consorcio estruturado / Revisada localmente\n\nCREDITO\nR$ 100.000,00\nCHECKLIST\n4/5\nAbrir\nComparar"
+    "text": "Novo\nAlta\nProposta revisada\nagora\nProposta PROP-2026-0100\n\nCliente Demonstracao - Consorcio estruturado / Revisada localmente\n\nstatus reviewed - versao 1 - snapshot PV-MP0NJFCT-1 - validade 14/05/2026, 21:00\nVERSAO 1 TRAVADA\nAcompanhar proposta\nPROPOSTA POSSUI SNAPSHOT LOCAL PRESERVADO PARA ATENDIMENTO CONSULTIVO.\nCREDITO\nR$ 100.000,00\nCHECKLIST\n4/5\nAGING\nagora\nPROXIMO\nIniciar atendimento\nAbrir\nComparar",
+    "actionPlanText": "PROPOSTA REVISADA - AGORA\nIniciar atendimento\n\nLead novo ainda nao entrou em atendimento.\n\nDONO\nAnalista de Proposta\nPRAZO\nAte 24h\nORIGEM\nVersao 1 travada\nAbrir lead"
+  },
+  "adminActionQueue": {
+    "ready": "true",
+    "count": 1,
+    "items": 1,
+    "text": "Fila guiada\nQuem faz o que, ate quando\n\nConverte gargalos e sinais por origem em uma lista operacional com responsavel, prazo, alvo e CTA direto.\n\nVer gargalos\n#1\nATE 24H\nPROPOSTA\nRevisar propostas ativas\n\n1 aberto, 1 alta prioridade e 0 SLA vencidos nesta origem.\n\nDONO\nAnalista de Proposta\nALVO\n3 sinais\nPRIORIDADE\nMedia\nAbrir handoffs"
   },
   "screenshots": {
-    "proposalDesktop": "<workspace-historico>\\docs\\test-prints\\v8af-proposta-handoff-desktop.png",
-    "proposalMobile": "<workspace-historico>\\docs\\test-prints\\v8af-proposta-handoff-mobile.png",
-    "handoffDesktop": "<workspace-historico>\\docs\\test-prints\\v8af-handoff-proposta-desktop.png"
+    "proposalDesktop": "docs/test-prints/v8af-proposta-handoff-desktop.png",
+    "proposalMobile": "docs/test-prints/v8af-proposta-handoff-mobile.png",
+    "handoffDesktop": "docs/test-prints/v8af-handoff-proposta-desktop.png",
+    "adminActionQueueDesktop": "docs/test-prints/v8af-admin-action-queue-desktop.png"
   },
   "consoleErrors": [
     "Failed to load resource: the server responded with a status of 404 (File not found)"

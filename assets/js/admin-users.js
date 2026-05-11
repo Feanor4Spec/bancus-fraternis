@@ -678,8 +678,10 @@
         severity: item.status === 'reviewed' ? 'media' : 'alta',
         age: eventAgeLabel(eventHoursSince(item.updatedAt || item.createdAt)),
         ownerEmail: item.reviewer || 'proposta local',
+        targetId: item.proposalId || '',
+        actionOwner: item.reviewer || 'consultor da proposta',
         next: 'Criar handoff da proposta',
-        href: 'simulador.html#step-9',
+        href: `simulador.html?from=admin&proposalId=${encodeURIComponent(item.proposalId || '')}#step-9`,
         hours: eventHoursSince(item.updatedAt || item.createdAt)
       }));
 
@@ -692,8 +694,10 @@
         severity: proposalVersionExpired(item) ? 'alta' : 'media',
         age: eventAgeLabel(eventHoursSince(item.updatedAt || item.createdAt)),
         ownerEmail: item.consultor || item.cliente || 'proposta local',
+        targetId: item.proposalId || '',
+        actionOwner: item.consultor || 'consultor da proposta',
         next: 'Criar handoff da proposta',
-        href: 'simulador.html#step-9',
+        href: `simulador.html?from=admin&proposalId=${encodeURIComponent(item.proposalId || '')}#step-9`,
         hours: eventHoursSince(item.updatedAt || item.createdAt)
       }));
 
@@ -706,8 +710,10 @@
         severity: 'alta',
         age: eventAgeLabel(eventHoursSince(item.validUntil || item.updatedAt || item.createdAt)),
         ownerEmail: item.consultor || item.cliente || 'proposta local',
+        targetId: item.proposalId || '',
+        actionOwner: item.consultor || 'consultor da proposta',
         next: 'Revisar validade',
-        href: 'simulador.html#step-9',
+        href: `simulador.html?from=admin&proposalId=${encodeURIComponent(item.proposalId || '')}#step-9`,
         hours: eventHoursSince(item.validUntil || item.updatedAt || item.createdAt)
       }));
 
@@ -729,8 +735,11 @@
           severity: 'alta',
           age: eventAgeLabel(eventHoursSince(latest.updatedAt || latest.createdAt)),
           ownerEmail: item.ownerEmail || latest.consultor || 'proposta local',
+          targetId: item.id || '',
+          proposalId: item.sourceProposalId || '',
+          actionOwner: item.assignedTo || item.ownerEmail || latest.consultor || 'consultor da proposta',
           next: 'Atualizar handoff',
-          href: 'handoff-consultivo.html#fila-handoff',
+          href: `handoff-consultivo.html?from=admin&handoffId=${encodeURIComponent(item.id || '')}#detalhe-handoff`,
           hours: eventHoursSince(latest.updatedAt || latest.createdAt)
         });
       });
@@ -744,6 +753,8 @@
         severity: alertSeverityFromHours(eventHoursSince(item.updatedAt || item.createdAt)),
         age: eventAgeLabel(eventHoursSince(item.updatedAt || item.createdAt)),
         ownerEmail: item.ownerEmail || item.owner || 'anon',
+        targetId: item.id || item.journeyId || '',
+        actionOwner: item.ownerEmail || item.owner || 'consultor da trilha',
         next: 'Abrir comparador',
         href: 'comparador.html?from=admin',
         hours: eventHoursSince(item.updatedAt || item.createdAt)
@@ -758,8 +769,10 @@
         severity: item.priority === 'alta' ? 'alta' : 'media',
         age: eventAgeLabel(eventHoursSince(item.updatedAt || item.createdAt)),
         ownerEmail: item.ownerEmail || 'anon',
+        targetId: item.id || '',
+        actionOwner: 'coordenacao local',
         next: 'Atribuir consultor',
-        href: 'handoff-consultivo.html#fila-handoff',
+        href: `handoff-consultivo.html?from=admin&handoffId=${encodeURIComponent(item.id || '')}#detalhe-handoff`,
         hours: eventHoursSince(item.updatedAt || item.createdAt)
       }));
 
@@ -774,8 +787,10 @@
           severity: item.priority === 'alta' ? 'alta' : 'media',
           age: eventAgeLabel(sla.hours),
           ownerEmail: item.ownerEmail || 'anon',
+          targetId: item.id || '',
+          actionOwner: item.assignedTo || item.ownerEmail || 'consultor responsavel',
           next: 'Priorizar atendimento',
-          href: 'handoff-consultivo.html#fila-handoff',
+          href: `handoff-consultivo.html?from=admin&handoffId=${encodeURIComponent(item.id || '')}#detalhe-handoff`,
           hours: sla.hours
         });
       });
@@ -790,6 +805,8 @@
         severity: item.severity === 'alta' ? 'alta' : 'media',
         age: item.slaAgeLabel || item.age || 'SLA local',
         ownerEmail: item.ownerEmail || 'pacote',
+        targetId: item.id || '',
+        actionOwner: item.assignedTo || item.suggestedAssigneeName || 'coordenacao local',
         next: 'Roteamento de pacote',
         href: '#admin-pacotes-recuperacao',
         hours: Number(item.slaHours || item.hours || 0)
@@ -927,6 +944,92 @@
     }];
   }
 
+  function adminActionDeadline(item) {
+    const type = item && item.type ? item.type : '';
+    const severity = item && item.severity ? item.severity : item && item.tone ? item.tone : 'media';
+    const hours = Number(item && item.hours ? item.hours : 0);
+    if (severity === 'alta' || type.includes('expired') || type.includes('outdated') || hours >= 72) return 'Hoje';
+    if (type.includes('without-assignee') || hours >= 24) return 'Ate 24h';
+    if (severity === 'media') return 'Ate 48h';
+    return 'Ate 72h';
+  }
+
+  function buildAdminActionQueue(sourceRows, bottlenecks) {
+    const actions = [];
+    (bottlenecks || []).slice(0, 8).forEach((item) => {
+      actions.push({
+        type: item.type || 'bottleneck',
+        source: item.title || 'Gargalo local',
+        title: item.next || item.title || 'Abrir acao',
+        reason: item.reason || 'Gargalo operacional detectado nos dados locais.',
+        owner: item.actionOwner || item.ownerEmail || 'coordenacao local',
+        deadline: adminActionDeadline(item),
+        target: item.targetId || item.proposalId || item.ownerEmail || 'origem local',
+        href: item.href || '#admin-gargalos',
+        cta: item.next || 'Abrir acao',
+        tone: item.severity || 'media',
+        hours: Number(item.hours || 0)
+      });
+    });
+
+    (sourceRows || [])
+      .filter((item) => item.sla || item.high || item.open)
+      .slice()
+      .sort((a, b) => {
+        const score = (row) => (Number(row.sla || 0) * 4) + (Number(row.high || 0) * 3) + (Number(row.open || 0) * 2) + Number(row.total || 0);
+        return score(b) - score(a);
+      })
+      .slice(0, 4)
+      .forEach((item) => {
+        const sourceTitle = item.key === 'proposal' && item.open ? 'Revisar propostas ativas' : (item.next || 'Abrir fila');
+        const sourceHref = item.key === 'proposal' && item.open ? 'handoff-consultivo.html?from=admin#fila-handoff' : (item.href || '#admin-origens');
+        const sourceCta = item.key === 'proposal' && item.open ? 'Abrir handoffs' : (item.next || 'Abrir origem');
+        actions.push({
+          type: `source-${item.key}`,
+          source: item.label,
+          title: sourceTitle,
+          reason: `${item.open} aberto${item.open === 1 ? '' : 's'}, ${item.high} alta prioridade e ${item.sla} SLA vencido${item.sla === 1 ? '' : 's'} nesta origem.`,
+          owner: item.suggestedAssignee || 'coordenacao local',
+          deadline: item.sla || item.tone === 'alta' ? 'Hoje' : item.high ? 'Ate 24h' : 'Ate 72h',
+          target: `${item.total} ${item.total === 1 ? 'sinal' : 'sinais'}`,
+          href: sourceHref,
+          cta: sourceCta,
+          tone: item.tone || 'media',
+          hours: Number(item.total || 0)
+        });
+      });
+
+    const seen = new Set();
+    const unique = actions.filter((item) => {
+      const key = `${item.type}:${item.title}:${item.target}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    const sorted = unique.sort((a, b) => {
+      const bySeverity = alertWeight(b.tone) - alertWeight(a.tone);
+      if (bySeverity) return bySeverity;
+      return Number(b.hours || 0) - Number(a.hours || 0);
+    }).slice(0, 6);
+
+    if (sorted.length) return sorted.map((item, index) => ({ ...item, rank: index + 1 }));
+    return [{
+      rank: 1,
+      type: 'monitoramento',
+      source: 'Operacao local',
+      title: 'Manter monitoramento',
+      reason: 'Nenhum gargalo acionavel apareceu nos dados locais atuais.',
+      owner: 'admin local',
+      deadline: 'Ate 72h',
+      target: 'sem urgencia',
+      href: '#admin-funil-jornada',
+      cta: 'Rever funil',
+      tone: 'baixa',
+      hours: 0
+    }];
+  }
+
   function renderAdminNextActionBoard(sourceRows, bottlenecks) {
     const actions = buildAdminNextActions(sourceRows, bottlenecks);
     return `
@@ -937,7 +1040,7 @@
             <h3>Proximas acoes recomendadas</h3>
             <p>Lista curta para o admin decidir sem abrir cada fila: prioriza gargalos, SLA, origem e responsavel sugerido.</p>
           </div>
-          <a class="btn btn--ghost btn--sm" href="#admin-gargalos">Ver gargalos</a>
+          <a class="btn btn--ghost btn--sm" href="#admin-fila-acao">Ver fila guiada</a>
         </div>
         <div class="bf-admin-next-actions__grid">
           ${actions.map((item, index) => `
@@ -947,6 +1050,43 @@
               <p>${escapeHtml(item.reason)}</p>
               <small>${escapeHtml(item.meta)}</small>
               <a class="btn btn--ghost btn--sm" href="${escapeHtml(item.href)}">Abrir acao</a>
+            </article>
+          `).join('')}
+        </div>
+      </section>
+    `;
+  }
+
+  function renderAdminActionQueue(sourceRows, bottlenecks) {
+    const queue = buildAdminActionQueue(sourceRows, bottlenecks);
+    return `
+      <section class="bf-admin-action-queue" id="admin-fila-acao" data-admin-action-queue>
+        <div class="bf-admin-panel-heading">
+          <div>
+            <span class="bf-badge bf-badge--navy">Fila guiada</span>
+            <h3>Quem faz o que, ate quando</h3>
+            <p>Converte gargalos e sinais por origem em uma lista operacional com responsavel, prazo, alvo e CTA direto.</p>
+          </div>
+          <a class="btn btn--ghost btn--sm" href="#admin-gargalos">Ver gargalos</a>
+        </div>
+        <div class="bf-admin-action-queue__list">
+          ${queue.map((item) => `
+            <article class="bf-admin-action-item bf-admin-action-item--${escapeHtml(item.tone)}" data-admin-action-item="${escapeHtml(item.type)}">
+              <div class="bf-admin-action-item__rank">
+                <span>#${escapeHtml(item.rank)}</span>
+                <strong>${escapeHtml(item.deadline)}</strong>
+              </div>
+              <div class="bf-admin-action-item__body">
+                <span>${escapeHtml(item.source)}</span>
+                <h4>${escapeHtml(item.title)}</h4>
+                <p>${escapeHtml(item.reason)}</p>
+                <dl>
+                  <div><dt>Dono</dt><dd>${escapeHtml(item.owner)}</dd></div>
+                  <div><dt>Alvo</dt><dd>${escapeHtml(item.target)}</dd></div>
+                  <div><dt>Prioridade</dt><dd>${escapeHtml(alertSeverityLabel(item.tone))}</dd></div>
+                </dl>
+              </div>
+              <a class="btn btn--ghost btn--sm" href="${escapeHtml(item.href)}">${escapeHtml(item.cta)}</a>
             </article>
           `).join('')}
         </div>
@@ -1544,6 +1684,7 @@
         <div class="bf-admin-funnel__stages">${stageHtml}</div>
         <div class="bf-admin-role-funnel-grid">${roleHtml}</div>
         ${renderAdminNextActionBoard(sourceFunnel, bottlenecks)}
+        ${renderAdminActionQueue(sourceFunnel, bottlenecks)}
         ${renderAdminSourceFunnel(sourceFunnel)}
         ${renderAdminBottleneckBoard(bottlenecks)}
         <div class="bf-calculator-history">${recentHtml}</div>
@@ -1556,6 +1697,8 @@
     document.body.dataset.adminBottleneckCount = String(bottlenecks.length);
     document.body.dataset.adminNextActionsReady = 'true';
     document.body.dataset.adminNextActionCount = String(buildAdminNextActions(sourceFunnel, bottlenecks).length);
+    document.body.dataset.adminActionQueueReady = 'true';
+    document.body.dataset.adminActionQueueCount = String(buildAdminActionQueue(sourceFunnel, bottlenecks).length);
   }
 
   function actionLabel(action) {

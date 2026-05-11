@@ -242,12 +242,19 @@
       </div>
       <div class="bf-handoff-action-grid">
         ${actions.length ? actions.map((action) => `
-          <article class="bf-handoff-action bf-handoff-action--${escapeHtml(action.tone || 'media')}">
+          <article class="bf-handoff-action bf-handoff-action--${escapeHtml(action.tone || 'media')}" data-handoff-action-plan="${escapeHtml(action.id)}">
             <span>${escapeHtml(action.source)} - ${escapeHtml(action.age)}</span>
-            <strong>${escapeHtml(action.title)}</strong>
-            <p>${escapeHtml(action.nextStep)}</p>
-            <small>${escapeHtml(action.ownerEmail)} - ${escapeHtml(action.suggestedAssignee || 'responsavel a definir')}${action.proposalState ? ` - ${escapeHtml(action.proposalState)}` : ''}</small>
-            <button class="btn btn--ghost btn--sm" type="button" data-handoff-open="${escapeHtml(action.id)}">Abrir lead</button>
+            <strong>${escapeHtml(action.actionTitle || action.nextStep || action.title)}</strong>
+            <p>${escapeHtml(action.actionReason || action.nextStep)}</p>
+            <dl class="bf-handoff-action-plan">
+              <div><dt>Dono</dt><dd>${escapeHtml(action.actionOwner || action.suggestedAssignee || 'responsavel a definir')}</dd></div>
+              <div><dt>Prazo</dt><dd>${escapeHtml(action.deadlineLabel || 'Ate 72h')}</dd></div>
+              <div><dt>Origem</dt><dd>${escapeHtml(action.proposalState || action.source)}</dd></div>
+            </dl>
+            <div class="bf-inline-actions">
+              ${action.actionType === 'proposal' ? `<a class="btn btn--ghost btn--sm" href="${escapeHtml(action.href || 'simulador.html#step-9')}">${escapeHtml(action.ctaLabel || 'Abrir proposta')}</a>` : ''}
+              <button class="btn btn--ghost btn--sm" type="button" data-handoff-open="${escapeHtml(action.id)}">Abrir lead</button>
+            </div>
           </article>
         `).join('') : '<div class="bf-empty-state">Nenhuma acao consultiva pendente para os filtros atuais.</div>'}
       </div>
@@ -375,6 +382,20 @@
       label: '',
       reason: ''
     });
+  }
+
+  function actionPlan(item) {
+    return service().actionPlan ? service().actionPlan(item) : {
+      active: false,
+      type: 'none',
+      title: item && item.operational ? item.operational.nextStep : 'Definir proximo passo',
+      reason: '',
+      owner: item && (item.assignedTo || item.ownerEmail) ? (item.assignedTo || item.ownerEmail) : 'definir na fila',
+      deadlineLabel: 'Ate 72h',
+      ctaLabel: 'Abrir lead',
+      href: 'handoff-consultivo.html#fila-handoff',
+      tone: 'media'
+    };
   }
 
   function proposalVersionChip(item) {
@@ -526,6 +547,7 @@
     const summary = item.summary || {};
     const ownerLabel = item.ownerName || item.ownerEmail || 'Cliente local';
     const op = item.operational || {};
+    const plan = actionPlan(item);
     target.innerHTML = `
       <div class="bf-admin-panel-heading">
         <div>
@@ -557,10 +579,16 @@
         ${metric('Capacidade segura', money(summary.capacidadePagamento || 0), 'strong')}
       </div>
 
-      <section class="bf-handoff-next-step bf-handoff-action--${escapeHtml(op.tone || 'media')} bf-platform-section" data-handoff-next-step>
+      <section class="bf-handoff-next-step bf-handoff-action--${escapeHtml(op.tone || 'media')} bf-platform-section" data-handoff-next-step data-handoff-action-plan="${escapeHtml(item.id)}">
         <span class="bf-badge bf-badge--gold">Proximo passo</span>
-        <strong>${escapeHtml(op.nextStep || 'Definir proximo passo')}</strong>
-        <p>${escapeHtml(op.slaOverdue ? 'Lead ultrapassou o SLA recomendado para a prioridade atual.' : op.waitingClient ? 'Cliente esta aguardando retorno ha mais de 48 horas.' : op.unassigned ? 'Lead aberto precisa de responsavel antes de seguir.' : 'Lead esta dentro da governanca operacional atual.')}</p>
+        <strong>${escapeHtml(plan.title || op.nextStep || 'Definir proximo passo')}</strong>
+        <p>${escapeHtml(plan.reason || (op.slaOverdue ? 'Lead ultrapassou o SLA recomendado para a prioridade atual.' : op.waitingClient ? 'Cliente esta aguardando retorno ha mais de 48 horas.' : op.unassigned ? 'Lead aberto precisa de responsavel antes de seguir.' : 'Lead esta dentro da governanca operacional atual.'))}</p>
+        <dl class="bf-handoff-action-plan">
+          <div><dt>Dono</dt><dd>${escapeHtml(plan.owner || op.suggestedAssignee || 'definir na fila')}</dd></div>
+          <div><dt>Prazo</dt><dd>${escapeHtml(plan.deadlineLabel || 'Ate 72h')}</dd></div>
+          <div><dt>CTA</dt><dd>${escapeHtml(plan.ctaLabel || 'Abrir lead')}</dd></div>
+        </dl>
+        ${plan.type === 'proposal' ? `<a class="btn btn--ghost btn--sm" href="${escapeHtml(plan.href || 'simulador.html#step-9')}">${escapeHtml(plan.ctaLabel || 'Abrir proposta')}</a>` : ''}
       </section>
 
       <section class="bf-handoff-origin-panel bf-platform-section">
@@ -662,6 +690,8 @@
       ? window.BFAuth.requireRole(['admin', 'consultor'], { redirect: true })
       : null;
     if (!user || !service()) return;
+    const params = new URLSearchParams(window.location.search || '');
+    selectedId = params.get('handoffId') || params.get('id') || selectedId;
     bindControls();
     renderList();
     document.body.dataset.handoffReady = 'true';

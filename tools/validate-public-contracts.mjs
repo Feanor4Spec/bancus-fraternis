@@ -97,9 +97,11 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-proposal-builder-readiness',
   'data-proposal-builder-option',
   'data-admin-next-actions',
+  'data-admin-action-queue',
   'data-admin-source-funnel',
   'data-admin-bottleneck-board',
   'data-handoff-consultant-cockpit',
+  'data-handoff-action-plan',
   'data-handoff-proposal-version',
   'data-login-form',
   'data-public-demo-notice',
@@ -134,6 +136,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'historyId',
   'handoffId',
   'admin-proximos-passos',
+  'admin-fila-acao',
   'admin-origens',
   'admin-gargalos'
 ].forEach((deepLink) => assert(contracts.includes(deepLink), `Deep link nao documentado: ${deepLink}.`));
@@ -158,6 +161,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
 
 [
   'data-admin-next-actions',
+  'data-admin-action-queue',
   'data-admin-source-funnel',
   'data-admin-bottleneck-board'
 ].forEach((marker) => assert(adminUsers.includes(marker), `admin-users.js sem marcador publico ${marker}.`));
@@ -218,9 +222,9 @@ const report = {
   ok: failures.length === 0,
   contracts: {
     localStorageKeys: 13,
-    dataMarkers: 19,
+    dataMarkers: 21,
     globals: 12,
-    deepLinks: 9,
+    deepLinks: 10,
     validators: 15,
     calculatorCount
   },

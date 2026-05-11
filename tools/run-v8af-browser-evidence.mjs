@@ -13,7 +13,8 @@ const reportPath = path.join(reportsDir, 'v8af-proposal-handoff-browser-report.j
 const screenshots = {
   proposalDesktop: path.join(printsDir, 'v8af-proposta-handoff-desktop.png'),
   proposalMobile: path.join(printsDir, 'v8af-proposta-handoff-mobile.png'),
-  handoffDesktop: path.join(printsDir, 'v8af-handoff-proposta-desktop.png')
+  handoffDesktop: path.join(printsDir, 'v8af-handoff-proposta-desktop.png'),
+  adminActionQueueDesktop: path.join(printsDir, 'v8af-admin-action-queue-desktop.png')
 };
 
 async function launchBrowser() {
@@ -26,6 +27,13 @@ async function launchBrowser() {
 
 function assert(condition, message, failures) {
   if (!condition) failures.push(message);
+}
+
+function reportScreenshots() {
+  return Object.fromEntries(Object.entries(screenshots).map(([key, value]) => [
+    key,
+    path.relative(root, value).replace(/\\/g, '/')
+  ]));
 }
 
 async function clearTransientUi(page) {
@@ -141,26 +149,57 @@ try {
   const handoffPage = await page.evaluate((expectedId) => {
     const cards = Array.from(document.querySelectorAll('[data-handoff-card]'));
     const card = cards.find((item) => item.getAttribute('data-handoff-card') === expectedId) || cards[0] || null;
+    const actionPlan = document.querySelector('[data-handoff-action-plan]');
     return {
       ready: document.body.dataset.handoffReady,
       cards: cards.length,
+      actionPlans: document.querySelectorAll('[data-handoff-action-plan]').length,
       expectedFound: !!card && card.getAttribute('data-handoff-card') === expectedId,
-      text: card ? card.innerText : ''
+      text: card ? card.innerText : '',
+      actionPlanText: actionPlan ? actionPlan.innerText : ''
     };
   }, flow.createdId);
 
   assert(handoffPage.ready === 'true', 'Pagina handoff nao marcou data-handoff-ready=true.', failures);
   assert(handoffPage.cards >= 1, 'Pagina handoff nao renderizou cards.', failures);
+  assert(handoffPage.actionPlans >= 1, 'Pagina handoff nao renderizou data-handoff-action-plan.', failures);
+  assert(/DONO|Dono/i.test(handoffPage.actionPlanText), 'Plano de acao do handoff nao mostrou dono.', failures);
+  assert(/PRAZO|Prazo/i.test(handoffPage.actionPlanText), 'Plano de acao do handoff nao mostrou prazo.', failures);
   assert(handoffPage.expectedFound, 'Pagina handoff nao exibiu o lead criado pela proposta.', failures);
   await page.locator('[data-handoff-list]').scrollIntoViewIfNeeded();
   await page.screenshot({ path: screenshots.handoffDesktop, fullPage: false });
+
+  await page.goto(`${baseUrl}/login.html`, { waitUntil: 'networkidle' });
+  await page.waitForFunction(() => typeof BFAuth !== 'undefined', null, { timeout: 10000 });
+  const adminLogin = await page.evaluate(() => BFAuth.login('admin@bankfratern.local', 'Admin@123'));
+  assert(adminLogin && adminLogin.ok, `Login local admin falhou: ${adminLogin && adminLogin.message ? adminLogin.message : 'sem mensagem'}`, failures);
+
+  await page.goto(`${baseUrl}/dashboard-admin.html#admin-fila-acao`, { waitUntil: 'networkidle' });
+  await page.waitForFunction(() => document.body.dataset.adminActionQueueReady === 'true', null, { timeout: 15000 });
+  const adminActionQueue = await page.evaluate(() => {
+    const queue = document.querySelector('[data-admin-action-queue]');
+    return {
+      ready: document.body.dataset.adminActionQueueReady,
+      count: Number(document.body.dataset.adminActionQueueCount || 0),
+      items: document.querySelectorAll('[data-admin-action-item]').length,
+      text: queue ? queue.innerText : ''
+    };
+  });
+  assert(adminActionQueue.ready === 'true', 'Dashboard admin nao marcou adminActionQueueReady=true.', failures);
+  assert(adminActionQueue.items >= 1, 'Dashboard admin nao renderizou data-admin-action-item.', failures);
+  assert(/DONO|Dono/i.test(adminActionQueue.text), 'Fila admin nao mostrou dono.', failures);
+  assert(/ALVO|Alvo/i.test(adminActionQueue.text), 'Fila admin nao mostrou alvo.', failures);
+  assert(/HOJE|ATE 24H|ATE 48H|ATE 72H|Hoje|Ate 24h|Ate 48h|Ate 72h/i.test(adminActionQueue.text), 'Fila admin nao mostrou prazo.', failures);
+  await page.locator('[data-admin-action-queue]').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: screenshots.adminActionQueueDesktop, fullPage: false });
 
   const report = {
     ok: failures.length === 0,
     baseUrl,
     flow,
     handoffPage,
-    screenshots,
+    adminActionQueue,
+    screenshots: reportScreenshots(),
     consoleErrors: consoleErrors.slice(0, 20),
     pageErrors,
     notFound: [...new Set(notFound)].slice(0, 20),
@@ -173,7 +212,7 @@ try {
   const report = {
     ok: false,
     baseUrl,
-    screenshots,
+    screenshots: reportScreenshots(),
     consoleErrors: consoleErrors.slice(0, 20),
     pageErrors,
     notFound: [...new Set(notFound)].slice(0, 20),

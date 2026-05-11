@@ -52,7 +52,9 @@ const [pageHtml, uiSource, cssSource, serviceSource, designValidator, contractsD
   'handoffConsultantCockpitReady',
   'handoffConsultantActionCount',
   'data-handoff-proposal-version',
+  'data-handoff-action-plan',
   'proposalVersionPanel',
+  'actionPlan',
   'matchesAging',
   'hydrateAssigneeOptions',
   'data-handoff-next-step'
@@ -61,6 +63,7 @@ const [pageHtml, uiSource, cssSource, serviceSource, designValidator, contractsD
 [
   'operationalState',
   'proposalState',
+  'actionPlan',
   'consultantBoard',
   'slaHoursForPriority',
   'ageLabel',
@@ -77,6 +80,7 @@ const [pageHtml, uiSource, cssSource, serviceSource, designValidator, contractsD
   '.bf-handoff-action',
   '.bf-handoff-aging',
   '.bf-handoff-next-step',
+  '.bf-handoff-action-plan',
   '.bf-handoff-proposal-panel',
   '.bf-handoff-proposal-chip'
 ].forEach((selector) => assert(cssSource.includes(selector), `platform.css sem seletor ${selector}.`));
@@ -112,6 +116,7 @@ vm.runInContext(serviceSource, context, { filename: 'assets/js/services/handoff-
 const service = context.BFHandoffConsultivoService;
 assert(service && typeof service.operationalState === 'function', 'operationalState indisponivel.');
 assert(service && typeof service.consultantBoard === 'function', 'consultantBoard indisponivel.');
+assert(service && typeof service.actionPlan === 'function', 'actionPlan indisponivel.');
 
 const referenceNow = new Date('2026-05-08T12:00:00.000Z');
 const overdueLead = {
@@ -174,6 +179,7 @@ const overdueState = service.operationalState(overdueLead, referenceNow);
 const waitingState = service.operationalState(waitingLead, referenceNow);
 const qualifiedState = service.operationalState(qualifiedLead, referenceNow);
 const expiredProposalState = service.proposalState(expiredProposalLead, referenceNow);
+const expiredProposalAction = service.actionPlan(expiredProposalLead, referenceNow);
 const board = service.consultantBoard([overdueLead, waitingLead, qualifiedLead], referenceNow);
 const proposalBoard = service.consultantBoard([overdueLead, expiredProposalLead], referenceNow);
 
@@ -184,12 +190,17 @@ assert(waitingState.waitingClient === true, 'Lead aguardando cliente 48h+ nao fo
 assert(qualifiedState.open === false, 'Lead qualificado ainda aparece como aberto.');
 assert(expiredProposalState.expired === true, 'Proposta vencida nao foi detectada.');
 assert(expiredProposalState.nextStep === 'Revisar validade da proposta', `Proximo passo da proposta vencida inesperado: ${expiredProposalState.nextStep}.`);
+assert(expiredProposalAction.type === 'proposal', `Plano da proposta vencida deveria ser proposal; recebeu ${expiredProposalAction.type}.`);
+assert(expiredProposalAction.deadlineLabel === 'Hoje', `Prazo da proposta vencida deveria ser Hoje; recebeu ${expiredProposalAction.deadlineLabel}.`);
+assert(expiredProposalAction.ctaLabel === 'Abrir proposta', `CTA da proposta vencida inesperado: ${expiredProposalAction.ctaLabel}.`);
 assert(board.open === 2, `Board deveria ter 2 abertos; recebeu ${board.open}.`);
 assert(board.overdue === 2, `Board deveria ter 2 SLA vencidos; recebeu ${board.overdue}.`);
 assert(board.waiting === 1, `Board deveria ter 1 aguardando; recebeu ${board.waiting}.`);
 assert(board.unassigned === 1, `Board deveria ter 1 sem responsavel; recebeu ${board.unassigned}.`);
 assert(board.nextActions.length === 2, `Board deveria listar 2 proximas acoes; recebeu ${board.nextActions.length}.`);
 assert(board.nextActions[0].id === 'LEAD-SLA', 'Lead de alta prioridade nao ficou no topo das proximas acoes.');
+assert(board.nextActions[0].deadlineLabel, 'Proxima acao nao trouxe prazo operacional.');
+assert(board.nextActions[0].actionOwner, 'Proxima acao nao trouxe dono operacional.');
 assert(proposalBoard.proposalExpired === 1, `Board deveria ter 1 proposta vencida; recebeu ${proposalBoard.proposalExpired}.`);
 assert(proposalBoard.proposalUnversioned === 1, `Board deveria ter 1 proposta sem snapshot; recebeu ${proposalBoard.proposalUnversioned}.`);
 
@@ -205,7 +216,9 @@ const report = {
   proposal: {
     expired: proposalBoard.proposalExpired,
     unversioned: proposalBoard.proposalUnversioned,
-    expiredNextStep: expiredProposalState.nextStep
+    expiredNextStep: expiredProposalState.nextStep,
+    expiredActionType: expiredProposalAction.type,
+    expiredDeadline: expiredProposalAction.deadlineLabel
   },
   failures
 };

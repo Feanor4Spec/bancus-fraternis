@@ -260,6 +260,125 @@
     return '';
   }
 
+  function actionTypeFor(item, state) {
+    const proposal = state && state.proposal ? state.proposal : {};
+    if (proposal.active && proposal.tone === 'alta') return 'proposal';
+    if (state && state.unassigned) return 'assign';
+    if (state && state.slaOverdue) return 'sla';
+    if (state && state.waitingClient) return 'return';
+    if (proposal.active && proposal.tone === 'media') return 'proposal';
+    if (item && item.status === 'novo') return 'first-contact';
+    const checklist = item && item.checklist ? item.checklist : [];
+    if (checklist.some((entry) => entry.required && !entry.done)) return 'checklist';
+    return item && isOpen(item) ? 'qualify' : 'archive';
+  }
+
+  function deadlineHoursFor(item, state, actionType) {
+    const proposal = state && state.proposal ? state.proposal : {};
+    if (actionType === 'archive') return 168;
+    if ((state && state.slaOverdue) || (proposal.active && proposal.tone === 'alta')) return 0;
+    if (actionType === 'assign' || actionType === 'return' || (item && item.priority === 'alta')) return 24;
+    if (actionType === 'proposal' || actionType === 'first-contact' || actionType === 'checklist') return 48;
+    return 72;
+  }
+
+  function deadlineLabel(hours) {
+    const value = Number(hours || 0);
+    if (value <= 0) return 'Hoje';
+    if (value <= 24) return 'Ate 24h';
+    if (value <= 48) return 'Ate 48h';
+    if (value <= 72) return 'Ate 72h';
+    return 'Monitorar semanal';
+  }
+
+  function actionTitle(type, item, state) {
+    const proposal = state && state.proposal ? state.proposal : {};
+    if (type === 'proposal') return proposal.nextStep || 'Revisar proposta';
+    if (type === 'assign') return 'Atribuir consultor';
+    if (type === 'sla') return 'Contato imediato';
+    if (type === 'return') return 'Retomar cliente';
+    if (type === 'first-contact') return 'Iniciar atendimento';
+    if (type === 'checklist') return nextStepFor(item, state);
+    if (type === 'archive') return item && item.status === 'qualificado' ? 'Registrar conversao' : 'Arquivar aprendizado';
+    return 'Qualificar decisao';
+  }
+
+  function actionReason(type, item, state) {
+    const proposal = state && state.proposal ? state.proposal : {};
+    if (type === 'proposal') return proposal.reason || 'Proposta precisa de revisao antes da continuidade.';
+    if (type === 'assign') return 'Lead aberto precisa de responsavel local para continuar.';
+    if (type === 'sla') return 'SLA operacional ultrapassado para a prioridade atual.';
+    if (type === 'return') return 'Cliente esta aguardando retorno ha mais de 48 horas.';
+    if (type === 'first-contact') return 'Lead novo ainda nao entrou em atendimento.';
+    if (type === 'checklist') return 'Existem itens obrigatorios abertos no checklist consultivo.';
+    if (type === 'archive') return 'Atendimento fechado precisa de aprendizado ou conversao registrada.';
+    return 'Lead dentro da fila, pronto para decisao consultiva.';
+  }
+
+  function actionCtaLabel(type) {
+    const labels = {
+      proposal: 'Abrir proposta',
+      assign: 'Definir responsavel',
+      sla: 'Abrir lead',
+      return: 'Retomar atendimento',
+      'first-contact': 'Abrir lead',
+      checklist: 'Concluir checklist',
+      qualify: 'Registrar decisao',
+      archive: 'Revisar historico'
+    };
+    return labels[type] || 'Abrir acao';
+  }
+
+  function actionHref(type, item) {
+    if (type === 'proposal') {
+      const proposalId = item && item.sourceProposalId ? `?from=handoff&proposalId=${encodeURIComponent(item.sourceProposalId)}` : '?from=handoff';
+      return `simulador.html${proposalId}#step-9`;
+    }
+    const id = item && item.id ? `?handoffId=${encodeURIComponent(item.id)}` : '';
+    return `handoff-consultivo.html${id}#detalhe-handoff`;
+  }
+
+  function actionPlan(item, now) {
+    if (!item) {
+      return {
+        active: false,
+        type: 'none',
+        title: 'Sem acao',
+        reason: '',
+        owner: '',
+        deadlineHours: 0,
+        deadlineLabel: '',
+        dueAt: '',
+        ctaLabel: '',
+        href: ''
+      };
+    }
+    const reference = now instanceof Date ? now : new Date(now || Date.now());
+    const state = item.operational || operationalState(item, reference);
+    const type = actionTypeFor(item, state);
+    const deadlineHours = deadlineHoursFor(item, state, type);
+    const dueAt = new Date(reference.getTime() + (deadlineHours * 3600000)).toISOString();
+    const owner = type === 'assign'
+      ? 'coordenacao local'
+      : (item.assignedTo || state.suggestedAssignee || item.ownerEmail || 'definir na fila');
+    return {
+      active: true,
+      id: item.id || '',
+      type,
+      title: actionTitle(type, item, state),
+      reason: actionReason(type, item, state),
+      owner,
+      deadlineHours,
+      deadlineLabel: deadlineLabel(deadlineHours),
+      dueAt,
+      ctaLabel: actionCtaLabel(type),
+      href: actionHref(type, item),
+      tone: state.tone || 'media',
+      priority: item.priority || 'media',
+      source: sourceLabel(item)
+    };
+  }
+
   function proposalState(item, now) {
     if (!item || sourceType(item) !== 'proposal') {
       return {
@@ -397,19 +516,30 @@
         return bScore - aScore;
       })
       .slice(0, 5)
-      .map((item) => ({
-        id: item.id,
-        ownerEmail: item.ownerEmail || 'anon',
-        title: item.objectiveLabel || item.id,
-        source: sourceLabel(item),
-        priority: item.priority || 'media',
-        age: item.operational.ageLabel,
-        hours: item.operational.hours,
-        nextStep: item.operational.nextStep,
-        proposalState: item.operational.proposal && item.operational.proposal.active ? item.operational.proposal.label : '',
-        suggestedAssignee: item.operational.suggestedAssignee || '',
-        tone: item.operational.tone
-      }));
+      .map((item) => {
+        const plan = actionPlan(item, now);
+        return {
+          id: item.id,
+          ownerEmail: item.ownerEmail || 'anon',
+          title: item.objectiveLabel || item.id,
+          source: sourceLabel(item),
+          priority: item.priority || 'media',
+          age: item.operational.ageLabel,
+          hours: item.operational.hours,
+          nextStep: item.operational.nextStep,
+          proposalState: item.operational.proposal && item.operational.proposal.active ? item.operational.proposal.label : '',
+          suggestedAssignee: item.operational.suggestedAssignee || '',
+          tone: item.operational.tone,
+          actionType: plan.type,
+          actionTitle: plan.title,
+          actionReason: plan.reason,
+          actionOwner: plan.owner,
+          deadlineLabel: plan.deadlineLabel,
+          dueAt: plan.dueAt,
+          ctaLabel: plan.ctaLabel,
+          href: plan.href
+        };
+      });
 
     return {
       total: enriched.length,
@@ -878,6 +1008,7 @@
     slaHoursForPriority,
     proposalState,
     operationalState,
+    actionPlan,
     enrich,
     enrichList,
     consultantBoard,

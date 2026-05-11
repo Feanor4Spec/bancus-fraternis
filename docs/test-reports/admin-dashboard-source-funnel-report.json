@@ -5,6 +5,7 @@
     "sources": 7,
     "bottlenecks": 7,
     "nextActions": 5,
+    "actionQueue": 6,
     "simulatorBottomStagebar": true
   },
   "failures": []

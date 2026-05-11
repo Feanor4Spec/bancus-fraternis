@@ -38,15 +38,21 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
   'buildAdminSourceFunnel',
   'buildAdminBottlenecks',
   'buildAdminNextActions',
+  'buildAdminActionQueue',
   'renderAdminSourceFunnel',
   'renderAdminBottleneckBoard',
   'renderAdminNextActionBoard',
+  'renderAdminActionQueue',
   'data-admin-source-funnel',
   'data-admin-bottleneck-board',
   'data-admin-next-actions',
+  'data-admin-action-queue',
   'adminNextActionsReady',
   'adminNextActionCount',
+  'adminActionQueueReady',
+  'adminActionQueueCount',
   'id="admin-proximos-passos"',
+  'id="admin-fila-acao"',
   'id="admin-origens"',
   'id="admin-gargalos"',
   'adminSourceDefinitions',
@@ -57,6 +63,7 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
   'latestProposalVersions',
   'proposalVersionMap',
   'Responsavel sugerido',
+  'Quem faz o que, ate quando',
   'adminSourceFunnelReady',
   'adminBottleneckCount'
 ].forEach((marker) => assert(adminUsersJs.includes(marker), `admin-users.js sem contrato ${marker}.`));
@@ -85,6 +92,9 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
   '.bf-admin-next-actions',
   '.bf-admin-next-actions__grid',
   '.bf-admin-next-action',
+  '.bf-admin-action-queue',
+  '.bf-admin-action-queue__list',
+  '.bf-admin-action-item',
   '.bf-admin-source-funnel',
   '.bf-admin-source-grid',
   '.bf-admin-source-card',
@@ -95,7 +105,7 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
 
 assert(!simulatorHtml.includes('data-v8-stagebar-legacy'), 'simulador.html ainda contem template legado da stagebar superior.');
 assert(simulatorHtml.includes('bf-v8-stagebar-shell'), 'simulador.html sem stagebar inferior recolhivel.');
-assert(platformCss.includes('.bf-admin-next-actions__grid') && platformCss.includes('.bf-admin-source-grid') && platformCss.includes('.bf-admin-bottleneck-grid'), 'CSS admin sem grids monitorados.');
+assert(platformCss.includes('.bf-admin-next-actions__grid') && platformCss.includes('.bf-admin-action-queue__list') && platformCss.includes('.bf-admin-source-grid') && platformCss.includes('.bf-admin-bottleneck-grid'), 'CSS admin sem grids monitorados.');
 
 const report = {
   ok: failures.length === 0,
@@ -104,6 +114,7 @@ const report = {
     sources: 7,
     bottlenecks: 7,
     nextActions: adminUsersJs.includes('buildAdminNextActions') ? 5 : 0,
+    actionQueue: adminUsersJs.includes('buildAdminActionQueue') ? 6 : 0,
     simulatorBottomStagebar: simulatorHtml.includes('bf-v8-stagebar-shell')
   },
   failures
