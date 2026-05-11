@@ -277,6 +277,7 @@ Melhoria implementada em 2026-05-07:
 - O admin consolida carteira por consultor com leads abertos, aging, origem, prioridade, SLA e proximo foco por lead.
 - A carteira por consultor ganhou filtros por consultor/origem/prioridade/SLA/busca, plano comercial do dia e exportacao JSON sanitizada.
 - O admin mostra funil comercial por etapa do lead: contato, proposta, follow-up, negociacao e fechamento.
+- O funil comercial agora permite mover o lead entre etapas pelo Dashboard Admin, grava historico local e reflete o status no handoff.
 - O painel consultivo filtra por origem e mostra badge/resumo da origem nos cards e no detalhe.
 - O dashboard admin mostra metricas de propostas e trilhas na fila de handoff.
 - O contrato e coberto por `tools/validate-handoff-origins.mjs`.
@@ -396,6 +397,8 @@ Chaves `localStorage` confirmadas:
 | `bf_comparator_model_audit_v1` | Auditoria de modelos. |
 | `bf_consultive_handoffs_v1` | Handoffs/leads locais. |
 | `bf_consultive_handoff_audit_v1` | Auditoria dos handoffs. |
+| `bf_admin_commercial_stage_states_v1` | Etapa comercial escolhida por lead no Dashboard Admin. |
+| `bf_admin_commercial_stage_audit_v1` | Historico local de movimentacao do funil comercial. |
 | `bf_admin_recovery_imports_v1` | Pacotes importados. |
 | `bf_admin_recovery_audit_v1` | Auditoria admin recovery. |
 | `bf_admin_recovery_conversion_goals_v1` | Metas de conversao. |
@@ -419,7 +422,7 @@ Os marcadores mais importantes por area:
 | Proposta | `data-proposal-acceptance-panel`, `data-proposal-handoff-bridge`, `data-proposal-builder-board`, `data-proposal-builder-readiness`, `data-proposal-builder-option`, `data-proposal-version-panel`, `data-proposal-version-history`, `data-proposal-version-comparison`. |
 | Handoff | `data-handoff-list`, `data-handoff-detail`, `data-handoff-metrics`, `data-handoff-recovery-signals`, `data-handoff-action-plan`, `data-handoff-action-execution`, `data-handoff-proposal-version`. |
 | Cliente | `data-client-continuity-strip`, `data-client-decision-journey`, `data-client-recovery-signals`. |
-| Admin | `data-admin-next-actions`, `data-admin-action-queue`, `data-admin-action-execution`, `data-admin-action-owner-history`, `data-admin-consultant-productivity`, `data-admin-consultant-portfolio`, `data-admin-consultant-portfolio-lead`, `data-admin-consultant-portfolio-filters`, `data-admin-consultant-portfolio-export`, `data-admin-consultant-portfolio-priority`, `data-admin-commercial-pipeline`, `data-admin-commercial-stage`, `data-admin-commercial-lead`, `data-admin-source-funnel`, `data-admin-bottleneck-board`, `data-admin-recovery-queue`, `data-admin-recovery-packages`, `data-admin-journey-funnel`, `data-admin-operational-alerts`. |
+| Admin | `data-admin-next-actions`, `data-admin-action-queue`, `data-admin-action-execution`, `data-admin-action-owner-history`, `data-admin-consultant-productivity`, `data-admin-consultant-portfolio`, `data-admin-consultant-portfolio-lead`, `data-admin-consultant-portfolio-filters`, `data-admin-consultant-portfolio-export`, `data-admin-consultant-portfolio-priority`, `data-admin-commercial-pipeline`, `data-admin-commercial-stage`, `data-admin-commercial-lead`, `data-admin-commercial-stage-select`, `data-admin-commercial-stage-history`, `data-admin-source-funnel`, `data-admin-bottleneck-board`, `data-admin-recovery-queue`, `data-admin-recovery-packages`, `data-admin-journey-funnel`, `data-admin-operational-alerts`. |
 | Lousa | `data-lousa-journey-checklist`, `data-lousa-journey-acceptance`. |
 | V8 | `data-v8-stagebar`, `data-bf-visual-version`, `data-shell-header`, `data-shell-footer`. |
 

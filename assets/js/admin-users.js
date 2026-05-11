@@ -2,6 +2,9 @@
   'use strict';
 
   let editingId = null;
+  const ADMIN_COMMERCIAL_STAGE_STATE_KEY = 'bf_admin_commercial_stage_states_v1';
+  const ADMIN_COMMERCIAL_STAGE_AUDIT_KEY = 'bf_admin_commercial_stage_audit_v1';
+  const ADMIN_COMMERCIAL_STAGE_AUDIT_LIMIT = 160;
 
   function qs(selector) {
     return document.querySelector(selector);
@@ -375,6 +378,16 @@
       return parsed == null ? fallback : parsed;
     } catch (error) {
       return fallback;
+    }
+  }
+
+  function writeAdminJson(key, value) {
+    try {
+      if (!window.localStorage) return false;
+      window.localStorage.setItem(key, JSON.stringify(value));
+      return true;
+    } catch (error) {
+      return false;
     }
   }
 
@@ -1790,7 +1803,107 @@
     ];
   }
 
+  function adminCommercialStageMap() {
+    return new Map(adminCommercialStageDefinitions().map((stage) => [stage.key, stage]));
+  }
+
+  function adminCommercialStageLabel(key) {
+    const stage = adminCommercialStageMap().get(String(key || ''));
+    return stage ? stage.label : 'Contato';
+  }
+
+  function adminCommercialStageStatus(key) {
+    const stage = adminCommercialStageMap().get(String(key || ''));
+    return stage ? stage.status : 'novo';
+  }
+
+  function adminCommercialStageStates() {
+    const states = readAdminJson(ADMIN_COMMERCIAL_STAGE_STATE_KEY, {});
+    return states && typeof states === 'object' && !Array.isArray(states) ? states : {};
+  }
+
+  function writeAdminCommercialStageStates(states) {
+    return writeAdminJson(ADMIN_COMMERCIAL_STAGE_STATE_KEY, states && typeof states === 'object' ? states : {});
+  }
+
+  function adminCommercialStageAudit() {
+    const audit = readAdminJson(ADMIN_COMMERCIAL_STAGE_AUDIT_KEY, []);
+    return Array.isArray(audit) ? audit.filter(Boolean) : [];
+  }
+
+  function currentAdminActor() {
+    try {
+      const user = window.BFAuth && window.BFAuth.getCurrentUser ? window.BFAuth.getCurrentUser() : null;
+      return {
+        email: user && user.email ? user.email : 'admin.local@bankfratern.local',
+        name: user && user.name ? user.name : 'Admin local',
+        role: user && user.role ? user.role : 'admin'
+      };
+    } catch (error) {
+      return { email: 'admin.local@bankfratern.local', name: 'Admin local', role: 'admin' };
+    }
+  }
+
+  function recordAdminCommercialStageChange(handoff, fromStage, toStage) {
+    const actor = currentAdminActor();
+    const event = {
+      id: `CST-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
+      handoffId: handoff && handoff.id ? handoff.id : '',
+      fromStage: fromStage || '',
+      fromLabel: fromStage ? adminCommercialStageLabel(fromStage) : '',
+      toStage,
+      toLabel: adminCommercialStageLabel(toStage),
+      status: adminCommercialStageStatus(toStage),
+      actorEmail: actor.email,
+      actorRole: actor.role,
+      createdAt: new Date().toISOString()
+    };
+    writeAdminJson(ADMIN_COMMERCIAL_STAGE_AUDIT_KEY, [event].concat(adminCommercialStageAudit()).slice(0, ADMIN_COMMERCIAL_STAGE_AUDIT_LIMIT));
+    return event;
+  }
+
+  function setAdminCommercialStage(handoffId, stageKey) {
+    const service = window.BFHandoffConsultivoService;
+    const normalizedStage = adminCommercialStageMap().has(String(stageKey || '')) ? String(stageKey || '') : 'contato';
+    const handoff = service && service.find ? service.find(String(handoffId || '')) : null;
+    if (!handoff || !handoff.id) return null;
+
+    const states = adminCommercialStageStates();
+    const previousStage = states[handoff.id] && states[handoff.id].stage
+      ? states[handoff.id].stage
+      : adminCommercialStageFor(handoff, handoff.operational || {}, service.actionPlan ? service.actionPlan(handoff, new Date()) : null, service);
+    const status = adminCommercialStageStatus(normalizedStage);
+    const updated = service && service.setStatus ? service.setStatus(handoff.id, status) : handoff;
+    const actor = currentAdminActor();
+    const state = {
+      handoffId: handoff.id,
+      stage: normalizedStage,
+      stageLabel: adminCommercialStageLabel(normalizedStage),
+      status,
+      updatedAt: new Date().toISOString(),
+      updatedBy: actor.email
+    };
+    states[handoff.id] = state;
+    writeAdminCommercialStageStates(states);
+    recordAdminCommercialStageChange(updated || handoff, previousStage, normalizedStage);
+    return { ...(updated || handoff), commercialStage: state };
+  }
+
+  function adminCommercialStageHistoryLabel(handoffId) {
+    const event = adminCommercialStageAudit().find((item) => item && item.handoffId === handoffId);
+    if (!event) return 'Etapa definida automaticamente pela jornada.';
+    return `Movido para ${event.toLabel || adminCommercialStageLabel(event.toStage)} em ${formatDate(event.createdAt)}.`;
+  }
+
+  function adminCommercialStageOptions(activeKey) {
+    return adminCommercialStageDefinitions().map((stage) => `
+      <option value="${escapeHtml(stage.key)}"${selectedAttr(activeKey, stage.key)}>${escapeHtml(stage.label)}</option>
+    `).join('');
+  }
+
   function adminCommercialStageFor(item, state, plan, service) {
+    const savedStage = item && item.id ? adminCommercialStageStates()[item.id] : null;
+    if (savedStage && savedStage.stage && adminCommercialStageMap().has(savedStage.stage)) return savedStage.stage;
     const source = service && service.sourceType ? service.sourceType(item) : (item && item.sourceType) || 'manual';
     const proposal = state && state.proposal ? state.proposal : {};
     const executionStatus = plan && plan.execution ? plan.execution.status : '';
@@ -1820,6 +1933,8 @@
         const tone = state.tone || (item.priority === 'alta' ? 'media' : 'baixa');
         stage.leads.push({
           id: item.id || '',
+          stageKey: stage.key,
+          stageLabel: stage.label,
           title: item.objectiveLabel || (item.summary && item.summary.objectiveLabel) || item.id || 'Lead consultivo',
           owner: portfolioOwnerName(item, plan, state),
           source,
@@ -1843,6 +1958,7 @@
       stage.avgHours = stage.leads.length ? hours / stage.leads.length : 0;
       stage.width = total ? Math.max(5, Math.round((stage.leads.length / total) * 100)) : 5;
       stage.tone = stage.overdue ? 'alta' : (stage.high ? 'media' : 'baixa');
+      stage.totalLeads = stage.leads.length;
       stage.leads = stage.leads
         .sort((a, b) => (Number(b.overdue) - Number(a.overdue)) || (alertWeight(b.tone) - alertWeight(a.tone)) || (Number(b.hours || 0) - Number(a.hours || 0)))
         .slice(0, 4);
@@ -1850,8 +1966,8 @@
 
     return {
       total,
-      open: rows.slice(0, 4).reduce((sum, stage) => sum + stage.leads.length, 0),
-      closed: (byStage.get('fechamento') || { leads: [] }).leads.length,
+      open: rows.slice(0, 4).reduce((sum, stage) => sum + Number(stage.totalLeads || stage.leads.length || 0), 0),
+      closed: Number((byStage.get('fechamento') || {}).totalLeads || 0),
       high: rows.reduce((sum, stage) => sum + stage.high, 0),
       overdue: rows.reduce((sum, stage) => sum + stage.overdue, 0),
       rows
@@ -1882,7 +1998,7 @@
             <article class="bf-admin-commercial-stage bf-admin-commercial-stage--${escapeHtml(stage.tone)}" data-admin-commercial-stage="${escapeHtml(stage.key)}">
               <div class="bf-admin-commercial-stage__top">
                 <span>${escapeHtml(stage.label)}</span>
-                <strong>${escapeHtml(stage.leads.length)}</strong>
+                <strong>${escapeHtml(stage.totalLeads || stage.leads.length)}</strong>
               </div>
               <div class="bf-admin-funnel-bar"><i style="width:${escapeHtml(stage.width)}%"></i></div>
               <dl>
@@ -1892,11 +2008,21 @@
               </dl>
               <div class="bf-admin-commercial-stage__leads">
                 ${stage.leads.length ? stage.leads.map((lead) => `
-                  <a class="bf-admin-commercial-lead bf-admin-commercial-lead--${escapeHtml(lead.tone)}" href="${escapeHtml(lead.href)}" data-admin-commercial-lead="${escapeHtml(lead.id)}">
+                  <article class="bf-admin-commercial-lead bf-admin-commercial-lead--${escapeHtml(lead.tone)}" data-admin-commercial-lead="${escapeHtml(lead.id)}">
                     <span>${escapeHtml(lead.source)} - ${escapeHtml(lead.priority)} - ${escapeHtml(lead.age)}</span>
                     <strong>${escapeHtml(lead.title)}</strong>
                     <small>${escapeHtml(lead.status)} - ${escapeHtml(lead.nextStep)}</small>
-                  </a>
+                    <div class="bf-admin-commercial-lead__actions">
+                      <label>
+                        <span>Mover etapa</span>
+                        <select class="bf-admin-commercial-stage-select" data-admin-commercial-stage-select="${escapeHtml(lead.id)}" aria-label="Mover etapa comercial de ${escapeHtml(lead.title)}">
+                          ${adminCommercialStageOptions(lead.stageKey)}
+                        </select>
+                      </label>
+                      <a class="btn btn--ghost btn--sm" href="${escapeHtml(lead.href)}">Abrir lead</a>
+                    </div>
+                    <small data-admin-commercial-stage-history>${escapeHtml(adminCommercialStageHistoryLabel(lead.id))}</small>
+                  </article>
                 `).join('') : `<div class="bf-empty-state">${escapeHtml(stage.next)} quando houver lead nesta etapa.</div>`}
               </div>
             </article>
@@ -2782,6 +2908,16 @@
     });
 
     qs('[data-admin-journey-funnel]')?.addEventListener('change', (event) => {
+      const stageSelect = event.target.closest('[data-admin-commercial-stage-select]');
+      if (stageSelect) {
+        const result = setAdminCommercialStage(stageSelect.dataset.adminCommercialStageSelect, stageSelect.value);
+        setMessage(
+          result ? `Lead ${result.id} movido para ${adminCommercialStageLabel(stageSelect.value)}.` : 'Nao foi possivel mover o lead no funil comercial.',
+          result ? 'success' : 'error'
+        );
+        renderAll();
+        return;
+      }
       if (!event.target.closest('[data-admin-portfolio-filter]')) return;
       renderJourneyFunnel();
     });

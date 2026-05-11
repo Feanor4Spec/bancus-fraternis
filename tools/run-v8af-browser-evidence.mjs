@@ -80,6 +80,8 @@ try {
     localStorage.removeItem('bank_fratern_proposal_acceptances_v1');
     localStorage.removeItem('bf_consultive_handoffs_v1');
     localStorage.removeItem('bf_consultive_handoff_audit_v1');
+    localStorage.removeItem('bf_admin_commercial_stage_states_v1');
+    localStorage.removeItem('bf_admin_commercial_stage_audit_v1');
 
     App.carregarExemplo();
     App.calcular();
@@ -305,16 +307,52 @@ try {
       count: Number(document.body.dataset.adminCommercialPipelineCount || 0),
       stages: document.querySelectorAll('[data-admin-commercial-stage]').length,
       leads: document.querySelectorAll('[data-admin-commercial-lead]').length,
+      selects: document.querySelectorAll('[data-admin-commercial-stage-select]').length,
+      history: document.querySelectorAll('[data-admin-commercial-stage-history]').length,
       text: panel ? panel.innerText : ''
     };
   });
   assert(adminCommercialPipeline.ready === 'true', 'Dashboard admin nao marcou adminCommercialPipelineReady=true.', failures);
   assert(adminCommercialPipeline.stages === 5, 'Funil comercial deveria renderizar 5 etapas.', failures);
   assert(adminCommercialPipeline.leads >= 1, 'Funil comercial nao renderizou lead em etapa.', failures);
+  assert(adminCommercialPipeline.selects >= 1, 'Funil comercial nao renderizou seletor para mover etapa.', failures);
+  assert(adminCommercialPipeline.history >= 1, 'Funil comercial nao renderizou historico de etapa.', failures);
   assert(/ETAPAS COMERCIAIS DOS LEADS|Etapas comerciais dos leads/i.test(adminCommercialPipeline.text), 'Funil comercial nao exibiu titulo esperado.', failures);
+  assert(/MOVER ETAPA|Mover etapa/i.test(adminCommercialPipeline.text), 'Funil comercial nao exibiu controle de mover etapa.', failures);
   ['Contato', 'Proposta', 'Follow-up', 'Negociacao', 'Fechamento'].forEach((label) => {
     assert(adminCommercialPipeline.text.toLowerCase().includes(label.toLowerCase()), `Funil comercial nao exibiu etapa ${label}.`, failures);
   });
+  const adminCommercialStageMove = await page.evaluate(() => {
+    const select = document.querySelector('[data-admin-commercial-stage-select]');
+    const handoffId = select ? select.getAttribute('data-admin-commercial-stage-select') : '';
+    if (select) {
+      select.value = 'followup';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    const states = JSON.parse(localStorage.getItem('bf_admin_commercial_stage_states_v1') || '{}');
+    const audit = JSON.parse(localStorage.getItem('bf_admin_commercial_stage_audit_v1') || '[]');
+    const handoffs = JSON.parse(localStorage.getItem('bf_consultive_handoffs_v1') || '[]');
+    const updated = handoffs.find((item) => item.id === handoffId) || {};
+    const panel = document.querySelector('[data-admin-commercial-pipeline]');
+    return {
+      handoffId,
+      savedStage: states[handoffId] && states[handoffId].stage,
+      savedStatus: states[handoffId] && states[handoffId].status,
+      handoffStatus: updated.status,
+      auditCount: audit.length,
+      latestStage: audit[0] && audit[0].toStage,
+      latestStatus: audit[0] && audit[0].status,
+      text: panel ? panel.innerText : ''
+    };
+  });
+  assert(adminCommercialStageMove.handoffId, 'Funil comercial nao encontrou lead para mover.', failures);
+  assert(adminCommercialStageMove.savedStage === 'followup', `Movimento comercial deveria salvar followup, recebeu ${adminCommercialStageMove.savedStage}.`, failures);
+  assert(adminCommercialStageMove.savedStatus === 'aguardando_cliente', `Movimento comercial deveria salvar status aguardando_cliente, recebeu ${adminCommercialStageMove.savedStatus}.`, failures);
+  assert(adminCommercialStageMove.handoffStatus === 'aguardando_cliente', `Handoff deveria refletir aguardando_cliente, recebeu ${adminCommercialStageMove.handoffStatus}.`, failures);
+  assert(adminCommercialStageMove.auditCount >= 1, 'Movimento comercial nao gerou auditoria local.', failures);
+  assert(adminCommercialStageMove.latestStage === 'followup', `Auditoria comercial deveria registrar followup, recebeu ${adminCommercialStageMove.latestStage}.`, failures);
+  assert(adminCommercialStageMove.latestStatus === 'aguardando_cliente', `Auditoria comercial deveria registrar status aguardando_cliente, recebeu ${adminCommercialStageMove.latestStatus}.`, failures);
+  assert(/Movido para Follow-up|Follow-up/i.test(adminCommercialStageMove.text), 'Funil comercial nao refletiu a etapa movida para Follow-up.', failures);
   await page.locator('[data-admin-commercial-pipeline]').scrollIntoViewIfNeeded();
   await page.screenshot({ path: screenshots.adminCommercialPipelineDesktop, fullPage: false });
 
@@ -330,6 +368,7 @@ try {
     adminPortfolio,
     adminPortfolioExport,
     adminCommercialPipeline,
+    adminCommercialStageMove,
     screenshots: reportScreenshots(),
     consoleErrors: consoleErrors.slice(0, 20),
     pageErrors,

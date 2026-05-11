@@ -11,6 +11,7 @@
     "consultantPortfolio": true,
     "consultantPortfolioExport": true,
     "commercialPipeline": true,
+    "commercialStageMove": true,
     "simulatorBottomStagebar": true
   },
   "failures": []

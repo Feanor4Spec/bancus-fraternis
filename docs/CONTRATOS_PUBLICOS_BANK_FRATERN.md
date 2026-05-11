@@ -1,6 +1,6 @@
 # Contratos Publicos - Bancus Fraternis
 
-Atualizado em 2026-05-08.
+Atualizado em 2026-05-11.
 
 Este documento e a matriz viva dos contratos que novas evolucoes devem preservar. O Bancus Fraternis e uma plataforma estatica/progressiva de decisao financeira; por isso, compatibilidade local importa tanto quanto visual e jornada.
 
@@ -39,6 +39,8 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | `bf_consultive_handoff_audit_v1` | `BFHandoffConsultivoService` | Auditoria dos handoffs. | Preservar relacao com proposta, trilha ou sinal. |
 | `bf_operational_action_states_v1` | `BFHandoffConsultivoService` | Status persistido da fila guiada. | Manter `actionKey`, status, dono, motivo e datas. |
 | `bf_operational_action_audit_v1` | `BFHandoffConsultivoService` | Historico de execucao por acao/responsavel. | Nao conter dados sensiveis produtivos. |
+| `bf_admin_commercial_stage_states_v1` | Dashboard Admin | Etapa comercial escolhida por lead no funil: contato, proposta, follow-up, negociacao ou fechamento. | Preservar `handoffId`, `stage`, `status`, `updatedAt` e `updatedBy`. |
+| `bf_admin_commercial_stage_audit_v1` | Dashboard Admin | Historico local das movimentacoes do funil comercial. | Manter eventos sem dados sensiveis, ligados ao `handoffId`. |
 | `bf_admin_recovery_imports_v1` | `BFAdminRecoveryService` | Pacotes importados de retomada. | Pacotes devem continuar sanitizados. |
 | `bf_admin_recovery_audit_v1` | `BFAdminRecoveryService` | Auditoria administrativa. | Manter eventos de export/import/roteamento. |
 | `bf_admin_recovery_conversion_goals_v1` | `BFAdminRecoveryService` | Metas de conversao por responsavel. | Preservar `assignedTo` e `targetHandoffs`. |
@@ -58,7 +60,7 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | Proposta | `data-proposal-acceptance-panel`, `data-proposal-handoff-bridge`, `data-proposal-builder-board`, `data-proposal-builder-readiness`, `data-proposal-builder-option`, `data-proposal-version-panel`, `data-proposal-version-history`, `data-proposal-version-comparison`. |
 | Handoff | `data-handoff-list`, `data-handoff-detail`, `data-handoff-metrics`, `data-handoff-recovery-signals`, `data-handoff-consultant-cockpit`, `data-handoff-action-plan`, `data-handoff-action-execution`, `data-handoff-action-reason`, `data-handoff-action-history`, `data-handoff-assignee-filter`, `data-handoff-aging-filter`, `data-handoff-proposal-version`. |
 | Dashboard Cliente | `data-client-continuity-strip`, `data-client-continuity-timeline`, `data-client-decision-journey`, `data-client-recovery-signals`. |
-| Dashboard Admin | `data-admin-next-actions`, `data-admin-action-queue`, `data-admin-action-execution`, `data-admin-action-reason`, `data-admin-action-history`, `data-admin-action-owner-history`, `data-admin-consultant-productivity`, `data-admin-consultant-productivity-row`, `data-admin-consultant-portfolio`, `data-admin-consultant-portfolio-row`, `data-admin-consultant-portfolio-lead`, `data-admin-consultant-portfolio-filters`, `data-admin-portfolio-filter`, `data-admin-consultant-portfolio-export`, `data-admin-consultant-portfolio-priority`, `data-admin-consultant-portfolio-priority-lead`, `data-admin-commercial-pipeline`, `data-admin-commercial-stage`, `data-admin-commercial-lead`, `data-admin-source-funnel`, `data-admin-bottleneck-board`, `data-admin-journey-funnel`, `data-admin-operational-alerts`, `data-admin-recovery-queue`, `data-admin-recovery-packages`. |
+| Dashboard Admin | `data-admin-next-actions`, `data-admin-action-queue`, `data-admin-action-execution`, `data-admin-action-reason`, `data-admin-action-history`, `data-admin-action-owner-history`, `data-admin-consultant-productivity`, `data-admin-consultant-productivity-row`, `data-admin-consultant-portfolio`, `data-admin-consultant-portfolio-row`, `data-admin-consultant-portfolio-lead`, `data-admin-consultant-portfolio-filters`, `data-admin-portfolio-filter`, `data-admin-consultant-portfolio-export`, `data-admin-consultant-portfolio-priority`, `data-admin-consultant-portfolio-priority-lead`, `data-admin-commercial-pipeline`, `data-admin-commercial-stage`, `data-admin-commercial-lead`, `data-admin-commercial-stage-select`, `data-admin-commercial-stage-history`, `data-admin-source-funnel`, `data-admin-bottleneck-board`, `data-admin-journey-funnel`, `data-admin-operational-alerts`, `data-admin-recovery-queue`, `data-admin-recovery-packages`. |
 | Lousa navegavel | `data-lousa-journey-checklist`, `data-lousa-journey-acceptance`. |
 | Shell v8 | `data-v8-stagebar`, `data-bf-visual-version`, `data-shell-header`, `data-shell-footer`, `data-bf-page`. |
 

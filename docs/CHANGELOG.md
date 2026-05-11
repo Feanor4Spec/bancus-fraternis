@@ -4,6 +4,28 @@
 
 ---
 
+## [v8.63.0] - 2026-05-11
+
+### Funil comercial movel no Dashboard Admin
+
+#### Adicionado
+- Dashboard Admin ganhou seletor `data-admin-commercial-stage-select` em cada lead do funil comercial.
+- Criadas as chaves `bf_admin_commercial_stage_states_v1` e `bf_admin_commercial_stage_audit_v1` para etapa atual e historico local.
+- O funil agora mostra `data-admin-commercial-stage-history` e permite mover leads entre Contato, Proposta, Follow-up, Negociacao e Fechamento.
+
+#### Modificado
+- A movimentacao comercial reflete o status do handoff por meio de `BFHandoffConsultivoService.setStatus`.
+- Validadores, contratos publicos, mapa, plano e evidencia browser passaram a proteger o novo contrato operacional.
+
+#### Validado
+- `node --check assets/js/admin-users.js`
+- `node --check tools/run-v8af-browser-evidence.mjs`
+- `node tools/validate-admin-dashboard-source-funnel.mjs`
+- `node tools/validate-public-contracts.mjs`
+- `node tools/run-v8af-browser-evidence.mjs`
+
+---
+
 ## [v8.62.0] - 2026-05-11
 
 ### Funil comercial por etapa do lead

@@ -52,7 +52,7 @@ Cada etapa deve responder quatro perguntas:
 | Proposta/PDF com lousa seletiva | Concluido | Etapa 9 usa `proposal-builder-board`, presets consultivo/tecnico, prontidao de exportacao, selecao por grupos, `builder` em `ProposalSummary` e `tools/validate-proposal-builder.mjs`. |
 | Versionamento de propostas | Concluido | Etapa 9 usa `data-proposal-version-panel`, `BFProposalVersions`, historico por proposta, comparacao entre versoes e travamento da versao antes do handoff. |
 | Handoff por origem | Concluido parcial | Filtro, badge, metricas, origem, aging, SLA, responsavel sugerido, plano de acao executavel por lead e leitura de proposta versionada/vencida. |
-| Dashboards por funil/aging | Concluido parcial | Dashboard Cliente tem timeline/deep links; Dashboard Admin agora tem proximas acoes, fila guiada executavel com dono/prazo/alvo/status/motivo, produtividade, carteira por consultor, funil comercial por etapa, funil por origem, aging, prioridade, responsavel sugerido, gargalos e alertas de proposta alterada apos handoff. |
+| Dashboards por funil/aging | Concluido parcial | Dashboard Cliente tem timeline/deep links; Dashboard Admin agora tem proximas acoes, fila guiada executavel com dono/prazo/alvo/status/motivo, produtividade, carteira por consultor, funil comercial movel com historico local, funil por origem, aging, prioridade, responsavel sugerido, gargalos e alertas de proposta alterada apos handoff. |
 | Navegacao autenticada | Concluido parcial | Login local tem acesso rapido por perfil, redirect preservado e validador dedicado. |
 | Teste navegavel ponta a ponta | Concluido | `pages/lousa-navegacao.html` ganhou roteiro de Auth, Home, Produtos, Calculadoras, Trilha, Comparador, Simulador, Proposta, Handoff e Dashboards com `tools/validate-navigable-journey.mjs`. |
 | Publicacao segura em GitHub Pages | Concluido parcial | Selo demo/local, fallback `404.html`, CI em `.github/workflows/validate.yml` e `tools/validate-public-release-safety.mjs`. |
@@ -252,6 +252,7 @@ Status em 2026-05-08:
 - `assets/js/admin-users.js` passou a renderizar `data-admin-consultant-portfolio`, com carteira por consultor, leads abertos, aging medio, origem, prioridade, SLA e proximo foco por lead.
 - `assets/js/admin-users.js` passou a renderizar filtros e plano comercial em `data-admin-consultant-portfolio-filters` e `data-admin-consultant-portfolio-priority`, alem da exportacao sanitizada `bank-fratern.admin-consultant-portfolio.v1`.
 - `assets/js/admin-users.js` passou a renderizar `data-admin-commercial-pipeline`, com contato, proposta, follow-up, negociacao e fechamento por lead.
+- `assets/js/admin-users.js` passou a permitir mover leads em `data-admin-commercial-stage-select`, persistindo `bf_admin_commercial_stage_states_v1`, `bf_admin_commercial_stage_audit_v1` e refletindo status no handoff.
 - `pages/dashboard-admin.html` ganhou atalhos diretos para Proximos passos, Carteira, Origens e Gargalos.
 - Criado `tools/validate-admin-dashboard-source-funnel.mjs`.
 - `pages/handoff-consultivo.html` ganhou `data-handoff-consultant-cockpit`, trazendo a mesma linguagem operacional de aging, SLA e proximo passo para o consultor.
@@ -275,6 +276,7 @@ Entregas para Dashboard Admin:
 - Consolidar carteira por consultor com leads/sinais, aging, origem, prioridade, SLA e proximo passo. Concluido em 2026-05-11.
 - Preservar filtros e exportacao sanitizada da carteira do dia. Concluido em 2026-05-11.
 - Mostrar funil comercial por etapa do lead, separando contato, proposta, follow-up, negociacao e fechamento. Concluido em 2026-05-11.
+- Permitir que o admin mova o lead entre etapas comerciais, com historico local e status refletido no handoff. Concluido em 2026-05-11.
 
 Arquivos provaveis:
 
@@ -292,6 +294,7 @@ Criterios de aceite:
 - Admin tem uma fila acionavel com quem faz o que, ate quando, qual alvo e qual CTA abrir.
 - Admin consegue marcar acao como em execucao, adiada, concluida ou reaberta e ver historico por responsavel.
 - Admin enxerga produtividade por responsavel, tempo medio e gargalos recorrentes.
+- Admin consegue mover um lead entre contato, proposta, follow-up, negociacao e fechamento sem perder compatibilidade com o handoff.
 - Consultor consegue agir sem abrir multiplas paginas para descobrir contexto.
 - Pacotes exportados seguem sem senha, telefone, CPF ou dados bloqueados.
 

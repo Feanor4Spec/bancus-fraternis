@@ -87,6 +87,8 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'bf_consultive_handoffs_v1',
   'bf_operational_action_states_v1',
   'bf_operational_action_audit_v1',
+  'bf_admin_commercial_stage_states_v1',
+  'bf_admin_commercial_stage_audit_v1',
   'bf_admin_recovery_imports_v1',
   'bf_admin_recovery_conversion_goals_v1'
 ].forEach((key) => assert(contracts.includes(key), `Contrato localStorage nao documentado: ${key}.`));
@@ -115,6 +117,8 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-admin-commercial-pipeline',
   'data-admin-commercial-stage',
   'data-admin-commercial-lead',
+  'data-admin-commercial-stage-select',
+  'data-admin-commercial-stage-history',
   'data-admin-source-funnel',
   'data-admin-bottleneck-board',
   'data-handoff-consultant-cockpit',
@@ -241,8 +245,8 @@ if (legacyHits.length) {
 const report = {
   ok: failures.length === 0,
   contracts: {
-    localStorageKeys: 15,
-    dataMarkers: 37,
+    localStorageKeys: 17,
+    dataMarkers: 39,
     globals: 12,
     deepLinks: 10,
     validators: 15,

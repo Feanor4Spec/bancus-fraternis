@@ -1497,6 +1497,37 @@
   line-height: 1.25;
 }
 
+.bf-admin-commercial-lead__actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: end;
+  margin-top: 4px;
+}
+
+.bf-admin-commercial-lead__actions label {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.bf-admin-commercial-lead__actions .btn {
+  align-self: end;
+}
+
+.bf-admin-commercial-stage-select,
+.bf-admin-commercial-lead select {
+  width: 100%;
+  min-height: 34px;
+  border: 1px solid var(--bf-line);
+  border-radius: 8px;
+  padding: 7px 9px;
+  color: var(--bf-navy-900);
+  background: var(--bf-white);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .bf-admin-source-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -3539,6 +3570,7 @@
   .bf-admin-portfolio-card dl,
   .bf-admin-commercial-pipeline__grid,
   .bf-admin-commercial-stage dl,
+  .bf-admin-commercial-lead__actions,
   .bf-handoff-action-plan,
   .bf-admin-source-grid,
   .bf-admin-bottleneck-grid,

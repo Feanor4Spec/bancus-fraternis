@@ -1,6 +1,6 @@
 # Protocolo de testes preferencial - Codex
 
-Atualizado em 2026-05-08 para o projeto Bancus Fraternis.
+Atualizado em 2026-05-11 para o projeto Bancus Fraternis.
 
 ## Caminho base
 
@@ -95,6 +95,7 @@ Validacoes obrigatorias:
 
 - Toda nova chave `localStorage` deve entrar em `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md`.
 - Todo novo marcador `data-*` usado por jornada, dashboard, proposta ou admin deve entrar na matriz.
+- Movimentacoes comerciais do Dashboard Admin devem preservar `bf_admin_commercial_stage_states_v1`, `bf_admin_commercial_stage_audit_v1`, `data-admin-commercial-stage-select` e reflexo no status do handoff.
 - Todo export global `window.BF*`, `ProposalSummary`, `Settings` ou `BankFraternProgress` novo deve ser documentado.
 - Deep links novos devem declarar origem, parametros preservados e destino.
 - O Definition of Done da matriz deve continuar presente antes de iniciar fase funcional nova.
