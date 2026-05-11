@@ -250,6 +250,7 @@ Status em 2026-05-08:
 - `assets/js/admin-users.js` passou a renderizar `data-admin-action-execution` e `data-admin-action-owner-history`, com status, motivo, adiamento/conclusao e resumo por responsavel.
 - `assets/js/admin-users.js` passou a renderizar `data-admin-consultant-productivity`, com abertas, adiadas, concluidas, tempo medio e gargalos recorrentes por responsavel.
 - `assets/js/admin-users.js` passou a renderizar `data-admin-consultant-portfolio`, com carteira por consultor, leads abertos, aging medio, origem, prioridade, SLA e proximo foco por lead.
+- `assets/js/admin-users.js` passou a renderizar filtros e plano comercial em `data-admin-consultant-portfolio-filters` e `data-admin-consultant-portfolio-priority`, alem da exportacao sanitizada `bank-fratern.admin-consultant-portfolio.v1`.
 - `pages/dashboard-admin.html` ganhou atalhos diretos para Proximos passos, Carteira, Origens e Gargalos.
 - Criado `tools/validate-admin-dashboard-source-funnel.mjs`.
 - `pages/handoff-consultivo.html` ganhou `data-handoff-consultant-cockpit`, trazendo a mesma linguagem operacional de aging, SLA e proximo passo para o consultor.
@@ -271,7 +272,7 @@ Entregas para Dashboard Admin:
 - Tornar a fila guiada executavel com status, motivo, adiamento, conclusao e reabertura. Concluido em 2026-05-11.
 - Medir produtividade por consultor a partir da fila guiada e do historico local. Concluido em 2026-05-11.
 - Consolidar carteira por consultor com leads/sinais, aging, origem, prioridade, SLA e proximo passo. Concluido em 2026-05-11.
-- Preservar filtros e exportacao sanitizada.
+- Preservar filtros e exportacao sanitizada da carteira do dia. Concluido em 2026-05-11.
 
 Arquivos provaveis:
 

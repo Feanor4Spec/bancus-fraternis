@@ -263,15 +263,37 @@ try {
       count: Number(document.body.dataset.adminConsultantPortfolioCount || 0),
       rows: document.querySelectorAll('[data-admin-consultant-portfolio-row]').length,
       leads: document.querySelectorAll('[data-admin-consultant-portfolio-lead]').length,
+      filters: document.querySelectorAll('[data-admin-portfolio-filter]').length,
+      priorityItems: document.querySelectorAll('[data-admin-consultant-portfolio-priority-lead]').length,
       text: panel ? panel.innerText : ''
     };
   });
   assert(adminPortfolio.ready === 'true', 'Dashboard admin nao marcou adminConsultantPortfolioReady=true.', failures);
   assert(adminPortfolio.rows >= 1, 'Dashboard admin nao renderizou carteira por consultor.', failures);
   assert(adminPortfolio.leads >= 1, 'Carteira por consultor nao renderizou leads priorizados.', failures);
+  assert(adminPortfolio.filters >= 5, 'Carteira por consultor nao renderizou filtros comerciais.', failures);
+  assert(adminPortfolio.priorityItems >= 1, 'Carteira por consultor nao renderizou plano comercial do dia.', failures);
   assert(/CARTEIRA POR CONSULTOR|Carteira por consultor/i.test(adminPortfolio.text), 'Carteira nao exibiu titulo esperado.', failures);
   assert(/AGING MEDIO|Aging medio/i.test(adminPortfolio.text), 'Carteira nao exibiu aging medio.', failures);
   assert(/PROXIMO FOCO|Proximo foco/i.test(adminPortfolio.text), 'Carteira nao exibiu proximo foco.', failures);
+  assert(/PLANO COMERCIAL DO DIA|Plano comercial do dia/i.test(adminPortfolio.text), 'Carteira nao exibiu plano comercial do dia.', failures);
+  const adminPortfolioExport = await page.evaluate(() => {
+    document.querySelector('[data-admin-consultant-portfolio-export]')?.click();
+    const payload = window.__lastAdminPortfolioExport || {};
+    const text = JSON.stringify(payload);
+    const sensitivePattern = new RegExp('[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}|\\b\\d{3}\\.?\\d{3}\\.?\\d{3}-?\\d{2}\\b|\\(?\\d{2}\\)?\\s?\\d{4,5}-\\d{4}\\b', 'i');
+    return {
+      schema: payload.schema,
+      consultants: payload.consultants ? payload.consultants.length : 0,
+      priorityActions: payload.priorityActions ? payload.priorityActions.length : 0,
+      leads: payload.summary ? payload.summary.leads : 0,
+      containsSensitivePattern: sensitivePattern.test(text)
+    };
+  });
+  assert(adminPortfolioExport.schema === 'bank-fratern.admin-consultant-portfolio.v1', 'Export da carteira por consultor com schema inesperado.', failures);
+  assert(adminPortfolioExport.consultants >= 1, 'Export da carteira nao incluiu consultores.', failures);
+  assert(adminPortfolioExport.priorityActions >= 1, 'Export da carteira nao incluiu acoes prioritarias.', failures);
+  assert(adminPortfolioExport.containsSensitivePattern === false, 'Export da carteira contem email, CPF ou telefone.', failures);
   await page.locator('[data-admin-consultant-portfolio]').scrollIntoViewIfNeeded();
   await page.screenshot({ path: screenshots.adminPortfolioDesktop, fullPage: false });
 
@@ -285,6 +307,7 @@ try {
     adminExecution,
     adminProductivity,
     adminPortfolio,
+    adminPortfolioExport,
     screenshots: reportScreenshots(),
     consoleErrors: consoleErrors.slice(0, 20),
     pageErrors,

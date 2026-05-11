@@ -42,12 +42,18 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
   'buildAdminActionQueue',
   'buildAdminConsultantProductivity',
   'buildAdminConsultantPortfolio',
+  'filterAdminConsultantPortfolio',
+  'buildAdminPortfolioPriorityActions',
+  'buildAdminConsultantPortfolioExport',
   'renderAdminSourceFunnel',
   'renderAdminBottleneckBoard',
   'renderAdminNextActionBoard',
   'renderAdminActionQueue',
   'renderAdminConsultantProductivity',
   'renderAdminConsultantPortfolio',
+  'renderAdminPortfolioFilterControls',
+  'renderAdminPortfolioPriorityActions',
+  'downloadAdminConsultantPortfolio',
   'data-admin-source-funnel',
   'data-admin-bottleneck-board',
   'data-admin-next-actions',
@@ -61,6 +67,11 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
   'data-admin-consultant-portfolio',
   'data-admin-consultant-portfolio-row',
   'data-admin-consultant-portfolio-lead',
+  'data-admin-consultant-portfolio-filters',
+  'data-admin-portfolio-filter',
+  'data-admin-consultant-portfolio-export',
+  'data-admin-consultant-portfolio-priority',
+  'data-admin-consultant-portfolio-priority-lead',
   'data-admin-action-status',
   'adminNextActionsReady',
   'adminNextActionCount',
@@ -91,6 +102,10 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
   'Carteira por consultor',
   'Aging medio',
   'Leads abertos',
+  'Plano comercial do dia',
+  'Exportar carteira',
+  'bank-fratern.admin-consultant-portfolio.v1',
+  '__lastAdminPortfolioExport',
   'adminActionExecution',
   'adminSourceFunnelReady',
   'adminBottleneckCount'
@@ -132,6 +147,9 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
   '.bf-admin-consultant-card',
   '.bf-admin-consultant-portfolio',
   '.bf-admin-consultant-portfolio__grid',
+  '.bf-admin-portfolio-toolbar',
+  '.bf-admin-portfolio-priority',
+  '.bf-admin-portfolio-priority__grid',
   '.bf-admin-portfolio-card',
   '.bf-admin-portfolio-lead',
   '.bf-admin-source-funnel',
@@ -144,7 +162,7 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
 
 assert(!simulatorHtml.includes('data-v8-stagebar-legacy'), 'simulador.html ainda contem template legado da stagebar superior.');
 assert(simulatorHtml.includes('bf-v8-stagebar-shell'), 'simulador.html sem stagebar inferior recolhivel.');
-assert(platformCss.includes('.bf-admin-next-actions__grid') && platformCss.includes('.bf-admin-action-queue__list') && platformCss.includes('.bf-admin-action-owners') && platformCss.includes('.bf-admin-consultant-productivity__grid') && platformCss.includes('.bf-admin-consultant-portfolio__grid') && platformCss.includes('.bf-admin-source-grid') && platformCss.includes('.bf-admin-bottleneck-grid'), 'CSS admin sem grids monitorados.');
+assert(platformCss.includes('.bf-admin-next-actions__grid') && platformCss.includes('.bf-admin-action-queue__list') && platformCss.includes('.bf-admin-action-owners') && platformCss.includes('.bf-admin-consultant-productivity__grid') && platformCss.includes('.bf-admin-consultant-portfolio__grid') && platformCss.includes('.bf-admin-portfolio-priority__grid') && platformCss.includes('.bf-admin-source-grid') && platformCss.includes('.bf-admin-bottleneck-grid'), 'CSS admin sem grids monitorados.');
 
 const report = {
   ok: failures.length === 0,
@@ -157,6 +175,7 @@ const report = {
     actionExecution: adminUsersJs.includes('data-admin-action-execution'),
     consultantProductivity: adminUsersJs.includes('data-admin-consultant-productivity'),
     consultantPortfolio: adminUsersJs.includes('data-admin-consultant-portfolio'),
+    consultantPortfolioExport: adminUsersJs.includes('bank-fratern.admin-consultant-portfolio.v1'),
     simulatorBottomStagebar: simulatorHtml.includes('bf-v8-stagebar-shell')
   },
   failures

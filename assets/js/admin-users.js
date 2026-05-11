@@ -1422,7 +1422,9 @@
             hours: Number(state.hours || 0),
             nextStep,
             href: portfolioLeadHref(item, plan),
-            tone
+            tone,
+            overdue: !!state.slaOverdue,
+            unassigned: !!state.unassigned || !item.assignedTo
           });
         });
     }
@@ -1447,7 +1449,9 @@
           hours: Number(item.hours || 0),
           nextStep: item.next || 'Abrir acao',
           href: item.href || '#admin-gargalos',
-          tone: item.severity || 'media'
+          tone: item.severity || 'media',
+          overdue: String(item.type || '').includes('overdue'),
+          unassigned: String(item.type || '').includes('without-assignee')
         });
       });
     }
@@ -1485,7 +1489,9 @@
   }
 
   function renderAdminConsultantPortfolio(sourceRows, bottlenecks) {
-    const rows = buildAdminConsultantPortfolio(sourceRows, bottlenecks);
+    const allRows = buildAdminConsultantPortfolio(sourceRows, bottlenecks);
+    const filters = adminPortfolioFilters(qs('[data-admin-journey-funnel]') || document);
+    const rows = filterAdminConsultantPortfolio(allRows, filters);
     const totals = rows.reduce((acc, item) => {
       acc.leads += Number(item.leads || 0);
       acc.high += Number(item.high || 0);
@@ -1506,6 +1512,7 @@
           </div>
           <a class="btn btn--ghost btn--sm" href="handoff-consultivo.html#fila-handoff">Abrir handoffs</a>
         </div>
+        ${renderAdminPortfolioFilterControls(allRows, filters)}
         <div class="bf-platform-metrics">
           ${window.BFCards.metric('Leads abertos', totals.leads || 0, totals.leads ? 'is-strong' : '')}
           ${window.BFCards.metric('Alta prioridade', totals.high || 0, totals.high ? 'is-warn' : '')}
@@ -1513,6 +1520,7 @@
           ${window.BFCards.metric('Sem responsavel', totals.unassigned || 0, totals.unassigned ? 'is-warn' : '')}
           ${window.BFCards.metric('Aging medio', totals.leads ? eventAgeLabel(avg) : 'sem carteira')}
         </div>
+        ${renderAdminPortfolioPriorityActions(rows)}
         <div class="bf-admin-consultant-portfolio__grid">
           ${rows.length ? rows.map((item) => `
             <article class="bf-admin-portfolio-card bf-admin-portfolio-card--${escapeHtml(item.tone)}" data-admin-consultant-portfolio-row="${escapeHtml(item.owner)}">
@@ -1556,6 +1564,220 @@
 
   function selectedAttr(current, value) {
     return String(current || '') === String(value || '') ? ' selected' : '';
+  }
+
+  function adminPortfolioFilters(root = document) {
+    const find = (selector) => root.querySelector ? root.querySelector(selector) : qs(selector);
+    return {
+      owner: find('[data-admin-portfolio-filter="owner"]')?.value || '',
+      source: find('[data-admin-portfolio-filter="source"]')?.value || '',
+      priority: find('[data-admin-portfolio-filter="priority"]')?.value || '',
+      sla: find('[data-admin-portfolio-filter="sla"]')?.value || '',
+      search: find('[data-admin-portfolio-filter="search"]')?.value || ''
+    };
+  }
+
+  function normalizePortfolioText(value) {
+    return String(value || '').trim().toLowerCase();
+  }
+
+  function portfolioOptionValues(rows, getter) {
+    const values = new Set();
+    (rows || []).forEach((row) => (row.items || []).forEach((item) => {
+      const value = getter(row, item);
+      if (value) values.add(value);
+    }));
+    return Array.from(values).sort((a, b) => String(a).localeCompare(String(b)));
+  }
+
+  function renderAdminPortfolioFilterControls(rows, filters) {
+    const owners = (rows || []).map((item) => item.owner).filter(Boolean);
+    const sources = portfolioOptionValues(rows, (_row, item) => item.source);
+    const priorities = [['alta', 'Alta'], ['media', 'Media'], ['baixa', 'Baixa']];
+    const slaOptions = [['vencido', 'SLA vencido'], ['no-prazo', 'No prazo']];
+    return `
+      <div class="bf-admin-toolbar bf-admin-portfolio-toolbar" data-admin-consultant-portfolio-filters>
+        <label>Busca
+          <input type="search" value="${escapeHtml(filters.search)}" data-admin-portfolio-filter="search" placeholder="Lead, origem, status ou proximo passo">
+        </label>
+        <label>Consultor
+          <select data-admin-portfolio-filter="owner">
+            <option value="">Todos</option>
+            ${owners.map((owner) => `<option value="${escapeHtml(owner)}"${selectedAttr(filters.owner, owner)}>${escapeHtml(owner)}</option>`).join('')}
+          </select>
+        </label>
+        <label>Origem
+          <select data-admin-portfolio-filter="source">
+            <option value="">Todas</option>
+            ${sources.map((source) => `<option value="${escapeHtml(source)}"${selectedAttr(filters.source, source)}>${escapeHtml(source)}</option>`).join('')}
+          </select>
+        </label>
+        <label>Prioridade
+          <select data-admin-portfolio-filter="priority">
+            <option value="">Todas</option>
+            ${priorities.map(([value, label]) => `<option value="${value}"${selectedAttr(filters.priority, value)}>${label}</option>`).join('')}
+          </select>
+        </label>
+        <label>SLA
+          <select data-admin-portfolio-filter="sla">
+            <option value="">Todos</option>
+            ${slaOptions.map(([value, label]) => `<option value="${value}"${selectedAttr(filters.sla, value)}>${label}</option>`).join('')}
+          </select>
+        </label>
+        <button class="btn btn--ghost btn--sm" type="button" data-admin-consultant-portfolio-export>Exportar carteira</button>
+      </div>
+    `;
+  }
+
+  function summarizePortfolioRow(row, items) {
+    const sourceMap = new Map();
+    const nextMap = new Map();
+    const totalHours = (items || []).reduce((sum, item) => {
+      if (item.source) sourceMap.set(item.source, (sourceMap.get(item.source) || 0) + 1);
+      if (item.nextStep) nextMap.set(item.nextStep, (nextMap.get(item.nextStep) || 0) + 1);
+      return sum + Number(item.hours || 0);
+    }, 0);
+    const leads = items.length;
+    const avgHours = leads ? totalHours / leads : 0;
+    return {
+      ...row,
+      leads,
+      high: items.filter((item) => item.tone === 'alta' || normalizePortfolioText(item.priority).includes('alta')).length,
+      overdue: items.filter((item) => item.overdue).length,
+      unassigned: items.filter((item) => item.unassigned).length,
+      totalHours,
+      avgHours,
+      avgAge: leads ? eventAgeLabel(avgHours) : 'sem carteira',
+      sourceMix: Array.from(sourceMap.entries()).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([label, total]) => `${label} (${total})`),
+      nextSteps: Array.from(nextMap.entries()).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([label]) => label),
+      items
+    };
+  }
+
+  function filterAdminConsultantPortfolio(rows, filters) {
+    const search = normalizePortfolioText(filters.search);
+    return (rows || []).map((row) => {
+      if (filters.owner && row.owner !== filters.owner) return null;
+      const items = (row.items || []).filter((item) => {
+        if (filters.source && item.source !== filters.source) return false;
+        if (filters.priority && item.tone !== filters.priority && !normalizePortfolioText(item.priority).includes(filters.priority)) return false;
+        if (filters.sla === 'vencido' && !item.overdue) return false;
+        if (filters.sla === 'no-prazo' && item.overdue) return false;
+        if (search) {
+          const haystack = [
+            row.owner,
+            item.id,
+            item.title,
+            item.source,
+            item.priority,
+            item.status,
+            item.nextStep
+          ].join(' ').toLowerCase();
+          if (!haystack.includes(search)) return false;
+        }
+        return true;
+      });
+      return items.length ? summarizePortfolioRow(row, items) : null;
+    }).filter(Boolean);
+  }
+
+  function buildAdminPortfolioPriorityActions(rows) {
+    return (rows || []).flatMap((row) => (row.items || []).map((item) => ({ ...item, owner: row.owner })))
+      .sort((a, b) => {
+        const score = (item) => (item.overdue ? 500 : 0) + (alertWeight(item.tone) * 100) + Math.min(Number(item.hours || 0), 240);
+        return score(b) - score(a);
+      })
+      .slice(0, 5);
+  }
+
+  function renderAdminPortfolioPriorityActions(rows) {
+    const actions = buildAdminPortfolioPriorityActions(rows);
+    return `
+      <div class="bf-admin-portfolio-priority" data-admin-consultant-portfolio-priority>
+        <div class="bf-admin-panel-heading">
+          <div>
+            <span class="bf-badge bf-badge--navy">Prioridade comercial</span>
+            <h4>Plano comercial do dia</h4>
+          </div>
+        </div>
+        <div class="bf-admin-portfolio-priority__grid">
+          ${actions.length ? actions.map((item) => `
+            <a class="bf-admin-portfolio-priority-item bf-admin-portfolio-priority-item--${escapeHtml(item.tone)}" href="${escapeHtml(item.href)}" data-admin-consultant-portfolio-priority-lead="${escapeHtml(item.id)}">
+              <span>${escapeHtml(item.owner)} - ${escapeHtml(item.source)} - ${escapeHtml(item.age)}</span>
+              <strong>${escapeHtml(item.nextStep)}</strong>
+              <small>${escapeHtml(item.title)}</small>
+            </a>
+          `).join('') : '<div class="bf-empty-state">Nenhuma acao comercial encontrada para os filtros atuais.</div>'}
+        </div>
+      </div>
+    `;
+  }
+
+  function sanitizeAdminPortfolioExportValue(value) {
+    return String(value === null || value === undefined ? '' : value)
+      .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[email]')
+      .replace(/\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b/g, '[cpf]')
+      .replace(/\(?\d{2}\)?\s?\d{4,5}-\d{4}\b/g, '[telefone]');
+  }
+
+  function sanitizeAdminPortfolioExport(value) {
+    if (Array.isArray(value)) return value.map((item) => sanitizeAdminPortfolioExport(item));
+    if (value && typeof value === 'object') {
+      return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, sanitizeAdminPortfolioExport(item)]));
+    }
+    return typeof value === 'string' ? sanitizeAdminPortfolioExportValue(value) : value;
+  }
+
+  function buildAdminConsultantPortfolioExport(rows, filters) {
+    const actions = buildAdminPortfolioPriorityActions(rows);
+    const payload = {
+      schema: 'bank-fratern.admin-consultant-portfolio.v1',
+      exportedAt: new Date().toISOString(),
+      filters,
+      summary: {
+        consultants: rows.length,
+        leads: rows.reduce((sum, item) => sum + Number(item.leads || 0), 0),
+        overdue: rows.reduce((sum, item) => sum + Number(item.overdue || 0), 0),
+        high: rows.reduce((sum, item) => sum + Number(item.high || 0), 0),
+        priorityActions: actions.length
+      },
+      priorityActions: actions.map((item) => ({
+        id: item.id,
+        owner: item.owner,
+        source: item.source,
+        priority: item.priority,
+        status: item.status,
+        age: item.age,
+        nextStep: item.nextStep,
+        href: item.href,
+        tone: item.tone,
+        overdue: !!item.overdue
+      })),
+      consultants: rows.map((row) => ({
+        owner: row.owner,
+        leads: row.leads,
+        high: row.high,
+        overdue: row.overdue,
+        unassigned: row.unassigned,
+        aging: row.avgAge,
+        completed: row.completed,
+        sources: row.sourceMix,
+        nextSteps: row.nextSteps,
+        items: row.items.map((item) => ({
+          id: item.id,
+          title: item.title,
+          source: item.source,
+          priority: item.priority,
+          status: item.status,
+          age: item.age,
+          nextStep: item.nextStep,
+          href: item.href,
+          tone: item.tone,
+          overdue: !!item.overdue
+        }))
+      }))
+    };
+    return sanitizeAdminPortfolioExport(payload);
   }
 
   function adminRecoveryFilters(root = document) {
@@ -1761,6 +1983,28 @@
     }
     setMessage(`Pacote de retomadas preparado: ${payload.items.length} item${payload.items.length === 1 ? '' : 's'}.`, 'success');
     renderAdminRecoveryPackages();
+    return payload;
+  }
+
+  function downloadAdminConsultantPortfolio() {
+    const sourceRows = buildAdminSourceFunnel();
+    const bottlenecks = buildAdminBottlenecks();
+    const filters = adminPortfolioFilters(qs('[data-admin-journey-funnel]') || document);
+    const rows = filterAdminConsultantPortfolio(buildAdminConsultantPortfolio(sourceRows, bottlenecks), filters);
+    const payload = buildAdminConsultantPortfolioExport(rows, filters);
+    window.__lastAdminPortfolioExport = payload;
+    const filename = `bank-fratern-carteira-consultores-${new Date().toISOString().slice(0, 10)}.json`;
+    const text = JSON.stringify(payload, null, 2);
+    if (typeof Blob !== 'undefined' && window.URL && document.createElement) {
+      const blob = new Blob([text], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    }
+    setMessage(`Carteira do dia preparada: ${payload.summary.leads} lead${payload.summary.leads === 1 ? '' : 's'} em ${payload.summary.consultants} consultor${payload.summary.consultants === 1 ? '' : 'es'}.`, 'success');
     return payload;
   }
 
@@ -2380,6 +2624,11 @@
     });
 
     qs('[data-admin-journey-funnel]')?.addEventListener('click', (event) => {
+      const portfolioExportButton = event.target.closest('[data-admin-consultant-portfolio-export]');
+      if (portfolioExportButton) {
+        downloadAdminConsultantPortfolio();
+        return;
+      }
       const button = event.target.closest('[data-admin-action-status]');
       if (!button || !window.BFHandoffConsultivoService || !window.BFHandoffConsultivoService.setActionExecution) return;
       const row = button.closest('[data-admin-action-execution]');
@@ -2401,6 +2650,11 @@
       });
       setMessage(result ? `Acao ${result.statusLabel.toLowerCase()} para ${result.owner || 'responsavel local'}.` : 'Nao foi possivel atualizar a acao.', result ? 'success' : 'error');
       renderAll();
+    });
+
+    qs('[data-admin-journey-funnel]')?.addEventListener('change', (event) => {
+      if (!event.target.closest('[data-admin-portfolio-filter]')) return;
+      renderJourneyFunnel();
     });
 
     qs('[data-admin-recovery-queue]')?.addEventListener('click', (event) => {

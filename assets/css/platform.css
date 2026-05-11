@@ -1212,6 +1212,72 @@
   gap: 12px;
 }
 
+.bf-admin-portfolio-toolbar {
+  align-items: end;
+}
+
+.bf-admin-portfolio-priority {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(11, 44, 82, .1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .72);
+}
+
+.bf-admin-portfolio-priority h4 {
+  margin: 0;
+  color: var(--bf-navy-900);
+  font-size: 18px;
+}
+
+.bf-admin-portfolio-priority__grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.bf-admin-portfolio-priority-item {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid var(--bf-line);
+  border-radius: 8px;
+  text-decoration: none;
+  background: var(--bf-white);
+}
+
+.bf-admin-portfolio-priority-item--alta {
+  border-color: rgba(220, 38, 38, .28);
+  background: linear-gradient(180deg, #fff, rgba(254, 226, 226, .5));
+}
+
+.bf-admin-portfolio-priority-item--media {
+  border-color: var(--bf-warning-bd);
+  background: var(--bf-warning-bg);
+}
+
+.bf-admin-portfolio-priority-item--baixa {
+  border-color: var(--bf-info-bd);
+  background: var(--bf-info-bg);
+}
+
+.bf-admin-portfolio-priority-item span,
+.bf-admin-portfolio-priority-item small {
+  display: block;
+  color: var(--bf-muted);
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.bf-admin-portfolio-priority-item strong {
+  color: var(--bf-navy-900);
+  font-size: 14px;
+  line-height: 1.25;
+}
+
 .bf-admin-portfolio-card {
   min-width: 0;
   padding: 14px;
@@ -3359,6 +3425,7 @@
   .bf-admin-consultant-productivity__grid,
   .bf-admin-consultant-card dl,
   .bf-admin-consultant-portfolio__grid,
+  .bf-admin-portfolio-priority__grid,
   .bf-admin-portfolio-card dl,
   .bf-handoff-action-plan,
   .bf-admin-source-grid,

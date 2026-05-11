@@ -4,6 +4,27 @@
 
 ---
 
+## [v8.61.0] - 2026-05-11
+
+### Filtros e exportacao da carteira comercial
+
+#### Adicionado
+- Dashboard Admin ganhou filtros em `data-admin-consultant-portfolio-filters` por busca, consultor, origem, prioridade e SLA.
+- Criado plano comercial do dia em `data-admin-consultant-portfolio-priority`, priorizando leads por SLA vencido, prioridade e aging.
+- Adicionada exportacao JSON sanitizada da carteira em `bank-fratern.admin-consultant-portfolio.v1`, acionada por `data-admin-consultant-portfolio-export`.
+
+#### Modificado
+- A carteira por consultor agora preserva a mesma leitura filtrada para tela, plano comercial e exportacao.
+- Validadores, contratos publicos e evidencia browser passaram a proteger filtros, prioridade comercial e exportacao sem email, CPF ou telefone.
+
+#### Validado
+- `node --check assets/js/admin-users.js`
+- `node tools/validate-admin-dashboard-source-funnel.mjs`
+- `node tools/validate-public-contracts.mjs`
+- `node tools/run-v8af-browser-evidence.mjs`
+
+---
+
 ## [v8.60.0] - 2026-05-11
 
 ### Carteira por consultor no admin
