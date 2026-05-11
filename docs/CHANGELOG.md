@@ -4,6 +4,22 @@
 
 ---
 
+## [v8.65.0] - 2026-05-11
+
+### Mapa de implementacao atualizado
+
+#### Modificado
+- `docs/PLANO_ACAO_EVOLUCAO_BANK_FRATERN.md` ganhou mapa de implementacao atualizado com ciclos entregues, evidencias e proximos passos priorizados.
+- `docs/MAPA_COMPLETO_PROJETO_BANK_FRATERN.md` foi atualizado para refletir 34 scripts de validacao/evidencia, funil comercial movel, cadencia por etapa e novos vetores.
+- Backlog acionavel passou a separar entregas concluidas, proximos passos P1/P2/P3 e futuras preparacoes de backend/API.
+
+#### Validado
+- `node tools/validate-docs-modernization.mjs`
+- `node tools/validate-public-contracts.mjs`
+- `node tools/validate-design-system.mjs`
+
+---
+
 ## [v8.64.0] - 2026-05-11
 
 ### Cadencia comercial no funil admin

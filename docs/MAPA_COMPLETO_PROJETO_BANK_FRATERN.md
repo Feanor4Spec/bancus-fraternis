@@ -1,6 +1,6 @@
 # Mapa Completo do Projeto Bancus Fraternis
 
-Atualizado em 2026-05-07.
+Atualizado em 2026-05-11.
 
 Este mapa foi recriado a partir da leitura real do workspace. Ele documenta o Bancus Fraternis como plataforma de decisao financeira, nao apenas como simulador de consorcio. O objetivo e permitir que uma pessoa ou agente entenda a superficie atual do produto antes de evoluir Home, produtos, calculadoras, trilha assistida, comparador, simulador, proposta, handoff, dashboard cliente e dashboard admin.
 
@@ -16,7 +16,7 @@ Estado confirmado nesta leitura:
 - 15 services em `assets/js/services/`.
 - 5 arquivos de formulas em `assets/js/formulas/`.
 - 5 componentes em `assets/js/components/`.
-- 20 scripts de validacao/evidencia em `tools/`.
+- 34 scripts de validacao/evidencia em `tools/`.
 - 52 aliases curtos confirmados em `server.js`, um para cada pagina HTML em `pages/`.
 
 O centro de produto e uma jornada continua:
@@ -114,7 +114,7 @@ Contrato confirmado:
 | `pages/login.html` | Ativa | Login local com perfis demo. |
 | `pages/configuracoes.html` | Ativa | Preferencias locais do simulador e plataforma. |
 | `pages/dashboard-cliente.html` | Ativa | Historico, perfil, modelos, trilha, sinais e handoff do usuario. |
-| `pages/dashboard-admin.html` | Ativa | Usuarios, recuperacao, pacotes, SLA, roteamento, metas, auditoria, funil, fila guiada executavel, produtividade, carteira por consultor e funil comercial por etapa. |
+| `pages/dashboard-admin.html` | Ativa | Usuarios, recuperacao, pacotes, SLA, roteamento, metas, auditoria, funil, fila guiada executavel, produtividade, carteira por consultor, funil comercial movel e cadencia por etapa. |
 
 ### Produto, Decisao e Modelos
 
@@ -529,16 +529,16 @@ Governanca documental: docs ativos passaram a usar Bancus Fraternis como platafo
 7. Usar design system v8 antes de criar novas variacoes visuais.
 8. Tratar `versions/` como backup, nao como fonte ativa.
 9. Tratar GitHub Pages como superficie publica: toda mudanca online deve preservar selo demo, fallback estatico e auditoria de publicacao segura.
-9. Considerar performance ao tocar na base grande `data_base/Tab_Grupos_Consorcio.json`; regenerar e validar `data_base/Tab_Grupos_Consorcio.compact.json` quando a base canonica mudar.
+10. Considerar performance ao tocar na base grande `data_base/Tab_Grupos_Consorcio.json`; regenerar e validar `data_base/Tab_Grupos_Consorcio.compact.json` quando a base canonica mudar.
 
 ## Proximos Vetores
 
-O vetor recomendado para o proximo ciclo e produto e jornada:
+O vetor recomendado para o proximo ciclo continua sendo produto e jornada, agora com foco em levar a leitura comercial ja criada no Admin para cliente e consultor:
 
-1. Revisar CTAs e links de continuidade usando os aliases agora cobertos.
-2. Fortalecer continuidade Home -> Produtos -> Calculadoras -> Trilha -> Comparador -> Simulador.
-3. Expandir a leitura operacional de origem dos handoffs para funil e aging no dashboard admin.
-4. Melhorar dashboards de cliente, consultor e admin com funil, prioridade e proximos passos.
-5. Padronizar governanca de entrega com validadores, changelog e plano de acao.
+1. Levar etapa comercial, ultima movimentacao e atraso de etapa para `pages/handoff-consultivo.html`.
+2. Evoluir `pages/dashboard-cliente.html` como cockpit de retomada com proximo passo, proposta, simulacao e handoff em andamento.
+3. Criar exportacao sanitizada do funil/cadencia para reuniao diaria comercial.
+4. Atualizar `pages/lousa-navegacao.html` para cobrir funil comercial, cadencia e QA online como checkpoints visuais.
+5. Preparar plano de migracao futura para backend/API sem quebrar `localStorage`, deep links e services globais.
 
 O plano detalhado esta em `docs/PLANO_ACAO_EVOLUCAO_BANK_FRATERN.md`.
