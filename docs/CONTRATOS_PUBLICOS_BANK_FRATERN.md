@@ -56,7 +56,7 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | Calculadoras | `data-calculator-form`, `data-calculator-result`, `data-calculator-history`, `data-calculators-hub`, `data-calculator-decision-strip`. |
 | Trilha | `data-decision-journey-form`, `data-decision-journey-state`, `data-decision-journey-steps`, `data-decision-journey-actions`. |
 | Comparador | `data-comparator-form`, `data-comparator-result`, `data-comparator-preset-summary`, `data-comparator-model-recommendation`. |
-| Simulador | `data-simulator-readiness`, `data-simulator-decision-strip`, `data-v8-stagebar`, `data-shelf-col`. |
+| Simulador | `data-simulator-readiness`, `data-simulator-decision-strip`, `data-simulator-journey-actions`, `data-v8-stagebar`, `data-shelf-col`. |
 | Proposta | `data-proposal-acceptance-panel`, `data-proposal-handoff-bridge`, `data-proposal-builder-board`, `data-proposal-builder-readiness`, `data-proposal-builder-option`, `data-proposal-version-panel`, `data-proposal-version-history`, `data-proposal-version-comparison`. |
 | Handoff | `data-handoff-list`, `data-handoff-detail`, `data-handoff-metrics`, `data-handoff-recovery-signals`, `data-handoff-consultant-cockpit`, `data-handoff-action-plan`, `data-handoff-action-execution`, `data-handoff-action-reason`, `data-handoff-action-history`, `data-handoff-assignee-filter`, `data-handoff-aging-filter`, `data-handoff-proposal-version`, `data-handoff-commercial-stage`, `data-handoff-commercial-stage-panel`, `data-handoff-commercial-stage-history`. |
 | Dashboard Cliente | `data-client-continuity-strip`, `data-client-continuity-cockpit`, `data-client-next-action`, `data-client-handoff-status`, `data-client-proposal-status`, `data-client-simulation-context`, `data-client-commercial-stage`, `data-client-continuity-timeline`, `data-client-decision-journey`, `data-client-recovery-signals`. |
@@ -83,6 +83,8 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | `BFCalculatorJourney` | Deep links de calculadoras para jornada. |
 | `BFFinancialFormulas`, `BFPriceFormulas`, `BFSacFormulas`, `BFConsorcioFormulas`, `BFComparisonFormulas` | Formulas reutilizadas. |
 | `BFDadosService` | Carga de datasets locais. |
+| `BFSimulatorJourney` | Contexto de origem, prefill e proximas acoes do simulador. |
+| `BFSimulatorState` | Snapshots de formulario, carrinho salvo e payload de simulacao. |
 | `BFProductsJourney` | Produtos, selecao e analytics de jornada. |
 | `BFComparadorService`, `BFComparatorModels` | Comparador, modelos, auditoria e presets. |
 | `BFTrilhaDecisaoService`, `BFDecisionJourneyContext` | Trilha assistida, contexto de entrada e saida. |
@@ -125,6 +127,7 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | `tools/validate-calculadoras.mjs` | Catalogo atual de 19 calculadoras, premissas e golden tests. |
 | `tools/validate-simulator-groups.mjs` | Base real do simulador: 17.396 grupos validos. |
 | `tools/validate-simulator-performance.mjs` | Base compacta do simulador, peso online e fallback para JSON legado. |
+| `tools/validate-simulator-refactor.mjs` | Modulos extraidos do simulador, payload salvo e acoes de jornada. |
 | `tools/validate-proposal-builder.mjs` | Lousa seletiva de proposta/PDF. |
 | `tools/validate-proposal-versioning.mjs` | Historico versionado da proposta e comparacao antes do handoff. |
 | `tools/validate-proposal-acceptance.mjs` | Revisao e aceite local da proposta. |

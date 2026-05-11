@@ -283,6 +283,7 @@ Melhoria implementada em 2026-05-07:
 - O funil/cadencia comercial agora exporta JSON sanitizado em `bank-fratern.admin-commercial-pipeline.v1`, com leads anonimizados, totais por etapa e movimentacoes recentes para reuniao diaria.
 - O Handoff Consultivo agora le a etapa comercial salva pelo Admin, mostra chip/painel de cadencia, ultima movimentacao e atraso da etapa para o consultor.
 - A lousa navegavel agora possui checkpoints de QA comercial para cockpit cliente, handoff consultivo, funil/cadencia admin, exportacao sanitizada e smoke test online.
+- O simulador iniciou reducao de divida tecnica com `BFSimulatorJourney` e `BFSimulatorState`, preservando `App.*`, payloads salvos e acoes de continuidade.
 - O painel consultivo filtra por origem e mostra badge/resumo da origem nos cards e no detalhe.
 - O dashboard admin mostra metricas de propostas e trilhas na fila de handoff.
 - O contrato e coberto por `tools/validate-handoff-origins.mjs` e `tools/validate-handoff-consultant-operations.mjs`.
@@ -293,7 +294,9 @@ Melhoria implementada em 2026-05-07:
 
 | Arquivo | Responsabilidade |
 | --- | --- |
-| `js/app.js` | Controlador principal do simulador completo. Concentra wizard, prateleira, projeto estruturado, calculo, proposta, aceite, handoff e salvamento. |
+| `js/app.js` | Fachada/controlador principal do simulador completo. Ainda concentra wizard, prateleira, projeto estruturado, calculo, proposta, aceite e handoff, mas ja delega jornada/snapshot para modulos dedicados. |
+| `js/simulator-journey.js` | Service do simulador para contexto de origem, prefill e proximas acoes da jornada. |
+| `js/simulator-state.js` | Service do simulador para snapshots de formulario, carrinho salvo, payload de simulacao e retomada. |
 | `js/engine.js` | Motor de consorcio, cronograma, eventos, resumo e cenarios. |
 | `js/shelf-data.js` | Carregamento e normalizacao da base real/fallback de grupos. |
 | `js/shelf-engine.js` | Score, filtros, paginacao, projeto estruturado e simulacao consolidada da prateleira. |
@@ -423,7 +426,7 @@ Os marcadores mais importantes por area:
 | Calculadoras | `data-calculator-form`, `data-calculator-result`, `data-calculator-history`, `data-calculators-hub`. |
 | Trilha | `data-decision-journey-form`, `data-decision-journey-state`, `data-decision-journey-steps`, `data-decision-journey-actions`. |
 | Comparador | `data-comparator-form`, `data-comparator-result`, `data-comparator-preset-summary`, `data-comparator-model-recommendation`. |
-| Simulador | `data-simulator-readiness`, `data-simulator-decision-strip`, `data-shelf-col`. |
+| Simulador | `data-simulator-readiness`, `data-simulator-decision-strip`, `data-simulator-journey-actions`, `data-shelf-col`. |
 | Proposta | `data-proposal-acceptance-panel`, `data-proposal-handoff-bridge`, `data-proposal-builder-board`, `data-proposal-builder-readiness`, `data-proposal-builder-option`, `data-proposal-version-panel`, `data-proposal-version-history`, `data-proposal-version-comparison`. |
 | Handoff | `data-handoff-list`, `data-handoff-detail`, `data-handoff-metrics`, `data-handoff-recovery-signals`, `data-handoff-action-plan`, `data-handoff-action-execution`, `data-handoff-proposal-version`, `data-handoff-commercial-stage`, `data-handoff-commercial-stage-panel`, `data-handoff-commercial-stage-history`. |
 | Cliente | `data-client-continuity-strip`, `data-client-continuity-cockpit`, `data-client-next-action`, `data-client-handoff-status`, `data-client-proposal-status`, `data-client-simulation-context`, `data-client-commercial-stage`, `data-client-decision-journey`, `data-client-recovery-signals`. |
@@ -483,6 +486,7 @@ Scripts confirmados em `tools/`:
 | `validate-online-journey-smoke.mjs` | Smoke test online no GitHub Pages para as 10 etapas do roteiro navegavel. |
 | `validate-simulator-groups.mjs` | Carga completa da base real no simulador, filtro vazio, score, ordenacao e paginacao. |
 | `validate-simulator-performance.mjs` | Peso da base compacta, schema colunar, fallback e reducao de bytes do simulador online. |
+| `validate-simulator-refactor.mjs` | Modulos extraidos do simulador, ordem de scripts, payload salvo e proximas acoes da jornada. |
 | `validate-handoff-origins.mjs` | Origem dos handoffs por proposta, trilha, sinal e pacote importado. |
 | `validate-calculadoras.mjs` | Catalogo, paginas, premissas e formulas. |
 | `validate-dashboard-continuity-flow.mjs` | Timeline e deep links do Dashboard Cliente. |
@@ -539,7 +543,7 @@ Governanca documental: docs ativos passaram a usar Bancus Fraternis como platafo
 
 O vetor recomendado para o proximo ciclo continua sendo produto e jornada, agora com foco em reduzir risco tecnico sem quebrar contratos publicos:
 
-1. Reduzir divida tecnica do simulador em modulos menores, preservando `data-*`, `localStorage`, deep links e exports globais.
+1. Continuar a modularizacao do simulador, extraindo proposta/versionamento e prateleira/carrinho sem quebrar `App.*`.
 2. Preparar plano de migracao futura para backend/API sem quebrar `localStorage`, deep links e services globais.
 3. Manter a lousa como porta de QA visual a cada nova entrega funcional.
 

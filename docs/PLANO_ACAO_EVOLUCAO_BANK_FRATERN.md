@@ -75,6 +75,7 @@ Cada etapa deve responder quatro perguntas:
 | 9 | Cockpit do Dashboard Cliente | Concluido | Cliente ve proxima acao, handoff, proposta, simulacao e etapa comercial em uma leitura unica de retomada. | `data-client-continuity-cockpit`, `tools/validate-dashboard-continuity-flow.mjs`. |
 | 10 | Exportacao do funil/cadencia | Concluido | Admin exporta JSON anonimo para reuniao diaria, com schema, totais por etapa, leads anonimizados, leads parados e movimentacoes recentes. | `data-admin-commercial-pipeline-export`, `bank-fratern.admin-commercial-pipeline.v1`. |
 | 11 | Lousa de QA comercial | Concluido | Lousa ganhou checkpoints para cockpit cliente, cadencia consultiva, funil comercial, exportacao sanitizada e smoke test online. | `data-lousa-commercial-qa`, `tools/validate-navigable-journey.mjs`. |
+| 12 | Modularizacao inicial do simulador | Concluido parcial | Contexto/prefill/proximas acoes e snapshots de salvar/carregar sairam do controlador principal para services globais dedicados. | `BFSimulatorJourney`, `BFSimulatorState`, `data-simulator-journey-actions`, `tools/validate-simulator-refactor.mjs`. |
 
 ## Proximos Passos Priorizados
 
@@ -84,7 +85,8 @@ Cada etapa deve responder quatro perguntas:
 | Concluido | Operacao consultiva conectada ao funil | Levar a etapa comercial e a cadencia para o Handoff Consultivo, para o consultor ver a mesma leitura do Admin. | `pages/handoff-consultivo.html`, `assets/js/handoff-consultivo.js`, `assets/js/services/handoff-consultivo.service.js`. | Consultor enxerga etapa, atraso de etapa e ultima movimentacao sem abrir o Admin. |
 | Concluido | Exportacao comercial do funil | Criada exportacao sanitizada do funil/cadencia para reuniao diaria, sem e-mail, telefone, CPF ou dados bloqueados. | `assets/js/admin-users.js`, `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md`, `tools/validate-admin-dashboard-source-funnel.mjs`. | JSON exportado possui schema, totais por etapa, leads anonimizados e zero dado sensivel. |
 | Concluido | Lousa de QA atualizada | Lousa navegavel inclui funil comercial, cadencia, dashboard cliente, handoff consultivo, exportacao do funil e publicacao online como checkpoints visuais. | `pages/lousa-navegacao.html`, `tools/validate-navigable-journey.mjs`. | A lousa permite validar a jornada inteira sem abrir docs. |
-| P3 | Reducao de divida tecnica do simulador | Separar responsabilidades maiores de `js/app.js` em modulos menores, sem alterar contratos publicos. | `js/app.js`, `js/proposal-summary.js`, services existentes. | Validadores atuais continuam verdes e o fluxo do simulador nao muda para o usuario. |
+| Concluido parcial | Reducao de divida tecnica do simulador | Separadas responsabilidades de contexto/jornada e salvar/carregar em `js/simulator-journey.js` e `js/simulator-state.js`, sem alterar contratos publicos. | `js/app.js`, `js/simulator-journey.js`, `js/simulator-state.js`, `tools/validate-simulator-refactor.mjs`. | Validadores atuais continuam verdes e o fluxo do simulador nao muda para o usuario. |
+| P3 | Proxima extracao do simulador | Separar lousa/versionamento de proposta e prateleira/carrinho em modulos menores, mantendo `App.*` como fachada publica. | `js/app.js`, `js/proposal-summary.js`, `js/shelf-engine.js`, novo service de proposta/prateleira. | Reduzir `app.js` sem quebrar proposta, PDF, prateleira e simulacoes salvas. |
 | P3 | Preparacao backend/API futura | Documentar fronteiras de migracao para usuarios, leads, simulacoes, propostas e handoffs, mantendo `localStorage` como fallback. | `docs/PLANO_IMPLEMENTACAO_EVOLUTIVO_BANK_FRATERN.md`, `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md`. | Plano tecnico define contratos de migracao sem iniciar backend produtivo. |
 
 ## Fase 1 - Saneamento da Jornada Navegavel
@@ -398,12 +400,14 @@ Criterios de aceite:
 - Contratos publicos ficam documentados antes de mudancas funcionais.
 - Roteiro navegavel da lousa cobre Auth, Home, Produtos, Calculadoras, Trilha, Comparador, Simulador, Proposta, Handoff e Dashboards.
 - QA comercial da lousa cobre cliente, consultor, funil, cadencia, exportacao sanitizada e publicacao online.
+- Simulador passou a expor `BFSimulatorJourney` e `BFSimulatorState`, reduzindo responsabilidades do `js/app.js` em contexto, prefill, proximas acoes, snapshots e payload salvo.
 
 Testes recomendados:
 
 - `node tools/validate-design-system.mjs`
 - `node tools/validate-public-contracts.mjs`
 - `node tools/validate-navigable-journey.mjs`
+- `node tools/validate-simulator-refactor.mjs`
 - `node tools/validate-docs-modernization.mjs`
 - `node tools/validate-calculadoras.mjs`
 - Inspecao textual de docs para referencias antigas inconsistentes.
@@ -428,8 +432,9 @@ Testes recomendados:
 | Concluido parcial | Evoluir dashboards por funil, origem e aging. | Dashboard Cliente ja tem timeline por etapa, contexto e aging; Admin consolida proximas acoes, fila guiada, produtividade, carteira, funil comercial movel, cadencia e exportacao sanitizada. |
 | Concluido | Exportar funil/cadencia de forma sanitizada. | Resolvido em 2026-05-11 com `bank-fratern.admin-commercial-pipeline.v1`, leads anonimizados e teste browser contra e-mail, CPF e telefone. |
 | Concluido | Atualizar lousa de QA comercial. | Resolvido em 2026-05-11 com `data-lousa-commercial-qa`, seis checkpoints visuais e validador atualizado. |
+| Concluido parcial | Modularizar o simulador. | Primeiro corte entregue em 2026-05-11 com `BFSimulatorJourney`, `BFSimulatorState`, acoes de jornada e validador dedicado. |
 | Concluido | Criar validador de aliases/rotas. | `tools/validate-route-aliases.mjs`. |
-| P3 | Reduzir responsabilidades de `js/app.js` e `assets/js/bf-platform.js`. | Reduz risco em evolucoes futuras. |
+| P3 | Continuar reduzindo responsabilidades de `js/app.js` e `assets/js/bf-platform.js`. | Proximo corte recomendado: proposta/versionamento e prateleira/carrinho. |
 
 ## Contratos que Devem Ser Preservados
 
@@ -458,7 +463,7 @@ Testes recomendados:
 1. Fase 1: rotas, matriz de paginas e saneamento navegavel. Concluida.
 2. Fase 3: handoff por origem e operacao do consultor. Concluida parcialmente, com cockpit de aging/prioridade e plano executavel entregue.
 3. Fase 4: dashboards e funil. Admin avancou para fila guiada, produtividade, carteira, funil comercial movel, cadencia e exportacao sanitizada; essa leitura ja chegou ao consultor e ao Dashboard Cliente.
-4. Fase 2: continuidade da jornada. Em andamento; Home, Produtos, Calculadoras, Trilha contextual, cockpit do Dashboard Cliente e lousa de QA visual foram implementados.
+4. Fase 2: continuidade da jornada. Em andamento; Home, Produtos, Calculadoras, Trilha contextual, cockpit do Dashboard Cliente, lousa de QA visual e primeiras acoes contextuais do simulador foram implementados.
 5. Fase 5: governanca permanente e reducao de divida documental. Em andamento; contratos publicos, changelog, evidencias browser, CI/Pages e roteiro de teste navegavel estao ativos.
 6. Fase futura: backend/API. Fora do ciclo atual, mas deve ser preparado por documentacao de migracao preservando compatibilidade com `localStorage`.
 

@@ -360,29 +360,27 @@ const App = (() => {
   }
 
   function getDecisionContextSnapshot() {
-    if (!window.BFDecisionContext || typeof window.BFDecisionContext.buildSimulationPrefill !== 'function') {
-      return {
+    return window.BFSimulatorJourney && window.BFSimulatorJourney.getDecisionContextSnapshot
+      ? window.BFSimulatorJourney.getDecisionContextSnapshot(window.BFDecisionContext)
+      : {
         source: 'none',
         readinessScore: 0,
         profileSnapshot: {},
         prefill: {},
         readiness: { score: 0, complete: false, missing: [], message: 'Contexto financeiro nao carregado.' }
       };
-    }
-    return window.BFDecisionContext.buildSimulationPrefill();
   }
 
   function contextSourceLabel(context) {
-    if (!context || context.source === 'none') return 'Sem origem';
-    if (context.source === 'calculator') return context.calculatorSlug ? `Calculadora ${context.calculatorSlug}` : 'Calculadora';
-    if (context.source === 'journey') return context.journeyId ? `Jornada ${context.journeyId}` : 'Jornada';
-    return 'Perfil financeiro';
+    return window.BFSimulatorJourney && window.BFSimulatorJourney.contextSourceLabel
+      ? window.BFSimulatorJourney.contextSourceLabel(context)
+      : 'Sem origem';
   }
 
   function calculatorPageHref(slug) {
-    if (!slug) return 'calculadoras.html';
-    if (slug === 'comparador') return 'comparador.html';
-    return `calculadora-${slug}.html`;
+    return window.BFSimulatorJourney && window.BFSimulatorJourney.calculatorPageHref
+      ? window.BFSimulatorJourney.calculatorPageHref(slug)
+      : 'calculadoras.html';
   }
 
   function setIfBlankOrDefault(id, value, defaultValues = []) {
@@ -397,10 +395,9 @@ const App = (() => {
   }
 
   function inferObjetivoValue(text) {
-    const value = String(text || '').toLowerCase();
-    if (value.includes('invest') || value.includes('patrimonio') || value.includes('aposent')) return 'investimento';
-    if (value.includes('liquidez') || value.includes('reserva')) return 'investimento';
-    return 'aquisicao';
+    return window.BFSimulatorJourney && window.BFSimulatorJourney.inferObjetivoValue
+      ? window.BFSimulatorJourney.inferObjetivoValue(text)
+      : 'aquisicao';
   }
 
   function applyDecisionContextPrefill() {
@@ -408,25 +405,14 @@ const App = (() => {
     const from = params.get('from');
     if (!from || !window.BFDecisionContext) return null;
     const context = getDecisionContextSnapshot();
-    const prefill = context.prefill || {};
-    const targetValue = Number(prefill.valorAlvo || 0);
-    const lancePct = Number(prefill.lanceProprioSugeridoPct || 0);
+    const plan = window.BFSimulatorJourney && window.BFSimulatorJourney.buildPrefillPlan
+      ? window.BFSimulatorJourney.buildPrefillPlan(context)
+      : [];
     let applied = 0;
 
-    if (prefill.clienteObjetivo) {
-      applied += setIfBlankOrDefault('clienteObjetivo', inferObjetivoValue(prefill.clienteObjetivo), ['aquisicao']) ? 1 : 0;
-    }
-    if (targetValue > 0) {
-      applied += setIfBlankOrDefault('valorCarta', targetValue) ? 1 : 0;
-      applied += setIfBlankOrDefault('filtroCartaMin', Math.max(0, Math.round(targetValue * 0.85 / 1000) * 1000)) ? 1 : 0;
-      applied += setIfBlankOrDefault('filtroCartaMax', Math.round(targetValue * 1.15 / 1000) * 1000) ? 1 : 0;
-    }
-    if (lancePct > 0) {
-      applied += setIfBlankOrDefault('compLanceProprio', Math.round(lancePct * 10) / 10, ['', '20']) ? 1 : 0;
-    }
-    if (prefill.observacoes) {
-      applied += setIfBlankOrDefault('observacoes', prefill.observacoes) ? 1 : 0;
-    }
+    plan.forEach((item) => {
+      applied += setIfBlankOrDefault(item.id, item.value, item.defaults || []) ? 1 : 0;
+    });
 
     if (applied > 0) {
       document.body.dataset.decisionContextApplied = context.source || from;
@@ -487,6 +473,9 @@ const App = (() => {
     const shelfCount = Array.isArray(shelfGroups) ? shelfGroups.length : 0;
     const decisionContext = getDecisionContextSnapshot();
     const readiness = decisionContext.readiness || { score: decisionContext.readinessScore || 0, complete: false, message: 'Complete o diagnostico financeiro.' };
+    const recommended = window.BFDecisionContext && typeof window.BFDecisionContext.recommendedCalculators === 'function'
+      ? window.BFDecisionContext.recommendedCalculators(decisionContext.profileSnapshot || {})
+      : ['custos-fixos'];
 
     const decisionCards = [
       {
@@ -547,6 +536,29 @@ const App = (() => {
         action: hasResult ? 'Salvar cenário na Carteira' : 'Abrir simulações salvas'
       }
     ];
+    const journeyActions = window.BFSimulatorJourney && window.BFSimulatorJourney.buildJourneyActions
+      ? window.BFSimulatorJourney.buildJourneyActions({
+        dataStatus,
+        project,
+        savedCount,
+        shelfCount,
+        decisionContext,
+        readiness,
+        hasCart,
+        hasResult,
+        recommendedCalculators: recommended
+      })
+      : [];
+    const renderJourneyAction = (action) => {
+      if (!action) return '';
+      if (action.type === 'link') {
+        return `<a class="btn btn--ghost btn--sm" href="${escapeSettingsText(action.href || '#')}">${escapeSettingsText(action.label || 'Abrir')}</a>`;
+      }
+      const onclick = action.action && action.action.startsWith('goToStep:')
+        ? `App.goToStep(${parseInt(action.action.replace('goToStep:', ''), 10) || 1})`
+        : `App.${action.action || 'buscarGrupos'}()`;
+      return `<button class="btn btn--primary btn--sm" type="button" onclick="${onclick}">${escapeSettingsText(action.label || 'Executar')}</button>`;
+    };
 
     target.innerHTML = `
       <div class="bf-v8-decision-strip__head">
@@ -565,6 +577,9 @@ const App = (() => {
             <small>${escapeSettingsText(card.action)}</small>
           </article>
         `).join('')}
+      </div>
+      <div class="bf-inline-actions" data-simulator-journey-actions>
+        ${journeyActions.map(renderJourneyAction).join('')}
       </div>
     `;
     renderSimulatorReadiness();
@@ -3013,136 +3028,41 @@ const App = (() => {
   // ══════════════════════════════════════════
 
   function collectFormSnapshot() {
-    const fields = {};
-    document.querySelectorAll('input[id], select[id], textarea[id]').forEach((el) => {
-      fields[el.id] = {
-        type: el.type || el.tagName.toLowerCase(),
-        value: el.type === 'checkbox' ? !!el.checked : el.value
-      };
-    });
-    return fields;
+    return window.BFSimulatorState && window.BFSimulatorState.collectFormSnapshot
+      ? window.BFSimulatorState.collectFormSnapshot(document)
+      : {};
   }
 
   function applyFormSnapshot(snapshot) {
-    if (!snapshot || typeof snapshot !== 'object') return;
-    Object.entries(snapshot).forEach(([id, data]) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      if (el.type === 'checkbox') {
-        el.checked = !!(data && data.value);
-      } else if (data && data.value !== undefined) {
-        el.value = data.value;
-      }
-    });
+    if (window.BFSimulatorState && window.BFSimulatorState.applyFormSnapshot) {
+      window.BFSimulatorState.applyFormSnapshot(snapshot, document);
+    }
     toggleFGTSFields();
     toggleReducaoFields();
   }
 
   function collectSavedCart() {
-    return (projetoEstruturado.itens || []).map((item) => {
-      const group = item._group || {};
-      return {
-        itemId: item.itemId,
-        groupKey: item.groupKey,
-        codigoGrupo: item.codigoGrupo,
-        codigoSegmento: item.codigoSegmento,
-        administradora: item.administradora,
-        nomeSegmento: item.nomeSegmento,
-        iconSegmento: item.iconSegmento,
-        quantidadeCotas: item.quantidadeCotas,
-        valorCartaRef: item.valorCartaRef,
-        valorCartaUnitario: item.valorCartaUnitario,
-        valorCartaTotal: item.valorCartaTotal,
-        prazoMeses: item.prazoMeses,
-        taxaAdmPct: item.taxaAdmPct,
-        fundoReservaPct: item.fundoReservaPct,
-        indiceCorrecaoNome: item.indiceCorrecaoNome,
-        lanceProprioPct: item.lanceProprioPct,
-        lanceEmbutidoPct: item.lanceEmbutidoPct,
-        valorFgts: item.valorFgts,
-        mesContemplacaoAlvo: item.mesContemplacaoAlvo,
-        parcelaReduzidaAtiva: item.parcelaReduzidaAtiva,
-        classificacao: item.classificacao,
-        papel: item.papel,
-        groupSnapshot: {
-          groupKey: group.groupKey || item.groupKey,
-          codigoGrupo: group.codigoGrupo || item.codigoGrupo,
-          codigoSegmento: group.codigoSegmento || item.codigoSegmento,
-          nomeAdministradora: group.nomeAdministradora || item.administradora,
-          administradora: group.administradora || item.administradora,
-          nomeSegmento: group.nomeSegmento || item.nomeSegmento,
-          iconSegmento: group.iconSegmento || item.iconSegmento,
-          valorCartaRef: group.valorCartaRef || item.valorCartaRef || item.valorCartaUnitario,
-          prazoMeses: group.prazoMeses || item.prazoMeses,
-          taxaAdmPct: group.taxaAdmPct || item.taxaAdmPct,
-          fundoReservaPct: group.fundoReservaPct || item.fundoReservaPct,
-          indiceCorrecaoNome: group.indiceCorrecaoNome || item.indiceCorrecaoNome,
-          lanceEmbutidoMaxPct: getEffectiveLanceEmbutidoMax(group),
-          lanceFixoPct: group.lanceFixoPct,
-          parcelaReduzidaDisponivel: group.parcelaReduzidaDisponivel,
-          reducaoMaxParcelaPct: group.reducaoMaxParcelaPct,
-          seguroPctComercial: group.seguroPctComercial,
-          macroCategoria: group.macroCategoria,
-          statusComercial: group.statusComercial,
-          _classificacao: group._classificacao || item.classificacao,
-          _papel: group._papel || item.papel
-        }
-      };
-    });
+    return window.BFSimulatorState && window.BFSimulatorState.collectSavedCart
+      ? window.BFSimulatorState.collectSavedCart(projetoEstruturado.itens || [], { getEffectiveLanceEmbutidoMax })
+      : [];
   }
 
   function findGroupForSavedItem(savedItem) {
     const catalog = (typeof ShelfCatalog !== 'undefined' && Array.isArray(ShelfCatalog)) ? ShelfCatalog : [];
-    return catalog.find((group) => {
-      return (savedItem.groupKey && group.groupKey === savedItem.groupKey)
-        || (savedItem.codigoGrupo && group.codigoGrupo === savedItem.codigoGrupo && (!savedItem.administradora || group.nomeAdministradora === savedItem.administradora));
-    }) || savedItem.groupSnapshot || {
-      groupKey: savedItem.groupKey,
-      codigoGrupo: savedItem.codigoGrupo,
-      codigoSegmento: savedItem.codigoSegmento,
-      nomeAdministradora: savedItem.administradora,
-      nomeSegmento: savedItem.nomeSegmento,
-      iconSegmento: savedItem.iconSegmento,
-      valorCartaRef: savedItem.valorCartaRef || savedItem.valorCartaUnitario,
-      prazoMeses: savedItem.prazoMeses,
-      taxaAdmPct: savedItem.taxaAdmPct,
-      fundoReservaPct: savedItem.fundoReservaPct,
-      indiceCorrecaoNome: savedItem.indiceCorrecaoNome
-    };
+    return window.BFSimulatorState && window.BFSimulatorState.findGroupForSavedItem
+      ? window.BFSimulatorState.findGroupForSavedItem(savedItem, catalog)
+      : savedItem.groupSnapshot || {};
   }
 
   function restoreCartItems(savedCart) {
-    const source = Array.isArray(savedCart) ? savedCart : [];
-    projetoEstruturado.itens = source.map((savedItem) => {
-      const group = findGroupForSavedItem(savedItem);
-      const item = ShelfEngine.createProjectItem(group, savedItem.quantidadeCotas || 1, savedItem.valorCartaUnitario || savedItem.valorCartaRef);
-      Object.assign(item, {
-        codigoGrupo: savedItem.codigoGrupo || item.codigoGrupo,
-        codigoSegmento: savedItem.codigoSegmento || item.codigoSegmento,
-        administradora: savedItem.administradora || item.administradora,
-        nomeSegmento: savedItem.nomeSegmento || item.nomeSegmento,
-        iconSegmento: savedItem.iconSegmento || item.iconSegmento,
-        quantidadeCotas: Math.max(1, parseInt(savedItem.quantidadeCotas, 10) || 1),
-        valorCartaRef: savedItem.valorCartaRef || item.valorCartaRef,
-        valorCartaUnitario: savedItem.valorCartaUnitario || item.valorCartaUnitario,
-        prazoMeses: savedItem.prazoMeses || item.prazoMeses,
-        taxaAdmPct: savedItem.taxaAdmPct || item.taxaAdmPct,
-        fundoReservaPct: savedItem.fundoReservaPct || item.fundoReservaPct,
-        indiceCorrecaoNome: savedItem.indiceCorrecaoNome || item.indiceCorrecaoNome,
-        lanceProprioPct: savedItem.lanceProprioPct || 0,
-        lanceEmbutidoPct: savedItem.lanceEmbutidoPct || 0,
-        valorFgts: savedItem.valorFgts || 0,
-        mesContemplacaoAlvo: savedItem.mesContemplacaoAlvo || item.mesContemplacaoAlvo,
-        parcelaReduzidaAtiva: !!savedItem.parcelaReduzidaAtiva,
-        classificacao: savedItem.classificacao || item.classificacao,
-        papel: savedItem.papel || item.papel,
-        _group: group
-      });
-      const limit = getEffectiveLanceEmbutidoMax(group);
-      if (limit > 0 && item.lanceEmbutidoPct > limit) item.lanceEmbutidoPct = limit;
-      item.valorCartaTotal = item.valorCartaUnitario * item.quantidadeCotas;
-      return item;
-    });
+    const catalog = (typeof ShelfCatalog !== 'undefined' && Array.isArray(ShelfCatalog)) ? ShelfCatalog : [];
+    projetoEstruturado.itens = window.BFSimulatorState && window.BFSimulatorState.restoreSavedCartItems
+      ? window.BFSimulatorState.restoreSavedCartItems(savedCart, {
+        catalog,
+        shelfEngine: typeof ShelfEngine !== 'undefined' ? ShelfEngine : null,
+        getEffectiveLanceEmbutidoMax
+      })
+      : [];
     renderGruposSelecionados();
     renderStep5Cart();
     if (projetoEstruturado.itens.length) recalcularProjeto();
@@ -3187,52 +3107,29 @@ const App = (() => {
   }
 
   function getResumeStep(sim) {
-    const savedStep = parseInt(sim.currentStep || sim.step || 1, 10) || 1;
-    if (sim.resultado && sim.resultado.cronograma) return Math.max(savedStep, 7);
-    if (Array.isArray(sim.carrinho) && sim.carrinho.length) return Math.max(savedStep, 5);
-    return savedStep;
+    return window.BFSimulatorState && window.BFSimulatorState.resolveResumeStep
+      ? window.BFSimulatorState.resolveResumeStep(sim)
+      : 1;
   }
 
   function buildSimulationPayload(nome) {
     const params = getParams();
     const carrinho = collectSavedCart();
-    const segmentos = [...new Set(carrinho.map(i => i.nomeSegmento).filter(Boolean))];
-    const totalCarta = carrinho.reduce((s, i) => s + (i.valorCartaTotal || 0), 0) || params.valorCarta || 0;
-    const totalCotas = carrinho.reduce((s, i) => s + (i.quantidadeCotas || 0), 0);
     const decisionContext = getDecisionContextSnapshot();
-
-    return {
-      nome,
-      origem: 'simulador-consorcio',
-      currentStep,
-      consultor: document.getElementById('consultor')?.value || params.consultor || '',
-      consultorEmail: document.getElementById('consultorEmail')?.value || '',
-      consultorTelefone: document.getElementById('consultorTelefone')?.value || '',
-      cliente: document.getElementById('nomeCliente')?.value || params.nomeCliente || '',
-      clienteCpf: document.getElementById('clienteCpf')?.value || '',
-      clienteEmail: document.getElementById('clienteEmail')?.value || '',
-      clienteTelefone: document.getElementById('clienteTelefone')?.value || '',
-      clienteObjetivo: document.getElementById('clienteObjetivo')?.value || '',
-      totalCarta,
-      totalGrupos: carrinho.length,
-      totalCotas,
-      segmentos,
-      formSnapshot: collectFormSnapshot(),
-      filtros: getShelfFilters(),
-      params,
-      carrinho,
-      resultado,
-      resumo: resultado ? resultado.resumo : null,
-      proposalAcceptance: getCurrentProposalAcceptance(),
-      decisionContext: {
-        source: decisionContext.source,
-        calculatorSlug: decisionContext.calculatorSlug,
-        historyId: decisionContext.historyId,
-        journeyId: decisionContext.journeyId,
-        readinessScore: decisionContext.readinessScore,
-        profileSnapshot: decisionContext.profileSnapshot
-      }
-    };
+    return window.BFSimulatorState && window.BFSimulatorState.buildSimulationPayload
+      ? window.BFSimulatorState.buildSimulationPayload({
+        nome,
+        currentStep,
+        params,
+        cart: carrinho,
+        filters: getShelfFilters(),
+        resultado,
+        proposalAcceptance: getCurrentProposalAcceptance(),
+        decisionContext,
+        formSnapshot: collectFormSnapshot(),
+        root: document
+      })
+      : { nome, origem: 'simulador-consorcio', currentStep, params, carrinho, resultado };
   }
 
   function salvarSimulacao() {

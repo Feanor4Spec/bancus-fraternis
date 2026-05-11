@@ -35,6 +35,7 @@ jobs:
           node tools/validate-calculadoras.mjs
           node tools/validate-simulator-groups.mjs
           node tools/validate-simulator-performance.mjs
+          node tools/validate-simulator-refactor.mjs
           node tools/validate-proposal-builder.mjs
           node tools/validate-proposal-versioning.mjs
           node tools/validate-auth-navigation.mjs

@@ -1,0 +1,16 @@
+{
+  "ok": true,
+  "modules": {
+    "journey": true,
+    "state": true,
+    "scriptOrder": true,
+    "appDelegates": true
+  },
+  "journeyActions": {
+    "complete": 3,
+    "empty": 2
+  },
+  "savedCartItems": 1,
+  "restoredCartItems": 1,
+  "failures": []
+}

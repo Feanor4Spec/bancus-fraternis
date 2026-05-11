@@ -816,6 +816,14 @@ th {
   background: linear-gradient(180deg, #fff, var(--bf-info-bg, #eff6ff));
 }
 
+[data-simulator-journey-actions] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  padding-top: 2px;
+}
+
 .client-dashboard-page .bf-v8-stagebar--inside {
   width: 100%;
   margin: 0 0 18px;

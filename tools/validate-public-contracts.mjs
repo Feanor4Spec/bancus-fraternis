@@ -144,6 +144,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-client-continuity-timeline',
   'data-products-selection-panel',
   'data-decision-journey-form',
+  'data-simulator-journey-actions',
   'data-v8-stagebar',
   'data-lousa-commercial-qa',
   'data-lousa-qa-checkpoint',
@@ -160,6 +161,8 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'BFAuth',
   'BFDecisionContext',
   'BFCalculadoras',
+  'BFSimulatorJourney',
+  'BFSimulatorState',
   'BFComparatorModels',
   'BFTrilhaDecisaoService',
   'BFDecisionJourneyContext',
@@ -194,6 +197,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'tools/validate-proposal-versioning.mjs',
   'tools/validate-simulator-groups.mjs',
   'tools/validate-simulator-performance.mjs',
+  'tools/validate-simulator-refactor.mjs',
   'tools/validate-docs-modernization.mjs',
   'tools/validate-handoff-consultant-operations.mjs',
   'tools/validate-auth-navigation.mjs',
@@ -214,6 +218,9 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
 assert(adminDashboard.includes('href="#admin-proximos-passos"'), 'dashboard-admin.html sem atalho para proximos passos.');
 assert(simulator.includes('data-proposal-builder-board'), 'simulador.html sem lousa de proposta documentada.');
 assert(simulator.includes('data-proposal-version-panel'), 'simulador.html sem painel de versionamento da proposta.');
+assert(simulator.includes('js/simulator-journey.js'), 'simulador.html sem modulo simulator-journey.');
+assert(simulator.includes('js/simulator-state.js'), 'simulador.html sem modulo simulator-state.');
+assert(app.includes('data-simulator-journey-actions'), 'app.js sem acoes de jornada do simulador.');
 assert(app.includes('bank_fratern_proposal_builder_v1'), 'app.js sem chave da lousa de proposta.');
 assert(app.includes('salvarVersaoProposta'), 'app.js sem acao publica de salvar versao da proposta.');
 assert(proposalSummary.includes('proposalBuilderDefaults'), 'proposal-summary.js sem defaults publicos da lousa.');
@@ -271,10 +278,10 @@ const report = {
   ok: failures.length === 0,
   contracts: {
     localStorageKeys: 17,
-    dataMarkers: 55,
-    globals: 12,
+    dataMarkers: 56,
+    globals: 14,
     deepLinks: 10,
-    validators: 15,
+    validators: 16,
     calculatorCount
   },
   warnings,

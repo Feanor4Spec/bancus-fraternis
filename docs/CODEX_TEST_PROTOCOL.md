@@ -56,6 +56,8 @@ Validacoes obrigatorias:
 - Paginas sem shell compartilhado que continuam ativas devem carregar o v8 diretamente.
 - `pages/index.html` deve manter a narrativa institucional antes do perfil financeiro.
 - `pages/simulador.html` deve preservar loading da base real, barra percentual e retomada por `simulationId`.
+- `pages/simulador.html` deve carregar `js/simulator-journey.js` e `js/simulator-state.js` antes de `js/app.js`, preservando `App.*`.
+- `data-simulator-journey-actions` deve aparecer no painel de decisao do simulador quando a jornada for renderizada.
 - `pages/carteira.html`, `pages/assembleias.html`, `pages/duvidas.html`, `pages/sobre-nos.html` e `pages/configuracoes.html` devem estar marcadas como paginas ativas no contrato v8.
 - `pages/index_2.html`, `pages/index_v4_paginas.html` e `pages/consorcio_user_journey_map_v2.html` devem permanecer como legados controlados.
 - `tools/validate-design-system.mjs` deve retornar `ok: true`.
@@ -76,6 +78,7 @@ Comandos preferenciais:
 $node='<node-runtime>'
 & $node tools\validate-design-system.mjs
 & $node tools\validate-public-contracts.mjs
+& $node tools\validate-simulator-refactor.mjs
 & $node tools\validate-navigable-journey.mjs
 & $node tools\validate-github-pages-deploy.mjs
 & $node tools\validate-calculadoras.mjs

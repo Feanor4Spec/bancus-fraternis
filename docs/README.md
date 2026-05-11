@@ -9,6 +9,7 @@ O Bancus Fraternis e uma plataforma estatica/progressiva para apoiar decisao fin
 - 52 paginas navegaveis em `pages/`, com aliases curtos cobertos por `server.js`.
 - 19 calculadoras financeiras no catalogo ativo.
 - Simulador conectado a base real com 17.396 grupos validos.
+- Simulador iniciou modularizacao tecnica com `BFSimulatorJourney` e `BFSimulatorState` para contexto, proximas acoes, snapshots e retomada.
 - Fluxo principal: Home -> Produtos -> Calculadoras -> Trilha Assistida -> Comparador -> Simulador -> Proposta -> Handoff -> Dashboards.
 - Lousa de navegacao em `pages/lousa-navegacao.html` para revisao do produto, roteiro ponta a ponta e checkpoints comerciais/online.
 - Lousa de proposta/PDF no simulador para o consultor selecionar blocos, graficos, conceitos e formulas, com presets consultivo/tecnico, prontidao e historico versionado antes da exportacao/handoff.
@@ -53,7 +54,7 @@ http://localhost:8080/dashboard-admin.html
 | Calculadoras | `pages/calculadoras.html`, `pages/calculadora-*.html`, `assets/data/calculadoras.json` |
 | Trilha Assistida | `pages/trilha-decisao.html`, `assets/js/decision-journey-page.js` |
 | Comparador | `pages/comparador.html`, `assets/js/comparador-page.js` |
-| Simulador | `pages/simulador.html`, `js/app.js`, `js/shelf-data.js`, `js/shelf-engine.js` |
+| Simulador | `pages/simulador.html`, `js/app.js`, `js/simulator-journey.js`, `js/simulator-state.js`, `js/shelf-data.js`, `js/shelf-engine.js` |
 | Proposta/PDF | `js/proposal-summary.js`, `js/export.js`, `js/proposal-acceptance.js`, `js/proposal-versioning.js` |
 | Handoff | `pages/handoff-consultivo.html`, `assets/js/services/handoff-consultivo.service.js` |
 | Dashboard Cliente | `pages/dashboard-cliente.html`, `assets/js/dashboard-cliente.js` |
@@ -83,6 +84,7 @@ node tools/validate-calculadoras.mjs
 node tools/validate-route-aliases.mjs
 node tools/validate-simulator-groups.mjs
 node tools/validate-simulator-performance.mjs
+node tools/validate-simulator-refactor.mjs
 node tools/validate-proposal-versioning.mjs
 ```
 

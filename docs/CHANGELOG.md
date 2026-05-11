@@ -4,6 +4,32 @@
 
 ---
 
+## [v8.70.0] - 2026-05-11
+
+### Modularizacao inicial do simulador
+
+#### Adicionado
+- Criado `js/simulator-journey.js` com `BFSimulatorJourney` para contexto, prefill e proximas acoes do simulador.
+- Criado `js/simulator-state.js` com `BFSimulatorState` para snapshots de formulario, carrinho salvo, payload de simulacao e retomada.
+- O painel de decisao do simulador ganhou `data-simulator-journey-actions` com CTAs contextuais para diagnostico, base, prateleira, resultado, proposta, salvar cenario e carteira.
+- Criado `tools/validate-simulator-refactor.mjs` com relatorio em `docs/test-reports/simulator-refactor-report.json`.
+
+#### Modificado
+- `js/app.js` passou a delegar contexto, prefill, salvar/carregar e montagem de payload aos novos services, mantendo `App.*` como fachada publica.
+- `pages/simulador.html` passou a carregar os novos modulos antes do controlador principal.
+- Contratos publicos, mapa, plano, README, protocolo e validadores foram atualizados para proteger a modularizacao.
+
+#### Validado
+- `node --check js/simulator-journey.js`
+- `node --check js/simulator-state.js`
+- `node --check js/app.js`
+- `node tools/validate-simulator-refactor.mjs`
+- `node tools/validate-simulator-groups.mjs`
+- `node tools/validate-decision-flow.mjs`
+- Evidencia visual: `docs/test-prints/v8ak-simulador-jornada-refactor-desktop.png`
+
+---
+
 ## [v8.69.0] - 2026-05-11
 
 ### Lousa de QA comercial
