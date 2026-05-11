@@ -4,6 +4,28 @@
 
 ---
 
+## [v8.64.0] - 2026-05-11
+
+### Cadencia comercial no funil admin
+
+#### Adicionado
+- Dashboard Admin ganhou `data-admin-commercial-stage-insights` dentro do funil comercial.
+- Criados os blocos `data-admin-commercial-stage-summary`, `data-admin-commercial-stage-stuck-lead` e `data-admin-commercial-stage-movement`.
+- A cadencia mostra movimentacoes em 24h/7d, aging medio da etapa, leads parados e resumo das cinco etapas.
+
+#### Modificado
+- O funil comercial agora usa o historico local de movimentacao para orientar retomadas sugeridas.
+- Validadores, contratos publicos, mapa, plano, protocolo e evidencia browser passaram a proteger a cadencia comercial.
+
+#### Validado
+- `node --check assets/js/admin-users.js`
+- `node --check tools/run-v8af-browser-evidence.mjs`
+- `node tools/validate-admin-dashboard-source-funnel.mjs`
+- `node tools/validate-public-contracts.mjs`
+- `node tools/run-v8af-browser-evidence.mjs`
+
+---
+
 ## [v8.63.0] - 2026-05-11
 
 ### Funil comercial movel no Dashboard Admin

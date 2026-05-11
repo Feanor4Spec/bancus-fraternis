@@ -1901,6 +1901,129 @@
     `).join('');
   }
 
+  function adminCommercialStageDeadlineHours(stageKey) {
+    const deadlines = {
+      contato: 24,
+      proposta: 48,
+      followup: 72,
+      negociacao: 72,
+      fechamento: 120
+    };
+    return deadlines[stageKey] || 48;
+  }
+
+  function adminCommercialStageTone(stageKey, hours, overdue) {
+    if (overdue) return 'alta';
+    const deadline = adminCommercialStageDeadlineHours(stageKey);
+    if (Number(hours || 0) >= deadline) return 'alta';
+    if (Number(hours || 0) >= Math.max(12, deadline * 0.6)) return 'media';
+    return 'baixa';
+  }
+
+  function buildAdminCommercialStageInsights(pipeline) {
+    const source = pipeline || buildAdminCommercialPipeline();
+    const leads = Array.isArray(source.allLeads) ? source.allLeads : [];
+    const audit = adminCommercialStageAudit();
+    const recentMoves = audit.slice(0, 6).map((event) => ({
+      id: event.id || `${event.handoffId || 'lead'}-${event.createdAt || ''}`,
+      handoffId: event.handoffId || '',
+      fromLabel: event.fromLabel || (event.fromStage ? adminCommercialStageLabel(event.fromStage) : 'Entrada'),
+      toLabel: event.toLabel || adminCommercialStageLabel(event.toStage),
+      actorEmail: event.actorEmail || 'admin local',
+      createdAt: event.createdAt || '',
+      age: eventAgeLabel(eventHoursSince(event.createdAt))
+    }));
+    const moved24h = audit.filter((event) => eventHoursSince(event.createdAt) <= 24).length;
+    const moved7d = audit.filter((event) => eventHoursSince(event.createdAt) <= 168).length;
+    const stuck = leads
+      .filter((lead) => lead.stageKey !== 'fechamento' && Number(lead.stageAgeHours || 0) >= adminCommercialStageDeadlineHours(lead.stageKey))
+      .sort((a, b) => Number(b.stageAgeHours || 0) - Number(a.stageAgeHours || 0))
+      .slice(0, 5);
+    const stageSummary = adminCommercialStageDefinitions().map((stage) => {
+      const stageLeads = leads.filter((lead) => lead.stageKey === stage.key);
+      const avgHours = stageLeads.length ? stageLeads.reduce((sum, lead) => sum + Number(lead.stageAgeHours || 0), 0) / stageLeads.length : 0;
+      const blocked = stageLeads.filter((lead) => Number(lead.stageAgeHours || 0) >= adminCommercialStageDeadlineHours(stage.key)).length;
+      return {
+        ...stage,
+        leads: stageLeads.length,
+        movedIn: audit.filter((event) => event.toStage === stage.key).length,
+        movedOut: audit.filter((event) => event.fromStage === stage.key).length,
+        avgHours,
+        blocked,
+        tone: blocked ? 'alta' : (stageLeads.length ? 'media' : 'baixa')
+      };
+    });
+    const avgStageHours = leads.length ? leads.reduce((sum, lead) => sum + Number(lead.stageAgeHours || 0), 0) / leads.length : 0;
+    const nextStuck = stuck[0] || null;
+    return {
+      moved24h,
+      moved7d,
+      avgStageHours,
+      stuck,
+      recentMoves,
+      stageSummary,
+      nextStuck
+    };
+  }
+
+  function renderAdminCommercialStageInsights(pipeline) {
+    const insights = buildAdminCommercialStageInsights(pipeline);
+    const movementRows = insights.recentMoves.length ? insights.recentMoves.map((event) => `
+      <article class="bf-admin-commercial-movement" data-admin-commercial-stage-movement="${escapeHtml(event.id)}">
+        <span>${escapeHtml(event.fromLabel)} -> ${escapeHtml(event.toLabel)}</span>
+        <strong>${escapeHtml(event.handoffId || 'Lead local')}</strong>
+        <small>${escapeHtml(event.age)} - ${escapeHtml(event.actorEmail)}</small>
+      </article>
+    `).join('') : '<div class="bf-empty-state">As movimentacoes do funil aparecerao aqui quando um lead trocar de etapa.</div>';
+    const stuckRows = insights.stuck.length ? insights.stuck.map((lead) => `
+      <article class="bf-admin-commercial-stuck bf-admin-commercial-stuck--${escapeHtml(adminCommercialStageTone(lead.stageKey, lead.stageAgeHours, lead.overdue))}" data-admin-commercial-stage-stuck-lead="${escapeHtml(lead.id)}">
+        <span>${escapeHtml(lead.stageLabel)} - ${escapeHtml(lead.source)} - ${escapeHtml(lead.priority)}</span>
+        <strong>${escapeHtml(lead.title)}</strong>
+        <small>${escapeHtml(eventAgeLabel(lead.stageAgeHours))} sem evolucao de etapa - ${escapeHtml(lead.nextStep)}</small>
+        <a class="btn btn--ghost btn--sm" href="${escapeHtml(lead.href)}">Retomar lead</a>
+      </article>
+    `).join('') : '<div class="bf-empty-state">Nenhum lead ultrapassou o prazo de cadencia da etapa.</div>';
+    const stageRows = insights.stageSummary.map((stage) => `
+      <div class="bf-admin-commercial-stage-summary bf-admin-commercial-stage-summary--${escapeHtml(stage.tone)}" data-admin-commercial-stage-summary="${escapeHtml(stage.key)}">
+        <span>${escapeHtml(stage.label)}</span>
+        <strong>${escapeHtml(stage.leads)}</strong>
+        <small>${escapeHtml(stage.movedIn)} entradas - ${escapeHtml(stage.movedOut)} saidas - ${escapeHtml(stage.leads ? eventAgeLabel(stage.avgHours) : 'sem lead')}</small>
+      </div>
+    `).join('');
+    return `
+      <section class="bf-admin-commercial-insights" data-admin-commercial-stage-insights>
+        <div class="bf-admin-panel-heading">
+          <div>
+            <span class="bf-badge bf-badge--gold">Cadencia comercial</span>
+            <h3>Movimentacao e leads parados</h3>
+            <p>Usa o historico local do funil para mostrar velocidade, gargalos por etapa e proximas retomadas comerciais.</p>
+          </div>
+          <a class="btn btn--ghost btn--sm" href="#admin-carteira-consultor">Ver carteira</a>
+        </div>
+        <div class="bf-platform-metrics">
+          ${window.BFCards.metric('Movidos 24h', insights.moved24h || 0, insights.moved24h ? 'is-strong' : '')}
+          ${window.BFCards.metric('Movidos 7d', insights.moved7d || 0)}
+          ${window.BFCards.metric('Leads parados', insights.stuck.length || 0, insights.stuck.length ? 'is-warn' : '')}
+          ${window.BFCards.metric('Aging de etapa', insights.avgStageHours ? eventAgeLabel(insights.avgStageHours) : 'sem base')}
+        </div>
+        <div class="bf-admin-commercial-insights__grid">
+          <section>
+            <span class="bf-badge bf-badge--navy">Resumo por etapa</span>
+            <div class="bf-admin-commercial-stage-summary-list">${stageRows}</div>
+          </section>
+          <section>
+            <span class="bf-badge bf-badge--warn">Retomadas sugeridas</span>
+            <div class="bf-admin-commercial-stage-stuck-list">${stuckRows}</div>
+          </section>
+          <section>
+            <span class="bf-badge bf-badge--ok">Movimentacoes recentes</span>
+            <div class="bf-admin-commercial-stage-movement-list">${movementRows}</div>
+          </section>
+        </div>
+      </section>
+    `;
+  }
+
   function adminCommercialStageFor(item, state, plan, service) {
     const savedStage = item && item.id ? adminCommercialStageStates()[item.id] : null;
     if (savedStage && savedStage.stage && adminCommercialStageMap().has(savedStage.stage)) return savedStage.stage;
@@ -1920,6 +2043,7 @@
     const rows = definitions.map((stage) => ({ ...stage, leads: [], high: 0, overdue: 0, avgHours: 0, tone: 'baixa' }));
     const byStage = new Map(rows.map((stage) => [stage.key, stage]));
     const now = new Date();
+    const allLeads = [];
 
     if (service && typeof service.enrichList === 'function') {
       service.enrichList(service.list ? service.list() : [], now).forEach((item) => {
@@ -1931,7 +2055,9 @@
         const statusLabel = service.statusLabels && service.statusLabels[item.status] ? service.statusLabels[item.status] : (item.status || 'Novo');
         const priorityLabel = service.priorityLabels && service.priorityLabels[item.priority] ? service.priorityLabels[item.priority] : (item.priority || 'Media');
         const tone = state.tone || (item.priority === 'alta' ? 'media' : 'baixa');
-        stage.leads.push({
+        const savedStage = item.id ? adminCommercialStageStates()[item.id] : null;
+        const stageUpdatedAt = (savedStage && savedStage.updatedAt) || item.updatedAt || item.createdAt || '';
+        const lead = {
           id: item.id || '',
           stageKey: stage.key,
           stageLabel: stage.label,
@@ -1945,8 +2071,12 @@
           nextStep: (plan && plan.title) || state.nextStep || stage.next,
           href: portfolioLeadHref(item, plan),
           tone,
-          overdue: !!state.slaOverdue
-        });
+          overdue: !!state.slaOverdue,
+          stageUpdatedAt,
+          stageAgeHours: eventHoursSince(stageUpdatedAt)
+        };
+        allLeads.push(lead);
+        stage.leads.push(lead);
       });
     }
 
@@ -1970,12 +2100,13 @@
       closed: Number((byStage.get('fechamento') || {}).totalLeads || 0),
       high: rows.reduce((sum, stage) => sum + stage.high, 0),
       overdue: rows.reduce((sum, stage) => sum + stage.overdue, 0),
+      allLeads,
       rows
     };
   }
 
-  function renderAdminCommercialPipeline() {
-    const pipeline = buildAdminCommercialPipeline();
+  function renderAdminCommercialPipeline(pipeline) {
+    const resolvedPipeline = pipeline || buildAdminCommercialPipeline();
     return `
       <section class="bf-admin-commercial-pipeline" id="admin-funil-comercial" data-admin-commercial-pipeline>
         <div class="bf-admin-panel-heading">
@@ -1987,14 +2118,14 @@
           <a class="btn btn--ghost btn--sm" href="handoff-consultivo.html#fila-handoff">Abrir fila consultiva</a>
         </div>
         <div class="bf-platform-metrics">
-          ${window.BFCards.metric('Leads no funil', pipeline.total || 0, pipeline.total ? 'is-strong' : '')}
-          ${window.BFCards.metric('Em aberto', pipeline.open || 0)}
-          ${window.BFCards.metric('Alta prioridade', pipeline.high || 0, pipeline.high ? 'is-warn' : '')}
-          ${window.BFCards.metric('SLA vencido', pipeline.overdue || 0, pipeline.overdue ? 'is-warn' : '')}
-          ${window.BFCards.metric('Fechamento', pipeline.closed || 0)}
+          ${window.BFCards.metric('Leads no funil', resolvedPipeline.total || 0, resolvedPipeline.total ? 'is-strong' : '')}
+          ${window.BFCards.metric('Em aberto', resolvedPipeline.open || 0)}
+          ${window.BFCards.metric('Alta prioridade', resolvedPipeline.high || 0, resolvedPipeline.high ? 'is-warn' : '')}
+          ${window.BFCards.metric('SLA vencido', resolvedPipeline.overdue || 0, resolvedPipeline.overdue ? 'is-warn' : '')}
+          ${window.BFCards.metric('Fechamento', resolvedPipeline.closed || 0)}
         </div>
         <div class="bf-admin-commercial-pipeline__grid">
-          ${pipeline.rows.map((stage) => `
+          ${resolvedPipeline.rows.map((stage) => `
             <article class="bf-admin-commercial-stage bf-admin-commercial-stage--${escapeHtml(stage.tone)}" data-admin-commercial-stage="${escapeHtml(stage.key)}">
               <div class="bf-admin-commercial-stage__top">
                 <span>${escapeHtml(stage.label)}</span>
@@ -2028,6 +2159,7 @@
             </article>
           `).join('')}
         </div>
+        ${renderAdminCommercialStageInsights(resolvedPipeline)}
       </section>
     `;
   }
@@ -2549,6 +2681,8 @@
     const recent = funnel && funnel.recent ? funnel.recent : [];
     const maxStage = Math.max(1, ...stages.map((stage) => Number(stage.value || 0)));
     const maxRole = Math.max(1, ...byRole.map((role) => Number(role.total || 0)));
+    const commercialPipeline = buildAdminCommercialPipeline();
+    const commercialInsights = buildAdminCommercialStageInsights(commercialPipeline);
 
     const stageHtml = stages.map((stage, index) => {
       const value = Number(stage.value || 0);
@@ -2633,7 +2767,7 @@
         ${renderAdminActionQueue(sourceFunnel, bottlenecks)}
         ${renderAdminConsultantProductivity(sourceFunnel, bottlenecks)}
         ${renderAdminConsultantPortfolio(sourceFunnel, bottlenecks)}
-        ${renderAdminCommercialPipeline()}
+        ${renderAdminCommercialPipeline(commercialPipeline)}
         ${renderAdminSourceFunnel(sourceFunnel)}
         ${renderAdminBottleneckBoard(bottlenecks)}
         <div class="bf-calculator-history">${recentHtml}</div>
@@ -2653,7 +2787,10 @@
     document.body.dataset.adminConsultantPortfolioReady = 'true';
     document.body.dataset.adminConsultantPortfolioCount = String(buildAdminConsultantPortfolio(sourceFunnel, bottlenecks).length);
     document.body.dataset.adminCommercialPipelineReady = 'true';
-    document.body.dataset.adminCommercialPipelineCount = String(buildAdminCommercialPipeline().total || 0);
+    document.body.dataset.adminCommercialPipelineCount = String(commercialPipeline.total || 0);
+    document.body.dataset.adminCommercialStageInsightsReady = 'true';
+    document.body.dataset.adminCommercialStageStuckCount = String(commercialInsights.stuck.length || 0);
+    document.body.dataset.adminCommercialStageMoved24 = String(commercialInsights.moved24h || 0);
   }
 
   function actionLabel(action) {

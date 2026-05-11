@@ -53,6 +53,8 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
   'adminCommercialStageAudit',
   'recordAdminCommercialStageChange',
   'setAdminCommercialStage',
+  'buildAdminCommercialStageInsights',
+  'renderAdminCommercialStageInsights',
   'buildAdminCommercialPipeline',
   'renderAdminSourceFunnel',
   'renderAdminBottleneckBoard',
@@ -87,6 +89,10 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
   'data-admin-commercial-lead',
   'data-admin-commercial-stage-select',
   'data-admin-commercial-stage-history',
+  'data-admin-commercial-stage-insights',
+  'data-admin-commercial-stage-movement',
+  'data-admin-commercial-stage-stuck-lead',
+  'data-admin-commercial-stage-summary',
   'data-admin-action-status',
   'bf_admin_commercial_stage_states_v1',
   'bf_admin_commercial_stage_audit_v1',
@@ -128,6 +134,10 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
   '__lastAdminPortfolioExport',
   'Etapas comerciais dos leads',
   'Mover etapa',
+  'Cadencia comercial',
+  'Movimentacao e leads parados',
+  'Movidos 24h',
+  'Retomadas sugeridas',
   'Contato',
   'Proposta',
   'Follow-up',
@@ -185,6 +195,11 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
   '.bf-admin-commercial-lead',
   '.bf-admin-commercial-lead__actions',
   '.bf-admin-commercial-stage-select',
+  '.bf-admin-commercial-insights',
+  '.bf-admin-commercial-insights__grid',
+  '.bf-admin-commercial-stage-summary',
+  '.bf-admin-commercial-stuck',
+  '.bf-admin-commercial-movement',
   '.bf-admin-source-funnel',
   '.bf-admin-source-grid',
   '.bf-admin-source-card',
@@ -195,7 +210,7 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
 
 assert(!simulatorHtml.includes('data-v8-stagebar-legacy'), 'simulador.html ainda contem template legado da stagebar superior.');
 assert(simulatorHtml.includes('bf-v8-stagebar-shell'), 'simulador.html sem stagebar inferior recolhivel.');
-assert(platformCss.includes('.bf-admin-next-actions__grid') && platformCss.includes('.bf-admin-action-queue__list') && platformCss.includes('.bf-admin-action-owners') && platformCss.includes('.bf-admin-consultant-productivity__grid') && platformCss.includes('.bf-admin-consultant-portfolio__grid') && platformCss.includes('.bf-admin-portfolio-priority__grid') && platformCss.includes('.bf-admin-commercial-pipeline__grid') && platformCss.includes('.bf-admin-source-grid') && platformCss.includes('.bf-admin-bottleneck-grid'), 'CSS admin sem grids monitorados.');
+assert(platformCss.includes('.bf-admin-next-actions__grid') && platformCss.includes('.bf-admin-action-queue__list') && platformCss.includes('.bf-admin-action-owners') && platformCss.includes('.bf-admin-consultant-productivity__grid') && platformCss.includes('.bf-admin-consultant-portfolio__grid') && platformCss.includes('.bf-admin-portfolio-priority__grid') && platformCss.includes('.bf-admin-commercial-pipeline__grid') && platformCss.includes('.bf-admin-commercial-insights__grid') && platformCss.includes('.bf-admin-source-grid') && platformCss.includes('.bf-admin-bottleneck-grid'), 'CSS admin sem grids monitorados.');
 
 const report = {
   ok: failures.length === 0,
@@ -211,6 +226,7 @@ const report = {
     consultantPortfolioExport: adminUsersJs.includes('bank-fratern.admin-consultant-portfolio.v1'),
     commercialPipeline: adminUsersJs.includes('data-admin-commercial-pipeline'),
     commercialStageMove: adminUsersJs.includes('setAdminCommercialStage') && adminUsersJs.includes('data-admin-commercial-stage-select'),
+    commercialStageInsights: adminUsersJs.includes('data-admin-commercial-stage-insights') && adminUsersJs.includes('adminCommercialStageInsightsReady'),
     simulatorBottomStagebar: simulatorHtml.includes('bf-v8-stagebar-shell')
   },
   failures

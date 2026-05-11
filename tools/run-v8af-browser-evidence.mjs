@@ -309,6 +309,8 @@ try {
       leads: document.querySelectorAll('[data-admin-commercial-lead]').length,
       selects: document.querySelectorAll('[data-admin-commercial-stage-select]').length,
       history: document.querySelectorAll('[data-admin-commercial-stage-history]').length,
+      insights: document.querySelectorAll('[data-admin-commercial-stage-insights]').length,
+      summaries: document.querySelectorAll('[data-admin-commercial-stage-summary]').length,
       text: panel ? panel.innerText : ''
     };
   });
@@ -317,8 +319,11 @@ try {
   assert(adminCommercialPipeline.leads >= 1, 'Funil comercial nao renderizou lead em etapa.', failures);
   assert(adminCommercialPipeline.selects >= 1, 'Funil comercial nao renderizou seletor para mover etapa.', failures);
   assert(adminCommercialPipeline.history >= 1, 'Funil comercial nao renderizou historico de etapa.', failures);
+  assert(adminCommercialPipeline.insights === 1, 'Funil comercial nao renderizou cadencia comercial.', failures);
+  assert(adminCommercialPipeline.summaries === 5, 'Cadencia comercial deveria renderizar resumo das 5 etapas.', failures);
   assert(/ETAPAS COMERCIAIS DOS LEADS|Etapas comerciais dos leads/i.test(adminCommercialPipeline.text), 'Funil comercial nao exibiu titulo esperado.', failures);
   assert(/MOVER ETAPA|Mover etapa/i.test(adminCommercialPipeline.text), 'Funil comercial nao exibiu controle de mover etapa.', failures);
+  assert(/CADENCIA COMERCIAL|Cadencia comercial/i.test(adminCommercialPipeline.text), 'Funil comercial nao exibiu cadencia comercial.', failures);
   ['Contato', 'Proposta', 'Follow-up', 'Negociacao', 'Fechamento'].forEach((label) => {
     assert(adminCommercialPipeline.text.toLowerCase().includes(label.toLowerCase()), `Funil comercial nao exibiu etapa ${label}.`, failures);
   });
@@ -342,6 +347,11 @@ try {
       auditCount: audit.length,
       latestStage: audit[0] && audit[0].toStage,
       latestStatus: audit[0] && audit[0].status,
+      insightsReady: document.body.dataset.adminCommercialStageInsightsReady,
+      moved24: Number(document.body.dataset.adminCommercialStageMoved24 || 0),
+      stuckCount: Number(document.body.dataset.adminCommercialStageStuckCount || 0),
+      movements: document.querySelectorAll('[data-admin-commercial-stage-movement]').length,
+      summaries: document.querySelectorAll('[data-admin-commercial-stage-summary]').length,
       text: panel ? panel.innerText : ''
     };
   });
@@ -352,7 +362,12 @@ try {
   assert(adminCommercialStageMove.auditCount >= 1, 'Movimento comercial nao gerou auditoria local.', failures);
   assert(adminCommercialStageMove.latestStage === 'followup', `Auditoria comercial deveria registrar followup, recebeu ${adminCommercialStageMove.latestStage}.`, failures);
   assert(adminCommercialStageMove.latestStatus === 'aguardando_cliente', `Auditoria comercial deveria registrar status aguardando_cliente, recebeu ${adminCommercialStageMove.latestStatus}.`, failures);
+  assert(adminCommercialStageMove.insightsReady === 'true', 'Cadencia comercial nao marcou readiness no body.', failures);
+  assert(adminCommercialStageMove.moved24 >= 1, 'Cadencia comercial nao contou movimentacao em 24h.', failures);
+  assert(adminCommercialStageMove.movements >= 1, 'Cadencia comercial nao listou movimentacao recente.', failures);
+  assert(adminCommercialStageMove.summaries === 5, 'Cadencia comercial nao preservou resumo das 5 etapas apos mover lead.', failures);
   assert(/Movido para Follow-up|Follow-up/i.test(adminCommercialStageMove.text), 'Funil comercial nao refletiu a etapa movida para Follow-up.', failures);
+  assert(/Movimentacoes recentes|Retomadas sugeridas/i.test(adminCommercialStageMove.text), 'Cadencia comercial nao exibiu blocos de gestao comercial.', failures);
   await page.locator('[data-admin-commercial-pipeline]').scrollIntoViewIfNeeded();
   await page.screenshot({ path: screenshots.adminCommercialPipelineDesktop, fullPage: false });
 

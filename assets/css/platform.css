@@ -1528,6 +1528,80 @@
   font-weight: 800;
 }
 
+.bf-admin-commercial-insights {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(11, 44, 82, .12);
+}
+
+.bf-admin-commercial-insights__grid {
+  display: grid;
+  grid-template-columns: 1.05fr 1.15fr .9fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.bf-admin-commercial-insights__grid > section {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid rgba(11, 44, 82, .1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .76);
+}
+
+.bf-admin-commercial-stage-summary-list,
+.bf-admin-commercial-stage-stuck-list,
+.bf-admin-commercial-stage-movement-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.bf-admin-commercial-stage-summary,
+.bf-admin-commercial-stuck,
+.bf-admin-commercial-movement {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid rgba(11, 44, 82, .1);
+  border-radius: 8px;
+  background: var(--bf-white);
+}
+
+.bf-admin-commercial-stage-summary--alta,
+.bf-admin-commercial-stuck--alta {
+  border-color: rgba(220, 38, 38, .28);
+  background: linear-gradient(180deg, #fff, rgba(254, 226, 226, .48));
+}
+
+.bf-admin-commercial-stage-summary--media,
+.bf-admin-commercial-stuck--media {
+  border-color: var(--bf-warning-bd);
+  background: var(--bf-warning-bg);
+}
+
+.bf-admin-commercial-stage-summary span,
+.bf-admin-commercial-stage-summary small,
+.bf-admin-commercial-stuck span,
+.bf-admin-commercial-stuck small,
+.bf-admin-commercial-movement span,
+.bf-admin-commercial-movement small {
+  color: var(--bf-muted);
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.bf-admin-commercial-stage-summary strong,
+.bf-admin-commercial-stuck strong,
+.bf-admin-commercial-movement strong {
+  min-width: 0;
+  color: var(--bf-navy-900);
+  font-size: 13px;
+  line-height: 1.25;
+}
+
 .bf-admin-source-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -3571,6 +3645,7 @@
   .bf-admin-commercial-pipeline__grid,
   .bf-admin-commercial-stage dl,
   .bf-admin-commercial-lead__actions,
+  .bf-admin-commercial-insights__grid,
   .bf-handoff-action-plan,
   .bf-admin-source-grid,
   .bf-admin-bottleneck-grid,
