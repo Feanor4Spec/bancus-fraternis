@@ -14,7 +14,8 @@ const screenshots = {
   proposalDesktop: path.join(printsDir, 'v8af-proposta-handoff-desktop.png'),
   proposalMobile: path.join(printsDir, 'v8af-proposta-handoff-mobile.png'),
   handoffDesktop: path.join(printsDir, 'v8af-handoff-proposta-desktop.png'),
-  adminActionQueueDesktop: path.join(printsDir, 'v8af-admin-action-queue-desktop.png')
+  adminActionQueueDesktop: path.join(printsDir, 'v8af-admin-action-queue-desktop.png'),
+  adminProductivityDesktop: path.join(printsDir, 'v8af-admin-productivity-desktop.png')
 };
 
 async function launchBrowser() {
@@ -238,6 +239,22 @@ try {
   await page.locator('[data-admin-action-queue]').scrollIntoViewIfNeeded();
   await page.screenshot({ path: screenshots.adminActionQueueDesktop, fullPage: false });
 
+  const adminProductivity = await page.evaluate(() => {
+    const panel = document.querySelector('[data-admin-consultant-productivity]');
+    return {
+      ready: document.body.dataset.adminConsultantProductivityReady,
+      count: Number(document.body.dataset.adminConsultantProductivityCount || 0),
+      rows: document.querySelectorAll('[data-admin-consultant-productivity-row]').length,
+      text: panel ? panel.innerText : ''
+    };
+  });
+  assert(adminProductivity.ready === 'true', 'Dashboard admin nao marcou adminConsultantProductivityReady=true.', failures);
+  assert(adminProductivity.rows >= 1, 'Dashboard admin nao renderizou produtividade por consultor.', failures);
+  assert(/TEMPO MEDIO|Tempo medio/i.test(adminProductivity.text), 'Produtividade nao exibiu tempo medio.', failures);
+  assert(/GARGALOS RECORRENTES|Gargalos recorrentes/i.test(adminProductivity.text), 'Produtividade nao exibiu gargalos recorrentes.', failures);
+  await page.locator('[data-admin-consultant-productivity]').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: screenshots.adminProductivityDesktop, fullPage: false });
+
   const report = {
     ok: failures.length === 0,
     baseUrl,
@@ -246,6 +263,7 @@ try {
     handoffExecution,
     adminActionQueue,
     adminExecution,
+    adminProductivity,
     screenshots: reportScreenshots(),
     consoleErrors: consoleErrors.slice(0, 20),
     pageErrors,

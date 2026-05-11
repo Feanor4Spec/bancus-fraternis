@@ -965,8 +965,31 @@
     return service && typeof service.actionHistory === 'function' ? service.actionHistory(action).slice(0, 3) : [];
   }
 
+  function adminActionAuditRecords() {
+    const service = window.BFHandoffConsultivoService;
+    return service && typeof service.actionAudit === 'function' ? service.actionAudit() : [];
+  }
+
   function adminActionStatusClass(status) {
     return ['em_execucao', 'adiada', 'concluida'].includes(status) ? status : 'pendente';
+  }
+
+  function elapsedHours(startValue, endValue) {
+    const start = new Date(startValue || '').getTime();
+    const end = new Date(endValue || '').getTime();
+    if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) return null;
+    return Math.max(0, (end - start) / 36e5);
+  }
+
+  function durationLabel(hours) {
+    if (hours === null || hours === undefined || hours === '') return 'sem base';
+    if (!Number.isFinite(Number(hours))) return 'sem base';
+    const value = Number(hours);
+    if (value < 1) return 'menos de 1h';
+    if (value < 24) return `${Math.round(value)}h`;
+    const days = Math.floor(value / 24);
+    const rest = Math.round(value % 24);
+    return rest ? `${days}d ${rest}h` : `${days}d`;
   }
 
   function buildAdminActionExecutionSummary(queue) {
@@ -990,6 +1013,110 @@
       ...summary,
       owners: Array.from(summary.owners.values()).slice(0, 4)
     };
+  }
+
+  function buildAdminConsultantProductivity(sourceRows, bottlenecks) {
+    const queue = buildAdminActionQueue(sourceRows, bottlenecks);
+    const audit = adminActionAuditRecords();
+    const auditCompletedKeys = new Set(audit
+      .filter((event) => event && event.status === 'concluida' && event.actionKey)
+      .map((event) => event.actionKey));
+    const auditDelayedKeys = new Set(audit
+      .filter((event) => event && event.status === 'adiada' && event.actionKey)
+      .map((event) => event.actionKey));
+    const byOwner = new Map();
+
+    function ensure(owner) {
+      const key = owner || 'coordenacao local';
+      if (!byOwner.has(key)) {
+        byOwner.set(key, {
+          owner: key,
+          open: 0,
+          running: 0,
+          delayed: 0,
+          completed: 0,
+          recurrent: new Map(),
+          durations: [],
+          recentAt: '',
+          recentLabel: 'Sem historico'
+        });
+      }
+      return byOwner.get(key);
+    }
+
+    queue.forEach((item) => {
+      const owner = item.owner || (item.execution && item.execution.owner) || 'coordenacao local';
+      const row = ensure(owner);
+      const status = item.execution && item.execution.status ? item.execution.status : 'pendente';
+      if (status === 'concluida') {
+        if (!auditCompletedKeys.has(item.actionKey)) row.completed += 1;
+      } else {
+        row.open += 1;
+        if (status === 'em_execucao') row.running += 1;
+        if (status === 'adiada' && !auditDelayedKeys.has(item.actionKey)) row.delayed += 1;
+      }
+      const label = item.source || item.type || 'Operacao';
+      row.recurrent.set(label, (row.recurrent.get(label) || 0) + 1);
+    });
+
+    const groupedAudit = new Map();
+    audit.forEach((event) => {
+      const owner = event.owner || event.actorEmail || 'coordenacao local';
+      const row = ensure(owner);
+      const status = event.status || '';
+      if (status === 'concluida') row.completed += 1;
+      if (status === 'adiada') row.delayed += 1;
+      const label = event.title || event.action || 'Execucao';
+      row.recurrent.set(label, (row.recurrent.get(label) || 0) + 1);
+      if (String(event.createdAt || '').localeCompare(row.recentAt || '') > 0) {
+        row.recentAt = event.createdAt || '';
+        row.recentLabel = `${status || event.action || 'acao'} - ${formatDate(event.createdAt)}`;
+      }
+      const key = event.actionKey || event.id;
+      if (!key) return;
+      const list = groupedAudit.get(key) || [];
+      list.push(event);
+      groupedAudit.set(key, list);
+    });
+
+    groupedAudit.forEach((events) => {
+      const ordered = events.slice().sort((a, b) => String(a.createdAt || '').localeCompare(String(b.createdAt || '')));
+      let startEvent = null;
+      ordered.forEach((event) => {
+        if (event.status === 'em_execucao') startEvent = event;
+        if (event.status === 'concluida') {
+          const start = startEvent || ordered.find((candidate) => candidate.createdAt && candidate.createdAt !== event.createdAt);
+          const hours = start ? elapsedHours(start.createdAt, event.createdAt) : null;
+          if (hours !== null) ensure(event.owner || event.actorEmail || 'coordenacao local').durations.push(hours);
+          startEvent = null;
+        }
+      });
+    });
+
+    const rows = Array.from(byOwner.values()).map((row) => {
+      const avg = row.durations.length
+        ? row.durations.reduce((sum, item) => sum + item, 0) / row.durations.length
+        : null;
+      const recurrent = Array.from(row.recurrent.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 2)
+        .map(([label, total]) => `${label} (${total})`);
+      const total = row.open + row.completed;
+      const completionRate = total ? Math.round((row.completed / total) * 100) : 0;
+      return {
+        ...row,
+        avgHours: avg,
+        avgLabel: durationLabel(avg),
+        recurrent,
+        completionRate,
+        tone: row.delayed ? 'alta' : row.open ? 'media' : 'baixa'
+      };
+    });
+
+    return rows.sort((a, b) => {
+      const pressure = (row) => (row.delayed * 4) + (row.running * 3) + (row.open * 2) - row.completed;
+      return pressure(b) - pressure(a);
+    }).slice(0, 6);
   }
 
   function buildAdminActionQueue(sourceRows, bottlenecks) {
@@ -1176,6 +1303,60 @@
             </article>
           `;
           }).join('')}
+        </div>
+      </section>
+    `;
+  }
+
+  function renderAdminConsultantProductivity(sourceRows, bottlenecks) {
+    const rows = buildAdminConsultantProductivity(sourceRows, bottlenecks);
+    const totals = rows.reduce((acc, item) => {
+      acc.open += Number(item.open || 0);
+      acc.running += Number(item.running || 0);
+      acc.delayed += Number(item.delayed || 0);
+      acc.completed += Number(item.completed || 0);
+      if (item.avgHours !== null && item.avgHours !== undefined && Number.isFinite(Number(item.avgHours))) acc.durations.push(Number(item.avgHours));
+      return acc;
+    }, { open: 0, running: 0, delayed: 0, completed: 0, durations: [] });
+    const avg = totals.durations.length
+      ? totals.durations.reduce((sum, item) => sum + item, 0) / totals.durations.length
+      : null;
+
+    return `
+      <section class="bf-admin-consultant-productivity" id="admin-produtividade-consultor" data-admin-consultant-productivity>
+        <div class="bf-admin-panel-heading">
+          <div>
+            <span class="bf-badge bf-badge--ok">Produtividade</span>
+            <h3>Execucao por consultor</h3>
+            <p>Mostra acoes abertas, adiadas, concluidas, tempo medio e gargalos recorrentes a partir da fila guiada local.</p>
+          </div>
+          <a class="btn btn--ghost btn--sm" href="#admin-fila-acao">Ver fila</a>
+        </div>
+        <div class="bf-platform-metrics">
+          ${window.BFCards.metric('Abertas', totals.open || 0, totals.open ? 'is-warn' : '')}
+          ${window.BFCards.metric('Em execucao', totals.running || 0, totals.running ? 'is-strong' : '')}
+          ${window.BFCards.metric('Adiadas', totals.delayed || 0, totals.delayed ? 'is-warn' : '')}
+          ${window.BFCards.metric('Concluidas', totals.completed || 0)}
+          ${window.BFCards.metric('Tempo medio', durationLabel(avg))}
+        </div>
+        <div class="bf-admin-consultant-productivity__grid">
+          ${rows.length ? rows.map((item) => `
+            <article class="bf-admin-consultant-card bf-admin-consultant-card--${escapeHtml(item.tone)}" data-admin-consultant-productivity-row="${escapeHtml(item.owner)}">
+              <div class="bf-admin-consultant-card__top">
+                <span>${escapeHtml(item.owner)}</span>
+                <strong>${escapeHtml(item.completionRate)}%</strong>
+              </div>
+              <div class="bf-admin-funnel-bar"><i style="width:${escapeHtml(Math.max(4, item.completionRate || 0))}%"></i></div>
+              <dl>
+                <div><dt>Abertas</dt><dd>${escapeHtml(item.open)}</dd></div>
+                <div><dt>Adiadas</dt><dd>${escapeHtml(item.delayed)}</dd></div>
+                <div><dt>Concluidas</dt><dd>${escapeHtml(item.completed)}</dd></div>
+                <div><dt>Tempo medio</dt><dd>${escapeHtml(item.avgLabel)}</dd></div>
+              </dl>
+              <p>Gargalos recorrentes: ${escapeHtml(item.recurrent.join(' | ') || 'sem recorrencia local')}</p>
+              <small>${escapeHtml(item.recentLabel || 'Sem historico')}</small>
+            </article>
+          `).join('') : '<div class="bf-empty-state">A produtividade aparecera quando a fila guiada tiver execucoes locais.</div>'}
         </div>
       </section>
     `;
@@ -1772,6 +1953,7 @@
         <div class="bf-admin-role-funnel-grid">${roleHtml}</div>
         ${renderAdminNextActionBoard(sourceFunnel, bottlenecks)}
         ${renderAdminActionQueue(sourceFunnel, bottlenecks)}
+        ${renderAdminConsultantProductivity(sourceFunnel, bottlenecks)}
         ${renderAdminSourceFunnel(sourceFunnel)}
         ${renderAdminBottleneckBoard(bottlenecks)}
         <div class="bf-calculator-history">${recentHtml}</div>
@@ -1786,6 +1968,8 @@
     document.body.dataset.adminNextActionCount = String(buildAdminNextActions(sourceFunnel, bottlenecks).length);
     document.body.dataset.adminActionQueueReady = 'true';
     document.body.dataset.adminActionQueueCount = String(buildAdminActionQueue(sourceFunnel, bottlenecks).length);
+    document.body.dataset.adminConsultantProductivityReady = 'true';
+    document.body.dataset.adminConsultantProductivityCount = String(buildAdminConsultantProductivity(sourceFunnel, bottlenecks).length);
   }
 
   function actionLabel(action) {

@@ -206,6 +206,7 @@ Validacoes obrigatorias:
 - Abrir `dashboard-admin.html#admin-gargalos` e confirmar gargalos de proposta vencida ou alterada apos handoff quando existirem dados locais.
 - Abrir `dashboard-admin.html#admin-fila-acao` e confirmar `data-admin-action-queue` com dono, prazo, alvo e CTA direto.
 - Confirmar `data-admin-action-execution` e `data-admin-action-owner-history` com status, motivo e historico por responsavel.
+- Confirmar `data-admin-consultant-productivity` com ações abertas, adiadas, concluídas, tempo médio e gargalos recorrentes por responsável.
 
 Comandos:
 

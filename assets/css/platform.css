@@ -836,7 +836,8 @@
 .bf-admin-source-funnel,
 .bf-admin-bottleneck-board,
 .bf-admin-next-actions,
-.bf-admin-action-queue {
+.bf-admin-action-queue,
+.bf-admin-consultant-productivity {
   display: grid;
   gap: 14px;
   padding-top: 4px;
@@ -1110,6 +1111,91 @@
 .bf-action-execution--adiada {
   border-color: var(--bf-warning-bd);
   background: var(--bf-warning-bg);
+}
+
+.bf-admin-consultant-productivity {
+  padding: 16px;
+  border: 1px solid rgba(11, 44, 82, .12);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .96), rgba(236, 246, 255, .64));
+}
+
+.bf-admin-consultant-productivity__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.bf-admin-consultant-card {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--bf-line);
+  border-radius: 8px;
+  background: var(--bf-white);
+}
+
+.bf-admin-consultant-card--alta {
+  border-color: rgba(220, 38, 38, .28);
+  background: linear-gradient(180deg, #fff, rgba(254, 226, 226, .5));
+}
+
+.bf-admin-consultant-card--media {
+  border-color: var(--bf-warning-bd);
+  background: var(--bf-warning-bg);
+}
+
+.bf-admin-consultant-card--baixa {
+  border-color: var(--bf-info-bd);
+  background: var(--bf-info-bg);
+}
+
+.bf-admin-consultant-card__top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.bf-admin-consultant-card__top span,
+.bf-admin-consultant-card small {
+  display: block;
+  color: var(--bf-muted);
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.bf-admin-consultant-card__top strong {
+  color: var(--bf-navy-900);
+  font-size: 20px;
+  font-weight: 950;
+}
+
+.bf-admin-consultant-card dl {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0 0;
+}
+
+.bf-admin-consultant-card dt {
+  color: var(--bf-muted);
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.bf-admin-consultant-card dd {
+  margin: 3px 0 0;
+  color: var(--bf-navy-900);
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.bf-admin-consultant-card p {
+  margin: 10px 0 0;
+  color: var(--bf-muted);
+  line-height: 1.45;
 }
 
 .bf-admin-source-grid {
@@ -3147,6 +3233,8 @@
   .bf-admin-action-item,
   .bf-admin-action-item dl,
   .bf-admin-action-item__commands,
+  .bf-admin-consultant-productivity__grid,
+  .bf-admin-consultant-card dl,
   .bf-handoff-action-plan,
   .bf-admin-source-grid,
   .bf-admin-bottleneck-grid,

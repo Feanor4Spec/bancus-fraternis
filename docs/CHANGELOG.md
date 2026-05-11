@@ -4,6 +4,26 @@
 
 ---
 
+## [v8.59.0] - 2026-05-11
+
+### Produtividade por consultor
+
+#### Adicionado
+- Dashboard Admin ganhou `data-admin-consultant-productivity` e `data-admin-consultant-productivity-row`.
+- Criado cálculo local de produtividade por responsável com ações abertas, em execução, adiadas, concluídas, tempo médio e gargalos recorrentes.
+- A leitura usa a fila guiada atual e o histórico `bf_operational_action_audit_v1`.
+
+#### Modificado
+- O bloco de funil administrativo passou a exibir produtividade logo após a fila guiada.
+- Validadores de admin e contratos públicos passaram a proteger o novo contrato.
+
+#### Validado
+- `node --check assets/js/admin-users.js`
+- `node tools/validate-admin-dashboard-source-funnel.mjs`
+- `node tools/validate-public-contracts.mjs`
+
+---
+
 ## [v8.58.0] - 2026-05-11
 
 ### Execucao persistente da fila guiada

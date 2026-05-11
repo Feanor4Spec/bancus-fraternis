@@ -102,6 +102,8 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-admin-action-queue',
   'data-admin-action-execution',
   'data-admin-action-owner-history',
+  'data-admin-consultant-productivity',
+  'data-admin-consultant-productivity-row',
   'data-admin-source-funnel',
   'data-admin-bottleneck-board',
   'data-handoff-consultant-cockpit',
@@ -168,6 +170,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-admin-next-actions',
   'data-admin-action-queue',
   'data-admin-action-execution',
+  'data-admin-consultant-productivity',
   'data-admin-source-funnel',
   'data-admin-bottleneck-board'
 ].forEach((marker) => assert(adminUsers.includes(marker), `admin-users.js sem marcador publico ${marker}.`));
@@ -228,7 +231,7 @@ const report = {
   ok: failures.length === 0,
   contracts: {
     localStorageKeys: 15,
-    dataMarkers: 24,
+    dataMarkers: 26,
     globals: 12,
     deepLinks: 10,
     validators: 15,

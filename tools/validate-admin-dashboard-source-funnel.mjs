@@ -39,10 +39,12 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
   'buildAdminBottlenecks',
   'buildAdminNextActions',
   'buildAdminActionQueue',
+  'buildAdminConsultantProductivity',
   'renderAdminSourceFunnel',
   'renderAdminBottleneckBoard',
   'renderAdminNextActionBoard',
   'renderAdminActionQueue',
+  'renderAdminConsultantProductivity',
   'data-admin-source-funnel',
   'data-admin-bottleneck-board',
   'data-admin-next-actions',
@@ -51,11 +53,15 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
   'data-admin-action-reason',
   'data-admin-action-history',
   'data-admin-action-owner-history',
+  'data-admin-consultant-productivity',
+  'data-admin-consultant-productivity-row',
   'data-admin-action-status',
   'adminNextActionsReady',
   'adminNextActionCount',
   'adminActionQueueReady',
   'adminActionQueueCount',
+  'adminConsultantProductivityReady',
+  'adminConsultantProductivityCount',
   'id="admin-proximos-passos"',
   'id="admin-fila-acao"',
   'id="admin-origens"',
@@ -70,6 +76,9 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
   'Responsavel sugerido',
   'Quem faz o que, ate quando',
   'buildAdminActionExecutionSummary',
+  'adminActionAuditRecords',
+  'Tempo medio',
+  'Gargalos recorrentes',
   'adminActionExecution',
   'adminSourceFunnelReady',
   'adminBottleneckCount'
@@ -106,6 +115,9 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
   '.bf-admin-action-owners',
   '.bf-admin-action-history',
   '.bf-action-execution',
+  '.bf-admin-consultant-productivity',
+  '.bf-admin-consultant-productivity__grid',
+  '.bf-admin-consultant-card',
   '.bf-admin-source-funnel',
   '.bf-admin-source-grid',
   '.bf-admin-source-card',
@@ -116,7 +128,7 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
 
 assert(!simulatorHtml.includes('data-v8-stagebar-legacy'), 'simulador.html ainda contem template legado da stagebar superior.');
 assert(simulatorHtml.includes('bf-v8-stagebar-shell'), 'simulador.html sem stagebar inferior recolhivel.');
-assert(platformCss.includes('.bf-admin-next-actions__grid') && platformCss.includes('.bf-admin-action-queue__list') && platformCss.includes('.bf-admin-action-owners') && platformCss.includes('.bf-admin-source-grid') && platformCss.includes('.bf-admin-bottleneck-grid'), 'CSS admin sem grids monitorados.');
+assert(platformCss.includes('.bf-admin-next-actions__grid') && platformCss.includes('.bf-admin-action-queue__list') && platformCss.includes('.bf-admin-action-owners') && platformCss.includes('.bf-admin-consultant-productivity__grid') && platformCss.includes('.bf-admin-source-grid') && platformCss.includes('.bf-admin-bottleneck-grid'), 'CSS admin sem grids monitorados.');
 
 const report = {
   ok: failures.length === 0,
@@ -127,6 +139,7 @@ const report = {
     nextActions: adminUsersJs.includes('buildAdminNextActions') ? 5 : 0,
     actionQueue: adminUsersJs.includes('buildAdminActionQueue') ? 6 : 0,
     actionExecution: adminUsersJs.includes('data-admin-action-execution'),
+    consultantProductivity: adminUsersJs.includes('data-admin-consultant-productivity'),
     simulatorBottomStagebar: simulatorHtml.includes('bf-v8-stagebar-shell')
   },
   failures
