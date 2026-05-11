@@ -1780,6 +1780,132 @@
     return sanitizeAdminPortfolioExport(payload);
   }
 
+  function adminCommercialStageDefinitions() {
+    return [
+      { key: 'contato', label: 'Contato', status: 'novo', next: 'Iniciar atendimento' },
+      { key: 'proposta', label: 'Proposta', status: 'em_atendimento', next: 'Revisar proposta' },
+      { key: 'followup', label: 'Follow-up', status: 'aguardando_cliente', next: 'Retomar cliente' },
+      { key: 'negociacao', label: 'Negociacao', status: 'em_atendimento', next: 'Avancar negociacao' },
+      { key: 'fechamento', label: 'Fechamento', status: 'qualificado', next: 'Registrar decisao' }
+    ];
+  }
+
+  function adminCommercialStageFor(item, state, plan, service) {
+    const source = service && service.sourceType ? service.sourceType(item) : (item && item.sourceType) || 'manual';
+    const proposal = state && state.proposal ? state.proposal : {};
+    const executionStatus = plan && plan.execution ? plan.execution.status : '';
+    if (['qualificado', 'descartado'].includes(item.status)) return 'fechamento';
+    if (item.status === 'aguardando_cliente' || state.waitingClient || executionStatus === 'adiada') return 'followup';
+    if (source === 'proposal' || proposal.active) return 'proposta';
+    if (item.status === 'em_atendimento' || executionStatus === 'em_execucao') return 'negociacao';
+    return 'contato';
+  }
+
+  function buildAdminCommercialPipeline() {
+    const service = window.BFHandoffConsultivoService;
+    const definitions = adminCommercialStageDefinitions();
+    const rows = definitions.map((stage) => ({ ...stage, leads: [], high: 0, overdue: 0, avgHours: 0, tone: 'baixa' }));
+    const byStage = new Map(rows.map((stage) => [stage.key, stage]));
+    const now = new Date();
+
+    if (service && typeof service.enrichList === 'function') {
+      service.enrichList(service.list ? service.list() : [], now).forEach((item) => {
+        const state = item.operational || {};
+        const plan = service.actionPlan ? service.actionPlan(item, now) : null;
+        const key = adminCommercialStageFor(item, state, plan, service);
+        const stage = byStage.get(key) || byStage.get('contato');
+        const source = service.sourceLabel ? service.sourceLabel(item) : (item.sourceLabel || item.sourceType || 'Origem local');
+        const statusLabel = service.statusLabels && service.statusLabels[item.status] ? service.statusLabels[item.status] : (item.status || 'Novo');
+        const priorityLabel = service.priorityLabels && service.priorityLabels[item.priority] ? service.priorityLabels[item.priority] : (item.priority || 'Media');
+        const tone = state.tone || (item.priority === 'alta' ? 'media' : 'baixa');
+        stage.leads.push({
+          id: item.id || '',
+          title: item.objectiveLabel || (item.summary && item.summary.objectiveLabel) || item.id || 'Lead consultivo',
+          owner: portfolioOwnerName(item, plan, state),
+          source,
+          status: statusLabel,
+          priority: priorityLabel,
+          age: state.ageLabel || eventAgeLabel(state.hours),
+          hours: Number(state.hours || 0),
+          nextStep: (plan && plan.title) || state.nextStep || stage.next,
+          href: portfolioLeadHref(item, plan),
+          tone,
+          overdue: !!state.slaOverdue
+        });
+      });
+    }
+
+    const total = rows.reduce((sum, stage) => sum + stage.leads.length, 0);
+    rows.forEach((stage) => {
+      const hours = stage.leads.reduce((sum, item) => sum + Number(item.hours || 0), 0);
+      stage.high = stage.leads.filter((item) => item.tone === 'alta' || normalizePortfolioText(item.priority).includes('alta')).length;
+      stage.overdue = stage.leads.filter((item) => item.overdue).length;
+      stage.avgHours = stage.leads.length ? hours / stage.leads.length : 0;
+      stage.width = total ? Math.max(5, Math.round((stage.leads.length / total) * 100)) : 5;
+      stage.tone = stage.overdue ? 'alta' : (stage.high ? 'media' : 'baixa');
+      stage.leads = stage.leads
+        .sort((a, b) => (Number(b.overdue) - Number(a.overdue)) || (alertWeight(b.tone) - alertWeight(a.tone)) || (Number(b.hours || 0) - Number(a.hours || 0)))
+        .slice(0, 4);
+    });
+
+    return {
+      total,
+      open: rows.slice(0, 4).reduce((sum, stage) => sum + stage.leads.length, 0),
+      closed: (byStage.get('fechamento') || { leads: [] }).leads.length,
+      high: rows.reduce((sum, stage) => sum + stage.high, 0),
+      overdue: rows.reduce((sum, stage) => sum + stage.overdue, 0),
+      rows
+    };
+  }
+
+  function renderAdminCommercialPipeline() {
+    const pipeline = buildAdminCommercialPipeline();
+    return `
+      <section class="bf-admin-commercial-pipeline" id="admin-funil-comercial" data-admin-commercial-pipeline>
+        <div class="bf-admin-panel-heading">
+          <div>
+            <span class="bf-badge bf-badge--navy">Funil comercial</span>
+            <h3>Etapas comerciais dos leads</h3>
+            <p>Organiza a carteira em contato, proposta, follow-up, negociacao e fechamento para orientar a rotina comercial.</p>
+          </div>
+          <a class="btn btn--ghost btn--sm" href="handoff-consultivo.html#fila-handoff">Abrir fila consultiva</a>
+        </div>
+        <div class="bf-platform-metrics">
+          ${window.BFCards.metric('Leads no funil', pipeline.total || 0, pipeline.total ? 'is-strong' : '')}
+          ${window.BFCards.metric('Em aberto', pipeline.open || 0)}
+          ${window.BFCards.metric('Alta prioridade', pipeline.high || 0, pipeline.high ? 'is-warn' : '')}
+          ${window.BFCards.metric('SLA vencido', pipeline.overdue || 0, pipeline.overdue ? 'is-warn' : '')}
+          ${window.BFCards.metric('Fechamento', pipeline.closed || 0)}
+        </div>
+        <div class="bf-admin-commercial-pipeline__grid">
+          ${pipeline.rows.map((stage) => `
+            <article class="bf-admin-commercial-stage bf-admin-commercial-stage--${escapeHtml(stage.tone)}" data-admin-commercial-stage="${escapeHtml(stage.key)}">
+              <div class="bf-admin-commercial-stage__top">
+                <span>${escapeHtml(stage.label)}</span>
+                <strong>${escapeHtml(stage.leads.length)}</strong>
+              </div>
+              <div class="bf-admin-funnel-bar"><i style="width:${escapeHtml(stage.width)}%"></i></div>
+              <dl>
+                <div><dt>Alta</dt><dd>${escapeHtml(stage.high)}</dd></div>
+                <div><dt>SLA</dt><dd>${escapeHtml(stage.overdue)}</dd></div>
+                <div><dt>Aging</dt><dd>${escapeHtml(stage.leads.length ? eventAgeLabel(stage.avgHours) : 'sem lead')}</dd></div>
+              </dl>
+              <div class="bf-admin-commercial-stage__leads">
+                ${stage.leads.length ? stage.leads.map((lead) => `
+                  <a class="bf-admin-commercial-lead bf-admin-commercial-lead--${escapeHtml(lead.tone)}" href="${escapeHtml(lead.href)}" data-admin-commercial-lead="${escapeHtml(lead.id)}">
+                    <span>${escapeHtml(lead.source)} - ${escapeHtml(lead.priority)} - ${escapeHtml(lead.age)}</span>
+                    <strong>${escapeHtml(lead.title)}</strong>
+                    <small>${escapeHtml(lead.status)} - ${escapeHtml(lead.nextStep)}</small>
+                  </a>
+                `).join('') : `<div class="bf-empty-state">${escapeHtml(stage.next)} quando houver lead nesta etapa.</div>`}
+              </div>
+            </article>
+          `).join('')}
+        </div>
+      </section>
+    `;
+  }
+
   function adminRecoveryFilters(root = document) {
     const find = (selector) => root.querySelector ? root.querySelector(selector) : qs(selector);
     return {
@@ -2381,6 +2507,7 @@
         ${renderAdminActionQueue(sourceFunnel, bottlenecks)}
         ${renderAdminConsultantProductivity(sourceFunnel, bottlenecks)}
         ${renderAdminConsultantPortfolio(sourceFunnel, bottlenecks)}
+        ${renderAdminCommercialPipeline()}
         ${renderAdminSourceFunnel(sourceFunnel)}
         ${renderAdminBottleneckBoard(bottlenecks)}
         <div class="bf-calculator-history">${recentHtml}</div>
@@ -2399,6 +2526,8 @@
     document.body.dataset.adminConsultantProductivityCount = String(buildAdminConsultantProductivity(sourceFunnel, bottlenecks).length);
     document.body.dataset.adminConsultantPortfolioReady = 'true';
     document.body.dataset.adminConsultantPortfolioCount = String(buildAdminConsultantPortfolio(sourceFunnel, bottlenecks).length);
+    document.body.dataset.adminCommercialPipelineReady = 'true';
+    document.body.dataset.adminCommercialPipelineCount = String(buildAdminCommercialPipeline().total || 0);
   }
 
   function actionLabel(action) {

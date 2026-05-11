@@ -4,6 +4,27 @@
 
 ---
 
+## [v8.62.0] - 2026-05-11
+
+### Funil comercial por etapa do lead
+
+#### Adicionado
+- Dashboard Admin ganhou `data-admin-commercial-pipeline`, `data-admin-commercial-stage` e `data-admin-commercial-lead`.
+- Criado funil visual com cinco etapas comerciais: Contato, Proposta, Follow-up, Negociacao e Fechamento.
+- Cada etapa mostra volume, alta prioridade, SLA, aging medio e os leads mais relevantes com link direto para o handoff.
+
+#### Modificado
+- A stagebar do Dashboard Admin ganhou atalho direto para `#admin-funil-comercial`.
+- Validadores, contratos publicos, mapa, plano e evidencia browser passaram a proteger o novo funil.
+
+#### Validado
+- `node --check assets/js/admin-users.js`
+- `node tools/validate-admin-dashboard-source-funnel.mjs`
+- `node tools/validate-public-contracts.mjs`
+- `node tools/run-v8af-browser-evidence.mjs`
+
+---
+
 ## [v8.61.0] - 2026-05-11
 
 ### Filtros e exportacao da carteira comercial

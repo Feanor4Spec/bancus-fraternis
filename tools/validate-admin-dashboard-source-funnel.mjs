@@ -31,6 +31,7 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
   'data-admin-handoff-summary',
   'href="#admin-proximos-passos"',
   'href="#admin-carteira-consultor"',
+  'href="#admin-funil-comercial"',
   'href="#admin-origens"',
   'href="#admin-gargalos"'
 ].forEach((marker) => assert(dashboardHtml.includes(marker), `dashboard-admin.html sem ${marker}.`));
@@ -45,6 +46,9 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
   'filterAdminConsultantPortfolio',
   'buildAdminPortfolioPriorityActions',
   'buildAdminConsultantPortfolioExport',
+  'adminCommercialStageDefinitions',
+  'adminCommercialStageFor',
+  'buildAdminCommercialPipeline',
   'renderAdminSourceFunnel',
   'renderAdminBottleneckBoard',
   'renderAdminNextActionBoard',
@@ -53,6 +57,7 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
   'renderAdminConsultantPortfolio',
   'renderAdminPortfolioFilterControls',
   'renderAdminPortfolioPriorityActions',
+  'renderAdminCommercialPipeline',
   'downloadAdminConsultantPortfolio',
   'data-admin-source-funnel',
   'data-admin-bottleneck-board',
@@ -72,6 +77,9 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
   'data-admin-consultant-portfolio-export',
   'data-admin-consultant-portfolio-priority',
   'data-admin-consultant-portfolio-priority-lead',
+  'data-admin-commercial-pipeline',
+  'data-admin-commercial-stage',
+  'data-admin-commercial-lead',
   'data-admin-action-status',
   'adminNextActionsReady',
   'adminNextActionCount',
@@ -81,9 +89,12 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
   'adminConsultantProductivityCount',
   'adminConsultantPortfolioReady',
   'adminConsultantPortfolioCount',
+  'adminCommercialPipelineReady',
+  'adminCommercialPipelineCount',
   'id="admin-proximos-passos"',
   'id="admin-fila-acao"',
   'id="admin-carteira-consultor"',
+  'id="admin-funil-comercial"',
   'id="admin-origens"',
   'id="admin-gargalos"',
   'adminSourceDefinitions',
@@ -106,6 +117,12 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
   'Exportar carteira',
   'bank-fratern.admin-consultant-portfolio.v1',
   '__lastAdminPortfolioExport',
+  'Etapas comerciais dos leads',
+  'Contato',
+  'Proposta',
+  'Follow-up',
+  'Negociacao',
+  'Fechamento',
   'adminActionExecution',
   'adminSourceFunnelReady',
   'adminBottleneckCount'
@@ -152,6 +169,10 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
   '.bf-admin-portfolio-priority__grid',
   '.bf-admin-portfolio-card',
   '.bf-admin-portfolio-lead',
+  '.bf-admin-commercial-pipeline',
+  '.bf-admin-commercial-pipeline__grid',
+  '.bf-admin-commercial-stage',
+  '.bf-admin-commercial-lead',
   '.bf-admin-source-funnel',
   '.bf-admin-source-grid',
   '.bf-admin-source-card',
@@ -162,12 +183,12 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
 
 assert(!simulatorHtml.includes('data-v8-stagebar-legacy'), 'simulador.html ainda contem template legado da stagebar superior.');
 assert(simulatorHtml.includes('bf-v8-stagebar-shell'), 'simulador.html sem stagebar inferior recolhivel.');
-assert(platformCss.includes('.bf-admin-next-actions__grid') && platformCss.includes('.bf-admin-action-queue__list') && platformCss.includes('.bf-admin-action-owners') && platformCss.includes('.bf-admin-consultant-productivity__grid') && platformCss.includes('.bf-admin-consultant-portfolio__grid') && platformCss.includes('.bf-admin-portfolio-priority__grid') && platformCss.includes('.bf-admin-source-grid') && platformCss.includes('.bf-admin-bottleneck-grid'), 'CSS admin sem grids monitorados.');
+assert(platformCss.includes('.bf-admin-next-actions__grid') && platformCss.includes('.bf-admin-action-queue__list') && platformCss.includes('.bf-admin-action-owners') && platformCss.includes('.bf-admin-consultant-productivity__grid') && platformCss.includes('.bf-admin-consultant-portfolio__grid') && platformCss.includes('.bf-admin-portfolio-priority__grid') && platformCss.includes('.bf-admin-commercial-pipeline__grid') && platformCss.includes('.bf-admin-source-grid') && platformCss.includes('.bf-admin-bottleneck-grid'), 'CSS admin sem grids monitorados.');
 
 const report = {
   ok: failures.length === 0,
   contracts: {
-    dashboardMarkers: 9,
+    dashboardMarkers: 10,
     sources: 7,
     bottlenecks: 7,
     nextActions: adminUsersJs.includes('buildAdminNextActions') ? 5 : 0,
@@ -176,6 +197,7 @@ const report = {
     consultantProductivity: adminUsersJs.includes('data-admin-consultant-productivity'),
     consultantPortfolio: adminUsersJs.includes('data-admin-consultant-portfolio'),
     consultantPortfolioExport: adminUsersJs.includes('bank-fratern.admin-consultant-portfolio.v1'),
+    commercialPipeline: adminUsersJs.includes('data-admin-commercial-pipeline'),
     simulatorBottomStagebar: simulatorHtml.includes('bf-v8-stagebar-shell')
   },
   failures

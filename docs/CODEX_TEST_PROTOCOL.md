@@ -209,6 +209,7 @@ Validacoes obrigatorias:
 - Confirmar `data-admin-consultant-productivity` com ações abertas, adiadas, concluídas, tempo médio e gargalos recorrentes por responsável.
 - Confirmar `data-admin-consultant-portfolio` com carteira por consultor, leads, aging médio, origem, prioridade, SLA e próximo foco por lead.
 - Confirmar `data-admin-consultant-portfolio-filters`, `data-admin-consultant-portfolio-priority` e `data-admin-consultant-portfolio-export` com filtros por consultor/origem/prioridade/SLA, plano comercial do dia e JSON sanitizado.
+- Confirmar `data-admin-commercial-pipeline`, `data-admin-commercial-stage` e `data-admin-commercial-lead` com etapas Contato, Proposta, Follow-up, Negociação e Fechamento.
 
 Comandos:
 

@@ -1,7 +1,7 @@
 {
   "ok": true,
   "contracts": {
-    "dashboardMarkers": 9,
+    "dashboardMarkers": 10,
     "sources": 7,
     "bottlenecks": 7,
     "nextActions": 5,
@@ -10,6 +10,7 @@
     "consultantProductivity": true,
     "consultantPortfolio": true,
     "consultantPortfolioExport": true,
+    "commercialPipeline": true,
     "simulatorBottomStagebar": true
   },
   "failures": []

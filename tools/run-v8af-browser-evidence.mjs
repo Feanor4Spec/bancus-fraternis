@@ -16,7 +16,8 @@ const screenshots = {
   handoffDesktop: path.join(printsDir, 'v8af-handoff-proposta-desktop.png'),
   adminActionQueueDesktop: path.join(printsDir, 'v8af-admin-action-queue-desktop.png'),
   adminProductivityDesktop: path.join(printsDir, 'v8af-admin-productivity-desktop.png'),
-  adminPortfolioDesktop: path.join(printsDir, 'v8ag-admin-consultant-portfolio-desktop.png')
+  adminPortfolioDesktop: path.join(printsDir, 'v8ag-admin-consultant-portfolio-desktop.png'),
+  adminCommercialPipelineDesktop: path.join(printsDir, 'v8ah-admin-commercial-pipeline-desktop.png')
 };
 
 async function launchBrowser() {
@@ -297,6 +298,26 @@ try {
   await page.locator('[data-admin-consultant-portfolio]').scrollIntoViewIfNeeded();
   await page.screenshot({ path: screenshots.adminPortfolioDesktop, fullPage: false });
 
+  const adminCommercialPipeline = await page.evaluate(() => {
+    const panel = document.querySelector('[data-admin-commercial-pipeline]');
+    return {
+      ready: document.body.dataset.adminCommercialPipelineReady,
+      count: Number(document.body.dataset.adminCommercialPipelineCount || 0),
+      stages: document.querySelectorAll('[data-admin-commercial-stage]').length,
+      leads: document.querySelectorAll('[data-admin-commercial-lead]').length,
+      text: panel ? panel.innerText : ''
+    };
+  });
+  assert(adminCommercialPipeline.ready === 'true', 'Dashboard admin nao marcou adminCommercialPipelineReady=true.', failures);
+  assert(adminCommercialPipeline.stages === 5, 'Funil comercial deveria renderizar 5 etapas.', failures);
+  assert(adminCommercialPipeline.leads >= 1, 'Funil comercial nao renderizou lead em etapa.', failures);
+  assert(/ETAPAS COMERCIAIS DOS LEADS|Etapas comerciais dos leads/i.test(adminCommercialPipeline.text), 'Funil comercial nao exibiu titulo esperado.', failures);
+  ['Contato', 'Proposta', 'Follow-up', 'Negociacao', 'Fechamento'].forEach((label) => {
+    assert(adminCommercialPipeline.text.toLowerCase().includes(label.toLowerCase()), `Funil comercial nao exibiu etapa ${label}.`, failures);
+  });
+  await page.locator('[data-admin-commercial-pipeline]').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: screenshots.adminCommercialPipelineDesktop, fullPage: false });
+
   const report = {
     ok: failures.length === 0,
     baseUrl,
@@ -308,6 +329,7 @@ try {
     adminProductivity,
     adminPortfolio,
     adminPortfolioExport,
+    adminCommercialPipeline,
     screenshots: reportScreenshots(),
     consoleErrors: consoleErrors.slice(0, 20),
     pageErrors,

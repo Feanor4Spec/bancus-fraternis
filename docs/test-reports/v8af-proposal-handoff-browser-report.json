@@ -2,7 +2,7 @@
   "ok": true,
   "baseUrl": "http://127.0.0.1:8080/pages",
   "flow": {
-    "createdId": "LEAD-MP0R25BO-16J",
+    "createdId": "LEAD-MP19UJKQ-2VQ",
     "storedHandoffs": 1,
     "sourceProposalId": "PROP-2026-0100",
     "sourceProposalStatus": "reviewed",
@@ -12,27 +12,27 @@
       "proposal-create"
     ],
     "panelReady": "true",
-    "bridgeText": "CONTINUIDADE CONSULTIVA\nHandoff LEAD-MP0R25BO-16J criado na fila consultiva.\nAcompanhe checklist, responsavel, notas e auditoria no handoff consultivo.\nAtualizar handoff\nAbrir LEAD-MP0R25BO-16J"
+    "bridgeText": "CONTINUIDADE CONSULTIVA\nHandoff LEAD-MP19UJKQ-2VQ criado na fila consultiva.\nAcompanhe checklist, responsavel, notas e auditoria no handoff consultivo.\nAtualizar handoff\nAbrir LEAD-MP19UJKQ-2VQ"
   },
   "handoffPage": {
     "ready": "true",
     "cards": 1,
     "actionPlans": 2,
     "expectedFound": true,
-    "text": "Novo\nAlta\nProposta revisada\nagora\nProposta PROP-2026-0100\n\nCliente Demonstracao - Consorcio estruturado / Revisada localmente\n\nstatus reviewed - versao 1 - snapshot PV-MP0R25AC-1 - validade 14/05/2026, 21:00\nVERSAO 1 TRAVADA\nAcompanhar proposta\nPROPOSTA POSSUI SNAPSHOT LOCAL PRESERVADO PARA ATENDIMENTO CONSULTIVO.\nCREDITO\nR$ 100.000,00\nCHECKLIST\n4/5\nAGING\nagora\nPROXIMO\nIniciar atendimento\nAbrir\nComparar",
+    "text": "Novo\nAlta\nProposta revisada\nagora\nProposta PROP-2026-0100\n\nCliente Demonstracao - Consorcio estruturado / Revisada localmente\n\nstatus reviewed - versao 1 - snapshot PV-MP19UJJL-1 - validade 14/05/2026, 21:00\nVERSAO 1 TRAVADA\nAcompanhar proposta\nPROPOSTA POSSUI SNAPSHOT LOCAL PRESERVADO PARA ATENDIMENTO CONSULTIVO.\nCREDITO\nR$ 100.000,00\nCHECKLIST\n4/5\nAGING\nagora\nPROXIMO\nIniciar atendimento\nAbrir\nComparar",
     "actionPlanText": "PROPOSTA REVISADA - AGORA\nIniciar atendimento\n\nLead novo ainda nao entrou em atendimento.\n\nDONO\nAnalista de Proposta\nPRAZO\nAte 24h\nSTATUS\nPendente\nAbrir lead"
   },
   "handoffExecution": {
     "states": [
       {
-        "actionKey": "handoff:LEAD-MP0R25BO-16J:first-contact",
+        "actionKey": "handoff:LEAD-MP19UJKQ-2VQ:first-contact",
         "status": "em_execucao",
         "reason": "Contato iniciado pela evidencia automatizada.",
         "owner": "Analista de Proposta"
       }
     ],
     "auditCount": 1,
-    "panelText": "STATUS DA ACAO\nEm execucao\nMOTIVO OU OBSERVACAO \nIniciar\nAdiar 24h\nConcluir\nEM_EXECUCAO - 11/05/2026, 02:17 - CONSULTOR@BANKFRATERN.LOCAL"
+    "panelText": "STATUS DA ACAO\nEm execucao\nMOTIVO OU OBSERVACAO \nIniciar\nAdiar 24h\nConcluir\nEM_EXECUCAO - 11/05/2026, 11:02 - CONSULTOR@BANKFRATERN.LOCAL"
   },
   "adminActionQueue": {
     "ready": "true",
@@ -43,7 +43,7 @@
   "adminExecution": {
     "states": [
       {
-        "actionKey": "handoff:LEAD-MP0R25BO-16J:first-contact",
+        "actionKey": "handoff:LEAD-MP19UJKQ-2VQ:first-contact",
         "status": "em_execucao",
         "reason": "Contato iniciado pela evidencia automatizada.",
         "owner": "Analista de Proposta"
@@ -56,13 +56,13 @@
       }
     ],
     "auditCount": 2,
-    "text": "Fila guiada\nQuem faz o que, ate quando\n\nConverte gargalos e sinais por origem em uma fila executavel, com status, motivo, adiamento e historico por responsavel.\n\nVer gargalos\nPENDENTES\n0\nEM EXECUCAO\n0\nADIADAS\n0\nCONCLUIDAS\n1\nANALISTA DE PROPOSTA\n1\n0 EM EXECUCAO - 0 ADIADAS - 1 CONCLUIDAS\n#1\nATE 24H\nPROPOSTA\nRevisar propostas ativas\n\n1 aberto, 1 alta prioridade e 0 SLA vencidos nesta origem.\n\nDONO\nAnalista de Proposta\nALVO\n3 sinais\nSTATUS\nConcluida\nMOTIVO OU OBSERVACAO \nCONCLUIDA - 11/05/2026, 02:17 - ADMIN@BANKFRATERN.LOCAL\nAbrir handoffs\nIniciar\nAdiar\nConcluir\nReabrir"
+    "text": "Fila guiada\nQuem faz o que, ate quando\n\nConverte gargalos e sinais por origem em uma fila executavel, com status, motivo, adiamento e historico por responsavel.\n\nVer gargalos\nPENDENTES\n0\nEM EXECUCAO\n0\nADIADAS\n0\nCONCLUIDAS\n1\nANALISTA DE PROPOSTA\n1\n0 EM EXECUCAO - 0 ADIADAS - 1 CONCLUIDAS\n#1\nATE 24H\nPROPOSTA\nRevisar propostas ativas\n\n1 aberto, 1 alta prioridade e 0 SLA vencidos nesta origem.\n\nDONO\nAnalista de Proposta\nALVO\n3 sinais\nSTATUS\nConcluida\nMOTIVO OU OBSERVACAO \nCONCLUIDA - 11/05/2026, 11:02 - ADMIN@BANKFRATERN.LOCAL\nAbrir handoffs\nIniciar\nAdiar\nConcluir\nReabrir"
   },
   "adminProductivity": {
     "ready": "true",
     "count": 1,
     "rows": 1,
-    "text": "Produtividade\nExecucao por consultor\n\nMostra acoes abertas, adiadas, concluidas, tempo medio e gargalos recorrentes a partir da fila guiada local.\n\nVer fila\nABERTAS\n0\nEM EXECUCAO\n0\nADIADAS\n0\nCONCLUIDAS\n1\nTEMPO MEDIO\nsem base\nANALISTA DE PROPOSTA\n100%\nABERTAS\n0\nADIADAS\n0\nCONCLUIDAS\n1\nTEMPO MEDIO\nsem base\n\nGargalos recorrentes: Proposta (1) | Revisar propostas ativas (1)\n\nCONCLUIDA - 11/05/2026, 02:17"
+    "text": "Produtividade\nExecucao por consultor\n\nMostra acoes abertas, adiadas, concluidas, tempo medio e gargalos recorrentes a partir da fila guiada local.\n\nVer fila\nABERTAS\n0\nEM EXECUCAO\n0\nADIADAS\n0\nCONCLUIDAS\n1\nTEMPO MEDIO\nsem base\nANALISTA DE PROPOSTA\n100%\nABERTAS\n0\nADIADAS\n0\nCONCLUIDAS\n1\nTEMPO MEDIO\nsem base\n\nGargalos recorrentes: Proposta (1) | Revisar propostas ativas (1)\n\nCONCLUIDA - 11/05/2026, 11:02"
   },
   "adminPortfolio": {
     "ready": "true",
@@ -80,13 +80,21 @@
     "leads": 1,
     "containsSensitivePattern": false
   },
+  "adminCommercialPipeline": {
+    "ready": "true",
+    "count": 1,
+    "stages": 5,
+    "leads": 1,
+    "text": "Funil comercial\nEtapas comerciais dos leads\n\nOrganiza a carteira em contato, proposta, follow-up, negociacao e fechamento para orientar a rotina comercial.\n\nAbrir fila consultiva\nLEADS NO FUNIL\n1\nEM ABERTO\n1\nALTA PRIORIDADE\n1\nSLA VENCIDO\n0\nFECHAMENTO\n0\nCONTATO\n0\nALTA\n0\nSLA\n0\nAGING\nsem lead\nIniciar atendimento quando houver lead nesta etapa.\nPROPOSTA\n1\nALTA\n1\nSLA\n0\nAGING\nmenos de 1h\nPROPOSTA REVISADA - ALTA - AGORA\nProposta PROP-2026-0100\nNOVO - INICIAR ATENDIMENTO\nFOLLOW-UP\n0\nALTA\n0\nSLA\n0\nAGING\nsem lead\nRetomar cliente quando houver lead nesta etapa.\nNEGOCIACAO\n0\nALTA\n0\nSLA\n0\nAGING\nsem lead\nAvancar negociacao quando houver lead nesta etapa.\nFECHAMENTO\n0\nALTA\n0\nSLA\n0\nAGING\nsem lead\nRegistrar decisao quando houver lead nesta etapa."
+  },
   "screenshots": {
     "proposalDesktop": "docs/test-prints/v8af-proposta-handoff-desktop.png",
     "proposalMobile": "docs/test-prints/v8af-proposta-handoff-mobile.png",
     "handoffDesktop": "docs/test-prints/v8af-handoff-proposta-desktop.png",
     "adminActionQueueDesktop": "docs/test-prints/v8af-admin-action-queue-desktop.png",
     "adminProductivityDesktop": "docs/test-prints/v8af-admin-productivity-desktop.png",
-    "adminPortfolioDesktop": "docs/test-prints/v8ag-admin-consultant-portfolio-desktop.png"
+    "adminPortfolioDesktop": "docs/test-prints/v8ag-admin-consultant-portfolio-desktop.png",
+    "adminCommercialPipelineDesktop": "docs/test-prints/v8ah-admin-commercial-pipeline-desktop.png"
   },
   "consoleErrors": [
     "Failed to load resource: the server responded with a status of 404 (File not found)"
