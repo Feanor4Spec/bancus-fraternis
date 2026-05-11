@@ -202,8 +202,10 @@ Validacoes obrigatorias:
 - Criar handoff e confirmar que a versao congelada foi preservada no lead local.
 - Abrir `handoff-consultivo.html#fila-handoff` e confirmar `data-handoff-proposal-version` com snapshot, validade e proximo passo.
 - Confirmar `data-handoff-action-plan` no cockpit/detalhe com dono, prazo e CTA operacional.
+- Confirmar `data-handoff-action-execution`, marcar iniciar/concluir/adiar e validar motivo em `bf_operational_action_states_v1`.
 - Abrir `dashboard-admin.html#admin-gargalos` e confirmar gargalos de proposta vencida ou alterada apos handoff quando existirem dados locais.
 - Abrir `dashboard-admin.html#admin-fila-acao` e confirmar `data-admin-action-queue` com dono, prazo, alvo e CTA direto.
+- Confirmar `data-admin-action-execution` e `data-admin-action-owner-history` com status, motivo e historico por responsavel.
 
 Comandos:
 

@@ -3,8 +3,11 @@
 
   const HANDOFF_KEY = 'bf_consultive_handoffs_v1';
   const AUDIT_KEY = 'bf_consultive_handoff_audit_v1';
+  const ACTION_STATE_KEY = 'bf_operational_action_states_v1';
+  const ACTION_AUDIT_KEY = 'bf_operational_action_audit_v1';
   const SCHEMA = 'bank-fratern.consultive-handoff.v1';
   const MAX_AUDIT = 120;
+  const MAX_ACTION_AUDIT = 160;
 
   const statusLabels = {
     novo: 'Novo',
@@ -26,6 +29,13 @@
     proposal: 'Proposta revisada',
     imported: 'Pacote importado',
     manual: 'Origem local'
+  };
+
+  const actionStatusLabels = {
+    pendente: 'Pendente',
+    em_execucao: 'Em execucao',
+    adiada: 'Adiada',
+    concluida: 'Concluida'
   };
 
   function safeStorage() {
@@ -338,10 +348,101 @@
     return `handoff-consultivo.html${id}#detalhe-handoff`;
   }
 
+  function actionStates() {
+    const parsed = readJson(ACTION_STATE_KEY, {});
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+  }
+
+  function actionAudit() {
+    const parsed = readJson(ACTION_AUDIT_KEY, []);
+    return Array.isArray(parsed) ? parsed : [];
+  }
+
+  function normalizeActionKey(action) {
+    if (typeof action === 'string') return action;
+    if (!action) return '';
+    if (action.actionKey) return action.actionKey;
+    const source = action.source || action.sourceType || 'operacao';
+    const type = action.type || action.actionType || 'acao';
+    const id = action.id || action.handoffId || action.target || action.href || action.title || 'local';
+    return `${source}:${type}:${id}`;
+  }
+
+  function actionExecution(action) {
+    const actionKey = normalizeActionKey(action);
+    const saved = actionKey ? actionStates()[actionKey] : null;
+    const status = saved && saved.status && actionStatusLabels[saved.status] ? saved.status : 'pendente';
+    return {
+      actionKey,
+      status,
+      statusLabel: actionStatusLabels[status] || actionStatusLabels.pendente,
+      owner: saved && saved.owner ? saved.owner : (action && action.owner ? action.owner : ''),
+      reason: saved && saved.reason ? saved.reason : '',
+      postponedUntil: saved && saved.postponedUntil ? saved.postponedUntil : '',
+      updatedAt: saved && saved.updatedAt ? saved.updatedAt : '',
+      updatedBy: saved && saved.updatedBy ? saved.updatedBy : '',
+      completedAt: saved && saved.completedAt ? saved.completedAt : ''
+    };
+  }
+
+  function recordActionAudit(actionName, state, details) {
+    const actor = currentActor();
+    const event = {
+      id: `ACT-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
+      action: actionName,
+      actionKey: state && state.actionKey ? state.actionKey : '',
+      title: state && state.title ? state.title : '',
+      owner: state && state.owner ? state.owner : '',
+      status: state && state.status ? state.status : '',
+      reason: state && state.reason ? state.reason : '',
+      actorEmail: actor.email,
+      actorRole: actor.role,
+      details: details || {},
+      createdAt: nowIso()
+    };
+    writeJson(ACTION_AUDIT_KEY, [event].concat(actionAudit()).slice(0, MAX_ACTION_AUDIT));
+    return event;
+  }
+
+  function setActionExecution(action, patch) {
+    const actionKey = normalizeActionKey(action);
+    if (!actionKey) return null;
+    const current = actionExecution(action);
+    const actor = currentActor();
+    const status = patch && patch.status && actionStatusLabels[patch.status] ? patch.status : current.status;
+    const states = actionStates();
+    const next = {
+      ...current,
+      actionKey,
+      title: (patch && patch.title) || (action && action.title) || current.title || '',
+      source: (patch && patch.source) || (action && action.source) || current.source || '',
+      target: (patch && patch.target) || (action && action.target) || current.target || '',
+      href: (patch && patch.href) || (action && action.href) || current.href || '',
+      status,
+      statusLabel: actionStatusLabels[status] || actionStatusLabels.pendente,
+      owner: (patch && patch.owner) || current.owner || (action && action.owner) || '',
+      reason: patch && Object.prototype.hasOwnProperty.call(patch, 'reason') ? String(patch.reason || '') : current.reason,
+      postponedUntil: patch && Object.prototype.hasOwnProperty.call(patch, 'postponedUntil') ? String(patch.postponedUntil || '') : current.postponedUntil,
+      completedAt: status === 'concluida' ? ((patch && patch.completedAt) || nowIso()) : (status === 'pendente' ? '' : current.completedAt),
+      updatedAt: nowIso(),
+      updatedBy: actor.email
+    };
+    states[actionKey] = next;
+    writeJson(ACTION_STATE_KEY, states);
+    recordActionAudit(`action:${status}`, next, { reason: next.reason, postponedUntil: next.postponedUntil });
+    return next;
+  }
+
+  function actionHistory(action) {
+    const actionKey = normalizeActionKey(action);
+    return actionAudit().filter((event) => event.actionKey === actionKey);
+  }
+
   function actionPlan(item, now) {
     if (!item) {
       return {
         active: false,
+        actionKey: '',
         type: 'none',
         title: 'Sem acao',
         reason: '',
@@ -350,7 +451,8 @@
         deadlineLabel: '',
         dueAt: '',
         ctaLabel: '',
-        href: ''
+        href: '',
+        execution: actionExecution('')
       };
     }
     const reference = now instanceof Date ? now : new Date(now || Date.now());
@@ -361,9 +463,12 @@
     const owner = type === 'assign'
       ? 'coordenacao local'
       : (item.assignedTo || state.suggestedAssignee || item.ownerEmail || 'definir na fila');
+    const actionKey = `handoff:${item.id || 'local'}:${type}`;
+    const execution = actionExecution({ actionKey, owner });
     return {
       active: true,
       id: item.id || '',
+      actionKey,
       type,
       title: actionTitle(type, item, state),
       reason: actionReason(type, item, state),
@@ -375,7 +480,8 @@
       href: actionHref(type, item),
       tone: state.tone || 'media',
       priority: item.priority || 'media',
-      source: sourceLabel(item)
+      source: sourceLabel(item),
+      execution
     };
   }
 
@@ -531,13 +637,17 @@
           suggestedAssignee: item.operational.suggestedAssignee || '',
           tone: item.operational.tone,
           actionType: plan.type,
+          actionKey: plan.actionKey,
           actionTitle: plan.title,
           actionReason: plan.reason,
           actionOwner: plan.owner,
           deadlineLabel: plan.deadlineLabel,
           dueAt: plan.dueAt,
           ctaLabel: plan.ctaLabel,
-          href: plan.href
+          href: plan.href,
+          executionStatus: plan.execution.status,
+          executionStatusLabel: plan.execution.statusLabel,
+          executionReason: plan.execution.reason
         };
       });
 
@@ -1009,6 +1119,10 @@
     proposalState,
     operationalState,
     actionPlan,
+    actionExecution,
+    setActionExecution,
+    actionHistory,
+    actionAudit,
     enrich,
     enrichList,
     consultantBoard,
@@ -1024,6 +1138,8 @@
     keys: {
       handoffs: HANDOFF_KEY,
       audit: AUDIT_KEY,
+      actionStates: ACTION_STATE_KEY,
+      actionAudit: ACTION_AUDIT_KEY,
       schema: SCHEMA
     }
   };

@@ -53,8 +53,12 @@ const [pageHtml, uiSource, cssSource, serviceSource, designValidator, contractsD
   'handoffConsultantActionCount',
   'data-handoff-proposal-version',
   'data-handoff-action-plan',
+  'data-handoff-action-execution',
+  'data-handoff-action-reason',
+  'data-handoff-action-history',
   'proposalVersionPanel',
   'actionPlan',
+  'actionExecutionPanel',
   'matchesAging',
   'hydrateAssigneeOptions',
   'data-handoff-next-step'
@@ -64,6 +68,10 @@ const [pageHtml, uiSource, cssSource, serviceSource, designValidator, contractsD
   'operationalState',
   'proposalState',
   'actionPlan',
+  'actionExecution',
+  'setActionExecution',
+  'actionHistory',
+  'actionAudit',
   'consultantBoard',
   'slaHoursForPriority',
   'ageLabel',
@@ -81,6 +89,7 @@ const [pageHtml, uiSource, cssSource, serviceSource, designValidator, contractsD
   '.bf-handoff-aging',
   '.bf-handoff-next-step',
   '.bf-handoff-action-plan',
+  '.bf-action-execution',
   '.bf-handoff-proposal-panel',
   '.bf-handoff-proposal-chip'
 ].forEach((selector) => assert(cssSource.includes(selector), `platform.css sem seletor ${selector}.`));
@@ -117,6 +126,7 @@ const service = context.BFHandoffConsultivoService;
 assert(service && typeof service.operationalState === 'function', 'operationalState indisponivel.');
 assert(service && typeof service.consultantBoard === 'function', 'consultantBoard indisponivel.');
 assert(service && typeof service.actionPlan === 'function', 'actionPlan indisponivel.');
+assert(service && typeof service.setActionExecution === 'function', 'setActionExecution indisponivel.');
 
 const referenceNow = new Date('2026-05-08T12:00:00.000Z');
 const overdueLead = {
@@ -180,6 +190,13 @@ const waitingState = service.operationalState(waitingLead, referenceNow);
 const qualifiedState = service.operationalState(qualifiedLead, referenceNow);
 const expiredProposalState = service.proposalState(expiredProposalLead, referenceNow);
 const expiredProposalAction = service.actionPlan(expiredProposalLead, referenceNow);
+const executedAction = service.setActionExecution(expiredProposalAction, {
+  status: 'concluida',
+  reason: 'Validade revisada no teste automatizado.',
+  owner: expiredProposalAction.owner
+});
+const executedState = service.actionExecution(expiredProposalAction);
+const executedHistory = service.actionHistory(expiredProposalAction);
 const board = service.consultantBoard([overdueLead, waitingLead, qualifiedLead], referenceNow);
 const proposalBoard = service.consultantBoard([overdueLead, expiredProposalLead], referenceNow);
 
@@ -193,6 +210,9 @@ assert(expiredProposalState.nextStep === 'Revisar validade da proposta', `Proxim
 assert(expiredProposalAction.type === 'proposal', `Plano da proposta vencida deveria ser proposal; recebeu ${expiredProposalAction.type}.`);
 assert(expiredProposalAction.deadlineLabel === 'Hoje', `Prazo da proposta vencida deveria ser Hoje; recebeu ${expiredProposalAction.deadlineLabel}.`);
 assert(expiredProposalAction.ctaLabel === 'Abrir proposta', `CTA da proposta vencida inesperado: ${expiredProposalAction.ctaLabel}.`);
+assert(executedAction && executedAction.status === 'concluida', 'Execucao da acao nao foi marcada como concluida.');
+assert(executedState.reason.includes('Validade revisada'), 'Motivo da execucao nao foi persistido.');
+assert(executedHistory.length >= 1, 'Historico da acao nao registrou evento.');
 assert(board.open === 2, `Board deveria ter 2 abertos; recebeu ${board.open}.`);
 assert(board.overdue === 2, `Board deveria ter 2 SLA vencidos; recebeu ${board.overdue}.`);
 assert(board.waiting === 1, `Board deveria ter 1 aguardando; recebeu ${board.waiting}.`);
@@ -218,7 +238,9 @@ const report = {
     unversioned: proposalBoard.proposalUnversioned,
     expiredNextStep: expiredProposalState.nextStep,
     expiredActionType: expiredProposalAction.type,
-    expiredDeadline: expiredProposalAction.deadlineLabel
+    expiredDeadline: expiredProposalAction.deadlineLabel,
+    executionStatus: executedState.status,
+    executionHistory: executedHistory.length
   },
   failures
 };

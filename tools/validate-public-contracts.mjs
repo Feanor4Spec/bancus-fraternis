@@ -85,6 +85,8 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'bf_journey_analytics_v1:<owner>',
   'bf_comparator_models_v1:<owner>',
   'bf_consultive_handoffs_v1',
+  'bf_operational_action_states_v1',
+  'bf_operational_action_audit_v1',
   'bf_admin_recovery_imports_v1',
   'bf_admin_recovery_conversion_goals_v1'
 ].forEach((key) => assert(contracts.includes(key), `Contrato localStorage nao documentado: ${key}.`));
@@ -98,10 +100,13 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-proposal-builder-option',
   'data-admin-next-actions',
   'data-admin-action-queue',
+  'data-admin-action-execution',
+  'data-admin-action-owner-history',
   'data-admin-source-funnel',
   'data-admin-bottleneck-board',
   'data-handoff-consultant-cockpit',
   'data-handoff-action-plan',
+  'data-handoff-action-execution',
   'data-handoff-proposal-version',
   'data-login-form',
   'data-public-demo-notice',
@@ -162,6 +167,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
 [
   'data-admin-next-actions',
   'data-admin-action-queue',
+  'data-admin-action-execution',
   'data-admin-source-funnel',
   'data-admin-bottleneck-board'
 ].forEach((marker) => assert(adminUsers.includes(marker), `admin-users.js sem marcador publico ${marker}.`));
@@ -221,8 +227,8 @@ if (legacyHits.length) {
 const report = {
   ok: failures.length === 0,
   contracts: {
-    localStorageKeys: 13,
-    dataMarkers: 21,
+    localStorageKeys: 15,
+    dataMarkers: 24,
     globals: 12,
     deepLinks: 10,
     validators: 15,

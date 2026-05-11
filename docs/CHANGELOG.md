@@ -4,6 +4,30 @@
 
 ---
 
+## [v8.58.0] - 2026-05-11
+
+### Execucao persistente da fila guiada
+
+#### Adicionado
+- `BFHandoffConsultivoService` passou a persistir execucao operacional em `bf_operational_action_states_v1` e historico em `bf_operational_action_audit_v1`.
+- Handoff ganhou `data-handoff-action-execution`, `data-handoff-action-reason` e `data-handoff-action-history` no plano de acao do lead.
+- Dashboard Admin ganhou `data-admin-action-execution`, `data-admin-action-reason`, `data-admin-action-history` e `data-admin-action-owner-history`.
+
+#### Modificado
+- A fila guiada agora permite iniciar, adiar, concluir e reabrir acoes locais com motivo/observacao.
+- O admin passou a mostrar resumo por status e historico por responsavel.
+- Contratos publicos passaram a cobrir 15 chaves de `localStorage` e 24 marcadores `data-*`.
+
+#### Validado
+- `node --check assets/js/services/handoff-consultivo.service.js`
+- `node --check assets/js/handoff-consultivo.js`
+- `node --check assets/js/admin-users.js`
+- `node tools/validate-handoff-consultant-operations.mjs`
+- `node tools/validate-admin-dashboard-source-funnel.mjs`
+- `node tools/validate-public-contracts.mjs`
+
+---
+
 ## [v8.57.0] - 2026-05-11
 
 ### Fila guiada de acoes operacionais

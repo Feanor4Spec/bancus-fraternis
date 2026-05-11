@@ -6,6 +6,7 @@
     "bottlenecks": 7,
     "nextActions": 5,
     "actionQueue": 6,
+    "actionExecution": true,
     "simulatorBottomStagebar": true
   },
   "failures": []

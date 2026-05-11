@@ -12,7 +12,9 @@
     "unversioned": 1,
     "expiredNextStep": "Revisar validade da proposta",
     "expiredActionType": "proposal",
-    "expiredDeadline": "Hoje"
+    "expiredDeadline": "Hoje",
+    "executionStatus": "concluida",
+    "executionHistory": 1
   },
   "failures": []
 }

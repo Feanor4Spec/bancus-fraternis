@@ -916,9 +916,47 @@
   gap: 10px;
 }
 
+.bf-admin-action-summary {
+  display: grid;
+  gap: 12px;
+}
+
+.bf-admin-action-owners {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.bf-admin-action-owners article {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--bf-line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .78);
+}
+
+.bf-admin-action-owners span,
+.bf-admin-action-owners small,
+.bf-action-execution__head span,
+.bf-action-execution__history small,
+.bf-admin-action-history small {
+  display: block;
+  color: var(--bf-muted);
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.bf-admin-action-owners strong {
+  display: block;
+  margin-top: 6px;
+  color: var(--bf-navy-900);
+  font-size: 20px;
+}
+
 .bf-admin-action-item {
   display: grid;
-  grid-template-columns: 86px minmax(0, 1fr) auto;
+  grid-template-columns: 86px minmax(0, 1fr) 150px;
   gap: 14px;
   align-items: center;
   min-width: 0;
@@ -941,6 +979,10 @@
 .bf-admin-action-item--baixa {
   border-color: var(--bf-info-bd);
   background: var(--bf-info-bg);
+}
+
+.bf-admin-action-item--status-concluida {
+  opacity: .78;
 }
 
 .bf-admin-action-item__rank {
@@ -1002,6 +1044,72 @@
   color: var(--bf-navy-900);
   font-size: 13px;
   font-weight: 850;
+}
+
+.bf-admin-action-reason,
+.bf-action-execution label {
+  display: block;
+  margin-top: 10px;
+  color: var(--bf-muted);
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.bf-admin-action-reason input,
+.bf-action-execution input {
+  width: 100%;
+  margin-top: 6px;
+  padding: 9px 10px;
+  border: 1px solid var(--bf-line);
+  border-radius: 8px;
+  color: var(--bf-navy-900);
+  background: var(--bf-white);
+}
+
+.bf-admin-action-history,
+.bf-action-execution__history {
+  display: grid;
+  gap: 4px;
+  margin-top: 10px;
+}
+
+.bf-admin-action-item__commands {
+  display: grid;
+  gap: 8px;
+}
+
+.bf-action-execution {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--bf-line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .8);
+}
+
+.bf-action-execution__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.bf-action-execution__head strong {
+  color: var(--bf-navy-900);
+  font-size: 14px;
+  font-weight: 950;
+}
+
+.bf-action-execution--concluida {
+  border-color: var(--bf-success-bd);
+  background: var(--bf-success-bg);
+}
+
+.bf-action-execution--adiada {
+  border-color: var(--bf-warning-bd);
+  background: var(--bf-warning-bg);
 }
 
 .bf-admin-source-grid {
@@ -3035,8 +3143,10 @@
   .bf-admin-funnel__stages,
   .bf-admin-role-funnel-grid,
   .bf-admin-next-actions__grid,
+  .bf-admin-action-owners,
   .bf-admin-action-item,
   .bf-admin-action-item dl,
+  .bf-admin-action-item__commands,
   .bf-handoff-action-plan,
   .bf-admin-source-grid,
   .bf-admin-bottleneck-grid,

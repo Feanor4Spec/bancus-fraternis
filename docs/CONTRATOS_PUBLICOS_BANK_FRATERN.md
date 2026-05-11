@@ -37,6 +37,8 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | `bf_comparator_model_audit_v1` | `BFComparatorModels` | Auditoria de modelos. | Manter eventos sem dados sensiveis. |
 | `bf_consultive_handoffs_v1` | `BFHandoffConsultivoService` | Leads/handoffs locais. | Preservar origem, status, prioridade e checklist. |
 | `bf_consultive_handoff_audit_v1` | `BFHandoffConsultivoService` | Auditoria dos handoffs. | Preservar relacao com proposta, trilha ou sinal. |
+| `bf_operational_action_states_v1` | `BFHandoffConsultivoService` | Status persistido da fila guiada. | Manter `actionKey`, status, dono, motivo e datas. |
+| `bf_operational_action_audit_v1` | `BFHandoffConsultivoService` | Historico de execucao por acao/responsavel. | Nao conter dados sensiveis produtivos. |
 | `bf_admin_recovery_imports_v1` | `BFAdminRecoveryService` | Pacotes importados de retomada. | Pacotes devem continuar sanitizados. |
 | `bf_admin_recovery_audit_v1` | `BFAdminRecoveryService` | Auditoria administrativa. | Manter eventos de export/import/roteamento. |
 | `bf_admin_recovery_conversion_goals_v1` | `BFAdminRecoveryService` | Metas de conversao por responsavel. | Preservar `assignedTo` e `targetHandoffs`. |
@@ -54,9 +56,9 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | Comparador | `data-comparator-form`, `data-comparator-result`, `data-comparator-preset-summary`, `data-comparator-model-recommendation`. |
 | Simulador | `data-simulator-readiness`, `data-simulator-decision-strip`, `data-v8-stagebar`, `data-shelf-col`. |
 | Proposta | `data-proposal-acceptance-panel`, `data-proposal-handoff-bridge`, `data-proposal-builder-board`, `data-proposal-builder-readiness`, `data-proposal-builder-option`, `data-proposal-version-panel`, `data-proposal-version-history`, `data-proposal-version-comparison`. |
-| Handoff | `data-handoff-list`, `data-handoff-detail`, `data-handoff-metrics`, `data-handoff-recovery-signals`, `data-handoff-consultant-cockpit`, `data-handoff-action-plan`, `data-handoff-assignee-filter`, `data-handoff-aging-filter`, `data-handoff-proposal-version`. |
+| Handoff | `data-handoff-list`, `data-handoff-detail`, `data-handoff-metrics`, `data-handoff-recovery-signals`, `data-handoff-consultant-cockpit`, `data-handoff-action-plan`, `data-handoff-action-execution`, `data-handoff-action-reason`, `data-handoff-action-history`, `data-handoff-assignee-filter`, `data-handoff-aging-filter`, `data-handoff-proposal-version`. |
 | Dashboard Cliente | `data-client-continuity-strip`, `data-client-continuity-timeline`, `data-client-decision-journey`, `data-client-recovery-signals`. |
-| Dashboard Admin | `data-admin-next-actions`, `data-admin-action-queue`, `data-admin-source-funnel`, `data-admin-bottleneck-board`, `data-admin-journey-funnel`, `data-admin-operational-alerts`, `data-admin-recovery-queue`, `data-admin-recovery-packages`. |
+| Dashboard Admin | `data-admin-next-actions`, `data-admin-action-queue`, `data-admin-action-execution`, `data-admin-action-reason`, `data-admin-action-history`, `data-admin-action-owner-history`, `data-admin-source-funnel`, `data-admin-bottleneck-board`, `data-admin-journey-funnel`, `data-admin-operational-alerts`, `data-admin-recovery-queue`, `data-admin-recovery-packages`. |
 | Lousa navegavel | `data-lousa-journey-checklist`, `data-lousa-journey-acceptance`. |
 | Shell v8 | `data-v8-stagebar`, `data-bf-visual-version`, `data-shell-header`, `data-shell-footer`, `data-bf-page`. |
 

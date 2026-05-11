@@ -954,17 +954,57 @@
     return 'Ate 72h';
   }
 
+  function adminActionExecution(action) {
+    const service = window.BFHandoffConsultivoService;
+    if (service && typeof service.actionExecution === 'function') return service.actionExecution(action);
+    return { actionKey: action.actionKey || '', status: 'pendente', statusLabel: 'Pendente', reason: '' };
+  }
+
+  function adminActionHistory(action) {
+    const service = window.BFHandoffConsultivoService;
+    return service && typeof service.actionHistory === 'function' ? service.actionHistory(action).slice(0, 3) : [];
+  }
+
+  function adminActionStatusClass(status) {
+    return ['em_execucao', 'adiada', 'concluida'].includes(status) ? status : 'pendente';
+  }
+
+  function buildAdminActionExecutionSummary(queue) {
+    const summary = { pending: 0, running: 0, delayed: 0, done: 0, owners: new Map() };
+    (queue || []).forEach((item) => {
+      const status = item.execution && item.execution.status ? item.execution.status : 'pendente';
+      if (status === 'concluida') summary.done += 1;
+      else if (status === 'adiada') summary.delayed += 1;
+      else if (status === 'em_execucao') summary.running += 1;
+      else summary.pending += 1;
+      const owner = item.owner || 'coordenacao local';
+      const current = summary.owners.get(owner) || { owner, total: 0, pending: 0, running: 0, delayed: 0, done: 0 };
+      current.total += 1;
+      if (status === 'concluida') current.done += 1;
+      else if (status === 'adiada') current.delayed += 1;
+      else if (status === 'em_execucao') current.running += 1;
+      else current.pending += 1;
+      summary.owners.set(owner, current);
+    });
+    return {
+      ...summary,
+      owners: Array.from(summary.owners.values()).slice(0, 4)
+    };
+  }
+
   function buildAdminActionQueue(sourceRows, bottlenecks) {
     const actions = [];
     (bottlenecks || []).slice(0, 8).forEach((item) => {
+      const target = item.targetId || item.proposalId || item.ownerEmail || 'origem local';
       actions.push({
+        actionKey: `admin:${item.type || 'bottleneck'}:${target}`,
         type: item.type || 'bottleneck',
         source: item.title || 'Gargalo local',
         title: item.next || item.title || 'Abrir acao',
         reason: item.reason || 'Gargalo operacional detectado nos dados locais.',
         owner: item.actionOwner || item.ownerEmail || 'coordenacao local',
         deadline: adminActionDeadline(item),
-        target: item.targetId || item.proposalId || item.ownerEmail || 'origem local',
+        target,
         href: item.href || '#admin-gargalos',
         cta: item.next || 'Abrir acao',
         tone: item.severity || 'media',
@@ -985,6 +1025,7 @@
         const sourceHref = item.key === 'proposal' && item.open ? 'handoff-consultivo.html?from=admin#fila-handoff' : (item.href || '#admin-origens');
         const sourceCta = item.key === 'proposal' && item.open ? 'Abrir handoffs' : (item.next || 'Abrir origem');
         actions.push({
+          actionKey: `admin:source-${item.key}`,
           type: `source-${item.key}`,
           source: item.label,
           title: sourceTitle,
@@ -1013,8 +1054,13 @@
       return Number(b.hours || 0) - Number(a.hours || 0);
     }).slice(0, 6);
 
-    if (sorted.length) return sorted.map((item, index) => ({ ...item, rank: index + 1 }));
-    return [{
+    if (sorted.length) return sorted.map((item, index) => ({
+      ...item,
+      rank: index + 1,
+      execution: adminActionExecution(item)
+    }));
+    const fallback = {
+      actionKey: 'admin:monitoramento:local',
       rank: 1,
       type: 'monitoramento',
       source: 'Operacao local',
@@ -1027,6 +1073,10 @@
       cta: 'Rever funil',
       tone: 'baixa',
       hours: 0
+    };
+    return [{
+      ...fallback,
+      execution: adminActionExecution(fallback)
     }];
   }
 
@@ -1059,19 +1109,43 @@
 
   function renderAdminActionQueue(sourceRows, bottlenecks) {
     const queue = buildAdminActionQueue(sourceRows, bottlenecks);
+    const executionSummary = buildAdminActionExecutionSummary(queue);
+    const ownerHistory = executionSummary.owners.map((item) => `
+      <article>
+        <span>${escapeHtml(item.owner)}</span>
+        <strong>${escapeHtml(item.total)}</strong>
+        <small>${escapeHtml(item.running)} em execucao - ${escapeHtml(item.delayed)} adiadas - ${escapeHtml(item.done)} concluidas</small>
+      </article>
+    `).join('');
     return `
       <section class="bf-admin-action-queue" id="admin-fila-acao" data-admin-action-queue>
         <div class="bf-admin-panel-heading">
           <div>
             <span class="bf-badge bf-badge--navy">Fila guiada</span>
             <h3>Quem faz o que, ate quando</h3>
-            <p>Converte gargalos e sinais por origem em uma lista operacional com responsavel, prazo, alvo e CTA direto.</p>
+            <p>Converte gargalos e sinais por origem em uma fila executavel, com status, motivo, adiamento e historico por responsavel.</p>
           </div>
           <a class="btn btn--ghost btn--sm" href="#admin-gargalos">Ver gargalos</a>
         </div>
+        <div class="bf-admin-action-summary" data-admin-action-owner-history>
+          <div class="bf-platform-metrics">
+            ${window.BFCards.metric('Pendentes', executionSummary.pending || 0, executionSummary.pending ? 'is-warn' : '')}
+            ${window.BFCards.metric('Em execucao', executionSummary.running || 0, executionSummary.running ? 'is-strong' : '')}
+            ${window.BFCards.metric('Adiadas', executionSummary.delayed || 0, executionSummary.delayed ? 'is-warn' : '')}
+            ${window.BFCards.metric('Concluidas', executionSummary.done || 0)}
+          </div>
+          <div class="bf-admin-action-owners">
+            ${ownerHistory || '<article><span>Sem responsavel</span><strong>0</strong><small>A fila ainda nao tem acoes abertas.</small></article>'}
+          </div>
+        </div>
         <div class="bf-admin-action-queue__list">
-          ${queue.map((item) => `
-            <article class="bf-admin-action-item bf-admin-action-item--${escapeHtml(item.tone)}" data-admin-action-item="${escapeHtml(item.type)}">
+          ${queue.map((item) => {
+            const execution = item.execution || { status: 'pendente', statusLabel: 'Pendente', reason: '' };
+            const history = adminActionHistory(item).map((event) => `
+              <small>${escapeHtml(event.status || event.action || 'acao')} - ${escapeHtml(formatDate(event.createdAt))} - ${escapeHtml(event.actorEmail || 'anon')}</small>
+            `).join('');
+            return `
+            <article class="bf-admin-action-item bf-admin-action-item--${escapeHtml(item.tone)} bf-admin-action-item--status-${escapeHtml(adminActionStatusClass(execution.status))}" data-admin-action-item="${escapeHtml(item.type)}" data-admin-action-execution="${escapeHtml(item.actionKey)}" data-admin-action-title="${escapeHtml(item.title)}" data-admin-action-owner="${escapeHtml(item.owner)}" data-admin-action-target="${escapeHtml(item.target)}" data-admin-action-href="${escapeHtml(item.href)}">
               <div class="bf-admin-action-item__rank">
                 <span>#${escapeHtml(item.rank)}</span>
                 <strong>${escapeHtml(item.deadline)}</strong>
@@ -1083,12 +1157,25 @@
                 <dl>
                   <div><dt>Dono</dt><dd>${escapeHtml(item.owner)}</dd></div>
                   <div><dt>Alvo</dt><dd>${escapeHtml(item.target)}</dd></div>
-                  <div><dt>Prioridade</dt><dd>${escapeHtml(alertSeverityLabel(item.tone))}</dd></div>
+                  <div><dt>Status</dt><dd>${escapeHtml(execution.statusLabel || 'Pendente')}</dd></div>
                 </dl>
+                <label class="bf-admin-action-reason">Motivo ou observacao
+                  <input data-admin-action-reason value="${escapeHtml(execution.reason || '')}" placeholder="Ex.: cliente pediu retorno amanha">
+                </label>
+                <div class="bf-admin-action-history" data-admin-action-history>
+                  ${history || '<small>Nenhuma execucao registrada ainda.</small>'}
+                </div>
               </div>
-              <a class="btn btn--ghost btn--sm" href="${escapeHtml(item.href)}">${escapeHtml(item.cta)}</a>
+              <div class="bf-admin-action-item__commands">
+                <a class="btn btn--ghost btn--sm" href="${escapeHtml(item.href)}">${escapeHtml(item.cta)}</a>
+                <button class="btn btn--ghost btn--sm" type="button" data-admin-action-status="em_execucao">Iniciar</button>
+                <button class="btn btn--ghost btn--sm" type="button" data-admin-action-status="adiada">Adiar</button>
+                <button class="btn btn--primary btn--sm" type="button" data-admin-action-status="concluida">Concluir</button>
+                ${execution.status === 'concluida' ? '<button class="btn btn--ghost btn--sm" type="button" data-admin-action-status="pendente">Reabrir</button>' : ''}
+              </div>
             </article>
-          `).join('')}
+          `;
+          }).join('')}
         </div>
       </section>
     `;
@@ -1921,6 +2008,30 @@
         setMessage(result.message, result.ok ? 'success' : 'error');
         renderAll();
       }
+    });
+
+    qs('[data-admin-journey-funnel]')?.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-admin-action-status]');
+      if (!button || !window.BFHandoffConsultivoService || !window.BFHandoffConsultivoService.setActionExecution) return;
+      const row = button.closest('[data-admin-action-execution]');
+      if (!row) return;
+      const status = button.dataset.adminActionStatus;
+      const reason = row.querySelector('[data-admin-action-reason]')?.value || '';
+      const result = window.BFHandoffConsultivoService.setActionExecution({
+        actionKey: row.dataset.adminActionExecution,
+        title: row.dataset.adminActionTitle,
+        owner: row.dataset.adminActionOwner,
+        target: row.dataset.adminActionTarget,
+        href: row.dataset.adminActionHref,
+        source: 'Dashboard Admin'
+      }, {
+        status,
+        reason,
+        owner: row.dataset.adminActionOwner,
+        postponedUntil: status === 'adiada' ? new Date(Date.now() + 86400000).toISOString() : ''
+      });
+      setMessage(result ? `Acao ${result.statusLabel.toLowerCase()} para ${result.owner || 'responsavel local'}.` : 'Nao foi possivel atualizar a acao.', result ? 'success' : 'error');
+      renderAll();
     });
 
     qs('[data-admin-recovery-queue]')?.addEventListener('click', (event) => {

@@ -249,8 +249,9 @@
             <dl class="bf-handoff-action-plan">
               <div><dt>Dono</dt><dd>${escapeHtml(action.actionOwner || action.suggestedAssignee || 'responsavel a definir')}</dd></div>
               <div><dt>Prazo</dt><dd>${escapeHtml(action.deadlineLabel || 'Ate 72h')}</dd></div>
-              <div><dt>Origem</dt><dd>${escapeHtml(action.proposalState || action.source)}</dd></div>
+              <div><dt>Status</dt><dd>${escapeHtml(action.executionStatusLabel || 'Pendente')}</dd></div>
             </dl>
+            ${action.executionReason ? `<small>${escapeHtml(action.executionReason)}</small>` : ''}
             <div class="bf-inline-actions">
               ${action.actionType === 'proposal' ? `<a class="btn btn--ghost btn--sm" href="${escapeHtml(action.href || 'simulador.html#step-9')}">${escapeHtml(action.ctaLabel || 'Abrir proposta')}</a>` : ''}
               <button class="btn btn--ghost btn--sm" type="button" data-handoff-open="${escapeHtml(action.id)}">Abrir lead</button>
@@ -387,6 +388,7 @@
   function actionPlan(item) {
     return service().actionPlan ? service().actionPlan(item) : {
       active: false,
+      actionKey: '',
       type: 'none',
       title: item && item.operational ? item.operational.nextStep : 'Definir proximo passo',
       reason: '',
@@ -394,8 +396,45 @@
       deadlineLabel: 'Ate 72h',
       ctaLabel: 'Abrir lead',
       href: 'handoff-consultivo.html#fila-handoff',
-      tone: 'media'
+      tone: 'media',
+      execution: { status: 'pendente', statusLabel: 'Pendente', reason: '' }
     };
+  }
+
+  function actionStatusClass(status) {
+    return ['em_execucao', 'adiada', 'concluida'].includes(status) ? status : 'pendente';
+  }
+
+  function actionHistoryMarkup(plan) {
+    const events = service().actionHistory ? service().actionHistory(plan.actionKey).slice(0, 3) : [];
+    if (!events.length) return '<small>Nenhuma execucao registrada ainda.</small>';
+    return events.map((event) => `
+      <small>${escapeHtml(event.status || event.action || 'acao')} - ${escapeHtml(date(event.createdAt))} - ${escapeHtml(event.actorEmail || 'anon')}</small>
+    `).join('');
+  }
+
+  function actionExecutionPanel(plan, item) {
+    const execution = plan.execution || (service().actionExecution ? service().actionExecution(plan.actionKey) : { status: 'pendente', statusLabel: 'Pendente', reason: '' });
+    return `
+      <div class="bf-action-execution bf-action-execution--${escapeHtml(actionStatusClass(execution.status))}" data-handoff-action-execution="${escapeHtml(plan.actionKey || item.id || '')}">
+        <div class="bf-action-execution__head">
+          <span>Status da acao</span>
+          <strong>${escapeHtml(execution.statusLabel || 'Pendente')}</strong>
+        </div>
+        <label>Motivo ou observacao
+          <input data-handoff-action-reason value="${escapeHtml(execution.reason || '')}" placeholder="Ex.: cliente pediu retorno amanha">
+        </label>
+        <div class="bf-inline-actions">
+          <button class="btn btn--ghost btn--sm" type="button" data-handoff-action-status="em_execucao">Iniciar</button>
+          <button class="btn btn--ghost btn--sm" type="button" data-handoff-action-status="adiada">Adiar 24h</button>
+          <button class="btn btn--primary btn--sm" type="button" data-handoff-action-status="concluida">Concluir</button>
+          ${execution.status === 'concluida' ? '<button class="btn btn--ghost btn--sm" type="button" data-handoff-action-status="pendente">Reabrir</button>' : ''}
+        </div>
+        <div class="bf-action-execution__history" data-handoff-action-history>
+          ${actionHistoryMarkup(plan)}
+        </div>
+      </div>
+    `;
   }
 
   function proposalVersionChip(item) {
@@ -586,9 +625,10 @@
         <dl class="bf-handoff-action-plan">
           <div><dt>Dono</dt><dd>${escapeHtml(plan.owner || op.suggestedAssignee || 'definir na fila')}</dd></div>
           <div><dt>Prazo</dt><dd>${escapeHtml(plan.deadlineLabel || 'Ate 72h')}</dd></div>
-          <div><dt>CTA</dt><dd>${escapeHtml(plan.ctaLabel || 'Abrir lead')}</dd></div>
+          <div><dt>Status</dt><dd>${escapeHtml((plan.execution && plan.execution.statusLabel) || 'Pendente')}</dd></div>
         </dl>
         ${plan.type === 'proposal' ? `<a class="btn btn--ghost btn--sm" href="${escapeHtml(plan.href || 'simulador.html#step-9')}">${escapeHtml(plan.ctaLabel || 'Abrir proposta')}</a>` : ''}
+        ${actionExecutionPanel(plan, item)}
       </section>
 
       <section class="bf-handoff-origin-panel bf-platform-section">
@@ -673,6 +713,31 @@
         service().toggleChecklist(selectedId, check.dataset.handoffCheck, check.checked);
         renderList();
       }
+    });
+
+    qs('[data-handoff-detail]')?.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-handoff-action-status]');
+      if (!button || !service().setActionExecution) return;
+      const panel = button.closest('[data-handoff-action-execution]');
+      const rawItem = service().find(selectedId);
+      const item = service().enrich ? service().enrich(rawItem) : rawItem;
+      const plan = actionPlan(item);
+      const status = button.dataset.handoffActionStatus;
+      const reason = panel ? panel.querySelector('[data-handoff-action-reason]')?.value || '' : '';
+      service().setActionExecution({
+        actionKey: panel ? panel.dataset.handoffActionExecution : plan.actionKey,
+        title: plan.title,
+        source: plan.source,
+        target: selectedId,
+        href: plan.href,
+        owner: plan.owner
+      }, {
+        status,
+        reason,
+        postponedUntil: status === 'adiada' ? new Date(Date.now() + 86400000).toISOString() : '',
+        owner: plan.owner
+      });
+      renderList();
     });
 
     qs('[data-handoff-detail]')?.addEventListener('submit', (event) => {

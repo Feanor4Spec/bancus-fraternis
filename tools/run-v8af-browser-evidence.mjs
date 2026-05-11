@@ -166,6 +166,28 @@ try {
   assert(/DONO|Dono/i.test(handoffPage.actionPlanText), 'Plano de acao do handoff nao mostrou dono.', failures);
   assert(/PRAZO|Prazo/i.test(handoffPage.actionPlanText), 'Plano de acao do handoff nao mostrou prazo.', failures);
   assert(handoffPage.expectedFound, 'Pagina handoff nao exibiu o lead criado pela proposta.', failures);
+  await page.evaluate(() => {
+    const reason = document.querySelector('[data-handoff-action-reason]');
+    const start = document.querySelector('[data-handoff-action-status="em_execucao"]');
+    if (reason) reason.value = 'Contato iniciado pela evidencia automatizada.';
+    if (start) start.click();
+  });
+  await page.waitForFunction(() => {
+    const states = JSON.parse(localStorage.getItem('bf_operational_action_states_v1') || '{}');
+    return Object.values(states).some((item) => item && item.status === 'em_execucao');
+  }, null, { timeout: 10000 });
+  const handoffExecution = await page.evaluate(() => {
+    const states = JSON.parse(localStorage.getItem('bf_operational_action_states_v1') || '{}');
+    const audit = JSON.parse(localStorage.getItem('bf_operational_action_audit_v1') || '[]');
+    const panel = document.querySelector('[data-handoff-action-execution]');
+    return {
+      states: Object.values(states).map((item) => ({ actionKey: item.actionKey, status: item.status, reason: item.reason, owner: item.owner })),
+      auditCount: audit.length,
+      panelText: panel ? panel.innerText : ''
+    };
+  });
+  assert(handoffExecution.states.some((item) => item.status === 'em_execucao'), 'Execucao do handoff nao persistiu status em_execucao.', failures);
+  assert(handoffExecution.auditCount >= 1, 'Execucao do handoff nao gerou auditoria operacional.', failures);
   await page.locator('[data-handoff-list]').scrollIntoViewIfNeeded();
   await page.screenshot({ path: screenshots.handoffDesktop, fullPage: false });
 
@@ -190,6 +212,29 @@ try {
   assert(/DONO|Dono/i.test(adminActionQueue.text), 'Fila admin nao mostrou dono.', failures);
   assert(/ALVO|Alvo/i.test(adminActionQueue.text), 'Fila admin nao mostrou alvo.', failures);
   assert(/HOJE|ATE 24H|ATE 48H|ATE 72H|Hoje|Ate 24h|Ate 48h|Ate 72h/i.test(adminActionQueue.text), 'Fila admin nao mostrou prazo.', failures);
+  await page.evaluate(() => {
+    const reason = document.querySelector('[data-admin-action-reason]');
+    const done = document.querySelector('[data-admin-action-status="concluida"]');
+    if (reason) reason.value = 'Acao concluida pela evidencia automatizada.';
+    if (done) done.click();
+  });
+  await page.waitForFunction(() => {
+    const states = JSON.parse(localStorage.getItem('bf_operational_action_states_v1') || '{}');
+    return Object.values(states).some((item) => item && item.status === 'concluida');
+  }, null, { timeout: 10000 });
+  const adminExecution = await page.evaluate(() => {
+    const states = JSON.parse(localStorage.getItem('bf_operational_action_states_v1') || '{}');
+    const audit = JSON.parse(localStorage.getItem('bf_operational_action_audit_v1') || '[]');
+    const queue = document.querySelector('[data-admin-action-queue]');
+    return {
+      states: Object.values(states).map((item) => ({ actionKey: item.actionKey, status: item.status, reason: item.reason, owner: item.owner })),
+      auditCount: audit.length,
+      text: queue ? queue.innerText : ''
+    };
+  });
+  assert(adminExecution.states.some((item) => item.status === 'concluida'), 'Fila admin nao persistiu acao concluida.', failures);
+  assert(/CONCLUIDAS|Concluidas|concluida/i.test(adminExecution.text), 'Fila admin nao exibiu resumo de concluidas.', failures);
+  assert(adminExecution.auditCount >= handoffExecution.auditCount + 1, 'Fila admin nao adicionou historico operacional.', failures);
   await page.locator('[data-admin-action-queue]').scrollIntoViewIfNeeded();
   await page.screenshot({ path: screenshots.adminActionQueueDesktop, fullPage: false });
 
@@ -198,7 +243,9 @@ try {
     baseUrl,
     flow,
     handoffPage,
+    handoffExecution,
     adminActionQueue,
+    adminExecution,
     screenshots: reportScreenshots(),
     consoleErrors: consoleErrors.slice(0, 20),
     pageErrors,

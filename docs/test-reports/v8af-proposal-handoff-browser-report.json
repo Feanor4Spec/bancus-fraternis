@@ -2,7 +2,7 @@
   "ok": true,
   "baseUrl": "http://127.0.0.1:8080/pages",
   "flow": {
-    "createdId": "LEAD-MP0NJFE5-U6J",
+    "createdId": "LEAD-MP0NYUJ6-Y4I",
     "storedHandoffs": 1,
     "sourceProposalId": "PROP-2026-0100",
     "sourceProposalStatus": "reviewed",
@@ -12,21 +12,51 @@
       "proposal-create"
     ],
     "panelReady": "true",
-    "bridgeText": "CONTINUIDADE CONSULTIVA\nHandoff LEAD-MP0NJFE5-U6J criado na fila consultiva.\nAcompanhe checklist, responsavel, notas e auditoria no handoff consultivo.\nAtualizar handoff\nAbrir LEAD-MP0NJFE5-U6J"
+    "bridgeText": "CONTINUIDADE CONSULTIVA\nHandoff LEAD-MP0NYUJ6-Y4I criado na fila consultiva.\nAcompanhe checklist, responsavel, notas e auditoria no handoff consultivo.\nAtualizar handoff\nAbrir LEAD-MP0NYUJ6-Y4I"
   },
   "handoffPage": {
     "ready": "true",
     "cards": 1,
     "actionPlans": 2,
     "expectedFound": true,
-    "text": "Novo\nAlta\nProposta revisada\nagora\nProposta PROP-2026-0100\n\nCliente Demonstracao - Consorcio estruturado / Revisada localmente\n\nstatus reviewed - versao 1 - snapshot PV-MP0NJFCT-1 - validade 14/05/2026, 21:00\nVERSAO 1 TRAVADA\nAcompanhar proposta\nPROPOSTA POSSUI SNAPSHOT LOCAL PRESERVADO PARA ATENDIMENTO CONSULTIVO.\nCREDITO\nR$ 100.000,00\nCHECKLIST\n4/5\nAGING\nagora\nPROXIMO\nIniciar atendimento\nAbrir\nComparar",
-    "actionPlanText": "PROPOSTA REVISADA - AGORA\nIniciar atendimento\n\nLead novo ainda nao entrou em atendimento.\n\nDONO\nAnalista de Proposta\nPRAZO\nAte 24h\nORIGEM\nVersao 1 travada\nAbrir lead"
+    "text": "Novo\nAlta\nProposta revisada\nagora\nProposta PROP-2026-0100\n\nCliente Demonstracao - Consorcio estruturado / Revisada localmente\n\nstatus reviewed - versao 1 - snapshot PV-MP0NYUI3-1 - validade 14/05/2026, 21:00\nVERSAO 1 TRAVADA\nAcompanhar proposta\nPROPOSTA POSSUI SNAPSHOT LOCAL PRESERVADO PARA ATENDIMENTO CONSULTIVO.\nCREDITO\nR$ 100.000,00\nCHECKLIST\n4/5\nAGING\nagora\nPROXIMO\nIniciar atendimento\nAbrir\nComparar",
+    "actionPlanText": "PROPOSTA REVISADA - AGORA\nIniciar atendimento\n\nLead novo ainda nao entrou em atendimento.\n\nDONO\nAnalista de Proposta\nPRAZO\nAte 24h\nSTATUS\nPendente\nAbrir lead"
+  },
+  "handoffExecution": {
+    "states": [
+      {
+        "actionKey": "handoff:LEAD-MP0NYUJ6-Y4I:first-contact",
+        "status": "em_execucao",
+        "reason": "Contato iniciado pela evidencia automatizada.",
+        "owner": "Analista de Proposta"
+      }
+    ],
+    "auditCount": 1,
+    "panelText": "STATUS DA ACAO\nEm execucao\nMOTIVO OU OBSERVACAO \nIniciar\nAdiar 24h\nConcluir\nEM_EXECUCAO - 11/05/2026, 00:50 - CONSULTOR@BANKFRATERN.LOCAL"
   },
   "adminActionQueue": {
     "ready": "true",
     "count": 1,
     "items": 1,
-    "text": "Fila guiada\nQuem faz o que, ate quando\n\nConverte gargalos e sinais por origem em uma lista operacional com responsavel, prazo, alvo e CTA direto.\n\nVer gargalos\n#1\nATE 24H\nPROPOSTA\nRevisar propostas ativas\n\n1 aberto, 1 alta prioridade e 0 SLA vencidos nesta origem.\n\nDONO\nAnalista de Proposta\nALVO\n3 sinais\nPRIORIDADE\nMedia\nAbrir handoffs"
+    "text": "Fila guiada\nQuem faz o que, ate quando\n\nConverte gargalos e sinais por origem em uma fila executavel, com status, motivo, adiamento e historico por responsavel.\n\nVer gargalos\nPENDENTES\n1\nEM EXECUCAO\n0\nADIADAS\n0\nCONCLUIDAS\n0\nANALISTA DE PROPOSTA\n1\nEM EXECUCAO - ADIADAS - CONCLUIDAS\n#1\nATE 24H\nPROPOSTA\nRevisar propostas ativas\n\n1 aberto, 1 alta prioridade e 0 SLA vencidos nesta origem.\n\nDONO\nAnalista de Proposta\nALVO\n3 sinais\nSTATUS\nPendente\nMOTIVO OU OBSERVACAO \nNENHUMA EXECUCAO REGISTRADA AINDA.\nAbrir handoffs\nIniciar\nAdiar\nConcluir"
+  },
+  "adminExecution": {
+    "states": [
+      {
+        "actionKey": "handoff:LEAD-MP0NYUJ6-Y4I:first-contact",
+        "status": "em_execucao",
+        "reason": "Contato iniciado pela evidencia automatizada.",
+        "owner": "Analista de Proposta"
+      },
+      {
+        "actionKey": "admin:source-proposal",
+        "status": "concluida",
+        "reason": "Acao concluida pela evidencia automatizada.",
+        "owner": "Analista de Proposta"
+      }
+    ],
+    "auditCount": 2,
+    "text": "Fila guiada\nQuem faz o que, ate quando\n\nConverte gargalos e sinais por origem em uma fila executavel, com status, motivo, adiamento e historico por responsavel.\n\nVer gargalos\nPENDENTES\n0\nEM EXECUCAO\n0\nADIADAS\n0\nCONCLUIDAS\n1\nANALISTA DE PROPOSTA\n1\nEM EXECUCAO - ADIADAS - 1 CONCLUIDAS\n#1\nATE 24H\nPROPOSTA\nRevisar propostas ativas\n\n1 aberto, 1 alta prioridade e 0 SLA vencidos nesta origem.\n\nDONO\nAnalista de Proposta\nALVO\n3 sinais\nSTATUS\nConcluida\nMOTIVO OU OBSERVACAO \nCONCLUIDA - 11/05/2026, 00:50 - ADMIN@BANKFRATERN.LOCAL\nAbrir handoffs\nIniciar\nAdiar\nConcluir\nReabrir"
   },
   "screenshots": {
     "proposalDesktop": "docs/test-prints/v8af-proposta-handoff-desktop.png",
