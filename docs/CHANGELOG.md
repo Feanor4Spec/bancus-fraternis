@@ -4,6 +4,28 @@
 
 ---
 
+## [v8.66.0] - 2026-05-11
+
+### Etapa comercial no Handoff Consultivo
+
+#### Adicionado
+- `BFHandoffConsultivoService` passou a ler `bf_admin_commercial_stage_states_v1` e `bf_admin_commercial_stage_audit_v1`.
+- Handoff Consultivo ganhou `data-handoff-commercial-stage`, `data-handoff-commercial-stage-panel` e `data-handoff-commercial-stage-history`.
+- Cockpit do consultor agora mostra etapas paradas, movidos em 24h e cadencia comercial em cada proxima acao.
+
+#### Modificado
+- Cards e detalhe do handoff exibem etapa, prazo alvo, aging da etapa, ultima movimentacao e link para o funil admin.
+- Contratos publicos, mapa, plano e protocolo de teste foram atualizados para refletir o novo contrato.
+
+#### Validado
+- `node --check assets/js/services/handoff-consultivo.service.js`
+- `node --check assets/js/handoff-consultivo.js`
+- `node tools/validate-handoff-consultant-operations.mjs`
+- `node tools/validate-public-contracts.mjs`
+- `node tools/run-v8af-browser-evidence.mjs`
+
+---
+
 ## [v8.65.0] - 2026-05-11
 
 ### Mapa de implementacao atualizado

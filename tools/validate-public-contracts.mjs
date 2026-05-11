@@ -129,6 +129,9 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-handoff-action-plan',
   'data-handoff-action-execution',
   'data-handoff-proposal-version',
+  'data-handoff-commercial-stage',
+  'data-handoff-commercial-stage-panel',
+  'data-handoff-commercial-stage-history',
   'data-login-form',
   'data-public-demo-notice',
   'data-client-continuity-timeline',
@@ -250,7 +253,7 @@ const report = {
   ok: failures.length === 0,
   contracts: {
     localStorageKeys: 17,
-    dataMarkers: 43,
+    dataMarkers: 46,
     globals: 12,
     deepLinks: 10,
     validators: 15,

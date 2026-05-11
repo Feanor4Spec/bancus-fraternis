@@ -16,5 +16,12 @@
     "executionStatus": "concluida",
     "executionHistory": 1
   },
+  "commercial": {
+    "stage": "followup",
+    "stale": true,
+    "history": "Proposta -> Follow-up",
+    "boardStale": 1,
+    "moved24": 0
+  },
   "failures": []
 }

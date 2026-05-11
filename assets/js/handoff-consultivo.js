@@ -239,6 +239,8 @@
         ${metric('Aguardando 48h+', board.waiting || 0, board.waiting ? 'warn' : '')}
         ${metric('Propostas vencidas', board.proposalExpired || 0, board.proposalExpired ? 'warn' : '')}
         ${metric('Sem snapshot', board.proposalUnversioned || 0, board.proposalUnversioned ? 'warn' : '')}
+        ${metric('Etapas paradas', board.commercialStale || 0, board.commercialStale ? 'warn' : '')}
+        ${metric('Movidos 24h', board.commercialMoved24 || 0)}
       </div>
       <div class="bf-handoff-action-grid">
         ${actions.length ? actions.map((action) => `
@@ -246,6 +248,12 @@
             <span>${escapeHtml(action.source)} - ${escapeHtml(action.age)}</span>
             <strong>${escapeHtml(action.actionTitle || action.nextStep || action.title)}</strong>
             <p>${escapeHtml(action.actionReason || action.nextStep)}</p>
+            ${action.commercialStage ? `
+              <div class="bf-handoff-action-commercial" data-handoff-commercial-stage="${escapeHtml(action.commercialStage.key || 'contato')}">
+                <span>${escapeHtml(action.commercialStage.label || 'Contato')}</span>
+                <small>${escapeHtml(action.commercialStage.stale ? 'etapa parada' : 'cadencia ok')} - ${escapeHtml(action.commercialStage.stageAgeLabel || '-')}</small>
+              </div>
+            ` : ''}
             <dl class="bf-handoff-action-plan">
               <div><dt>Dono</dt><dd>${escapeHtml(action.actionOwner || action.suggestedAssignee || 'responsavel a definir')}</dd></div>
               <div><dt>Prazo</dt><dd>${escapeHtml(action.deadlineLabel || 'Ate 72h')}</dd></div>
@@ -401,6 +409,45 @@
     };
   }
 
+  function commercialStage(item) {
+    if (!item) return { key: 'contato', label: 'Contato', stageAgeLabel: '-', deadlineHours: 24, stale: false, tone: 'baixa', historyLabel: 'Etapa definida pela jornada' };
+    if (item.commercialStage) return item.commercialStage;
+    if (service().commercialStageState) return service().commercialStageState(item);
+    return { key: 'contato', label: 'Contato', stageAgeLabel: '-', deadlineHours: 24, stale: false, tone: 'baixa', historyLabel: 'Etapa definida pela jornada' };
+  }
+
+  function commercialStageChip(item) {
+    const stage = commercialStage(item);
+    return `
+      <div class="bf-handoff-commercial-chip bf-handoff-commercial-chip--${escapeHtml(stage.tone || 'baixa')}" data-handoff-commercial-stage="${escapeHtml(stage.key || 'contato')}">
+        <span>Etapa comercial</span>
+        <strong>${escapeHtml(stage.label || 'Contato')}</strong>
+        <small>${escapeHtml(stage.stale ? 'Retomar etapa' : stage.historyLabel || 'Etapa definida pela jornada')} - ${escapeHtml(stage.stageAgeLabel || '-')}</small>
+      </div>
+    `;
+  }
+
+  function commercialStagePanel(item) {
+    const stage = commercialStage(item);
+    return `
+      <section class="bf-handoff-commercial-panel bf-handoff-commercial-panel--${escapeHtml(stage.tone || 'baixa')} bf-platform-section" data-handoff-commercial-stage-panel>
+        <div>
+          <span class="bf-badge bf-badge--gold">Cadencia comercial</span>
+          <h3>${escapeHtml(stage.label || 'Contato')}</h3>
+          <p>${escapeHtml(stage.stale ? 'Lead ultrapassou o prazo da etapa comercial e precisa de retomada.' : 'Lead dentro da cadencia comercial registrada no funil admin.')}</p>
+        </div>
+        <dl>
+          <div><dt>Etapa</dt><dd>${escapeHtml(stage.label || 'Contato')}</dd></div>
+          <div><dt>Aging etapa</dt><dd>${escapeHtml(stage.stageAgeLabel || '-')}</dd></div>
+          <div><dt>Prazo alvo</dt><dd>${escapeHtml(stage.deadlineHours || '-')}h</dd></div>
+          <div><dt>Atualizado por</dt><dd>${escapeHtml(stage.updatedBy || stage.actorEmail || 'jornada local')}</dd></div>
+        </dl>
+        <small data-handoff-commercial-stage-history>${escapeHtml(stage.historyLabel || 'Etapa definida pela jornada')}${stage.movementAt ? ` - ${escapeHtml(date(stage.movementAt))}` : ''}</small>
+        <a class="btn btn--ghost btn--sm" href="dashboard-admin.html?from=handoff#admin-funil-comercial">Abrir funil admin</a>
+      </section>
+    `;
+  }
+
   function actionStatusClass(status) {
     return ['em_execucao', 'adiada', 'concluida'].includes(status) ? status : 'pendente';
   }
@@ -478,6 +525,7 @@
     const done = checklist.filter((entry) => entry.done).length;
     const ownerLabel = item.ownerName || item.ownerEmail || 'Cliente local';
     const op = item.operational || (service().operationalState ? service().operationalState(item) : {});
+    const stage = commercialStage(item);
     return `
       <article class="bf-handoff-card${item.id === selectedId ? ' is-selected' : ''}" data-handoff-card="${escapeHtml(item.id)}">
         <div class="bf-handoff-card__top">
@@ -485,11 +533,13 @@
           <span class="bf-handoff-priority bf-handoff-priority--${escapeHtml(item.priority)}">${escapeHtml(priorityLabel(item.priority))}</span>
           <span class="bf-handoff-source bf-handoff-source--${escapeHtml(sourceType(item))}">${escapeHtml(sourceLabel(item))}</span>
           <span class="bf-handoff-aging bf-handoff-aging--${escapeHtml(op.tone || 'baixa')}">${escapeHtml(op.slaOverdue ? 'SLA vencido' : op.ageLabel || '-')}</span>
+          <span class="bf-handoff-commercial-stage-tag bf-handoff-commercial-stage-tag--${escapeHtml(stage.tone || 'baixa')}" data-handoff-commercial-stage="${escapeHtml(stage.key || 'contato')}">${escapeHtml(stage.label || 'Contato')}</span>
         </div>
         <h3>${escapeHtml(item.objectiveLabel || 'Lead consultivo')}</h3>
         <p>${escapeHtml(ownerLabel)} - ${escapeHtml(summary.productName || '-')} / ${escapeHtml(summary.modelName || '-')}</p>
         <small class="bf-handoff-origin-note">${escapeHtml(sourceSummary(item))}</small>
         ${proposalVersionChip(item)}
+        ${commercialStageChip(item)}
         <div class="bf-mini-facts">
           <div><dt>Credito</dt><dd>${escapeHtml(money(summary.valorCredito || 0))}</dd></div>
           <div><dt>Checklist</dt><dd>${done}/${checklist.length}</dd></div>
@@ -587,6 +637,7 @@
     const ownerLabel = item.ownerName || item.ownerEmail || 'Cliente local';
     const op = item.operational || {};
     const plan = actionPlan(item);
+    const stage = commercialStage(item);
     target.innerHTML = `
       <div class="bf-admin-panel-heading">
         <div>
@@ -612,6 +663,8 @@
         ${metric('Aging', op.ageLabel || '-')}
         ${metric('SLA alvo', `${op.slaHours || '-'}h`)}
         ${metric('Responsavel sugerido', op.suggestedAssignee || 'definir na fila', op.unassigned ? 'warn' : '')}
+        ${metric('Etapa comercial', stage.label || 'Contato', stage.stale ? 'warn' : '')}
+        ${metric('Aging etapa', stage.stageAgeLabel || '-')}
         ${metric('Produto', summary.productName || '-')}
         ${metric('Modelo', summary.modelName || '-')}
         ${metric('Reserva', `${Number(summary.reservaMeses || 0).toFixed(1)} meses`, summary.gapReserva > 0 ? 'warn' : '')}
@@ -630,6 +683,8 @@
         ${plan.type === 'proposal' ? `<a class="btn btn--ghost btn--sm" href="${escapeHtml(plan.href || 'simulador.html#step-9')}">${escapeHtml(plan.ctaLabel || 'Abrir proposta')}</a>` : ''}
         ${actionExecutionPanel(plan, item)}
       </section>
+
+      ${commercialStagePanel(item)}
 
       <section class="bf-handoff-origin-panel bf-platform-section">
         <span class="bf-badge bf-badge--navy">Origem do atendimento</span>

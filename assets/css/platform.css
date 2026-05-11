@@ -2214,6 +2214,21 @@
   margin-top: 12px;
 }
 
+.bf-handoff-action-commercial {
+  display: grid;
+  gap: 3px;
+  margin-top: 10px;
+  padding: 8px;
+  border: 1px solid rgba(11, 44, 82, .1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .72);
+}
+
+.bf-handoff-action-commercial span,
+.bf-handoff-action-commercial small {
+  margin: 0;
+}
+
 .bf-admin-toolbar label {
   display: grid;
   gap: 7px;
@@ -3140,7 +3155,8 @@
 .bf-handoff-status,
 .bf-handoff-priority,
 .bf-handoff-source,
-.bf-handoff-aging {
+.bf-handoff-aging,
+.bf-handoff-commercial-stage-tag {
   display: inline-flex;
   min-height: 28px;
   align-items: center;
@@ -3153,7 +3169,8 @@
 .bf-handoff-status--novo,
 .bf-handoff-priority--media,
 .bf-handoff-source--signal,
-.bf-handoff-aging--baixa {
+.bf-handoff-aging--baixa,
+.bf-handoff-commercial-stage-tag--baixa {
   color: var(--bf-navy-900);
   background: var(--bf-info-bg);
   border: 1px solid var(--bf-info-bd);
@@ -3171,7 +3188,8 @@
 .bf-handoff-status--aguardando_cliente,
 .bf-handoff-priority--alta,
 .bf-handoff-source--proposal,
-.bf-handoff-aging--media {
+.bf-handoff-aging--media,
+.bf-handoff-commercial-stage-tag--media {
   color: #92400e;
   background: var(--bf-warning-bg);
   border: 1px solid var(--bf-warning-bd);
@@ -3179,7 +3197,8 @@
 
 .bf-handoff-status--descartado,
 .bf-handoff-source--imported,
-.bf-handoff-aging--alta {
+.bf-handoff-aging--alta,
+.bf-handoff-commercial-stage-tag--alta {
   color: var(--bf-danger, #b91c1c);
   background: rgba(254, 226, 226, .82);
   border: 1px solid rgba(248, 113, 113, .35);
@@ -3207,20 +3226,36 @@
   background: var(--bf-soft);
 }
 
+.bf-handoff-commercial-chip {
+  display: grid;
+  gap: 4px;
+  margin: 8px 0 10px;
+  padding: 10px;
+  border: 1px solid var(--bf-line);
+  border-radius: 8px;
+  background: var(--bf-soft);
+}
+
 .bf-handoff-proposal-chip--alta,
-.bf-handoff-proposal-panel--alta {
+.bf-handoff-proposal-panel--alta,
+.bf-handoff-commercial-chip--alta,
+.bf-handoff-commercial-panel--alta {
   border-color: rgba(220, 38, 38, .28);
   background: linear-gradient(180deg, #fff, rgba(254, 226, 226, .5));
 }
 
 .bf-handoff-proposal-chip--media,
-.bf-handoff-proposal-panel--media {
+.bf-handoff-proposal-panel--media,
+.bf-handoff-commercial-chip--media,
+.bf-handoff-commercial-panel--media {
   border-color: var(--bf-warning-bd);
   background: var(--bf-warning-bg);
 }
 
 .bf-handoff-proposal-chip--baixa,
-.bf-handoff-proposal-panel--baixa {
+.bf-handoff-proposal-panel--baixa,
+.bf-handoff-commercial-chip--baixa,
+.bf-handoff-commercial-panel--baixa {
   border-color: var(--bf-info-bd);
   background: var(--bf-info-bg);
 }
@@ -3228,7 +3263,11 @@
 .bf-handoff-proposal-chip span,
 .bf-handoff-proposal-chip small,
 .bf-handoff-proposal-panel small,
-.bf-handoff-proposal-panel dt {
+.bf-handoff-proposal-panel dt,
+.bf-handoff-commercial-chip span,
+.bf-handoff-commercial-chip small,
+.bf-handoff-commercial-panel small,
+.bf-handoff-commercial-panel dt {
   color: var(--bf-muted);
   font-size: 10px;
   font-weight: 900;
@@ -3237,7 +3276,10 @@
 
 .bf-handoff-proposal-chip strong,
 .bf-handoff-proposal-panel h3,
-.bf-handoff-proposal-panel dd {
+.bf-handoff-proposal-panel dd,
+.bf-handoff-commercial-chip strong,
+.bf-handoff-commercial-panel h3,
+.bf-handoff-commercial-panel dd {
   color: var(--bf-navy-900);
 }
 
@@ -3253,7 +3295,8 @@
   color: var(--bf-text);
 }
 
-.bf-handoff-proposal-panel {
+.bf-handoff-proposal-panel,
+.bf-handoff-commercial-panel {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(260px, .8fr) auto;
   gap: 14px;
@@ -3263,25 +3306,29 @@
   border-radius: 14px;
 }
 
-.bf-handoff-proposal-panel h3 {
+.bf-handoff-proposal-panel h3,
+.bf-handoff-commercial-panel h3 {
   margin: 8px 0 6px;
   font-size: 18px;
 }
 
-.bf-handoff-proposal-panel p {
+.bf-handoff-proposal-panel p,
+.bf-handoff-commercial-panel p {
   margin: 0;
   color: var(--bf-muted);
   line-height: 1.5;
 }
 
-.bf-handoff-proposal-panel dl {
+.bf-handoff-proposal-panel dl,
+.bf-handoff-commercial-panel dl {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
   margin: 0;
 }
 
-.bf-handoff-proposal-panel dd {
+.bf-handoff-proposal-panel dd,
+.bf-handoff-commercial-panel dd {
   margin: 4px 0 0;
   font-weight: 950;
   overflow-wrap: anywhere;
@@ -3615,6 +3662,8 @@
   .bf-handoff-detail-grid,
   .bf-handoff-proposal-panel,
   .bf-handoff-proposal-panel dl,
+  .bf-handoff-commercial-panel,
+  .bf-handoff-commercial-panel dl,
   .bf-handoff-columns,
   .bf-lousa-lane-grid,
   .bf-lousa-test-grid,

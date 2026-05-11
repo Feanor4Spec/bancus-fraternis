@@ -279,9 +279,10 @@ Melhoria implementada em 2026-05-07:
 - O admin mostra funil comercial por etapa do lead: contato, proposta, follow-up, negociacao e fechamento.
 - O funil comercial agora permite mover o lead entre etapas pelo Dashboard Admin, grava historico local e reflete o status no handoff.
 - A cadencia comercial do funil mostra movimentacoes recentes, resumo por etapa e leads parados por prazo de etapa.
+- O Handoff Consultivo agora le a etapa comercial salva pelo Admin, mostra chip/painel de cadencia, ultima movimentacao e atraso da etapa para o consultor.
 - O painel consultivo filtra por origem e mostra badge/resumo da origem nos cards e no detalhe.
 - O dashboard admin mostra metricas de propostas e trilhas na fila de handoff.
-- O contrato e coberto por `tools/validate-handoff-origins.mjs`.
+- O contrato e coberto por `tools/validate-handoff-origins.mjs` e `tools/validate-handoff-consultant-operations.mjs`.
 
 ## Modulos JavaScript
 
@@ -421,7 +422,7 @@ Os marcadores mais importantes por area:
 | Comparador | `data-comparator-form`, `data-comparator-result`, `data-comparator-preset-summary`, `data-comparator-model-recommendation`. |
 | Simulador | `data-simulator-readiness`, `data-simulator-decision-strip`, `data-shelf-col`. |
 | Proposta | `data-proposal-acceptance-panel`, `data-proposal-handoff-bridge`, `data-proposal-builder-board`, `data-proposal-builder-readiness`, `data-proposal-builder-option`, `data-proposal-version-panel`, `data-proposal-version-history`, `data-proposal-version-comparison`. |
-| Handoff | `data-handoff-list`, `data-handoff-detail`, `data-handoff-metrics`, `data-handoff-recovery-signals`, `data-handoff-action-plan`, `data-handoff-action-execution`, `data-handoff-proposal-version`. |
+| Handoff | `data-handoff-list`, `data-handoff-detail`, `data-handoff-metrics`, `data-handoff-recovery-signals`, `data-handoff-action-plan`, `data-handoff-action-execution`, `data-handoff-proposal-version`, `data-handoff-commercial-stage`, `data-handoff-commercial-stage-panel`, `data-handoff-commercial-stage-history`. |
 | Cliente | `data-client-continuity-strip`, `data-client-decision-journey`, `data-client-recovery-signals`. |
 | Admin | `data-admin-next-actions`, `data-admin-action-queue`, `data-admin-action-execution`, `data-admin-action-owner-history`, `data-admin-consultant-productivity`, `data-admin-consultant-portfolio`, `data-admin-consultant-portfolio-lead`, `data-admin-consultant-portfolio-filters`, `data-admin-consultant-portfolio-export`, `data-admin-consultant-portfolio-priority`, `data-admin-commercial-pipeline`, `data-admin-commercial-stage`, `data-admin-commercial-lead`, `data-admin-commercial-stage-select`, `data-admin-commercial-stage-history`, `data-admin-commercial-stage-insights`, `data-admin-commercial-stage-movement`, `data-admin-commercial-stage-stuck-lead`, `data-admin-commercial-stage-summary`, `data-admin-source-funnel`, `data-admin-bottleneck-board`, `data-admin-recovery-queue`, `data-admin-recovery-packages`, `data-admin-journey-funnel`, `data-admin-operational-alerts`. |
 | Lousa | `data-lousa-journey-checklist`, `data-lousa-journey-acceptance`. |
@@ -533,12 +534,11 @@ Governanca documental: docs ativos passaram a usar Bancus Fraternis como platafo
 
 ## Proximos Vetores
 
-O vetor recomendado para o proximo ciclo continua sendo produto e jornada, agora com foco em levar a leitura comercial ja criada no Admin para cliente e consultor:
+O vetor recomendado para o proximo ciclo continua sendo produto e jornada, agora com foco em transformar continuidade e exportacao comercial em rotinas mais claras:
 
-1. Levar etapa comercial, ultima movimentacao e atraso de etapa para `pages/handoff-consultivo.html`.
-2. Evoluir `pages/dashboard-cliente.html` como cockpit de retomada com proximo passo, proposta, simulacao e handoff em andamento.
-3. Criar exportacao sanitizada do funil/cadencia para reuniao diaria comercial.
-4. Atualizar `pages/lousa-navegacao.html` para cobrir funil comercial, cadencia e QA online como checkpoints visuais.
-5. Preparar plano de migracao futura para backend/API sem quebrar `localStorage`, deep links e services globais.
+1. Evoluir `pages/dashboard-cliente.html` como cockpit de retomada com proximo passo, proposta, simulacao, handoff e etapa comercial em andamento.
+2. Criar exportacao sanitizada do funil/cadencia para reuniao diaria comercial.
+3. Atualizar `pages/lousa-navegacao.html` para cobrir funil comercial, cadencia, handoff consultivo e QA online como checkpoints visuais.
+4. Preparar plano de migracao futura para backend/API sem quebrar `localStorage`, deep links e services globais.
 
 O plano detalhado esta em `docs/PLANO_ACAO_EVOLUCAO_BANK_FRATERN.md`.

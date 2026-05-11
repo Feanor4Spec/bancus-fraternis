@@ -5,6 +5,8 @@
   const AUDIT_KEY = 'bf_consultive_handoff_audit_v1';
   const ACTION_STATE_KEY = 'bf_operational_action_states_v1';
   const ACTION_AUDIT_KEY = 'bf_operational_action_audit_v1';
+  const COMMERCIAL_STAGE_STATE_KEY = 'bf_admin_commercial_stage_states_v1';
+  const COMMERCIAL_STAGE_AUDIT_KEY = 'bf_admin_commercial_stage_audit_v1';
   const SCHEMA = 'bank-fratern.consultive-handoff.v1';
   const MAX_AUDIT = 120;
   const MAX_ACTION_AUDIT = 160;
@@ -37,6 +39,14 @@
     adiada: 'Adiada',
     concluida: 'Concluida'
   };
+
+  const commercialStageDefinitions = [
+    { key: 'contato', label: 'Contato', status: 'novo', deadlineHours: 24, next: 'Iniciar atendimento' },
+    { key: 'proposta', label: 'Proposta', status: 'em_atendimento', deadlineHours: 48, next: 'Revisar proposta' },
+    { key: 'followup', label: 'Follow-up', status: 'aguardando_cliente', deadlineHours: 72, next: 'Retomar cliente' },
+    { key: 'negociacao', label: 'Negociacao', status: 'em_atendimento', deadlineHours: 72, next: 'Avancar negociacao' },
+    { key: 'fechamento', label: 'Fechamento', status: 'qualificado', deadlineHours: 120, next: 'Registrar decisao' }
+  ];
 
   function safeStorage() {
     try {
@@ -438,6 +448,71 @@
     return actionAudit().filter((event) => event.actionKey === actionKey);
   }
 
+  function commercialStageMap() {
+    return new Map(commercialStageDefinitions.map((stage) => [stage.key, stage]));
+  }
+
+  function commercialStageStates() {
+    const parsed = readJson(COMMERCIAL_STAGE_STATE_KEY, {});
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+  }
+
+  function commercialStageAudit() {
+    const parsed = readJson(COMMERCIAL_STAGE_AUDIT_KEY, []);
+    return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+  }
+
+  function commercialStageFor(item) {
+    if (!item) return 'contato';
+    const saved = item.id ? commercialStageStates()[item.id] : null;
+    if (saved && commercialStageMap().has(saved.stage)) return saved.stage;
+    if (['qualificado', 'descartado'].includes(item.status)) return 'fechamento';
+    if (item.status === 'aguardando_cliente') return 'followup';
+    if (sourceType(item) === 'proposal') return 'proposta';
+    if (item.status === 'em_atendimento') return 'negociacao';
+    return 'contato';
+  }
+
+  function commercialStageTone(stageKey, hours, stale, item) {
+    if (stale || (item && item.priority === 'alta')) return 'alta';
+    const stage = commercialStageMap().get(stageKey) || commercialStageDefinitions[0];
+    if (Number(hours || 0) >= Math.max(12, Number(stage.deadlineHours || 48) * 0.6)) return 'media';
+    return 'baixa';
+  }
+
+  function commercialStageState(item, now) {
+    const stageKey = commercialStageFor(item);
+    const stage = commercialStageMap().get(stageKey) || commercialStageDefinitions[0];
+    const states = commercialStageStates();
+    const saved = item && item.id ? states[item.id] : null;
+    const event = item && item.id ? commercialStageAudit().find((entry) => entry && entry.handoffId === item.id) : null;
+    const referenceAt = (saved && saved.updatedAt) || (event && event.createdAt) || (item && (item.updatedAt || item.createdAt)) || '';
+    const stageAgeHours = hoursSince(referenceAt, now);
+    const stale = isOpen(item) && stage.key !== 'fechamento' && stageAgeHours >= Number(stage.deadlineHours || 48);
+    return {
+      key: stage.key,
+      label: stage.label,
+      status: (saved && saved.status) || stage.status,
+      next: stage.next,
+      deadlineHours: stage.deadlineHours,
+      updatedAt: referenceAt,
+      updatedBy: (saved && saved.updatedBy) || (event && event.actorEmail) || '',
+      stageAgeHours,
+      stageAgeLabel: ageLabel(stageAgeHours),
+      stale,
+      tone: commercialStageTone(stage.key, stageAgeHours, stale, item),
+      moved: !!event,
+      fromLabel: event && event.fromLabel ? event.fromLabel : '',
+      toLabel: event && event.toLabel ? event.toLabel : stage.label,
+      actorEmail: event && event.actorEmail ? event.actorEmail : '',
+      movementAt: event && event.createdAt ? event.createdAt : '',
+      movementAgeLabel: event ? ageLabel(hoursSince(event.createdAt, now)) : '',
+      historyLabel: event
+        ? `${event.fromLabel || 'Entrada'} -> ${event.toLabel || stage.label}`
+        : 'Etapa definida pela jornada'
+    };
+  }
+
   function actionPlan(item, now) {
     if (!item) {
       return {
@@ -589,7 +664,8 @@
     if (!item) return null;
     return {
       ...item,
-      operational: operationalState(item, now)
+      operational: operationalState(item, now),
+      commercialStage: commercialStageState(item, now)
     };
   }
 
@@ -608,6 +684,18 @@
     const proposalExpired = proposalOpen.filter((item) => item.operational.proposal.expired);
     const proposalUnversioned = proposalOpen.filter((item) => item.operational.proposal.locked === false);
     const proposalNeedsReview = proposalOpen.filter((item) => item.operational.proposal.tone !== 'baixa');
+    const commercialStale = open.filter((item) => item.commercialStage && item.commercialStage.stale);
+    const commercialAudit = commercialStageAudit();
+    const commercialMoved24 = commercialAudit.filter((event) => hoursSince(event.createdAt, now) <= 24).length;
+    const commercialRecent = commercialAudit.slice(0, 5).map((event) => ({
+      id: event.id || '',
+      handoffId: event.handoffId || '',
+      fromLabel: event.fromLabel || '',
+      toLabel: event.toLabel || '',
+      actorEmail: event.actorEmail || '',
+      createdAt: event.createdAt || '',
+      age: ageLabel(hoursSince(event.createdAt, now))
+    }));
     const nextActions = open
       .slice()
       .sort((a, b) => {
@@ -634,6 +722,7 @@
           hours: item.operational.hours,
           nextStep: item.operational.nextStep,
           proposalState: item.operational.proposal && item.operational.proposal.active ? item.operational.proposal.label : '',
+          commercialStage: item.commercialStage || commercialStageState(item, now),
           suggestedAssignee: item.operational.suggestedAssignee || '',
           tone: item.operational.tone,
           actionType: plan.type,
@@ -662,6 +751,9 @@
       proposalExpired: proposalExpired.length,
       proposalUnversioned: proposalUnversioned.length,
       proposalNeedsReview: proposalNeedsReview.length,
+      commercialStale: commercialStale.length,
+      commercialMoved24,
+      commercialRecent,
       nextActions
     };
   }
@@ -1074,6 +1166,7 @@
     const proposalExpired = source.filter((item) => item.operational && item.operational.proposal && item.operational.proposal.expired).length;
     const proposalUnversioned = source.filter((item) => item.operational && item.operational.proposal && item.operational.proposal.active && item.operational.proposal.locked === false).length;
     const proposalNeedsReview = source.filter((item) => item.operational && item.operational.proposal && item.operational.proposal.active && item.operational.proposal.tone !== 'baixa').length;
+    const commercialStale = source.filter((item) => item.commercialStage && item.commercialStage.stale).length;
     const origins = source.reduce((acc, item) => {
       const key = sourceType(item);
       acc[key] = (acc[key] || 0) + 1;
@@ -1093,6 +1186,7 @@
       proposalExpired,
       proposalUnversioned,
       proposalNeedsReview,
+      commercialStale,
       origins,
       proposal: origins.proposal || 0,
       journey: origins.journey || 0,
@@ -1123,6 +1217,11 @@
     setActionExecution,
     actionHistory,
     actionAudit,
+    commercialStageDefinitions: commercialStageDefinitions.map((stage) => ({ ...stage })),
+    commercialStageStates,
+    commercialStageAudit,
+    commercialStageFor,
+    commercialStageState,
     enrich,
     enrichList,
     consultantBoard,
@@ -1140,6 +1239,8 @@
       audit: AUDIT_KEY,
       actionStates: ACTION_STATE_KEY,
       actionAudit: ACTION_AUDIT_KEY,
+      commercialStageStates: COMMERCIAL_STAGE_STATE_KEY,
+      commercialStageAudit: COMMERCIAL_STAGE_AUDIT_KEY,
       schema: SCHEMA
     }
   };

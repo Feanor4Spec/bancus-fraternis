@@ -56,12 +56,21 @@ const [pageHtml, uiSource, cssSource, serviceSource, designValidator, contractsD
   'data-handoff-action-execution',
   'data-handoff-action-reason',
   'data-handoff-action-history',
+  'data-handoff-commercial-stage',
+  'data-handoff-commercial-stage-panel',
+  'data-handoff-commercial-stage-history',
+  'commercialStage',
+  'commercialStageChip',
+  'commercialStagePanel',
   'proposalVersionPanel',
   'actionPlan',
   'actionExecutionPanel',
   'matchesAging',
   'hydrateAssigneeOptions',
-  'data-handoff-next-step'
+  'data-handoff-next-step',
+  'Etapas paradas',
+  'Movidos 24h',
+  'Cadencia comercial'
 ].forEach((marker) => assert(uiSource.includes(marker), `handoff-consultivo.js sem ${marker}.`));
 
 [
@@ -73,6 +82,16 @@ const [pageHtml, uiSource, cssSource, serviceSource, designValidator, contractsD
   'actionHistory',
   'actionAudit',
   'consultantBoard',
+  'COMMERCIAL_STAGE_STATE_KEY',
+  'COMMERCIAL_STAGE_AUDIT_KEY',
+  'commercialStageDefinitions',
+  'commercialStageState',
+  'commercialStageAudit',
+  'commercialStageFor',
+  'commercialStale',
+  'commercialMoved24',
+  'bf_admin_commercial_stage_states_v1',
+  'bf_admin_commercial_stage_audit_v1',
   'slaHoursForPriority',
   'ageLabel',
   'enrichList',
@@ -91,7 +110,11 @@ const [pageHtml, uiSource, cssSource, serviceSource, designValidator, contractsD
   '.bf-handoff-action-plan',
   '.bf-action-execution',
   '.bf-handoff-proposal-panel',
-  '.bf-handoff-proposal-chip'
+  '.bf-handoff-proposal-chip',
+  '.bf-handoff-commercial-chip',
+  '.bf-handoff-commercial-panel',
+  '.bf-handoff-commercial-stage-tag',
+  '.bf-handoff-action-commercial'
 ].forEach((selector) => assert(cssSource.includes(selector), `platform.css sem seletor ${selector}.`));
 
 assert(designValidator.includes('tools/validate-handoff-consultant-operations.mjs'), 'validate-design-system nao exige validate-handoff-consultant-operations.');
@@ -127,6 +150,32 @@ assert(service && typeof service.operationalState === 'function', 'operationalSt
 assert(service && typeof service.consultantBoard === 'function', 'consultantBoard indisponivel.');
 assert(service && typeof service.actionPlan === 'function', 'actionPlan indisponivel.');
 assert(service && typeof service.setActionExecution === 'function', 'setActionExecution indisponivel.');
+assert(service && typeof service.commercialStageState === 'function', 'commercialStageState indisponivel.');
+assert(service && typeof service.commercialStageAudit === 'function', 'commercialStageAudit indisponivel.');
+
+context.localStorage.setItem('bf_admin_commercial_stage_states_v1', JSON.stringify({
+  'LEAD-WAIT': {
+    handoffId: 'LEAD-WAIT',
+    stage: 'followup',
+    stageLabel: 'Follow-up',
+    status: 'aguardando_cliente',
+    updatedAt: '2026-05-04T12:00:00.000Z',
+    updatedBy: 'admin@bankfratern.local'
+  }
+}));
+context.localStorage.setItem('bf_admin_commercial_stage_audit_v1', JSON.stringify([
+  {
+    id: 'CST-1',
+    handoffId: 'LEAD-WAIT',
+    fromStage: 'proposta',
+    fromLabel: 'Proposta',
+    toStage: 'followup',
+    toLabel: 'Follow-up',
+    status: 'aguardando_cliente',
+    actorEmail: 'admin@bankfratern.local',
+    createdAt: '2026-05-04T12:00:00.000Z'
+  }
+]));
 
 const referenceNow = new Date('2026-05-08T12:00:00.000Z');
 const overdueLead = {
@@ -190,6 +239,8 @@ const waitingState = service.operationalState(waitingLead, referenceNow);
 const qualifiedState = service.operationalState(qualifiedLead, referenceNow);
 const expiredProposalState = service.proposalState(expiredProposalLead, referenceNow);
 const expiredProposalAction = service.actionPlan(expiredProposalLead, referenceNow);
+const commercialStage = service.commercialStageState(waitingLead, referenceNow);
+const commercialBoard = service.consultantBoard([waitingLead], referenceNow);
 const executedAction = service.setActionExecution(expiredProposalAction, {
   status: 'concluida',
   reason: 'Validade revisada no teste automatizado.',
@@ -210,6 +261,13 @@ assert(expiredProposalState.nextStep === 'Revisar validade da proposta', `Proxim
 assert(expiredProposalAction.type === 'proposal', `Plano da proposta vencida deveria ser proposal; recebeu ${expiredProposalAction.type}.`);
 assert(expiredProposalAction.deadlineLabel === 'Hoje', `Prazo da proposta vencida deveria ser Hoje; recebeu ${expiredProposalAction.deadlineLabel}.`);
 assert(expiredProposalAction.ctaLabel === 'Abrir proposta', `CTA da proposta vencida inesperado: ${expiredProposalAction.ctaLabel}.`);
+assert(commercialStage.key === 'followup', `Etapa comercial deveria ser followup; recebeu ${commercialStage.key}.`);
+assert(commercialStage.status === 'aguardando_cliente', `Status comercial deveria ser aguardando_cliente; recebeu ${commercialStage.status}.`);
+assert(commercialStage.stale === true, 'Etapa comercial antiga nao foi marcada como parada.');
+assert(commercialStage.historyLabel.includes('Proposta'), 'Historico comercial nao preservou origem Proposta.');
+assert(commercialBoard.commercialStale === 1, `Board comercial deveria ter 1 etapa parada; recebeu ${commercialBoard.commercialStale}.`);
+assert(commercialBoard.commercialMoved24 === 0, `Board comercial nao deveria contar movimento antigo em 24h; recebeu ${commercialBoard.commercialMoved24}.`);
+assert(commercialBoard.nextActions[0].commercialStage.key === 'followup', 'Proxima acao nao herdou etapa comercial followup.');
 assert(executedAction && executedAction.status === 'concluida', 'Execucao da acao nao foi marcada como concluida.');
 assert(executedState.reason.includes('Validade revisada'), 'Motivo da execucao nao foi persistido.');
 assert(executedHistory.length >= 1, 'Historico da acao nao registrou evento.');
@@ -241,6 +299,13 @@ const report = {
     expiredDeadline: expiredProposalAction.deadlineLabel,
     executionStatus: executedState.status,
     executionHistory: executedHistory.length
+  },
+  commercial: {
+    stage: commercialStage.key,
+    stale: commercialStage.stale,
+    history: commercialStage.historyLabel,
+    boardStale: commercialBoard.commercialStale,
+    moved24: commercialBoard.commercialMoved24
   },
   failures
 };

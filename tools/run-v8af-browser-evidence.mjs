@@ -17,7 +17,8 @@ const screenshots = {
   adminActionQueueDesktop: path.join(printsDir, 'v8af-admin-action-queue-desktop.png'),
   adminProductivityDesktop: path.join(printsDir, 'v8af-admin-productivity-desktop.png'),
   adminPortfolioDesktop: path.join(printsDir, 'v8ag-admin-consultant-portfolio-desktop.png'),
-  adminCommercialPipelineDesktop: path.join(printsDir, 'v8ah-admin-commercial-pipeline-desktop.png')
+  adminCommercialPipelineDesktop: path.join(printsDir, 'v8ah-admin-commercial-pipeline-desktop.png'),
+  handoffCommercialDesktop: path.join(printsDir, 'v8ai-handoff-commercial-stage-desktop.png')
 };
 
 async function launchBrowser() {
@@ -371,6 +372,36 @@ try {
   await page.locator('[data-admin-commercial-pipeline]').scrollIntoViewIfNeeded();
   await page.screenshot({ path: screenshots.adminCommercialPipelineDesktop, fullPage: false });
 
+  await page.goto(`${baseUrl}/handoff-consultivo.html?handoffId=${encodeURIComponent(adminCommercialStageMove.handoffId)}#detalhe-handoff`, { waitUntil: 'networkidle' });
+  await page.waitForFunction(() => document.body.dataset.handoffReady === 'true', null, { timeout: 15000 });
+  const handoffCommercialStage = await page.evaluate(() => {
+    const detail = document.querySelector('[data-handoff-detail]');
+    const cockpit = document.querySelector('[data-handoff-consultant-cockpit]');
+    const panel = document.querySelector('[data-handoff-commercial-stage-panel]');
+    return {
+      ready: document.body.dataset.handoffReady,
+      consultantReady: document.body.dataset.handoffConsultantCockpitReady,
+      stages: document.querySelectorAll('[data-handoff-commercial-stage]').length,
+      panels: document.querySelectorAll('[data-handoff-commercial-stage-panel]').length,
+      history: document.querySelectorAll('[data-handoff-commercial-stage-history]').length,
+      detailText: detail ? detail.innerText : '',
+      cockpitText: cockpit ? cockpit.innerText : '',
+      panelText: panel ? panel.innerText : ''
+    };
+  });
+  assert(handoffCommercialStage.ready === 'true', 'Handoff comercial nao marcou pagina pronta.', failures);
+  assert(handoffCommercialStage.consultantReady === 'true', 'Cockpit do consultor nao marcou readiness apos etapa comercial.', failures);
+  assert(handoffCommercialStage.stages >= 1, 'Handoff nao renderizou data-handoff-commercial-stage.', failures);
+  assert(handoffCommercialStage.panels >= 1, 'Handoff nao renderizou painel de etapa comercial.', failures);
+  assert(handoffCommercialStage.history >= 1, 'Handoff nao renderizou historico da etapa comercial.', failures);
+  assert(/Follow-up/i.test(handoffCommercialStage.detailText), 'Handoff nao exibiu a etapa comercial Follow-up no detalhe.', failures);
+  assert(/Cadencia comercial/i.test(handoffCommercialStage.panelText), 'Painel de etapa comercial nao exibiu cadencia comercial.', failures);
+  assert(/Proposta\s*->\s*Follow-up|Follow-up/i.test(handoffCommercialStage.panelText), 'Painel de etapa comercial nao exibiu ultima movimentacao.', failures);
+  assert(/Etapas paradas/i.test(handoffCommercialStage.cockpitText), 'Cockpit nao exibiu metrica de etapas paradas.', failures);
+  assert(/Movidos 24h/i.test(handoffCommercialStage.cockpitText), 'Cockpit nao exibiu metrica de movidos 24h.', failures);
+  await page.locator('[data-handoff-commercial-stage-panel]').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: screenshots.handoffCommercialDesktop, fullPage: false });
+
   const report = {
     ok: failures.length === 0,
     baseUrl,
@@ -384,6 +415,7 @@ try {
     adminPortfolioExport,
     adminCommercialPipeline,
     adminCommercialStageMove,
+    handoffCommercialStage,
     screenshots: reportScreenshots(),
     consoleErrors: consoleErrors.slice(0, 20),
     pageErrors,
