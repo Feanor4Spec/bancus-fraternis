@@ -134,6 +134,12 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-handoff-commercial-stage-history',
   'data-login-form',
   'data-public-demo-notice',
+  'data-client-continuity-cockpit',
+  'data-client-next-action',
+  'data-client-handoff-status',
+  'data-client-proposal-status',
+  'data-client-simulation-context',
+  'data-client-commercial-stage',
   'data-client-continuity-timeline',
   'data-products-selection-panel',
   'data-decision-journey-form',
@@ -205,6 +211,8 @@ assert(app.includes('salvarVersaoProposta'), 'app.js sem acao publica de salvar 
 assert(proposalSummary.includes('proposalBuilderDefaults'), 'proposal-summary.js sem defaults publicos da lousa.');
 assert(contracts.includes('data-handoff-assignee-filter'), 'Contrato publico nao documenta filtro de responsavel do handoff.');
 assert(contracts.includes('data-handoff-aging-filter'), 'Contrato publico nao documenta filtro de aging do handoff.');
+assert(contracts.includes('data-client-continuity-cockpit'), 'Contrato publico nao documenta cockpit de continuidade do cliente.');
+assert(contracts.includes('data-client-commercial-stage'), 'Contrato publico nao documenta etapa comercial no dashboard cliente.');
 assert(contracts.includes('data-demo-login'), 'Contrato publico nao documenta acesso rapido do login.');
 assert(contracts.includes('.bf-demo-chip'), 'Contrato publico nao documenta selo demo do shell.');
 assert(contracts.includes('data-public-demo-notice'), 'Contrato publico nao documenta aviso publico de demo.');
@@ -253,7 +261,7 @@ const report = {
   ok: failures.length === 0,
   contracts: {
     localStorageKeys: 17,
-    dataMarkers: 46,
+    dataMarkers: 52,
     globals: 12,
     deepLinks: 10,
     validators: 15,

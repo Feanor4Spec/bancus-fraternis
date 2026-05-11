@@ -825,6 +825,98 @@ th {
   margin-top: 18px;
 }
 
+.bf-client-cockpit {
+  display: grid;
+  gap: 16px;
+}
+
+.bf-client-cockpit__grid {
+  display: grid;
+  grid-template-columns: minmax(280px, .78fr) minmax(0, 1.22fr);
+  gap: 14px;
+  align-items: stretch;
+}
+
+.bf-client-next-action,
+.bf-client-signal {
+  min-width: 0;
+  border: 1px solid var(--bf-v8-line);
+  border-radius: var(--bf-v8-radius-sm);
+  background: #fff;
+}
+
+.bf-client-next-action {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  padding: 18px;
+}
+
+.bf-client-next-action span,
+.bf-client-signal span {
+  color: var(--bf-v8-muted);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.bf-client-next-action strong {
+  color: var(--bf-v8-ink);
+  font-size: 24px;
+  line-height: 1.08;
+}
+
+.bf-client-next-action p,
+.bf-client-signal p {
+  margin: 0;
+  color: var(--bf-v8-muted);
+  line-height: 1.48;
+}
+
+.bf-client-cockpit__signals {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.bf-client-signal {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+}
+
+.bf-client-signal strong {
+  color: var(--bf-v8-ink);
+  font-size: 17px;
+  line-height: 1.2;
+}
+
+.bf-client-signal a {
+  color: var(--bf-v8-navy);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.bf-client-next-action--warning,
+.bf-client-signal--warning {
+  border-color: var(--bf-warning-bd, #f8e1a7);
+  background: linear-gradient(180deg, #fff, var(--bf-warning-bg, #fffbeb));
+}
+
+.bf-client-next-action--stable,
+.bf-client-signal--stable {
+  border-color: var(--bf-success-bd, #bcead3);
+  background: linear-gradient(180deg, #fff, var(--bf-success-bg, #ecfdf5));
+}
+
+.bf-client-next-action--info,
+.bf-client-signal--info {
+  border-color: var(--bf-info-bd, #cfe0f5);
+  background: linear-gradient(180deg, #fff, var(--bf-info-bg, #eff6ff));
+}
+
 .handoff-page .bf-v8-stagebar--inside,
 .admin-dashboard-page .bf-v8-stagebar--inside,
 .trust-page .bf-v8-stagebar--inside,
@@ -1399,6 +1491,11 @@ th {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .bf-client-cockpit__grid,
+  .bf-client-cockpit__signals {
+    grid-template-columns: 1fr;
+  }
+
   .bf-client-timeline,
   .bf-client-activity,
   .bf-component-swatch-grid,
@@ -1523,13 +1620,16 @@ th {
 
   .bf-client-timeline,
   .bf-client-activity,
+  .bf-client-cockpit__signals,
   .bf-component-swatch-grid,
   .bf-component-sample-grid {
     grid-template-columns: 1fr;
   }
 
   .bf-client-timeline__item,
-  .bf-client-activity__item {
+  .bf-client-activity__item,
+  .bf-client-next-action,
+  .bf-client-signal {
     width: 100%;
     max-width: 100%;
   }

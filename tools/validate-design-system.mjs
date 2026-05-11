@@ -202,6 +202,7 @@ for (const pageName of files) {
   if (pageName === 'simulador.html' && !html.includes('data-simulator-readiness')) fail('simulador.html sem painel de prontidao.');
   if (pageName === 'simulador.html' && !html.includes('decision-context.service.js')) fail('simulador.html sem contexto financeiro compartilhado.');
   if (pageName === 'dashboard-cliente.html' && !html.includes('data-client-continuity-strip')) fail('dashboard-cliente.html sem central de continuidade.');
+  if (pageName === 'dashboard-cliente.html' && !html.includes('data-client-continuity-cockpit')) fail('dashboard-cliente.html sem cockpit acionavel de continuidade.');
   if (pageName === 'dashboard-cliente.html' && !html.includes('data-client-continuity-timeline')) fail('dashboard-cliente.html sem linha do tempo de continuidade.');
   if (pageName === 'dashboard-cliente.html' && !html.includes('decision-context.service.js')) fail('dashboard-cliente.html sem contexto financeiro compartilhado.');
   if (pageName === 'dashboard-cliente.html' && !html.includes('data-journey-analytics')) fail('dashboard-cliente.html sem metricas locais de jornada.');

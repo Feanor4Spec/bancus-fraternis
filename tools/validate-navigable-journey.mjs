@@ -149,7 +149,7 @@ const pageContracts = [
   },
   {
     file: 'pages/dashboard-cliente.html',
-    markers: ['data-client-continuity-strip', 'data-client-continuity-timeline', 'id="continuidade-cliente"']
+    markers: ['data-client-continuity-strip', 'data-client-continuity-cockpit', 'data-client-continuity-timeline', 'id="continuidade-cliente"']
   },
   {
     file: 'pages/dashboard-admin.html',

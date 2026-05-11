@@ -13,7 +13,10 @@
     "heroContext": true,
     "dashboardHref": true,
     "proposalStage": true,
-    "handoffAging": true
+    "handoffAging": true,
+    "cockpit": true,
+    "nextAction": true,
+    "commercialStage": true
   },
   "failures": []
 }

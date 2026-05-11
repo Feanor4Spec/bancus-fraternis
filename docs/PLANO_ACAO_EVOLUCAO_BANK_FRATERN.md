@@ -52,7 +52,7 @@ Cada etapa deve responder quatro perguntas:
 | Proposta/PDF com lousa seletiva | Concluido | Etapa 9 usa `proposal-builder-board`, presets consultivo/tecnico, prontidao de exportacao, selecao por grupos, `builder` em `ProposalSummary` e `tools/validate-proposal-builder.mjs`. |
 | Versionamento de propostas | Concluido | Etapa 9 usa `data-proposal-version-panel`, `BFProposalVersions`, historico por proposta, comparacao entre versoes e travamento da versao antes do handoff. |
 | Handoff por origem | Concluido parcial | Filtro, badge, metricas, origem, aging, SLA, responsavel sugerido, plano de acao executavel por lead, leitura de proposta versionada/vencida e etapa comercial/cadencia vinda do Admin. |
-| Dashboards por funil/aging | Concluido parcial | Dashboard Cliente tem timeline/deep links; Dashboard Admin agora tem proximas acoes, fila guiada executavel com dono/prazo/alvo/status/motivo, produtividade, carteira por consultor, funil comercial movel com historico local e cadencia por etapa, funil por origem, aging, prioridade, responsavel sugerido, gargalos e alertas de proposta alterada apos handoff. |
+| Dashboards por funil/aging | Concluido parcial | Dashboard Cliente tem timeline, deep links e cockpit de retomada com proximo passo, handoff, proposta, simulacao e etapa comercial; Dashboard Admin agora tem proximas acoes, fila guiada executavel com dono/prazo/alvo/status/motivo, produtividade, carteira por consultor, funil comercial movel com historico local e cadencia por etapa, funil por origem, aging, prioridade, responsavel sugerido, gargalos e alertas de proposta alterada apos handoff. |
 | Navegacao autenticada | Concluido parcial | Login local tem acesso rapido por perfil, redirect preservado e validador dedicado. |
 | Teste navegavel ponta a ponta | Concluido | `pages/lousa-navegacao.html` ganhou roteiro de Auth, Home, Produtos, Calculadoras, Trilha, Comparador, Simulador, Proposta, Handoff e Dashboards com `tools/validate-navigable-journey.mjs`. |
 | Publicacao segura em GitHub Pages | Concluido parcial | Selo demo/local, fallback `404.html`, CI em `.github/workflows/validate.yml` e `tools/validate-public-release-safety.mjs`. |
@@ -72,12 +72,13 @@ Cada etapa deve responder quatro perguntas:
 | 6 | Funil comercial admin | Concluido | Etapas Contato, Proposta, Follow-up, Negociacao e Fechamento com movimentacao por lead, historico local e reflexo no handoff. | `data-admin-commercial-stage-select`, `bf_admin_commercial_stage_audit_v1`. |
 | 7 | Cadencia comercial | Concluido | Resumo das 5 etapas, movimentacoes recentes, leads parados, movidos em 24h/7d e aging medio de etapa. | `data-admin-commercial-stage-insights`, `data-admin-commercial-stage-movement`. |
 | 8 | Publicacao GitHub Pages | Concluido parcial | Projeto online, CI ativo, fallback 404, selo demo/local e validacao da base real publicada. | `tools/validate-github-pages-deploy.mjs`, `tools/validate-public-release-safety.mjs`. |
+| 9 | Cockpit do Dashboard Cliente | Concluido | Cliente ve proxima acao, handoff, proposta, simulacao e etapa comercial em uma leitura unica de retomada. | `data-client-continuity-cockpit`, `tools/validate-dashboard-continuity-flow.mjs`. |
 
 ## Proximos Passos Priorizados
 
 | Prioridade | Proximo passo | Descricao | Arquivos provaveis | Criterio de aceite |
 | --- | --- | --- | --- | --- |
-| P1 | Dashboard Cliente mais acionavel | Transformar timeline e retomadas em um cockpit com proximo passo claro, status do handoff, proposta, simulacao vinculada e etapa comercial quando existir. | `pages/dashboard-cliente.html`, `assets/js/client-dashboard.js`, `assets/css/platform.css`. | Cliente entende em uma tela onde parou e qual CTA seguir. |
+| Concluido | Dashboard Cliente mais acionavel | Transformar timeline e retomadas em um cockpit com proximo passo claro, status do handoff, proposta, simulacao vinculada e etapa comercial quando existir. | `pages/dashboard-cliente.html`, `assets/js/client-dashboard.js`, `assets/css/bf-design-system-v8.css`. | Cliente entende em uma tela onde parou e qual CTA seguir. |
 | Concluido | Operacao consultiva conectada ao funil | Levar a etapa comercial e a cadencia para o Handoff Consultivo, para o consultor ver a mesma leitura do Admin. | `pages/handoff-consultivo.html`, `assets/js/handoff-consultivo.js`, `assets/js/services/handoff-consultivo.service.js`. | Consultor enxerga etapa, atraso de etapa e ultima movimentacao sem abrir o Admin. |
 | P2 | Exportacao comercial do funil | Criar exportacao sanitizada do funil/cadencia para reuniao diaria, sem e-mail, telefone, CPF ou dados bloqueados. | `assets/js/admin-users.js`, `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md`, `tools/validate-admin-dashboard-source-funnel.mjs`. | JSON exportado possui schema, totais por etapa, leads anonimizados e zero dado sensivel. |
 | P2 | Lousa de QA atualizada | Atualizar a lousa navegavel para incluir funil comercial, cadencia, dashboard cliente e publicacao online como checkpoints visuais. | `pages/lousa-navegacao.html`, `tools/validate-navigable-journey.mjs`. | A lousa permite validar a jornada inteira sem abrir docs. |
@@ -268,6 +269,7 @@ Status em 2026-05-11:
 - `assets/js/client-dashboard.js` passou a gerar deep links de retomada com `from=dashboard`.
 - Linha do tempo do cliente passou a exibir Diagnostico, Calculadora, Trilha, Comparador, Simulacao, Proposta e Handoff.
 - Card de Handoff do cockpit do cliente passou a mostrar origem e aging.
+- Dashboard Cliente ganhou `data-client-continuity-cockpit`, consolidando `data-client-next-action`, `data-client-handoff-status`, `data-client-proposal-status`, `data-client-simulation-context` e `data-client-commercial-stage`.
 - Atividade recente e Trilha ativa no dashboard preservam `journeyId`, `calculatorSlug`, `historyId` e `handoffId` quando existem.
 - Criado `tools/validate-dashboard-continuity-flow.mjs`.
 - `assets/js/admin-users.js` passou a renderizar `data-admin-source-funnel` com origem, volume, aging, prioridade, SLA, responsavel sugerido e proxima acao.
@@ -289,8 +291,8 @@ Status em 2026-05-11:
 Entregas para Dashboard Cliente:
 
 - Mostrar linha do tempo unica com calculadora, trilha, comparador, simulador, proposta e handoff. Concluido em 2026-05-07.
-- Exibir proximo passo recomendado com base no ultimo evento relevante. Em andamento; cockpit, retomadas e trilha ativa ja participam.
-- Mostrar status do handoff vinculado quando existir. Concluido parcialmente com status, origem e aging no cockpit.
+- Exibir proximo passo recomendado com base no ultimo evento relevante. Concluido em 2026-05-11 com cockpit de retomada.
+- Mostrar status do handoff vinculado quando existir. Concluido em 2026-05-11 com status, origem, aging e etapa comercial.
 - Mostrar alertas de retomada de forma compreensivel e nao alarmista.
 
 Entregas para Dashboard Admin:
@@ -414,9 +416,9 @@ Testes recomendados:
 | Concluido | Permitir movimentacao manual do lead no funil. | Resolvido em 2026-05-11 com `data-admin-commercial-stage-select`, historico local e reflexo no status do handoff. |
 | Concluido | Criar cadencia comercial por etapa. | Resolvido em 2026-05-11 com `data-admin-commercial-stage-insights`, movimentacoes recentes e leads parados. |
 | Concluido | Trazer etapa comercial para o cockpit do consultor. | Resolvido em 2026-05-11 com `data-handoff-commercial-stage`, painel de cadencia e leitura do historico do Admin. |
+| Concluido | Melhorar Dashboard Cliente como cockpit de retomada. | Resolvido em 2026-05-11 com `data-client-continuity-cockpit`, proxima acao, proposta, simulacao e etapa comercial. |
 | Concluido parcial | Revisar CTAs Home/Produtos/Calculadoras/Trilha -> jornada. | Home retoma trilha ativa; Produtos e Calculadoras preservam contexto; Trilha reconhece origem e propaga `sourceFrom`. |
 | Concluido parcial | Evoluir dashboards por funil, origem e aging. | Dashboard Cliente ja tem timeline por etapa, contexto e aging; Admin consolida proximas acoes, fila guiada, produtividade, carteira, funil comercial movel e cadencia. |
-| Alta | Melhorar Dashboard Cliente como cockpit de retomada. | Cliente ainda precisa de uma leitura mais direta de proximo passo, proposta e handoff em andamento. |
 | Media | Exportar funil/cadencia de forma sanitizada. | Ajuda reuniao diaria comercial sem expor dados sensiveis. |
 | Concluido | Criar validador de aliases/rotas. | `tools/validate-route-aliases.mjs`. |
 | Baixa | Reduzir responsabilidades de `js/app.js` e `assets/js/bf-platform.js`. | Reduz risco em evolucoes futuras. |

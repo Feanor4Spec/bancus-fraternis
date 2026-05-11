@@ -51,6 +51,21 @@
     veiculos: 'Veiculos'
   };
 
+  const handoffStatusLabels = {
+    novo: 'Novo',
+    em_atendimento: 'Em atendimento',
+    aguardando_cliente: 'Aguardando cliente',
+    qualificado: 'Qualificado',
+    descartado: 'Descartado'
+  };
+
+  const proposalStatusLabels = {
+    reviewed: 'Revisada localmente',
+    partial: 'Revisao parcial',
+    pending: 'Em revisao',
+    expired: 'Revisao vencida'
+  };
+
   function readJson(key, fallback) {
     try {
       const raw = localStorage.getItem(key);
@@ -58,6 +73,30 @@
     } catch (error) {
       return fallback;
     }
+  }
+
+  function listJson(key) {
+    const parsed = readJson(key, []);
+    return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+  }
+
+  function sortByRecent(items) {
+    return (items || []).slice().sort((a, b) => (
+      String(b.updatedAt || b.createdAt || b.criadoEm || b.atualizadoEm || '')
+        .localeCompare(String(a.updatedAt || a.createdAt || a.criadoEm || a.atualizadoEm || ''))
+    ));
+  }
+
+  function compactText(value, fallback = '-') {
+    const text = String(value == null ? '' : value).trim();
+    return text || fallback;
+  }
+
+  function uiTone(value) {
+    if (value === 'alta') return 'warning';
+    if (value === 'media') return 'info';
+    if (value === 'baixa') return 'stable';
+    return value || 'info';
   }
 
   function currentUserEmail() {
@@ -139,11 +178,14 @@
   }
 
   function loadSimulations() {
-    return window.Storage && window.Storage.loadSimulations ? window.Storage.loadSimulations() : [];
+    const storageApi = typeof Storage !== 'undefined' && Storage && Storage.loadSimulations ? Storage : null;
+    const simulations = storageApi ? storageApi.loadSimulations() : [];
+    return sortByRecent(Array.isArray(simulations) ? simulations : []);
   }
 
   function loadComparatorModels() {
-    return window.BFComparatorModels && window.BFComparatorModels.list ? window.BFComparatorModels.list() : [];
+    const models = window.BFComparatorModels && window.BFComparatorModels.list ? window.BFComparatorModels.list() : [];
+    return sortByRecent(Array.isArray(models) ? models : []);
   }
 
   function loadJourneySnapshot() {
@@ -156,13 +198,28 @@
   function loadHandoffForJourney(journey) {
     const service = window.BFHandoffConsultivoService;
     if (!service || !journey) return null;
-    return service.findByJourney ? service.findByJourney(journey.id, journey.owner) : null;
+    const found = service.findByJourney ? service.findByJourney(journey.id, journey.owner) : null;
+    return found && service.enrich ? service.enrich(found) : found;
   }
 
   function loadRecoverySignals() {
     const service = window.BFJourneyRecoveryService;
     if (!service || !service.forCurrentUser) return [];
     return service.forCurrentUser({ includeComplete: true });
+  }
+
+  function loadProposalAcceptances() {
+    return sortByRecent(listJson('bank_fratern_proposal_acceptances_v1'));
+  }
+
+  function loadProposalVersions() {
+    return sortByRecent(listJson('bank_fratern_proposal_versions_v1'));
+  }
+
+  function decorateHandoffs(items) {
+    const service = window.BFHandoffConsultivoService;
+    const sorted = sortByRecent(items || []);
+    return service && service.enrichList ? service.enrichList(sorted) : sorted;
   }
 
   function dashboardSnapshot() {
@@ -175,9 +232,10 @@
     const readiness = window.BFDecisionContext && typeof window.BFDecisionContext.readiness === 'function'
       ? window.BFDecisionContext.readiness(profile)
       : { score: profile.readinessScore || 0, complete: false, missing: [] };
-    const handoffs = window.BFHandoffConsultivoService && window.BFHandoffConsultivoService.list
+    const rawHandoffs = window.BFHandoffConsultivoService && window.BFHandoffConsultivoService.list
       ? window.BFHandoffConsultivoService.list().filter((item) => !item.ownerEmail || item.ownerEmail === currentUserEmail())
       : [];
+    const handoffs = decorateHandoffs(rawHandoffs);
 
     return {
       profile,
@@ -190,7 +248,166 @@
       journeyHistory: journey.history,
       handoff,
       handoffs,
+      proposalAcceptances: loadProposalAcceptances(),
+      proposalVersions: loadProposalVersions(),
       recoverySignals: loadRecoverySignals()
+    };
+  }
+
+  function activeHandoff(snapshot) {
+    const direct = snapshot && snapshot.handoff ? snapshot.handoff : null;
+    if (direct) return direct;
+    const handoffs = snapshot && Array.isArray(snapshot.handoffs) ? snapshot.handoffs : [];
+    return handoffs.find((item) => !['qualificado', 'descartado'].includes(item.status)) || handoffs[0] || null;
+  }
+
+  function commercialStageFor(handoff) {
+    const service = window.BFHandoffConsultivoService;
+    if (!handoff) return null;
+    if (handoff.commercialStage) return handoff.commercialStage;
+    if (service && service.commercialStageState) return service.commercialStageState(handoff);
+    return null;
+  }
+
+  function latestByProposalId(records, proposalId) {
+    const id = compactText(proposalId, '');
+    const source = id ? records.filter((item) => item.proposalId === id) : records;
+    return sortByRecent(source)[0] || null;
+  }
+
+  function proposalDashboardState(snapshot, handoff) {
+    const service = window.BFHandoffConsultivoService;
+    const proposalId = handoff && handoff.sourceProposalId ? handoff.sourceProposalId : '';
+    const handoffProposal = handoff && service && service.proposalState ? service.proposalState(handoff) : null;
+    const acceptance = latestByProposalId(snapshot.proposalAcceptances || [], proposalId);
+    const version = latestByProposalId(snapshot.proposalVersions || [], proposalId);
+    const hasProposal = Boolean((handoffProposal && handoffProposal.active) || acceptance || version || hasProposalState(snapshot));
+
+    if (handoffProposal && handoffProposal.active) {
+      return {
+        active: true,
+        tone: handoffProposal.tone || 'info',
+        label: handoffProposal.label || 'Proposta vinculada',
+        detail: handoffProposal.reason || 'Proposta conectada ao atendimento consultivo.',
+        status: handoffProposal.status || '',
+        version: handoffProposal.version || (version && version.version) || '',
+        validUntil: handoffProposal.validUntil || (acceptance && acceptance.validUntil) || '',
+        href: dashboardHref('simulador.html#step-9', snapshot, { proposalId })
+      };
+    }
+
+    if (acceptance) {
+      return {
+        active: true,
+        tone: acceptance.status === 'expired' ? 'warning' : acceptance.status === 'reviewed' ? 'stable' : 'info',
+        label: proposalStatusLabels[acceptance.status] || acceptance.statusLabel || 'Proposta em revisao',
+        detail: acceptance.notes || 'Revisao local encontrada para continuidade da proposta.',
+        status: acceptance.status || '',
+        version: acceptance.version || '',
+        validUntil: acceptance.validUntil || '',
+        href: dashboardHref('simulador.html#step-9', snapshot, { proposalId: acceptance.proposalId || proposalId })
+      };
+    }
+
+    if (version) {
+      return {
+        active: true,
+        tone: 'stable',
+        label: `Versao ${version.version || '-'} salva`,
+        detail: 'Snapshot versionado da proposta pronto para revisao ou handoff.',
+        status: 'versioned',
+        version: version.version || '',
+        validUntil: version.validUntil || '',
+        href: dashboardHref('simulador.html#step-9', snapshot, { proposalId: version.proposalId || proposalId })
+      };
+    }
+
+    return {
+      active: hasProposal,
+      tone: hasProposal ? 'info' : 'warning',
+      label: hasProposal ? 'Proposta detectada' : 'Sem proposta revisada',
+      detail: hasProposal
+        ? 'Existe sinal de proposta no historico local; revise a etapa 9 para travar a versao.'
+        : 'Simule e revise a proposta antes de encaminhar para atendimento.',
+      status: '',
+      version: '',
+      validUntil: '',
+      href: dashboardHref('simulador.html#step-9', snapshot)
+    };
+  }
+
+  function simulationDashboardState(snapshot) {
+    const simulation = latestSimulation(snapshot);
+    if (!simulation) {
+      return {
+        active: false,
+        label: 'Sem simulacao salva',
+        detail: 'Abra o simulador com o contexto do dashboard para criar o primeiro cenario.',
+        href: dashboardHref('simulador.html', snapshot),
+        age: '-'
+      };
+    }
+    const context = simulation.decisionContext || {};
+    return {
+      active: true,
+      label: simulation.nome || simulation.name || 'Simulacao salva',
+      detail: context.readinessScore
+        ? `Prontidao ${context.readinessScore}/100 e origem ${context.source || 'dashboard'}.`
+        : 'Cenario salvo pronto para proposta, carteira ou comparacao.',
+      href: dashboardHref(`simulador.html?simulationId=${encodeURIComponent(simulation.id || '')}`, snapshot, {
+        calculatorSlug: context.calculatorSlug || '',
+        historyId: context.historyId || ''
+      }),
+      age: ageLabel(simulation.atualizadoEm || simulation.criadoEm || simulation.updatedAt || simulation.createdAt)
+    };
+  }
+
+  function nextClientAction(snapshot) {
+    const handoff = activeHandoff(snapshot);
+    const service = window.BFHandoffConsultivoService;
+    const topSignal = snapshot.recoverySignals && snapshot.recoverySignals.length ? snapshot.recoverySignals[0] : null;
+    if (handoff && service && service.actionPlan) {
+      const plan = service.actionPlan(handoff);
+      return {
+        kind: 'handoff',
+        tone: plan.tone || (handoff.priority === 'alta' ? 'warning' : 'stable'),
+        eyebrow: 'Atendimento em andamento',
+        title: plan.title || (handoff.operational && handoff.operational.nextStep) || 'Acompanhar atendimento',
+        detail: plan.reason || 'Lead local tem plano operacional aberto.',
+        cta: plan.ctaLabel || 'Abrir atendimento',
+        href: dashboardHref(plan.href || 'handoff-consultivo.html#detalhe-handoff', snapshot, { handoffId: handoff.id || '' })
+      };
+    }
+    if (snapshot.journey && snapshot.journey.nextAction) {
+      return {
+        kind: 'journey',
+        tone: 'stable',
+        eyebrow: 'Trilha ativa',
+        title: snapshot.journey.nextAction.title || 'Revisar proximo passo',
+        detail: snapshot.journey.recommendation && snapshot.journey.recommendation.message ? snapshot.journey.recommendation.message : 'A trilha assistida ja definiu a proxima acao.',
+        cta: snapshot.journey.nextAction.label || 'Abrir trilha',
+        href: dashboardHref(snapshot.journey.nextAction.href || 'trilha-decisao.html', snapshot)
+      };
+    }
+    if (topSignal) {
+      return {
+        kind: 'signal',
+        tone: topSignal.severity === 'alta' ? 'warning' : 'info',
+        eyebrow: 'Retomada recomendada',
+        title: topSignal.title || 'Retomar jornada',
+        detail: topSignal.reason || 'Existe um ponto recente para continuar.',
+        cta: topSignal.ctaLabel || 'Abrir retomada',
+        href: topSignal.ctaHref || dashboardHref('dashboard-cliente.html#retomadas-cliente', snapshot)
+      };
+    }
+    return {
+      kind: snapshot.hasProfile ? 'simulation' : 'profile',
+      tone: snapshot.hasProfile ? 'info' : 'warning',
+      eyebrow: snapshot.hasProfile ? 'Simulacao orientada' : 'Diagnostico pendente',
+      title: snapshot.hasProfile ? 'Criar cenario com contexto' : 'Completar perfil financeiro',
+      detail: snapshot.hasProfile ? 'Use os dados ja salvos para abrir o simulador sem recomecar.' : 'Renda, custos, dividas e reserva destravam a recomendacao.',
+      cta: snapshot.hasProfile ? 'Abrir simulador' : 'Completar diagnostico',
+      href: snapshot.hasProfile ? dashboardHref('simulador.html', snapshot) : dashboardHref('calculadora-custos-fixos.html', snapshot, { calculatorSlug: 'custos-fixos' })
     };
   }
 
@@ -272,6 +489,76 @@
         `).join('')}
       </div>
     `;
+  }
+
+  function renderContinuityCockpit() {
+    const target = document.querySelector('[data-client-continuity-cockpit]');
+    if (!target) return;
+
+    const snapshot = dashboardSnapshot();
+    const handoff = activeHandoff(snapshot);
+    const service = window.BFHandoffConsultivoService;
+    const stage = commercialStageFor(handoff);
+    const proposal = proposalDashboardState(snapshot, handoff);
+    const simulation = simulationDashboardState(snapshot);
+    const nextAction = nextClientAction(snapshot);
+    const statusLabel = handoff
+      ? (service && service.statusLabels ? service.statusLabels[handoff.status] : handoffStatusLabels[handoff.status]) || handoff.status || 'Aberto'
+      : 'Sem handoff';
+    const sourceLabel = handoff && service && service.sourceLabel ? service.sourceLabel(handoff) : 'Jornada local';
+    const handoffHref = handoff
+      ? dashboardHref('handoff-consultivo.html#detalhe-handoff', snapshot, { handoffId: handoff.id || '' })
+      : dashboardHref('handoff-consultivo.html#fila-handoff', snapshot);
+    const stageTone = stage && stage.stale ? 'warning' : stage ? 'stable' : 'info';
+    const proposalTone = uiTone(proposal.tone);
+
+    target.innerHTML = `
+      <div class="bf-client-cockpit">
+        <div class="bf-admin-panel-heading">
+          <div>
+            <span class="bf-badge bf-badge--gold">Cockpit de retomada</span>
+            <h2>Onde voce esta e qual acao seguir agora</h2>
+            <p>Consolida atendimento, proposta, simulacao e cadencia comercial para continuar a jornada sem perder contexto.</p>
+          </div>
+          <a class="btn btn--ghost btn--sm" href="${escapeHtml(handoffHref)}">Abrir atendimento</a>
+        </div>
+        <div class="bf-client-cockpit__grid">
+          <article class="bf-client-next-action bf-client-next-action--${escapeHtml(uiTone(nextAction.tone))}" data-client-next-action="${escapeHtml(nextAction.kind)}">
+            <span>${escapeHtml(nextAction.eyebrow)}</span>
+            <strong>${escapeHtml(nextAction.title)}</strong>
+            <p>${escapeHtml(nextAction.detail)}</p>
+            <a class="btn btn--primary btn--sm" href="${escapeHtml(nextAction.href)}">${escapeHtml(nextAction.cta)}</a>
+          </article>
+          <div class="bf-client-cockpit__signals">
+            <article class="bf-client-signal bf-client-signal--${escapeHtml(handoff ? 'stable' : 'info')}" data-client-handoff-status="${escapeHtml(handoff ? handoff.status || 'novo' : 'none')}">
+              <span>Handoff</span>
+              <strong>${escapeHtml(statusLabel)}</strong>
+              <p>${escapeHtml(handoff ? `${handoff.id} - ${sourceLabel} - ${ageLabel(handoff.updatedAt || handoff.createdAt)}` : 'Nenhum atendimento consultivo ativo para esta jornada.')}</p>
+            </article>
+            <article class="bf-client-signal bf-client-signal--${escapeHtml(proposalTone || 'info')}" data-client-proposal-status="${escapeHtml(proposal.status || (proposal.active ? 'active' : 'none'))}">
+              <span>Proposta</span>
+              <strong>${escapeHtml(proposal.label)}</strong>
+              <p>${escapeHtml([proposal.version ? `versao ${proposal.version}` : '', proposal.validUntil ? `validade ${proposal.validUntil}` : '', proposal.detail].filter(Boolean).join(' - '))}</p>
+              <a href="${escapeHtml(proposal.href)}">Revisar proposta</a>
+            </article>
+            <article class="bf-client-signal bf-client-signal--${escapeHtml(simulation.active ? 'stable' : 'info')}" data-client-simulation-context="${escapeHtml(simulation.active ? 'ready' : 'empty')}">
+              <span>Simulacao</span>
+              <strong>${escapeHtml(simulation.label)}</strong>
+              <p>${escapeHtml(`${simulation.detail} Aging ${simulation.age}.`)}</p>
+              <a href="${escapeHtml(simulation.href)}">Abrir simulador</a>
+            </article>
+            <article class="bf-client-signal bf-client-signal--${escapeHtml(stageTone)}" data-client-commercial-stage="${escapeHtml(stage ? stage.key || 'contato' : 'none')}">
+              <span>Etapa comercial</span>
+              <strong>${escapeHtml(stage ? stage.label || 'Contato' : 'Nao iniciada')}</strong>
+              <p>${escapeHtml(stage ? `${stage.stale ? 'Retomar etapa' : 'Cadencia ok'} - aging ${stage.stageAgeLabel || '-'} - prazo ${stage.deadlineHours || '-'}h` : 'A etapa comercial aparece quando o handoff entra no funil admin.')}</p>
+            </article>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.dataset.clientContinuityCockpitReady = 'true';
+    document.body.dataset.clientNextAction = nextAction.kind || '';
+    document.body.dataset.clientCommercialStage = stage ? stage.key || '' : '';
   }
 
   function renderContinuityTimeline() {
@@ -470,6 +757,7 @@
 
   function renderContinuityCenter() {
     renderContinuityStrip();
+    renderContinuityCockpit();
     renderContinuityTimeline();
     renderRecoverySignals();
     renderClientActivity();

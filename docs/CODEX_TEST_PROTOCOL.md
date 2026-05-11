@@ -1258,6 +1258,7 @@ Validacoes obrigatorias:
 - Confirmar `recommendedModel.id='std-liquidez-rapida'`.
 - Confirmar link para `comparador.html?preset=obter_liquidez`.
 - Abrir `pages/dashboard-cliente.html` e confirmar bloco `data-client-decision-journey-current`.
+- Confirmar `data-client-continuity-cockpit`, `data-client-next-action`, `data-client-handoff-status`, `data-client-proposal-status`, `data-client-simulation-context` e `data-client-commercial-stage`.
 - Desktop e mobile nao podem ter overflow horizontal.
 - Evidencias esperadas:
   - `docs/test-prints/trilha-decisao-desktop.png`

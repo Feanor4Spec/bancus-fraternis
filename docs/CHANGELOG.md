@@ -4,6 +4,27 @@
 
 ---
 
+## [v8.67.0] - 2026-05-11
+
+### Cockpit acionavel no Dashboard Cliente
+
+#### Adicionado
+- Dashboard Cliente ganhou `data-client-continuity-cockpit`.
+- Criados os marcadores `data-client-next-action`, `data-client-handoff-status`, `data-client-proposal-status`, `data-client-simulation-context` e `data-client-commercial-stage`.
+- O cockpit consolida proxima acao, atendimento, proposta, simulacao e etapa comercial em uma leitura unica de retomada.
+
+#### Modificado
+- `assets/js/client-dashboard.js` passou a reutilizar `BFHandoffConsultivoService` para plano de acao, status do handoff e etapa comercial.
+- Contratos publicos, mapa, plano, protocolo de teste e validadores foram atualizados para proteger o novo cockpit.
+
+#### Validado
+- `node --check assets/js/client-dashboard.js`
+- `node tools/validate-dashboard-continuity-flow.mjs`
+- `node tools/validate-public-contracts.mjs`
+- `node tools/validate-design-system.mjs`
+
+---
+
 ## [v8.66.0] - 2026-05-11
 
 ### Etapa comercial no Handoff Consultivo
