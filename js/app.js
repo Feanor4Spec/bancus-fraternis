@@ -2306,9 +2306,17 @@ const App = (() => {
     selectedShelfGroup = g; // compatibilidade legada
 
     // Criar item no projeto estruturado
-    const item = ShelfEngine.createProjectItem(g, 1);
-    item.mesContemplacaoAlvo = numberSetting('defaultMesContemplacao', item.mesContemplacaoAlvo || 18);
-    item.lanceEmbutidoPct = Math.min(getEffectiveLanceEmbutidoMax(g), item.lanceEmbutidoPct || getEffectiveLanceEmbutidoMax(g));
+    const item = window.BFSimulatorCart && window.BFSimulatorCart.createProjectItem
+      ? window.BFSimulatorCart.createProjectItem(g, { shelfEngine: ShelfEngine, numberSetting, getEffectiveLanceEmbutidoMax })
+      : ShelfEngine.createProjectItem(g, 1);
+    if (!item) {
+      showToast('Nao foi possivel adicionar o grupo ao projeto.', 'error');
+      return;
+    }
+    if (!window.BFSimulatorCart) {
+      item.mesContemplacaoAlvo = numberSetting('defaultMesContemplacao', item.mesContemplacaoAlvo || 18);
+      item.lanceEmbutidoPct = Math.min(getEffectiveLanceEmbutidoMax(g), item.lanceEmbutidoPct || getEffectiveLanceEmbutidoMax(g));
+    }
     projetoEstruturado.itens.push(item);
 
     // Re-renderizar tabela para atualizar indicador "Adicionado"
@@ -2324,7 +2332,11 @@ const App = (() => {
 
   /** Remove um grupo do projeto estruturado. */
   function removerGrupoSelecionado(itemId) {
-    ShelfEngine.removeProjectItem(projetoEstruturado, itemId);
+    if (window.BFSimulatorCart && window.BFSimulatorCart.removeProjectItem) {
+      window.BFSimulatorCart.removeProjectItem(projetoEstruturado, itemId, { shelfEngine: ShelfEngine });
+    } else {
+      ShelfEngine.removeProjectItem(projetoEstruturado, itemId);
+    }
     renderShelfPage();
     renderGruposSelecionados();
     atualizarBotaoAvancar();
@@ -2334,9 +2346,14 @@ const App = (() => {
 
   /** Atualiza um campo do item no projeto estruturado (valorCartaUnitario ou quantidadeCotas). */
   function atualizarItemProjeto(itemId, campo, valor) {
-    const patch = {};
-    patch[campo] = valor;
-    ShelfEngine.updateProjectItem(projetoEstruturado, itemId, patch);
+    const itemAtualizado = window.BFSimulatorCart && window.BFSimulatorCart.updateProjectItem
+      ? window.BFSimulatorCart.updateProjectItem(projetoEstruturado, itemId, campo, valor, { shelfEngine: ShelfEngine })
+      : null;
+    if (!itemAtualizado) {
+      const patch = {};
+      patch[campo] = valor;
+      ShelfEngine.updateProjectItem(projetoEstruturado, itemId, patch);
+    }
     // Re-renderizar somente o campo calculado correspondente
     const rowEl = document.querySelector(`.selected-group-row[data-item-id="${itemId}"]`);
     if (!rowEl) return;
@@ -2353,6 +2370,15 @@ const App = (() => {
   function renderGruposSelecionados() {
     const panel = document.getElementById('selected-groups-panel');
     if (!panel) return;
+
+    if (window.BFSimulatorCart && window.BFSimulatorCart.renderSelectedGroupsHtml) {
+      panel.innerHTML = window.BFSimulatorCart.renderSelectedGroupsHtml(projetoEstruturado.itens, {
+        formatMoney: Format.money,
+        formatNumber: Format.number
+      });
+      if (projetoEstruturado.itens.length > 0) atualizarRodapeGruposSelecionados();
+      return;
+    }
 
     if (projetoEstruturado.itens.length === 0) {
       panel.innerHTML = `
@@ -2441,6 +2467,17 @@ const App = (() => {
   /** Atualiza o rodapé com totais consolidados e o badge do header. */
   function atualizarRodapeGruposSelecionados() {
     const footer = document.getElementById('selected-groups-footer');
+    if (window.BFSimulatorCart && window.BFSimulatorCart.cartTotals && window.BFSimulatorCart.renderSelectedGroupsFooter) {
+      const totals = window.BFSimulatorCart.cartTotals(projetoEstruturado.itens);
+      const badge = document.getElementById('shelf-cart-count');
+      if (badge) badge.textContent = `${totals.totalGrupos} grupo${totals.totalGrupos !== 1 ? 's' : ''}`;
+      if (footer) {
+        footer.innerHTML = window.BFSimulatorCart.renderSelectedGroupsFooter(projetoEstruturado.itens, {
+          formatMoney: Format.money
+        });
+      }
+      return;
+    }
     const totalGrupos = projetoEstruturado.itens.length;
     const totalCotas = projetoEstruturado.itens.reduce((s, i) => s + i.quantidadeCotas, 0);
     const totalCarta = projetoEstruturado.itens.reduce((s, i) => s + i.valorCartaTotal, 0);
@@ -2472,6 +2509,18 @@ const App = (() => {
     const campo = inputEl.dataset.campo;
     const itemAtual = projetoEstruturado.itens.find(i => i.itemId === itemId);
     if (!itemAtual) return;
+    if (window.BFSimulatorCart && window.BFSimulatorCart.normalizeEditValue) {
+      const normalized = window.BFSimulatorCart.normalizeEditValue(campo, inputEl.value, itemAtual, {
+        parseMoney: Format.parseMoney,
+        formatNumber: Format.number,
+        getEffectiveLanceEmbutidoMax
+      });
+      if (normalized.displayValue !== undefined) inputEl.value = normalized.displayValue;
+      if (normalized.message) showToast(normalized.message, normalized.tone || (normalized.ok ? 'warning' : 'error'));
+      if (!normalized.ok) return;
+      atualizarItemProjeto(itemId, campo, normalized.value);
+      return;
+    }
     let valor;
 
     if (campo === 'valorCartaUnitario') {
@@ -2511,6 +2560,12 @@ const App = (() => {
     const btn = document.getElementById('btn-avancar-parametros');
     const n = projetoEstruturado.itens.length;
     if (!btn) return;
+    if (window.BFSimulatorCart && window.BFSimulatorCart.advanceButtonState) {
+      const state = window.BFSimulatorCart.advanceButtonState(n);
+      btn.disabled = state.disabled;
+      btn.textContent = state.text;
+      return;
+    }
     if (n === 0) {
       btn.disabled = true;
       btn.textContent = 'Adicione pelo menos 1 grupo para avançar →';
@@ -2525,6 +2580,28 @@ const App = (() => {
     const dash = document.getElementById('step5-dashboard');
     if (!dash) return;
     dash.style.display = 'block';
+
+    if (window.BFSimulatorCart && window.BFSimulatorCart.renderDashboardKpis) {
+      const kpis = window.BFSimulatorCart.renderDashboardKpis(consolidado, {
+        formatMoney: Format.money
+      });
+      dash.innerHTML = `
+        <div class="kpi-header">
+          <span>Metricas Consolidadas</span>
+          <span>Projeto Estruturado</span>
+        </div>
+        <div class="step5-dashboard-grid">
+          ${kpis.map(k => `
+            <div class="kpi-row ${k.cls}">
+              <div class="kpi-label">${k.label}</div>
+              <div class="kpi-value">${k.val}</div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      renderSimulatorDecision();
+      return;
+    }
 
     const kpis = [
       { label: 'Valor Crédito Contratado', val: Format.money(consolidado.totalCarta), cls: '' },
@@ -2560,6 +2637,16 @@ const App = (() => {
   function renderStep5Cart() {
     const container = document.getElementById('step5-cart-items');
     if (!container) return;
+
+    if (window.BFSimulatorCart && window.BFSimulatorCart.renderStep5CartHtml) {
+      container.innerHTML = window.BFSimulatorCart.renderStep5CartHtml(projetoEstruturado.itens, {
+        formatMoney: Format.money,
+        formatNumber: Format.number,
+        getEffectiveLanceEmbutidoMax
+      });
+      document.querySelectorAll('#step5-cart-items [data-money="true"]').forEach(Format.applyMoneyMask);
+      return;
+    }
 
     if (projetoEstruturado.itens.length === 0) {
       container.innerHTML = '<p class="text-center text-muted">Nenhum grupo selecionado.</p>';
@@ -2666,6 +2753,13 @@ const App = (() => {
     if (!resultado || !resultado.consolidado) {
       showToast('Não foi possível recalcular o projeto estruturado.', 'error');
       return;
+    }
+
+    if (window.BFSimulatorCart && window.BFSimulatorCart.applyCalculationResults) {
+      window.BFSimulatorCart.applyCalculationResults(resultado.itemResults, {
+        root: document,
+        formatMoney: Format.money
+      });
     }
 
     resultado.itemResults.forEach(r => {

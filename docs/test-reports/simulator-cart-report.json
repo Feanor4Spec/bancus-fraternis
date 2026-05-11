@@ -1,0 +1,16 @@
+{
+  "ok": true,
+  "scriptOrder": {
+    "shelfBeforeCart": true,
+    "cartBeforeApp": true
+  },
+  "totals": {
+    "totalGrupos": 2,
+    "totalCotas": 3,
+    "totalCarta": 150000
+  },
+  "selectedHtml": 2299,
+  "cartHtml": 3608,
+  "updatedCards": 1,
+  "failures": []
+}

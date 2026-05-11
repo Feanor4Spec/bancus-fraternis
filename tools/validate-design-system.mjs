@@ -254,12 +254,14 @@ const requiredFiles = [
   'js/proposal-governance.js',
   'js/simulator-journey.js',
   'js/simulator-state.js',
+  'js/simulator-cart.js',
   'js/proposal-acceptance.js',
   'js/proposal-versioning.js',
   'assets/js/services/handoff-consultivo.service.js',
   'tools/validate-calculadoras.mjs',
   'tools/validate-simulator-performance.mjs',
   'tools/validate-simulator-refactor.mjs',
+  'tools/validate-simulator-cart.mjs',
   'tools/validate-proposal-governance.mjs',
   'tools/validate-dashboard-continuity-flow.mjs',
   'tools/validate-decision-flow.mjs',
@@ -317,7 +319,9 @@ if (!simulatorHtml.includes('data-proposal-version-panel')) fail('simulador.html
 if (!simulatorHtml.includes('../js/proposal-acceptance.js')) fail('simulador.html nao carrega proposal-acceptance.js.');
 if (!simulatorHtml.includes('../js/proposal-versioning.js')) fail('simulador.html nao carrega proposal-versioning.js.');
 if (!simulatorHtml.includes('../js/proposal-governance.js')) fail('simulador.html nao carrega proposal-governance.js.');
+if (!simulatorHtml.includes('../js/simulator-cart.js')) fail('simulador.html nao carrega simulator-cart.js.');
 if (!simulatorHtml.includes('../assets/js/services/handoff-consultivo.service.js')) fail('simulador.html nao carrega servico de handoff consultivo.');
+if (!simulatorAppJs.includes('BFSimulatorCart')) fail('app.js sem delegacao de carrinho para BFSimulatorCart.');
 if (!simulatorAppJs.includes('salvarRevisaoProposta')) fail('app.js sem acao de salvar revisao da proposta.');
 if (!simulatorAppJs.includes('salvarVersaoProposta')) fail('app.js sem acao de salvar versao da proposta.');
 if (!simulatorAppJs.includes('criarHandoffProposta')) fail('app.js sem acao de criar handoff da proposta.');

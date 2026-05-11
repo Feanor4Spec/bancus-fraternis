@@ -248,7 +248,7 @@ Simulador completo
   -> handoff consultivo de proposta
 ```
 
-Contratos principais: `data-simulator-readiness`, `data-proposal-acceptance-panel`, `data-proposal-version-panel`, `data-proposal-handoff-bridge`, `App`, `ConsorcioEngine`, `ProposalSummary`, `BFProposalBuilder`, `BFProposalGovernance`, `BFProposalAcceptance`, `BFProposalVersions`, `BFHandoffConsultivoService`.
+Contratos principais: `data-simulator-readiness`, `data-proposal-acceptance-panel`, `data-proposal-version-panel`, `data-proposal-handoff-bridge`, `App`, `ConsorcioEngine`, `ProposalSummary`, `BFSimulatorCart`, `BFProposalBuilder`, `BFProposalGovernance`, `BFProposalAcceptance`, `BFProposalVersions`, `BFHandoffConsultivoService`.
 
 ### Jornada de operacao
 
@@ -283,7 +283,7 @@ Melhoria implementada em 2026-05-07:
 - O funil/cadencia comercial agora exporta JSON sanitizado em `bank-fratern.admin-commercial-pipeline.v1`, com leads anonimizados, totais por etapa e movimentacoes recentes para reuniao diaria.
 - O Handoff Consultivo agora le a etapa comercial salva pelo Admin, mostra chip/painel de cadencia, ultima movimentacao e atraso da etapa para o consultor.
 - A lousa navegavel agora possui checkpoints de QA comercial para cockpit cliente, handoff consultivo, funil/cadencia admin, exportacao sanitizada e smoke test online.
-- O simulador iniciou reducao de divida tecnica com `BFSimulatorJourney`, `BFSimulatorState`, `BFProposalBuilder` e `BFProposalGovernance`, preservando `App.*`, payloads salvos, PDF/proposta, aceite, versionamento e acoes de continuidade.
+- O simulador iniciou reducao de divida tecnica com `BFSimulatorJourney`, `BFSimulatorState`, `BFSimulatorCart`, `BFProposalBuilder` e `BFProposalGovernance`, preservando `App.*`, payloads salvos, carrinho/projeto, PDF/proposta, aceite, versionamento e acoes de continuidade.
 - O painel consultivo filtra por origem e mostra badge/resumo da origem nos cards e no detalhe.
 - O dashboard admin mostra metricas de propostas e trilhas na fila de handoff.
 - O contrato e coberto por `tools/validate-handoff-origins.mjs` e `tools/validate-handoff-consultant-operations.mjs`.
@@ -294,11 +294,12 @@ Melhoria implementada em 2026-05-07:
 
 | Arquivo | Responsabilidade |
 | --- | --- |
-| `js/app.js` | Fachada/controlador principal do simulador completo. Ainda concentra wizard, prateleira, projeto estruturado, calculo e acoes publicas, mas ja delega jornada, snapshots, lousa e governanca visual da proposta para modulos dedicados. |
+| `js/app.js` | Fachada/controlador principal do simulador completo. Ainda concentra wizard, filtros, prateleira, calculo e acoes publicas, mas ja delega jornada, snapshots, carrinho/projeto, lousa e governanca visual da proposta para modulos dedicados. |
 | `js/proposal-builder.js` | Service da lousa de proposta/PDF: storage, presets, opcoes, dependencias, foco, prontidao e estimativa de paginas. |
 | `js/proposal-governance.js` | Service visual da governanca da proposta: paineis de versionamento, aceite local, historicos, leitura do formulario e ponte de handoff. |
 | `js/simulator-journey.js` | Service do simulador para contexto de origem, prefill e proximas acoes da jornada. |
 | `js/simulator-state.js` | Service do simulador para snapshots de formulario, carrinho salvo, payload de simulacao e retomada. |
+| `js/simulator-cart.js` | Service do carrinho/projeto estruturado: item criado a partir da prateleira, totais, campos editaveis, HTML do passo 4/5 e aplicacao de resultados. |
 | `js/engine.js` | Motor de consorcio, cronograma, eventos, resumo e cenarios. |
 | `js/shelf-data.js` | Carregamento e normalizacao da base real/fallback de grupos. |
 | `js/shelf-engine.js` | Score, filtros, paginacao, projeto estruturado e simulacao consolidada da prateleira. |
@@ -440,7 +441,7 @@ Os marcadores mais importantes por area:
 
 Exports principais confirmados:
 
-`BFAuth`, `Settings`, `BFHome`, `BFDecisionContext`, `BFCalculadoras`, `BFCalculatorJourney`, `BFFinancialFormulas`, `BFDadosService`, `BFProductsJourney`, `BFComparadorService`, `BFComparatorModels`, `BFTrilhaDecisaoService`, `BFDecisionJourneyContext`, `BFModelosRecomendacaoService`, `BFHandoffConsultivoService`, `BFJourneyRecoveryService`, `BFAdminRecoveryService`, `BFProposalBuilder`, `BFProposalGovernance`, `BFProposalAcceptance`, `BFProposalVersions`, `BankFraternProgress`.
+`BFAuth`, `Settings`, `BFHome`, `BFDecisionContext`, `BFCalculadoras`, `BFCalculatorJourney`, `BFFinancialFormulas`, `BFDadosService`, `BFProductsJourney`, `BFComparadorService`, `BFComparatorModels`, `BFTrilhaDecisaoService`, `BFDecisionJourneyContext`, `BFModelosRecomendacaoService`, `BFHandoffConsultivoService`, `BFJourneyRecoveryService`, `BFAdminRecoveryService`, `BFSimulatorCart`, `BFProposalBuilder`, `BFProposalGovernance`, `BFProposalAcceptance`, `BFProposalVersions`, `BankFraternProgress`.
 
 ### Deep links e rotas funcionais
 
@@ -489,6 +490,7 @@ Scripts confirmados em `tools/`:
 | `validate-simulator-groups.mjs` | Carga completa da base real no simulador, filtro vazio, score, ordenacao e paginacao. |
 | `validate-simulator-performance.mjs` | Peso da base compacta, schema colunar, fallback e reducao de bytes do simulador online. |
 | `validate-simulator-refactor.mjs` | Modulos extraidos do simulador, ordem de scripts, payload salvo e proximas acoes da jornada. |
+| `validate-simulator-cart.mjs` | Carrinho/projeto estruturado do simulador, ordem de scripts, totais, edicao e render do passo 4/5. |
 | `validate-handoff-origins.mjs` | Origem dos handoffs por proposta, trilha, sinal e pacote importado. |
 | `validate-calculadoras.mjs` | Catalogo, paginas, premissas e formulas. |
 | `validate-dashboard-continuity-flow.mjs` | Timeline e deep links do Dashboard Cliente. |
@@ -547,7 +549,7 @@ Governanca documental: docs ativos passaram a usar Bancus Fraternis como platafo
 
 O vetor recomendado para o proximo ciclo continua sendo produto e jornada, agora com foco em reduzir risco tecnico sem quebrar contratos publicos:
 
-1. Continuar a modularizacao do simulador, extraindo prateleira/carrinho sem quebrar `App.*`.
+1. Continuar a modularizacao do simulador, extraindo filtros/paginacao/detalhe da prateleira sem quebrar `App.*`.
 2. Preparar plano de migracao futura para backend/API sem quebrar `localStorage`, deep links e services globais.
 3. Manter a lousa como porta de QA visual a cada nova entrega funcional.
 

@@ -87,6 +87,7 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | `BFProposalGovernance` | Renderizacao e leitura de formulario dos paineis de versionamento, aceite e ponte de handoff da proposta. |
 | `BFSimulatorJourney` | Contexto de origem, prefill e proximas acoes do simulador. |
 | `BFSimulatorState` | Snapshots de formulario, carrinho salvo e payload de simulacao. |
+| `BFSimulatorCart` | Regras do carrinho/projeto estruturado do simulador: totais, HTML do carrinho, normalizacao de edicao e aplicacao de resultados. |
 | `BFProductsJourney` | Produtos, selecao e analytics de jornada. |
 | `BFComparadorService`, `BFComparatorModels` | Comparador, modelos, auditoria e presets. |
 | `BFTrilhaDecisaoService`, `BFDecisionJourneyContext` | Trilha assistida, contexto de entrada e saida. |
@@ -130,6 +131,7 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | `tools/validate-simulator-groups.mjs` | Base real do simulador: 17.396 grupos validos. |
 | `tools/validate-simulator-performance.mjs` | Base compacta do simulador, peso online e fallback para JSON legado. |
 | `tools/validate-simulator-refactor.mjs` | Modulos extraidos do simulador, payload salvo e acoes de jornada. |
+| `tools/validate-simulator-cart.mjs` | Carrinho/projeto estruturado do simulador, ordem de scripts, totais, campos editaveis e resultados calculados. |
 | `tools/validate-proposal-builder.mjs` | Lousa seletiva de proposta/PDF. |
 | `tools/validate-proposal-governance.mjs` | Governanca visual da proposta: versoes, aceite, historicos e handoff. |
 | `tools/validate-proposal-versioning.mjs` | Historico versionado da proposta e comparacao antes do handoff. |

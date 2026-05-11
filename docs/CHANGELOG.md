@@ -4,6 +4,34 @@
 
 ---
 
+## [v8.73.0] - 2026-05-11
+
+### Carrinho/projeto do simulador modularizado
+
+#### Adicionado
+- Criado `js/simulator-cart.js` com `BFSimulatorCart` para criacao/remocao/edicao de itens, totais, HTML do carrinho e aplicacao de resultados calculados.
+- Criado `tools/validate-simulator-cart.mjs` com relatorio em `docs/test-reports/simulator-cart-report.json`.
+
+#### Modificado
+- `js/app.js` passou a delegar o carrinho/projeto estruturado para `BFSimulatorCart`, mantendo `App.selecionarGrupo`, `App.removerGrupoSelecionado`, `App.onEditarItemProjeto` e `App.recalcularProjeto` como contratos publicos.
+- `pages/simulador.html` passou a carregar `simulator-cart.js` entre `shelf-engine.js` e o controlador principal.
+- Contratos publicos, mapa, plano, README, protocolo, validadores e CI foram atualizados para proteger o novo service.
+
+#### Validado
+- `node --check js/simulator-cart.js`
+- `node --check js/app.js`
+- `node tools/validate-simulator-cart.mjs`
+- `node tools/validate-simulator-refactor.mjs`
+- `node tools/validate-simulator-groups.mjs`
+- `node tools/validate-simulator-performance.mjs`
+- `node tools/validate-proposal-builder.mjs`
+- `node tools/validate-proposal-governance.mjs`
+- `node tools/validate-public-contracts.mjs`
+- `node tools/validate-design-system.mjs`
+- Browser local: simulador abriu em `127.0.0.1`, exemplo carregado com 1 grupo e carrinho/projeto renderizado no DOM.
+
+---
+
 ## [v8.72.0] - 2026-05-11
 
 ### Governanca visual da proposta modularizada
