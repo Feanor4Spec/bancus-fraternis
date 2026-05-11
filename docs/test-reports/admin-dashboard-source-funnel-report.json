@@ -1,13 +1,14 @@
 {
   "ok": true,
   "contracts": {
-    "dashboardMarkers": 8,
+    "dashboardMarkers": 9,
     "sources": 7,
     "bottlenecks": 7,
     "nextActions": 5,
     "actionQueue": 6,
     "actionExecution": true,
     "consultantProductivity": true,
+    "consultantPortfolio": true,
     "simulatorBottomStagebar": true
   },
   "failures": []

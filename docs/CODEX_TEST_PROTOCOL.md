@@ -207,6 +207,7 @@ Validacoes obrigatorias:
 - Abrir `dashboard-admin.html#admin-fila-acao` e confirmar `data-admin-action-queue` com dono, prazo, alvo e CTA direto.
 - Confirmar `data-admin-action-execution` e `data-admin-action-owner-history` com status, motivo e historico por responsavel.
 - Confirmar `data-admin-consultant-productivity` com ações abertas, adiadas, concluídas, tempo médio e gargalos recorrentes por responsável.
+- Confirmar `data-admin-consultant-portfolio` com carteira por consultor, leads, aging médio, origem, prioridade, SLA e próximo foco por lead.
 
 Comandos:
 

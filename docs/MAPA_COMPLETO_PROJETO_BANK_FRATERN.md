@@ -114,7 +114,7 @@ Contrato confirmado:
 | `pages/login.html` | Ativa | Login local com perfis demo. |
 | `pages/configuracoes.html` | Ativa | Preferencias locais do simulador e plataforma. |
 | `pages/dashboard-cliente.html` | Ativa | Historico, perfil, modelos, trilha, sinais e handoff do usuario. |
-| `pages/dashboard-admin.html` | Ativa | Usuarios, recuperacao, pacotes, SLA, roteamento, metas, auditoria, funil, fila guiada executavel e produtividade por consultor. |
+| `pages/dashboard-admin.html` | Ativa | Usuarios, recuperacao, pacotes, SLA, roteamento, metas, auditoria, funil, fila guiada executavel, produtividade e carteira por consultor. |
 
 ### Produto, Decisao e Modelos
 
@@ -274,6 +274,7 @@ Melhoria implementada em 2026-05-07:
 - Handoff e Admin convertem proximos passos em plano/fila de acao com dono, prazo, alvo e CTA direto.
 - A fila guiada agora persiste status, motivo, adiamento, conclusao, reabertura e historico por responsavel em `localStorage`.
 - O admin calcula produtividade por consultor com abertas, adiadas, concluidas, tempo medio e gargalos recorrentes.
+- O admin consolida carteira por consultor com leads abertos, aging, origem, prioridade, SLA e proximo foco por lead.
 - O painel consultivo filtra por origem e mostra badge/resumo da origem nos cards e no detalhe.
 - O dashboard admin mostra metricas de propostas e trilhas na fila de handoff.
 - O contrato e coberto por `tools/validate-handoff-origins.mjs`.
@@ -416,7 +417,7 @@ Os marcadores mais importantes por area:
 | Proposta | `data-proposal-acceptance-panel`, `data-proposal-handoff-bridge`, `data-proposal-builder-board`, `data-proposal-builder-readiness`, `data-proposal-builder-option`, `data-proposal-version-panel`, `data-proposal-version-history`, `data-proposal-version-comparison`. |
 | Handoff | `data-handoff-list`, `data-handoff-detail`, `data-handoff-metrics`, `data-handoff-recovery-signals`, `data-handoff-action-plan`, `data-handoff-action-execution`, `data-handoff-proposal-version`. |
 | Cliente | `data-client-continuity-strip`, `data-client-decision-journey`, `data-client-recovery-signals`. |
-| Admin | `data-admin-next-actions`, `data-admin-action-queue`, `data-admin-action-execution`, `data-admin-action-owner-history`, `data-admin-consultant-productivity`, `data-admin-source-funnel`, `data-admin-bottleneck-board`, `data-admin-recovery-queue`, `data-admin-recovery-packages`, `data-admin-journey-funnel`, `data-admin-operational-alerts`. |
+| Admin | `data-admin-next-actions`, `data-admin-action-queue`, `data-admin-action-execution`, `data-admin-action-owner-history`, `data-admin-consultant-productivity`, `data-admin-consultant-portfolio`, `data-admin-consultant-portfolio-lead`, `data-admin-source-funnel`, `data-admin-bottleneck-board`, `data-admin-recovery-queue`, `data-admin-recovery-packages`, `data-admin-journey-funnel`, `data-admin-operational-alerts`. |
 | Lousa | `data-lousa-journey-checklist`, `data-lousa-journey-acceptance`. |
 | V8 | `data-v8-stagebar`, `data-bf-visual-version`, `data-shell-header`, `data-shell-footer`. |
 

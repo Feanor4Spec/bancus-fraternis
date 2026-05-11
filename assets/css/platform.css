@@ -837,7 +837,8 @@
 .bf-admin-bottleneck-board,
 .bf-admin-next-actions,
 .bf-admin-action-queue,
-.bf-admin-consultant-productivity {
+.bf-admin-consultant-productivity,
+.bf-admin-consultant-portfolio {
   display: grid;
   gap: 14px;
   padding-top: 4px;
@@ -1196,6 +1197,128 @@
   margin: 10px 0 0;
   color: var(--bf-muted);
   line-height: 1.45;
+}
+
+.bf-admin-consultant-portfolio {
+  padding: 16px;
+  border: 1px solid rgba(183, 132, 31, .22);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(255, 251, 235, .72), rgba(255, 255, 255, .94));
+}
+
+.bf-admin-consultant-portfolio__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.bf-admin-portfolio-card {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--bf-line);
+  border-radius: 8px;
+  background: var(--bf-white);
+}
+
+.bf-admin-portfolio-card--alta {
+  border-color: rgba(220, 38, 38, .28);
+  background: linear-gradient(180deg, #fff, rgba(254, 226, 226, .5));
+}
+
+.bf-admin-portfolio-card--media {
+  border-color: var(--bf-warning-bd);
+  background: var(--bf-warning-bg);
+}
+
+.bf-admin-portfolio-card--baixa {
+  border-color: var(--bf-success-bd);
+  background: var(--bf-success-bg);
+}
+
+.bf-admin-portfolio-card__top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.bf-admin-portfolio-card__top span,
+.bf-admin-portfolio-card small,
+.bf-admin-portfolio-lead span,
+.bf-admin-portfolio-lead small {
+  display: block;
+  color: var(--bf-muted);
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.bf-admin-portfolio-card__top strong {
+  color: var(--bf-navy-900);
+  font-size: 18px;
+  font-weight: 950;
+}
+
+.bf-admin-portfolio-card dl {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0 0;
+}
+
+.bf-admin-portfolio-card dt {
+  color: var(--bf-muted);
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.bf-admin-portfolio-card dd {
+  margin: 3px 0 0;
+  color: var(--bf-navy-900);
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.bf-admin-portfolio-card p {
+  margin: 10px 0 0;
+  color: var(--bf-muted);
+  line-height: 1.45;
+}
+
+.bf-admin-portfolio-card__leads {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.bf-admin-portfolio-lead {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid rgba(11, 44, 82, .1);
+  border-radius: 8px;
+  text-decoration: none;
+  background: rgba(255, 255, 255, .72);
+}
+
+.bf-admin-portfolio-lead--alta {
+  border-color: rgba(220, 38, 38, .24);
+}
+
+.bf-admin-portfolio-lead--media {
+  border-color: var(--bf-warning-bd);
+}
+
+.bf-admin-portfolio-lead--baixa {
+  border-color: var(--bf-info-bd);
+}
+
+.bf-admin-portfolio-lead strong {
+  color: var(--bf-navy-900);
+  font-size: 14px;
+  line-height: 1.25;
 }
 
 .bf-admin-source-grid {
@@ -3235,6 +3358,8 @@
   .bf-admin-action-item__commands,
   .bf-admin-consultant-productivity__grid,
   .bf-admin-consultant-card dl,
+  .bf-admin-consultant-portfolio__grid,
+  .bf-admin-portfolio-card dl,
   .bf-handoff-action-plan,
   .bf-admin-source-grid,
   .bf-admin-bottleneck-grid,

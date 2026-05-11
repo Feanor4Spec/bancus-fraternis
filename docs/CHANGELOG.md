@@ -4,6 +4,27 @@
 
 ---
 
+## [v8.60.0] - 2026-05-11
+
+### Carteira por consultor no admin
+
+#### Adicionado
+- Dashboard Admin ganhou `data-admin-consultant-portfolio`, `data-admin-consultant-portfolio-row` e `data-admin-consultant-portfolio-lead`.
+- Criada visao de carteira por consultor com leads abertos, alta prioridade, SLA vencido, sem responsavel, aging medio, origem e proximo foco.
+- O painel usa handoffs enriquecidos pelo `BFHandoffConsultivoService` e cai para gargalos operacionais quando ainda nao ha handoffs abertos.
+
+#### Modificado
+- A stagebar do Dashboard Admin ganhou atalho direto para `#admin-carteira-consultor`.
+- Validadores, contratos, mapa e plano de acao passaram a proteger a leitura de carteira por consultor.
+
+#### Validado
+- `node --check assets/js/admin-users.js`
+- `node tools/validate-admin-dashboard-source-funnel.mjs`
+- `node tools/validate-public-contracts.mjs`
+- `node tools/run-v8af-browser-evidence.mjs`
+
+---
+
 ## [v8.59.0] - 2026-05-11
 
 ### Produtividade por consultor

@@ -30,6 +30,7 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
   'data-admin-recovery-packages',
   'data-admin-handoff-summary',
   'href="#admin-proximos-passos"',
+  'href="#admin-carteira-consultor"',
   'href="#admin-origens"',
   'href="#admin-gargalos"'
 ].forEach((marker) => assert(dashboardHtml.includes(marker), `dashboard-admin.html sem ${marker}.`));
@@ -40,11 +41,13 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
   'buildAdminNextActions',
   'buildAdminActionQueue',
   'buildAdminConsultantProductivity',
+  'buildAdminConsultantPortfolio',
   'renderAdminSourceFunnel',
   'renderAdminBottleneckBoard',
   'renderAdminNextActionBoard',
   'renderAdminActionQueue',
   'renderAdminConsultantProductivity',
+  'renderAdminConsultantPortfolio',
   'data-admin-source-funnel',
   'data-admin-bottleneck-board',
   'data-admin-next-actions',
@@ -55,6 +58,9 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
   'data-admin-action-owner-history',
   'data-admin-consultant-productivity',
   'data-admin-consultant-productivity-row',
+  'data-admin-consultant-portfolio',
+  'data-admin-consultant-portfolio-row',
+  'data-admin-consultant-portfolio-lead',
   'data-admin-action-status',
   'adminNextActionsReady',
   'adminNextActionCount',
@@ -62,8 +68,11 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
   'adminActionQueueCount',
   'adminConsultantProductivityReady',
   'adminConsultantProductivityCount',
+  'adminConsultantPortfolioReady',
+  'adminConsultantPortfolioCount',
   'id="admin-proximos-passos"',
   'id="admin-fila-acao"',
+  'id="admin-carteira-consultor"',
   'id="admin-origens"',
   'id="admin-gargalos"',
   'adminSourceDefinitions',
@@ -79,6 +88,9 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
   'adminActionAuditRecords',
   'Tempo medio',
   'Gargalos recorrentes',
+  'Carteira por consultor',
+  'Aging medio',
+  'Leads abertos',
   'adminActionExecution',
   'adminSourceFunnelReady',
   'adminBottleneckCount'
@@ -118,6 +130,10 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
   '.bf-admin-consultant-productivity',
   '.bf-admin-consultant-productivity__grid',
   '.bf-admin-consultant-card',
+  '.bf-admin-consultant-portfolio',
+  '.bf-admin-consultant-portfolio__grid',
+  '.bf-admin-portfolio-card',
+  '.bf-admin-portfolio-lead',
   '.bf-admin-source-funnel',
   '.bf-admin-source-grid',
   '.bf-admin-source-card',
@@ -128,18 +144,19 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
 
 assert(!simulatorHtml.includes('data-v8-stagebar-legacy'), 'simulador.html ainda contem template legado da stagebar superior.');
 assert(simulatorHtml.includes('bf-v8-stagebar-shell'), 'simulador.html sem stagebar inferior recolhivel.');
-assert(platformCss.includes('.bf-admin-next-actions__grid') && platformCss.includes('.bf-admin-action-queue__list') && platformCss.includes('.bf-admin-action-owners') && platformCss.includes('.bf-admin-consultant-productivity__grid') && platformCss.includes('.bf-admin-source-grid') && platformCss.includes('.bf-admin-bottleneck-grid'), 'CSS admin sem grids monitorados.');
+assert(platformCss.includes('.bf-admin-next-actions__grid') && platformCss.includes('.bf-admin-action-queue__list') && platformCss.includes('.bf-admin-action-owners') && platformCss.includes('.bf-admin-consultant-productivity__grid') && platformCss.includes('.bf-admin-consultant-portfolio__grid') && platformCss.includes('.bf-admin-source-grid') && platformCss.includes('.bf-admin-bottleneck-grid'), 'CSS admin sem grids monitorados.');
 
 const report = {
   ok: failures.length === 0,
   contracts: {
-    dashboardMarkers: 8,
+    dashboardMarkers: 9,
     sources: 7,
     bottlenecks: 7,
     nextActions: adminUsersJs.includes('buildAdminNextActions') ? 5 : 0,
     actionQueue: adminUsersJs.includes('buildAdminActionQueue') ? 6 : 0,
     actionExecution: adminUsersJs.includes('data-admin-action-execution'),
     consultantProductivity: adminUsersJs.includes('data-admin-consultant-productivity'),
+    consultantPortfolio: adminUsersJs.includes('data-admin-consultant-portfolio'),
     simulatorBottomStagebar: simulatorHtml.includes('bf-v8-stagebar-shell')
   },
   failures

@@ -8,7 +8,7 @@
   }
 
   function escapeHtml(value) {
-    return String(value || '')
+    return String(value === null || value === undefined ? '' : value)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
@@ -1362,6 +1362,188 @@
     `;
   }
 
+  function portfolioOwnerName(item, plan, state) {
+    return item.assignedTo || (plan && plan.owner) || (state && state.suggestedAssignee) || item.ownerEmail || 'definir responsavel';
+  }
+
+  function portfolioLeadHref(item, plan) {
+    return (plan && plan.href) || `handoff-consultivo.html?from=admin&handoffId=${encodeURIComponent(item.id || '')}#detalhe-handoff`;
+  }
+
+  function buildAdminConsultantPortfolio(sourceRows, bottlenecks) {
+    const service = window.BFHandoffConsultivoService;
+    const now = new Date();
+    const productivity = new Map(buildAdminConsultantProductivity(sourceRows, bottlenecks).map((item) => [item.owner, item]));
+    const byOwner = new Map();
+
+    function ensure(owner) {
+      const key = owner || 'definir responsavel';
+      if (!byOwner.has(key)) {
+        byOwner.set(key, {
+          owner: key,
+          leads: 0,
+          high: 0,
+          overdue: 0,
+          unassigned: 0,
+          totalHours: 0,
+          sources: new Map(),
+          nextSteps: new Map(),
+          items: []
+        });
+      }
+      return byOwner.get(key);
+    }
+
+    if (service && typeof service.enrichList === 'function') {
+      service.enrichList(service.list ? service.list() : [], now)
+        .filter((item) => isOpenHandoff(item))
+        .forEach((item) => {
+          const state = item.operational || {};
+          const plan = service.actionPlan ? service.actionPlan(item, now) : null;
+          const owner = portfolioOwnerName(item, plan, state);
+          const row = ensure(owner);
+          const source = service.sourceLabel ? service.sourceLabel(item) : (item.sourceLabel || item.sourceType || 'Origem local');
+          const nextStep = (plan && plan.title) || state.nextStep || 'Acompanhar lead';
+          const tone = state.tone || (state.slaOverdue ? 'alta' : item.priority === 'alta' ? 'media' : 'baixa');
+          row.leads += 1;
+          if (item.priority === 'alta') row.high += 1;
+          if (state.slaOverdue) row.overdue += 1;
+          if (state.unassigned || !item.assignedTo) row.unassigned += 1;
+          row.totalHours += Number(state.hours || 0);
+          row.sources.set(source, (row.sources.get(source) || 0) + 1);
+          row.nextSteps.set(nextStep, (row.nextSteps.get(nextStep) || 0) + 1);
+          row.items.push({
+            id: item.id || '',
+            title: item.objectiveLabel || (item.summary && item.summary.objectiveLabel) || item.id || 'Lead consultivo',
+            source,
+            priority: service.priorityLabels && service.priorityLabels[item.priority] ? service.priorityLabels[item.priority] : (item.priority || 'Media'),
+            status: service.statusLabels && service.statusLabels[item.status] ? service.statusLabels[item.status] : (item.status || 'Novo'),
+            age: state.ageLabel || eventAgeLabel(state.hours),
+            hours: Number(state.hours || 0),
+            nextStep,
+            href: portfolioLeadHref(item, plan),
+            tone
+          });
+        });
+    }
+
+    if (!byOwner.size) {
+      (bottlenecks || []).slice(0, 6).forEach((item) => {
+        const owner = item.actionOwner || item.ownerEmail || 'coordenacao local';
+        const row = ensure(owner);
+        row.leads += 1;
+        if (item.severity === 'alta') row.high += 1;
+        if (String(item.type || '').includes('overdue')) row.overdue += 1;
+        row.totalHours += Number(item.hours || 0);
+        row.sources.set(item.title || 'Sinal operacional', (row.sources.get(item.title || 'Sinal operacional') || 0) + 1);
+        row.nextSteps.set(item.next || 'Abrir acao', (row.nextSteps.get(item.next || 'Abrir acao') || 0) + 1);
+        row.items.push({
+          id: item.targetId || item.proposalId || item.type || '',
+          title: item.reason || item.title || 'Sinal operacional',
+          source: item.title || 'Gargalo',
+          priority: alertSeverityLabel(item.severity),
+          status: 'Sinal',
+          age: item.age || eventAgeLabel(item.hours),
+          hours: Number(item.hours || 0),
+          nextStep: item.next || 'Abrir acao',
+          href: item.href || '#admin-gargalos',
+          tone: item.severity || 'media'
+        });
+      });
+    }
+
+    return Array.from(byOwner.values()).map((row) => {
+      const avgHours = row.leads ? row.totalHours / row.leads : 0;
+      const sourceMix = Array.from(row.sources.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([label, total]) => `${label} (${total})`);
+      const nextSteps = Array.from(row.nextSteps.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 2)
+        .map(([label]) => label);
+      const prod = productivity.get(row.owner) || { completed: 0, delayed: 0, running: 0 };
+      const tone = row.overdue ? 'alta' : row.high || row.unassigned ? 'media' : 'baixa';
+      return {
+        ...row,
+        avgHours,
+        avgAge: eventAgeLabel(avgHours),
+        sourceMix,
+        nextSteps,
+        completed: prod.completed || 0,
+        delayed: prod.delayed || 0,
+        running: prod.running || 0,
+        tone,
+        items: row.items
+          .sort((a, b) => (alertWeight(b.tone) - alertWeight(a.tone)) || (Number(b.hours || 0) - Number(a.hours || 0)))
+          .slice(0, 3)
+      };
+    }).sort((a, b) => {
+      const score = (row) => (row.overdue * 5) + (row.high * 4) + (row.unassigned * 3) + row.leads + Math.min(row.avgHours / 24, 5);
+      return score(b) - score(a);
+    }).slice(0, 6);
+  }
+
+  function renderAdminConsultantPortfolio(sourceRows, bottlenecks) {
+    const rows = buildAdminConsultantPortfolio(sourceRows, bottlenecks);
+    const totals = rows.reduce((acc, item) => {
+      acc.leads += Number(item.leads || 0);
+      acc.high += Number(item.high || 0);
+      acc.overdue += Number(item.overdue || 0);
+      acc.unassigned += Number(item.unassigned || 0);
+      acc.hours += Number(item.avgHours || 0) * Number(item.leads || 0);
+      return acc;
+    }, { leads: 0, high: 0, overdue: 0, unassigned: 0, hours: 0 });
+    const avg = totals.leads ? totals.hours / totals.leads : 0;
+
+    return `
+      <section class="bf-admin-consultant-portfolio" id="admin-carteira-consultor" data-admin-consultant-portfolio>
+        <div class="bf-admin-panel-heading">
+          <div>
+            <span class="bf-badge bf-badge--gold">Carteira</span>
+            <h3>Carteira por consultor</h3>
+            <p>Cruza leads abertos com aging, origem, prioridade e proximo passo para orientar a gestao diaria.</p>
+          </div>
+          <a class="btn btn--ghost btn--sm" href="handoff-consultivo.html#fila-handoff">Abrir handoffs</a>
+        </div>
+        <div class="bf-platform-metrics">
+          ${window.BFCards.metric('Leads abertos', totals.leads || 0, totals.leads ? 'is-strong' : '')}
+          ${window.BFCards.metric('Alta prioridade', totals.high || 0, totals.high ? 'is-warn' : '')}
+          ${window.BFCards.metric('SLA vencido', totals.overdue || 0, totals.overdue ? 'is-warn' : '')}
+          ${window.BFCards.metric('Sem responsavel', totals.unassigned || 0, totals.unassigned ? 'is-warn' : '')}
+          ${window.BFCards.metric('Aging medio', totals.leads ? eventAgeLabel(avg) : 'sem carteira')}
+        </div>
+        <div class="bf-admin-consultant-portfolio__grid">
+          ${rows.length ? rows.map((item) => `
+            <article class="bf-admin-portfolio-card bf-admin-portfolio-card--${escapeHtml(item.tone)}" data-admin-consultant-portfolio-row="${escapeHtml(item.owner)}">
+              <div class="bf-admin-portfolio-card__top">
+                <span>${escapeHtml(item.owner)}</span>
+                <strong>${escapeHtml(item.leads)} ${item.leads === 1 ? 'lead' : 'leads'}</strong>
+              </div>
+              <dl>
+                <div><dt>Alta</dt><dd>${escapeHtml(item.high)}</dd></div>
+                <div><dt>SLA</dt><dd>${escapeHtml(item.overdue)}</dd></div>
+                <div><dt>Aging</dt><dd>${escapeHtml(item.avgAge)}</dd></div>
+                <div><dt>Feitas</dt><dd>${escapeHtml(item.completed)}</dd></div>
+              </dl>
+              <p>Origem: ${escapeHtml(item.sourceMix.join(' | ') || 'sem origem local')}</p>
+              <small>Proximo foco: ${escapeHtml(item.nextSteps.join(' | ') || 'monitorar carteira')}</small>
+              <div class="bf-admin-portfolio-card__leads">
+                ${item.items.map((lead) => `
+                  <a class="bf-admin-portfolio-lead bf-admin-portfolio-lead--${escapeHtml(lead.tone)}" href="${escapeHtml(lead.href)}" data-admin-consultant-portfolio-lead="${escapeHtml(lead.id)}">
+                    <span>${escapeHtml(lead.source)} - ${escapeHtml(lead.priority)} - ${escapeHtml(lead.age)}</span>
+                    <strong>${escapeHtml(lead.title)}</strong>
+                    <small>${escapeHtml(lead.status)} - ${escapeHtml(lead.nextStep)}</small>
+                  </a>
+                `).join('')}
+              </div>
+            </article>
+          `).join('') : '<div class="bf-empty-state">A carteira aparecera quando houver handoffs ou gargalos operacionais locais.</div>'}
+        </div>
+      </section>
+    `;
+  }
+
   function operationalAlerts() {
     return buildJourneyAbandonmentAlerts()
       .concat(buildHandoffSlaAlerts())
@@ -1954,6 +2136,7 @@
         ${renderAdminNextActionBoard(sourceFunnel, bottlenecks)}
         ${renderAdminActionQueue(sourceFunnel, bottlenecks)}
         ${renderAdminConsultantProductivity(sourceFunnel, bottlenecks)}
+        ${renderAdminConsultantPortfolio(sourceFunnel, bottlenecks)}
         ${renderAdminSourceFunnel(sourceFunnel)}
         ${renderAdminBottleneckBoard(bottlenecks)}
         <div class="bf-calculator-history">${recentHtml}</div>
@@ -1970,6 +2153,8 @@
     document.body.dataset.adminActionQueueCount = String(buildAdminActionQueue(sourceFunnel, bottlenecks).length);
     document.body.dataset.adminConsultantProductivityReady = 'true';
     document.body.dataset.adminConsultantProductivityCount = String(buildAdminConsultantProductivity(sourceFunnel, bottlenecks).length);
+    document.body.dataset.adminConsultantPortfolioReady = 'true';
+    document.body.dataset.adminConsultantPortfolioCount = String(buildAdminConsultantPortfolio(sourceFunnel, bottlenecks).length);
   }
 
   function actionLabel(action) {

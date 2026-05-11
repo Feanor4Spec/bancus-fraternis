@@ -15,7 +15,8 @@ const screenshots = {
   proposalMobile: path.join(printsDir, 'v8af-proposta-handoff-mobile.png'),
   handoffDesktop: path.join(printsDir, 'v8af-handoff-proposta-desktop.png'),
   adminActionQueueDesktop: path.join(printsDir, 'v8af-admin-action-queue-desktop.png'),
-  adminProductivityDesktop: path.join(printsDir, 'v8af-admin-productivity-desktop.png')
+  adminProductivityDesktop: path.join(printsDir, 'v8af-admin-productivity-desktop.png'),
+  adminPortfolioDesktop: path.join(printsDir, 'v8ag-admin-consultant-portfolio-desktop.png')
 };
 
 async function launchBrowser() {
@@ -255,6 +256,25 @@ try {
   await page.locator('[data-admin-consultant-productivity]').scrollIntoViewIfNeeded();
   await page.screenshot({ path: screenshots.adminProductivityDesktop, fullPage: false });
 
+  const adminPortfolio = await page.evaluate(() => {
+    const panel = document.querySelector('[data-admin-consultant-portfolio]');
+    return {
+      ready: document.body.dataset.adminConsultantPortfolioReady,
+      count: Number(document.body.dataset.adminConsultantPortfolioCount || 0),
+      rows: document.querySelectorAll('[data-admin-consultant-portfolio-row]').length,
+      leads: document.querySelectorAll('[data-admin-consultant-portfolio-lead]').length,
+      text: panel ? panel.innerText : ''
+    };
+  });
+  assert(adminPortfolio.ready === 'true', 'Dashboard admin nao marcou adminConsultantPortfolioReady=true.', failures);
+  assert(adminPortfolio.rows >= 1, 'Dashboard admin nao renderizou carteira por consultor.', failures);
+  assert(adminPortfolio.leads >= 1, 'Carteira por consultor nao renderizou leads priorizados.', failures);
+  assert(/CARTEIRA POR CONSULTOR|Carteira por consultor/i.test(adminPortfolio.text), 'Carteira nao exibiu titulo esperado.', failures);
+  assert(/AGING MEDIO|Aging medio/i.test(adminPortfolio.text), 'Carteira nao exibiu aging medio.', failures);
+  assert(/PROXIMO FOCO|Proximo foco/i.test(adminPortfolio.text), 'Carteira nao exibiu proximo foco.', failures);
+  await page.locator('[data-admin-consultant-portfolio]').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: screenshots.adminPortfolioDesktop, fullPage: false });
+
   const report = {
     ok: failures.length === 0,
     baseUrl,
@@ -264,6 +284,7 @@ try {
     adminActionQueue,
     adminExecution,
     adminProductivity,
+    adminPortfolio,
     screenshots: reportScreenshots(),
     consoleErrors: consoleErrors.slice(0, 20),
     pageErrors,
