@@ -4,6 +4,27 @@
 
 ---
 
+## [v8.71.0] - 2026-05-11
+
+### Service da lousa de proposta/PDF
+
+#### Adicionado
+- Criado `js/proposal-builder.js` com `BFProposalBuilder` para storage, presets, opcoes, dependencias, foco, prontidao e estimativa de paginas da lousa de exportacao.
+
+#### Modificado
+- `js/app.js` passou a delegar regras puras da proposta/PDF para `BFProposalBuilder`, mantendo os comandos publicos `App.*`.
+- `pages/simulador.html` passou a carregar `proposal-builder.js` entre `proposal-summary.js` e `app.js`.
+- `tools/validate-proposal-builder.mjs`, contratos, mapa, plano, README e protocolo passaram a proteger o novo service.
+
+#### Validado
+- `node --check js/proposal-builder.js`
+- `node --check js/app.js`
+- `node tools/validate-proposal-builder.mjs`
+- `node tools/validate-public-contracts.mjs`
+- Evidencia visual: `docs/test-prints/v8al-proposta-builder-service-desktop.png`
+
+---
+
 ## [v8.70.0] - 2026-05-11
 
 ### Modularizacao inicial do simulador

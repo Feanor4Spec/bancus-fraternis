@@ -8,7 +8,10 @@
   },
   "contracts": {
     "htmlBoard": true,
+    "scriptOrder": true,
+    "appDelegates": true,
     "appStorage": true,
+    "builderService": true,
     "proposalBuilder": true,
     "conceptsSection": true,
     "formulasSection": true,

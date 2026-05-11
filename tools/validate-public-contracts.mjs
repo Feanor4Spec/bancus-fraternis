@@ -43,6 +43,7 @@ const [
   simulator,
   app,
   proposalSummary,
+  proposalBuilder,
   calculatorsJson
 ] = await Promise.all([
   read('docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md'),
@@ -57,6 +58,7 @@ const [
   read('pages/simulador.html'),
   read('js/app.js'),
   read('js/proposal-summary.js'),
+  read('js/proposal-builder.js'),
   read('assets/data/calculadoras.json')
 ]);
 
@@ -161,6 +163,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'BFAuth',
   'BFDecisionContext',
   'BFCalculadoras',
+  'BFProposalBuilder',
   'BFSimulatorJourney',
   'BFSimulatorState',
   'BFComparatorModels',
@@ -218,10 +221,13 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
 assert(adminDashboard.includes('href="#admin-proximos-passos"'), 'dashboard-admin.html sem atalho para proximos passos.');
 assert(simulator.includes('data-proposal-builder-board'), 'simulador.html sem lousa de proposta documentada.');
 assert(simulator.includes('data-proposal-version-panel'), 'simulador.html sem painel de versionamento da proposta.');
+assert(simulator.includes('js/proposal-builder.js'), 'simulador.html sem modulo proposal-builder.');
 assert(simulator.includes('js/simulator-journey.js'), 'simulador.html sem modulo simulator-journey.');
 assert(simulator.includes('js/simulator-state.js'), 'simulador.html sem modulo simulator-state.');
 assert(app.includes('data-simulator-journey-actions'), 'app.js sem acoes de jornada do simulador.');
-assert(app.includes('bank_fratern_proposal_builder_v1'), 'app.js sem chave da lousa de proposta.');
+assert(app.includes('BFProposalBuilder'), 'app.js nao delega lousa de proposta para BFProposalBuilder.');
+assert(proposalBuilder.includes('bank_fratern_proposal_builder_v1'), 'proposal-builder.js sem chave da lousa de proposta.');
+assert(proposalBuilder.includes('BFProposalBuilder'), 'proposal-builder.js sem export global da lousa de proposta.');
 assert(app.includes('salvarVersaoProposta'), 'app.js sem acao publica de salvar versao da proposta.');
 assert(proposalSummary.includes('proposalBuilderDefaults'), 'proposal-summary.js sem defaults publicos da lousa.');
 assert(contracts.includes('data-handoff-assignee-filter'), 'Contrato publico nao documenta filtro de responsavel do handoff.');
@@ -279,7 +285,7 @@ const report = {
   contracts: {
     localStorageKeys: 17,
     dataMarkers: 56,
-    globals: 14,
+    globals: 15,
     deepLinks: 10,
     validators: 16,
     calculatorCount

@@ -16,20 +16,26 @@ async function readText(relativePath) {
 const html = await readText('pages/simulador.html');
 const app = await readText('js/app.js');
 const proposalSummary = await readText('js/proposal-summary.js');
+const proposalBuilder = await readText('js/proposal-builder.js');
 const css = await readText('css/styles.css');
 
 assert(html.includes('data-proposal-builder-board'), 'simulador.html sem lousa de exportacao da proposta.');
 assert(html.includes('proposal-builder-board'), 'simulador.html sem container visual da lousa.');
+assert(html.includes('js/proposal-builder.js'), 'simulador.html sem modulo proposal-builder.js.');
+assert(html.indexOf('js/proposal-summary.js') < html.indexOf('js/proposal-builder.js'), 'proposal-builder.js deve carregar depois de proposal-summary.js.');
+assert(html.indexOf('js/proposal-builder.js') < html.indexOf('js/app.js'), 'proposal-builder.js deve carregar antes de app.js.');
 
-assert(app.includes('bank_fratern_proposal_builder_v1'), 'app.js sem chave de persistencia da lousa.');
+assert(proposalBuilder.includes('bank_fratern_proposal_builder_v1'), 'proposal-builder.js sem chave de persistencia da lousa.');
+assert(proposalBuilder.includes('BFProposalBuilder'), 'proposal-builder.js sem export global BFProposalBuilder.');
 assert(app.includes('renderProposalBuilderBoard'), 'app.js sem renderProposalBuilderBoard().');
 assert(app.includes('toggleProposalBuilderOption'), 'app.js sem toggleProposalBuilderOption().');
 assert(app.includes('applyProposalBuilderPreset'), 'app.js sem applyProposalBuilderPreset().');
 assert(app.includes('setProposalBuilderGroup'), 'app.js sem setProposalBuilderGroup().');
 assert(app.includes('setProposalBuilderAll'), 'app.js sem setProposalBuilderAll().');
+assert(app.includes('BFProposalBuilder'), 'app.js nao delega regras da lousa para BFProposalBuilder.');
 assert(app.includes('proposalBuilderPresetConfig'), 'app.js sem presets da lousa.');
-assert(app.includes("preset === 'consultiva'"), 'app.js sem preset consultiva.');
-assert(app.includes("preset === 'tecnica'"), 'app.js sem preset tecnica.');
+assert(proposalBuilder.includes("preset === 'consultiva'"), 'proposal-builder.js sem preset consultiva.');
+assert(proposalBuilder.includes("preset === 'tecnica'"), 'proposal-builder.js sem preset tecnica.');
 assert(app.includes('proposalBuilderReadinessIssues'), 'app.js sem leitura de prontidao da lousa.');
 assert(app.includes('proposalBuilderPageEstimate'), 'app.js sem estimativa de paginas da lousa.');
 assert(app.includes('data-proposal-builder-readiness'), 'app.js sem marcador data-proposal-builder-readiness.');
@@ -72,10 +78,17 @@ vm.createContext(context);
 vm.runInContext(`${proposalSummary}\nglobalThis.__ProposalSummary = ProposalSummary;`, context, {
   filename: 'js/proposal-summary.js'
 });
+vm.runInContext(proposalBuilder, context, {
+  filename: 'js/proposal-builder.js'
+});
 
 const summary = context.__ProposalSummary;
 assert(summary && typeof summary.normalizeProposalBuilder === 'function', 'normalizeProposalBuilder indisponivel em runtime.');
 assert(summary && summary.proposalBuilderDefaults, 'proposalBuilderDefaults indisponivel em runtime.');
+const builder = context.BFProposalBuilder;
+assert(builder && typeof builder.normalizeConfig === 'function', 'BFProposalBuilder.normalizeConfig indisponivel em runtime.');
+assert(builder && typeof builder.presetConfig === 'function', 'BFProposalBuilder.presetConfig indisponivel em runtime.');
+assert(builder && typeof builder.readinessIssues === 'function', 'BFProposalBuilder.readinessIssues indisponivel em runtime.');
 
 const normalized = summary.normalizeProposalBuilder({
   sections: { schedule: false, concepts: false },
@@ -91,6 +104,20 @@ assert(normalized.charts.composition === true, 'Normalizador nao preserva defaul
 assert(normalized.concepts.seguro === false, 'Normalizador nao preserva conceito seguro=false.');
 assert(normalized.formulas.parcelaBase === false, 'Normalizador nao preserva formula parcelaBase=false.');
 
+const consultiva = builder.presetConfig('consultiva');
+const tecnica = builder.presetConfig('tecnica');
+const compacta = builder.presetConfig('compacta');
+assert(consultiva.sections.schedule === false, 'Preset consultiva deveria ocultar cronograma.');
+assert(consultiva.concepts.consorcio === true && consultiva.concepts.seguro === false, 'Preset consultiva nao seleciona conceitos esperados.');
+assert(tecnica.sections.formulas === true && tecnica.sections.concepts === false, 'Preset tecnica nao prioriza memoria de calculo.');
+assert(compacta.sections.header === true && compacta.sections.schedule === false, 'Preset compacta nao reduz blocos corretamente.');
+assert(builder.focusLabel(consultiva) === 'Consultiva', 'focusLabel nao reconhece preset consultiva.');
+assert(builder.pageEstimate(tecnica) >= 1, 'pageEstimate deve retornar ao menos 1 pagina.');
+assert(builder.readinessIssues(builder.presetConfig('completa')).length === 0, 'Preset completo nao deveria ter pendencias.');
+const emptyConfig = builder.presetConfig('completa');
+Object.keys(emptyConfig.sections).forEach((key) => { emptyConfig.sections[key] = false; });
+assert(builder.readinessIssues(emptyConfig).includes('Nenhum bloco selecionado para exportacao.'), 'readinessIssues nao identifica lousa vazia.');
+
 const defaults = summary.proposalBuilderDefaults;
 const report = {
   ok: failures.length === 0,
@@ -102,7 +129,10 @@ const report = {
   },
   contracts: {
     htmlBoard: html.includes('data-proposal-builder-board'),
-    appStorage: app.includes('bank_fratern_proposal_builder_v1'),
+    scriptOrder: html.indexOf('js/proposal-summary.js') < html.indexOf('js/proposal-builder.js') && html.indexOf('js/proposal-builder.js') < html.indexOf('js/app.js'),
+    appDelegates: app.includes('BFProposalBuilder'),
+    appStorage: proposalBuilder.includes('bank_fratern_proposal_builder_v1'),
+    builderService: proposalBuilder.includes('BFProposalBuilder'),
     proposalBuilder: proposalSummary.includes('normalizeProposalBuilder'),
     conceptsSection: proposalSummary.includes('renderConceptsSection'),
     formulasSection: proposalSummary.includes('renderFormulaExplanations'),
@@ -110,8 +140,8 @@ const report = {
     groupActions: app.includes('setProposalBuilderGroup'),
     selectionSummary: proposalSummary.includes('data-proposal-selection-summary'),
     presets: {
-      consultiva: app.includes("preset === 'consultiva'"),
-      tecnica: app.includes("preset === 'tecnica'")
+      consultiva: proposalBuilder.includes("preset === 'consultiva'"),
+      tecnica: proposalBuilder.includes("preset === 'tecnica'")
     }
   },
   failures

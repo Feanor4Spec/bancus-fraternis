@@ -23,7 +23,6 @@ const App = (() => {
   let _viewingGroup = null; // grupo aberto no modal de detalhes
   // V5: Projeto Estruturado Multi-Seleção
   let projetoEstruturado = { itens: [] }; // carrinho de grupos selecionados
-  const PROPOSAL_BUILDER_STORAGE_KEY = 'bank_fratern_proposal_builder_v1';
 
   // ─── Utilitários de Formatação ───
   const Format = {
@@ -767,289 +766,68 @@ const App = (() => {
   }
 
   function defaultProposalBuilderConfig() {
-    const defaults = (typeof ProposalSummary !== 'undefined' && ProposalSummary.proposalBuilderDefaults)
-      ? ProposalSummary.proposalBuilderDefaults
-      : {
-        sections: {
-          header: true,
-          executive: true,
-          kpis: true,
-          journey: true,
-          project: true,
-          productPhases: true,
-          financialComposition: true,
-          contributionOverview: true,
-          bidStrategy: true,
-          projection: true,
-          schedule: true,
-          concepts: true,
-          formulas: true,
-          nextSteps: true,
-          acceptance: true,
-          disclaimer: true
-        },
-        charts: {
-          composition: true,
-          installment: true,
-          bid: true,
-          debt: true,
-          installmentProjection: true
-        },
-        concepts: {
-          consorcio: true,
-          cartaCredito: true,
-          grupoCota: true,
-          assembleia: true,
-          lanceProprio: true,
-          lanceEmbutido: true,
-          contemplacao: true,
-          fundoReserva: true,
-          taxaAdministracao: true,
-          saldoDevedor: true,
-          reajuste: true,
-          seguro: true
-        },
-        formulas: {
-          parcelaTotal: true,
-          parcelaBase: true,
-          taxaAdministracao: true,
-          fundoReserva: true,
-          lanceTotal: true,
-          cartaLiquida: true,
-          saldoDevedor: true,
-          percentualPago: true
-        }
-      };
-    return JSON.parse(JSON.stringify(defaults));
+    return window.BFProposalBuilder && window.BFProposalBuilder.defaultConfig
+      ? window.BFProposalBuilder.defaultConfig()
+      : {};
   }
 
   function normalizeProposalBuilderConfig(value) {
-    if (typeof ProposalSummary !== 'undefined' && ProposalSummary.normalizeProposalBuilder) {
-      return ProposalSummary.normalizeProposalBuilder(value);
-    }
-    const defaults = defaultProposalBuilderConfig();
-    const source = value && typeof value === 'object' ? value : {};
-    const merge = (group) => Object.keys(defaults[group]).reduce((acc, key) => {
-      acc[key] = source[group] && source[group][key] === false ? false : true;
-      return acc;
-    }, {});
-    return {
-      sections: merge('sections'),
-      charts: merge('charts'),
-      concepts: merge('concepts'),
-      formulas: merge('formulas')
-    };
+    return window.BFProposalBuilder && window.BFProposalBuilder.normalizeConfig
+      ? window.BFProposalBuilder.normalizeConfig(value)
+      : defaultProposalBuilderConfig();
   }
 
   function getProposalBuilderConfig() {
-    try {
-      const raw = localStorage.getItem(PROPOSAL_BUILDER_STORAGE_KEY);
-      return normalizeProposalBuilderConfig(raw ? JSON.parse(raw) : null);
-    } catch (e) {
-      return normalizeProposalBuilderConfig(null);
-    }
+    return window.BFProposalBuilder && window.BFProposalBuilder.getConfig
+      ? window.BFProposalBuilder.getConfig(localStorage)
+      : normalizeProposalBuilderConfig(null);
   }
 
   function saveProposalBuilderConfig(config) {
-    const normalized = normalizeProposalBuilderConfig(config);
-    try {
-      localStorage.setItem(PROPOSAL_BUILDER_STORAGE_KEY, JSON.stringify(normalized));
-    } catch (e) {
-      console.warn('Nao foi possivel salvar a lousa da proposta.', e);
-    }
-    return normalized;
+    return window.BFProposalBuilder && window.BFProposalBuilder.saveConfig
+      ? window.BFProposalBuilder.saveConfig(config, localStorage)
+      : normalizeProposalBuilderConfig(config);
   }
 
   function proposalBuilderOptionGroups() {
-    return [
-      {
-        key: 'sections',
-        title: 'Blocos da proposta',
-        description: 'Escolha quais paginas e narrativas entram no preview e no PDF final.',
-        options: [
-          { key: 'header', label: 'Capa e identificacao', help: 'Cliente, grupo, cota, status e acao de exportacao.' },
-          { key: 'executive', label: 'Mapa executivo', help: 'Blocos que conectam decisao, caixa, lance e risco.' },
-          { key: 'kpis', label: 'Numeros estrategicos', help: 'Credito, parcela, prazo, saldo, total e percentual percorrido.' },
-          { key: 'journey', label: 'Jornada do cliente', help: 'Adesao, assembleias, lance, contemplacao e uso do credito.' },
-          { key: 'project', label: 'Composicao do projeto', help: 'Grupos, cotas, administradoras, cartas, taxas e papeis.' },
-          { key: 'productPhases', label: 'Fases do produto', help: 'Pontos de controle comerciais e operacionais do consorcio.' },
-          { key: 'financialComposition', label: 'Estrutura financeira', help: 'Carta, taxa, fundo, seguro e composicao do plano.' },
-          { key: 'contributionOverview', label: 'Contribuicoes e parcelas', help: 'Parcelas pagas, restantes e proxima parcela.' },
-          { key: 'bidStrategy', label: 'Lance e contemplacao', help: 'Lance proprio, embutido, total e credito liquido.' },
-          { key: 'projection', label: 'Projecoes', help: 'Saldo devedor, parcelas e leitura de comportamento futuro.' },
-          { key: 'schedule', label: 'Cronograma mensal', help: 'Tabela mes a mes para propostas completas.' },
-          { key: 'concepts', label: 'Conceitos educativos', help: 'Glossario comercial selecionado para o cliente.' },
-          { key: 'formulas', label: 'Memoria de calculo', help: 'Formulas e explicacoes de calculo da proposta.' },
-          { key: 'nextSteps', label: 'Proximos passos', help: 'Sequencia operacional para decisao e continuidade.' },
-          { key: 'acceptance', label: 'Governanca e aceite', help: 'Registro de revisao local e validade da proposta.' },
-          { key: 'disclaimer', label: 'Premissas finais', help: 'Observacoes e limites formais da simulacao.' }
-        ]
-      },
-      {
-        key: 'charts',
-        title: 'Graficos disponiveis',
-        description: 'Controle os graficos que aparecem dentro dos blocos selecionados.',
-        options: [
-          { key: 'composition', label: 'Composicao financeira', help: 'Grafico de carta, taxa, fundo e seguro.' },
-          { key: 'installment', label: 'Evolucao das parcelas', help: 'Linha projetada da parcela ao longo do tempo.' },
-          { key: 'bid', label: 'Lance versus credito', help: 'Comparativo entre lance total, credito liquido e saldo.' },
-          { key: 'debt', label: 'Saldo devedor', help: 'Curva de amortizacao e saldo futuro.' },
-          { key: 'installmentProjection', label: 'Projecao de parcelas', help: 'Barras de parcelas projetadas por periodo.' }
-        ]
-      },
-      {
-        key: 'concepts',
-        title: 'Conceitos para cliente',
-        description: 'Selecione os conceitos que devem acompanhar a proposta final.',
-        options: [
-          { key: 'consorcio', label: 'Consorcio', help: 'Modelo de compra planejada em grupo.' },
-          { key: 'cartaCredito', label: 'Carta de credito', help: 'Poder de compra contratado.' },
-          { key: 'grupoCota', label: 'Grupo e cota', help: 'Origem operacional da proposta.' },
-          { key: 'assembleia', label: 'Assembleia', help: 'Evento de sorteio, lance e acompanhamento.' },
-          { key: 'lanceProprio', label: 'Lance proprio', help: 'Recurso direto do cliente.' },
-          { key: 'lanceEmbutido', label: 'Lance embutido', help: 'Uso de parte da carta como lance.' },
-          { key: 'contemplacao', label: 'Contemplacao', help: 'Marco de acesso ao credito.' },
-          { key: 'fundoReserva', label: 'Fundo de reserva', help: 'Protecao financeira do grupo.' },
-          { key: 'taxaAdministracao', label: 'Taxa de administracao', help: 'Custo de administracao do plano.' },
-          { key: 'saldoDevedor', label: 'Saldo devedor', help: 'Compromisso pendente projetado.' },
-          { key: 'reajuste', label: 'Reajuste', help: 'Atualizacao por indice e regras do grupo.' },
-          { key: 'seguro', label: 'Seguro', help: 'Protecao prevista conforme produto.' }
-        ]
-      },
-      {
-        key: 'formulas',
-        title: 'Formulas explicadas',
-        description: 'Inclua a memoria de calculo que sustenta a conversa comercial.',
-        options: [
-          { key: 'parcelaTotal', label: 'Parcela total', help: 'Soma dos componentes mensais.' },
-          { key: 'parcelaBase', label: 'Parcela base', help: 'Carta dividida pelo prazo.' },
-          { key: 'taxaAdministracao', label: 'Taxa administrativa', help: 'Carta multiplicada pela taxa total.' },
-          { key: 'fundoReserva', label: 'Fundo de reserva', help: 'Carta multiplicada pelo percentual de fundo.' },
-          { key: 'lanceTotal', label: 'Lance total', help: 'Lance proprio mais embutido.' },
-          { key: 'cartaLiquida', label: 'Carta liquida', help: 'Carta menos lance embutido.' },
-          { key: 'saldoDevedor', label: 'Saldo devedor', help: 'Saldo apos pagamentos, lances e eventos.' },
-          { key: 'percentualPago', label: 'Percentual percorrido', help: 'Parcelas pagas sobre parcelas totais.' }
-        ]
-      }
-    ];
+    return window.BFProposalBuilder && window.BFProposalBuilder.optionGroups
+      ? window.BFProposalBuilder.optionGroups()
+      : [];
   }
 
   function proposalBuilderPresetConfig(preset) {
-    const config = defaultProposalBuilderConfig();
-    const setAll = (group, value) => {
-      Object.keys(config[group]).forEach(key => { config[group][key] = value; });
-    };
-
-    if (preset === 'consultiva') {
-      config.sections.schedule = false;
-      setAll('concepts', false);
-      setAll('formulas', false);
-      ['consorcio', 'cartaCredito', 'lanceProprio', 'lanceEmbutido', 'contemplacao', 'taxaAdministracao', 'saldoDevedor'].forEach(key => { config.concepts[key] = true; });
-      ['parcelaTotal', 'lanceTotal', 'cartaLiquida', 'saldoDevedor'].forEach(key => { config.formulas[key] = true; });
-      return config;
-    }
-
-    if (preset === 'executiva') {
-      ['project', 'productPhases', 'schedule', 'concepts', 'formulas'].forEach(key => { config.sections[key] = false; });
-      setAll('concepts', false);
-      setAll('formulas', false);
-      config.charts.installment = false;
-      return config;
-    }
-
-    if (preset === 'educativa') {
-      config.sections.schedule = false;
-      config.sections.acceptance = false;
-      return config;
-    }
-
-    if (preset === 'tecnica') {
-      setAll('sections', false);
-      ['header', 'kpis', 'project', 'productPhases', 'financialComposition', 'contributionOverview', 'projection', 'schedule', 'formulas', 'nextSteps', 'acceptance', 'disclaimer'].forEach(key => { config.sections[key] = true; });
-      setAll('concepts', false);
-      config.charts.bid = false;
-      config.sections.concepts = false;
-      return config;
-    }
-
-    if (preset === 'compacta') {
-      setAll('sections', false);
-      setAll('charts', false);
-      setAll('concepts', false);
-      setAll('formulas', false);
-      ['header', 'kpis', 'financialComposition', 'bidStrategy', 'projection', 'nextSteps', 'disclaimer'].forEach(key => { config.sections[key] = true; });
-      ['composition', 'bid', 'debt'].forEach(key => { config.charts[key] = true; });
-      return config;
-    }
-
-    return config;
+    return window.BFProposalBuilder && window.BFProposalBuilder.presetConfig
+      ? window.BFProposalBuilder.presetConfig(preset)
+      : defaultProposalBuilderConfig();
   }
 
-  const proposalBuilderChartSections = {
-    composition: 'financialComposition',
-    installment: 'contributionOverview',
-    bid: 'bidStrategy',
-    debt: 'projection',
-    installmentProjection: 'projection'
-  };
-
-  const proposalBuilderSectionWeights = {
-    header: 0.6,
-    executive: 0.8,
-    kpis: 0.8,
-    journey: 0.8,
-    project: 1.1,
-    productPhases: 0.8,
-    financialComposition: 0.9,
-    contributionOverview: 0.9,
-    bidStrategy: 0.9,
-    projection: 1.1,
-    schedule: 2.2,
-    concepts: 1.1,
-    formulas: 1.1,
-    nextSteps: 0.8,
-    acceptance: 0.8,
-    disclaimer: 0.4
-  };
-
   function countEnabledFlags(group) {
-    return Object.values(group || {}).filter(Boolean).length;
+    return window.BFProposalBuilder && window.BFProposalBuilder.countEnabledFlags
+      ? window.BFProposalBuilder.countEnabledFlags(group)
+      : Object.values(group || {}).filter(Boolean).length;
   }
 
   function proposalBuilderPageEstimate(config) {
-    const total = Object.entries(proposalBuilderSectionWeights).reduce((sum, [key, weight]) => {
-      return sum + (config.sections && config.sections[key] !== false ? weight : 0);
-    }, 0);
-    return Math.max(1, Math.ceil(total));
+    return window.BFProposalBuilder && window.BFProposalBuilder.pageEstimate
+      ? window.BFProposalBuilder.pageEstimate(config)
+      : 1;
   }
 
   function proposalBuilderReadinessIssues(config) {
-    const issues = [];
-    if (!config.sections.header) issues.push('Capa desativada.');
-    if (!config.sections.kpis) issues.push('Numeros estrategicos desativados.');
-    if (!config.sections.nextSteps) issues.push('Proximos passos desativados.');
-    if (!config.sections.disclaimer) issues.push('Premissas finais desativadas.');
-    if (config.sections.concepts && countEnabledFlags(config.concepts) === 0) issues.push('Bloco de conceitos ativo sem conceitos selecionados.');
-    if (config.sections.formulas && countEnabledFlags(config.formulas) === 0) issues.push('Memoria de calculo ativa sem formulas selecionadas.');
-    if (countEnabledFlags(config.sections) === 0) issues.push('Nenhum bloco selecionado para exportacao.');
-    return issues;
+    return window.BFProposalBuilder && window.BFProposalBuilder.readinessIssues
+      ? window.BFProposalBuilder.readinessIssues(config)
+      : [];
   }
 
   function proposalBuilderFocusLabel(config) {
-    if (config.sections.schedule && config.sections.formulas && !config.sections.concepts) return 'Tecnica';
-    if (!config.sections.schedule && config.sections.concepts && config.sections.formulas) return 'Consultiva';
-    if (!config.sections.concepts && !config.sections.formulas && !config.sections.schedule) return 'Executiva';
-    if (config.sections.concepts && config.sections.formulas && !config.sections.acceptance) return 'Educativa';
-    if (countEnabledFlags(config.sections) <= 7) return 'Compacta';
-    return 'Completa';
+    return window.BFProposalBuilder && window.BFProposalBuilder.focusLabel
+      ? window.BFProposalBuilder.focusLabel(config)
+      : 'Completa';
   }
 
   function syncProposalBuilderDependencies(config, group, key, checked) {
-    if (!checked) return;
-    if (group === 'concepts') config.sections.concepts = true;
-    if (group === 'formulas') config.sections.formulas = true;
-    if (group === 'charts' && proposalBuilderChartSections[key]) {
-      config.sections[proposalBuilderChartSections[key]] = true;
+    if (window.BFProposalBuilder && window.BFProposalBuilder.syncDependencies) {
+      window.BFProposalBuilder.syncDependencies(config, group, key, checked);
     }
   }
 

@@ -56,7 +56,7 @@ Validacoes obrigatorias:
 - Paginas sem shell compartilhado que continuam ativas devem carregar o v8 diretamente.
 - `pages/index.html` deve manter a narrativa institucional antes do perfil financeiro.
 - `pages/simulador.html` deve preservar loading da base real, barra percentual e retomada por `simulationId`.
-- `pages/simulador.html` deve carregar `js/simulator-journey.js` e `js/simulator-state.js` antes de `js/app.js`, preservando `App.*`.
+- `pages/simulador.html` deve carregar `js/simulator-journey.js`, `js/simulator-state.js` e `js/proposal-builder.js` antes de `js/app.js`, preservando `App.*`.
 - `data-simulator-journey-actions` deve aparecer no painel de decisao do simulador quando a jornada for renderizada.
 - `pages/carteira.html`, `pages/assembleias.html`, `pages/duvidas.html`, `pages/sobre-nos.html` e `pages/configuracoes.html` devem estar marcadas como paginas ativas no contrato v8.
 - `pages/index_2.html`, `pages/index_v4_paginas.html` e `pages/consorcio_user_journey_map_v2.html` devem permanecer como legados controlados.
@@ -152,6 +152,7 @@ Validacoes obrigatorias:
 - Carregar um exemplo ou restaurar uma simulacao salva.
 - Avancar para a etapa 9 e confirmar a existencia de `#proposal-export-root`.
 - Confirmar que a lousa contem `data-proposal-builder-readiness`, presets consultivo/tecnico e acoes de selecionar/limpar por grupo.
+- Confirmar que `BFProposalBuilder` centraliza storage, presets, prontidao, dependencias e estimativa de paginas da lousa.
 - Confirmar que itens desmarcados na lousa nao aparecem como placeholder no PDF final.
 - Confirmar que a etapa 9 contem `.ps-section--conversation` e quatro `.ps-conversation-card`.
 - Confirmar que `data-proposal-selection-summary` registra a quantidade de blocos, graficos, conceitos e formulas selecionados.

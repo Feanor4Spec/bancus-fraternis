@@ -27,6 +27,13 @@ jobs:
             node --check "$file"
           done
 
+      - name: Check simulator script syntax
+        run: |
+          node --check js/proposal-builder.js
+          node --check js/simulator-journey.js
+          node --check js/simulator-state.js
+          node --check js/app.js
+
       - name: Run static validators
         run: |
           node tools/validate-public-release-safety.mjs

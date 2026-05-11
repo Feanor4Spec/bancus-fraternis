@@ -250,6 +250,7 @@ const requiredFiles = [
   'assets/js/services/journey-recovery.service.js',
   'assets/js/services/admin-recovery.service.js',
   'js/shared-layout.js',
+  'js/proposal-builder.js',
   'js/simulator-journey.js',
   'js/simulator-state.js',
   'js/proposal-acceptance.js',
