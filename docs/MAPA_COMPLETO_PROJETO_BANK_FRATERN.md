@@ -105,7 +105,7 @@ Contrato confirmado:
 | `pages/dados-abertos.html` | Ativa | Datasets locais e explicacao de origem/uso. |
 | `pages/api-docs.html` | Ativa | Contratos futuros de API baseados nos services atuais. |
 | `pages/componentes-v8.html` | Ativa | Catalogo visual do design system v8. |
-| `pages/lousa-navegacao.html` | Ativa | Lousa navegavel da jornada, status, roteiro de QA ponta a ponta e proximos ciclos. |
+| `pages/lousa-navegacao.html` | Ativa | Lousa navegavel da jornada, status, roteiro de QA ponta a ponta, checkpoints comerciais/online e proximos ciclos. |
 
 ### Autenticacao, Configuracoes e Operacao
 
@@ -282,6 +282,7 @@ Melhoria implementada em 2026-05-07:
 - A cadencia comercial do funil mostra movimentacoes recentes, resumo por etapa e leads parados por prazo de etapa.
 - O funil/cadencia comercial agora exporta JSON sanitizado em `bank-fratern.admin-commercial-pipeline.v1`, com leads anonimizados, totais por etapa e movimentacoes recentes para reuniao diaria.
 - O Handoff Consultivo agora le a etapa comercial salva pelo Admin, mostra chip/painel de cadencia, ultima movimentacao e atraso da etapa para o consultor.
+- A lousa navegavel agora possui checkpoints de QA comercial para cockpit cliente, handoff consultivo, funil/cadencia admin, exportacao sanitizada e smoke test online.
 - O painel consultivo filtra por origem e mostra badge/resumo da origem nos cards e no detalhe.
 - O dashboard admin mostra metricas de propostas e trilhas na fila de handoff.
 - O contrato e coberto por `tools/validate-handoff-origins.mjs` e `tools/validate-handoff-consultant-operations.mjs`.
@@ -427,7 +428,7 @@ Os marcadores mais importantes por area:
 | Handoff | `data-handoff-list`, `data-handoff-detail`, `data-handoff-metrics`, `data-handoff-recovery-signals`, `data-handoff-action-plan`, `data-handoff-action-execution`, `data-handoff-proposal-version`, `data-handoff-commercial-stage`, `data-handoff-commercial-stage-panel`, `data-handoff-commercial-stage-history`. |
 | Cliente | `data-client-continuity-strip`, `data-client-continuity-cockpit`, `data-client-next-action`, `data-client-handoff-status`, `data-client-proposal-status`, `data-client-simulation-context`, `data-client-commercial-stage`, `data-client-decision-journey`, `data-client-recovery-signals`. |
 | Admin | `data-admin-next-actions`, `data-admin-action-queue`, `data-admin-action-execution`, `data-admin-action-owner-history`, `data-admin-consultant-productivity`, `data-admin-consultant-portfolio`, `data-admin-consultant-portfolio-lead`, `data-admin-consultant-portfolio-filters`, `data-admin-consultant-portfolio-export`, `data-admin-consultant-portfolio-priority`, `data-admin-commercial-pipeline`, `data-admin-commercial-pipeline-export`, `data-admin-commercial-stage`, `data-admin-commercial-lead`, `data-admin-commercial-stage-select`, `data-admin-commercial-stage-history`, `data-admin-commercial-stage-insights`, `data-admin-commercial-stage-movement`, `data-admin-commercial-stage-stuck-lead`, `data-admin-commercial-stage-summary`, `data-admin-source-funnel`, `data-admin-bottleneck-board`, `data-admin-recovery-queue`, `data-admin-recovery-packages`, `data-admin-journey-funnel`, `data-admin-operational-alerts`. |
-| Lousa | `data-lousa-journey-checklist`, `data-lousa-journey-acceptance`. |
+| Lousa | `data-lousa-commercial-qa`, `data-lousa-qa-checkpoint`, `data-lousa-journey-checklist`, `data-lousa-journey-acceptance`. |
 | V8 | `data-v8-stagebar`, `data-bf-visual-version`, `data-shell-header`, `data-shell-footer`. |
 
 ### Exports globais
@@ -536,10 +537,10 @@ Governanca documental: docs ativos passaram a usar Bancus Fraternis como platafo
 
 ## Proximos Vetores
 
-O vetor recomendado para o proximo ciclo continua sendo produto e jornada, agora com foco em transformar continuidade e QA comercial em rotinas mais claras:
+O vetor recomendado para o proximo ciclo continua sendo produto e jornada, agora com foco em reduzir risco tecnico sem quebrar contratos publicos:
 
-1. Atualizar `pages/lousa-navegacao.html` para cobrir funil comercial, cadencia, exportacao do funil, handoff consultivo, cockpit do cliente e QA online como checkpoints visuais.
+1. Reduzir divida tecnica do simulador em modulos menores, preservando `data-*`, `localStorage`, deep links e exports globais.
 2. Preparar plano de migracao futura para backend/API sem quebrar `localStorage`, deep links e services globais.
-3. Reduzir divida tecnica do simulador em modulos menores, preservando os contratos publicos.
+3. Manter a lousa como porta de QA visual a cada nova entrega funcional.
 
 O plano detalhado esta em `docs/PLANO_ACAO_EVOLUCAO_BANK_FRATERN.md`.

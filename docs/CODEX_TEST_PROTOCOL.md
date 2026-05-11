@@ -124,6 +124,7 @@ Validacoes obrigatorias:
 
 - `pages/lousa-navegacao.html` deve conter `data-lousa-journey-checklist`, `data-lousa-journey-acceptance` e `#roteiro-navegavel`.
 - O roteiro deve cobrir Auth, Home, Produtos, Calculadoras, Trilha, Comparador, Simulador, Proposta, Handoff e Dashboards.
+- A lousa deve conter `data-lousa-commercial-qa` com checkpoints de cockpit cliente, handoff/cadencia, funil admin, exportacao sanitizada e QA online.
 - Os links devem abrir paginas existentes e usar deep links com `from=lousa` quando fizer sentido.
 - O Dashboard Admin deve manter atalho para `lousa-navegacao.html#roteiro-navegavel`.
 - Contratos publicos e design system devem exigir o validador.

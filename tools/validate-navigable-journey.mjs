@@ -82,14 +82,30 @@ const expectedSteps = [
   'dashboards'
 ];
 
+const expectedCheckpoints = [
+  'client-cockpit',
+  'consultant-cadence',
+  'commercial-pipeline',
+  'commercial-cadence',
+  'commercial-export',
+  'online-smoke'
+];
+
 assert(lousa.includes('data-lousa-journey-checklist'), 'Lousa sem marcador data-lousa-journey-checklist.');
 assert(lousa.includes('data-lousa-journey-acceptance'), 'Lousa sem criterios de aceite navegavel.');
+assert(lousa.includes('data-lousa-commercial-qa'), 'Lousa sem marcador data-lousa-commercial-qa.');
 assert(lousa.includes('id="roteiro-navegavel"'), 'Lousa sem ancora #roteiro-navegavel.');
+assert(lousa.includes('id="qa-comercial"'), 'Lousa sem ancora #qa-comercial.');
 assert(lousa.includes('href="#roteiro-navegavel"'), 'Stagebar/atalho da lousa nao aponta para o roteiro navegavel.');
+assert(lousa.includes('href="#qa-comercial"'), 'Stagebar/atalho da lousa nao aponta para QA comercial.');
 assert(lousa.includes('27 validadores'), 'Lousa nao registra o total esperado de 27 validadores.');
 
 for (const step of expectedSteps) {
   assert(lousa.includes(`data-lousa-journey-step="${step}"`), `Roteiro navegavel sem etapa ${step}.`);
+}
+
+for (const checkpoint of expectedCheckpoints) {
+  assert(lousa.includes(`data-lousa-qa-checkpoint="${checkpoint}"`), `QA comercial sem checkpoint ${checkpoint}.`);
 }
 
 [
@@ -104,6 +120,29 @@ for (const step of expectedSteps) {
   'handoff-consultivo.html?from=lousa#painel-consultor',
   'dashboard-admin.html?from=lousa#admin-proximos-passos'
 ].forEach((href) => assert(lousa.includes(`href="${href}"`), `Roteiro navegavel sem link ${href}.`));
+
+[
+  'dashboard-cliente.html?from=lousa#continuidade-cliente',
+  'handoff-consultivo.html?from=lousa#painel-consultor',
+  'dashboard-admin.html?from=lousa#admin-funil-comercial',
+  'dashboard-admin.html?from=lousa&qa=funil-comercial#admin-funil-comercial',
+  'https://feanor4spec.github.io/bancus-fraternis/pages/lousa-navegacao.html#roteiro-navegavel'
+].forEach((href) => assert(lousa.includes(`href="${href}"`), `QA comercial sem link ${href}.`));
+
+[
+  'data-client-continuity-cockpit',
+  'data-client-next-action',
+  'data-client-commercial-stage',
+  'data-handoff-commercial-stage-panel',
+  'data-admin-commercial-pipeline',
+  'data-admin-commercial-stage-select',
+  'data-admin-commercial-stage-insights',
+  'data-admin-commercial-stage-movement',
+  'data-admin-commercial-pipeline-export',
+  'bank-fratern.admin-commercial-pipeline.v1',
+  'tools/validate-online-journey-smoke.mjs',
+  'tools/validate-github-pages-deploy.mjs'
+].forEach((marker) => assert(lousa.includes(marker), `QA comercial sem contrato ${marker}.`));
 
 const localRefs = extractLocalHtmlRefs(lousa);
 for (const ref of localRefs) {
@@ -168,6 +207,9 @@ for (const contract of pageContracts) {
   'data-admin-next-actions',
   'data-admin-source-funnel',
   'data-admin-bottleneck-board',
+  'data-admin-commercial-pipeline',
+  'data-admin-commercial-stage-insights',
+  'data-admin-commercial-pipeline-export',
   'id="admin-proximos-passos"',
   'id="admin-origens"',
   'id="admin-gargalos"'
@@ -176,12 +218,16 @@ for (const contract of pageContracts) {
 [
   '.bf-lousa-test-grid',
   '.bf-lousa-test-card',
+  '.bf-lousa-checkpoint-grid',
+  '.bf-lousa-checkpoint-card',
   '.bf-lousa-acceptance'
 ].forEach((selector) => assert(platformCss.includes(selector), `platform.css sem estilo ${selector}.`));
 
 [
   'data-lousa-journey-checklist',
   'data-lousa-journey-acceptance',
+  'data-lousa-commercial-qa',
+  'data-lousa-qa-checkpoint',
   'tools/validate-navigable-journey.mjs'
 ].forEach((contract) => assert(contracts.includes(contract), `Contratos publicos sem ${contract}.`));
 
@@ -210,6 +256,7 @@ for (const validator of requiredValidators) {
 const report = {
   ok: failures.length === 0,
   journeySteps: expectedSteps.length,
+  qaCheckpoints: expectedCheckpoints.length,
   localRefs: localRefs.length,
   requiredValidators: requiredValidators.length + 1,
   warnings,

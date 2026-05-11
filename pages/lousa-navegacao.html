@@ -32,6 +32,7 @@
         <a href="calculadoras.html?from=lousa">Calculadoras <span>CA</span></a>
         <a href="trilha-decisao.html?from=lousa">Trilha <span>TR</span></a>
         <a href="simulador.html?from=lousa">Simulador <span>SI</span></a>
+        <a href="#qa-comercial">QA Comercial <span>QA</span></a>
         <a href="#roteiro-navegavel">Teste jornada <span>TJ</span></a>
       </aside>
     </section>
@@ -49,15 +50,19 @@
         <span>Operacao</span>
         <strong>Cliente e admin</strong>
       </a>
-      <a class="bf-v8-stagebar__item" href="#roteiro-navegavel" data-step="3">
+      <a class="bf-v8-stagebar__item" href="#qa-comercial" data-step="3">
+        <span>QA</span>
+        <strong>Funil e cadencia</strong>
+      </a>
+      <a class="bf-v8-stagebar__item" href="#roteiro-navegavel" data-step="4">
         <span>Teste</span>
         <strong>Jornada ponta a ponta</strong>
       </a>
-      <a class="bf-v8-stagebar__item" href="#governanca" data-step="4">
+      <a class="bf-v8-stagebar__item" href="#governanca" data-step="5">
         <span>Governanca</span>
         <strong>Contratos e docs</strong>
       </a>
-      <a class="bf-v8-stagebar__item" href="#proximos-ciclos" data-step="5">
+      <a class="bf-v8-stagebar__item" href="#proximos-ciclos" data-step="6">
         <span>Ciclos</span>
         <strong>Proximas entregas</strong>
       </a>
@@ -132,6 +137,57 @@
         <a href="handoff-consultivo.html?from=lousa#operacao-handoff"><strong>Consultor</strong><span>Fila por origem, prioridade, status, checklist e notas locais.</span></a>
         <a href="dashboard-admin.html?from=lousa#admin-proximos-passos"><strong>Admin</strong><span>Cockpit de proximas acoes, origem, gargalos, recuperacao, pacotes e governanca de usuarios.</span></a>
         <a href="modelos-governanca.html?from=lousa"><strong>Governanca</strong><span>Modelos, auditoria, publicacao e criterios de comparacao.</span></a>
+      </div>
+    </section>
+
+    <section class="bf-lousa-board" id="qa-comercial" aria-label="Checkpoints comerciais e QA online" data-lousa-commercial-qa>
+      <div class="bf-lousa-board__head">
+        <span class="bf-badge bf-badge--ok">QA comercial</span>
+        <h2>Checkpoints visuais para continuidade, funil e publicacao.</h2>
+      </div>
+      <div class="bf-lousa-checkpoint-grid">
+        <article class="bf-lousa-checkpoint-card" data-lousa-qa-checkpoint="client-cockpit">
+          <span>Cliente</span>
+          <h3>Cockpit de retomada</h3>
+          <p>Conferir proxima acao, handoff, proposta, simulacao vinculada e etapa comercial em uma leitura unica.</p>
+          <small>Contrato: data-client-continuity-cockpit, data-client-next-action, data-client-commercial-stage.</small>
+          <a href="dashboard-cliente.html?from=lousa#continuidade-cliente">Abrir cockpit</a>
+        </article>
+        <article class="bf-lousa-checkpoint-card" data-lousa-qa-checkpoint="consultant-cadence">
+          <span>Consultor</span>
+          <h3>Handoff com cadencia</h3>
+          <p>Validar etapa comercial, aging da etapa, ultima movimentacao e plano de acao executavel.</p>
+          <small>Contrato: data-handoff-commercial-stage-panel, data-handoff-action-plan.</small>
+          <a href="handoff-consultivo.html?from=lousa#painel-consultor">Abrir consultor</a>
+        </article>
+        <article class="bf-lousa-checkpoint-card" data-lousa-qa-checkpoint="commercial-pipeline">
+          <span>Admin</span>
+          <h3>Funil comercial</h3>
+          <p>Revisar as cinco etapas, volume por etapa, prioridade, SLA e controles de movimentacao do lead.</p>
+          <small>Contrato: data-admin-commercial-pipeline, data-admin-commercial-stage-select.</small>
+          <a href="dashboard-admin.html?from=lousa#admin-funil-comercial">Abrir funil</a>
+        </article>
+        <article class="bf-lousa-checkpoint-card" data-lousa-qa-checkpoint="commercial-cadence">
+          <span>Cadencia</span>
+          <h3>Movimentos e leads parados</h3>
+          <p>Confirmar movidos em 24h/7d, resumo das etapas, retomadas sugeridas e aging medio de etapa.</p>
+          <small>Contrato: data-admin-commercial-stage-insights, data-admin-commercial-stage-movement.</small>
+          <a href="dashboard-admin.html?from=lousa#admin-funil-comercial">Abrir cadencia</a>
+        </article>
+        <article class="bf-lousa-checkpoint-card" data-lousa-qa-checkpoint="commercial-export">
+          <span>Exportacao</span>
+          <h3>JSON anonimo do funil</h3>
+          <p>Acionar a exportacao sanitizada para reuniao diaria comercial e validar schema publico.</p>
+          <small>Contrato: data-admin-commercial-pipeline-export, bank-fratern.admin-commercial-pipeline.v1.</small>
+          <a href="dashboard-admin.html?from=lousa&qa=funil-comercial#admin-funil-comercial">Abrir exportacao</a>
+        </article>
+        <article class="bf-lousa-checkpoint-card" data-lousa-qa-checkpoint="online-smoke">
+          <span>Online</span>
+          <h3>Smoke test publicado</h3>
+          <p>Verificar GitHub Pages, fallback estatico, lousa online e simulador com base compacta.</p>
+          <small>Contrato: tools/validate-online-journey-smoke.mjs e tools/validate-github-pages-deploy.mjs.</small>
+          <a href="https://feanor4spec.github.io/bancus-fraternis/pages/lousa-navegacao.html#roteiro-navegavel">Abrir online</a>
+        </article>
       </div>
     </section>
 
@@ -236,7 +292,7 @@
         <div><strong>Aceite 1</strong><span>Cada etapa abre uma pagina existente e tem marcador `data-*` verificavel.</span></div>
         <div><strong>Aceite 2</strong><span>Deep links preservam origem, preset, calculadora, historico, jornada ou handoff quando disponivel.</span></div>
         <div><strong>Aceite 3</strong><span>Validadores obrigatorios: auth, aliases, simulador, proposta, handoff, dashboards e contratos publicos.</span></div>
-        <div><strong>Aceite 4</strong><span>O roteiro vira porta de QA antes de iniciar qualquer nova fase funcional.</span></div>
+        <div><strong>Aceite 4</strong><span>QA comercial cobre cliente, consultor, funil, cadencia, exportacao e publicacao online.</span></div>
       </div>
     </section>
 
@@ -251,7 +307,7 @@
         <div><strong>Persistencia local</strong><span>`bf_financial_profile_v1`, historicos de calculadora, trilha, simulacao, handoff e analytics.</span></div>
         <div><strong>Matriz publica</strong><span>`docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md` consolida localStorage, data markers, deep links, globals e Definition of Done.</span></div>
         <div><strong>Documentacao ativa</strong><span>`docs/README.md`, mapa completo e plano de acao ficam alinhados a Bancus Fraternis, 19 calculadoras e docs historicos marcados.</span></div>
-        <div><strong>Validadores</strong><span>27 validadores em `tools/`, incluindo jornada navegavel, auth, contratos publicos, docs, handoff, dashboard, proposta e simulador com base real.</span></div>
+        <div><strong>Validadores</strong><span>27 validadores em `tools/`, incluindo jornada navegavel, QA online, auth, contratos publicos, docs, handoff, dashboard, proposta e simulador com base real.</span></div>
       </div>
     </section>
 
@@ -275,9 +331,9 @@
         </article>
         <article>
           <span>Concluido</span>
-          <h3>Teste navegavel da jornada</h3>
-          <p>Roteiro ponta a ponta percorre Auth, Home, Produtos, Calculadoras, Trilha, Comparador, Simulador, Proposta, Handoff e Dashboards.</p>
-          <a href="#roteiro-navegavel">Abrir roteiro</a>
+          <h3>Lousa de QA comercial</h3>
+          <p>Roteiro ponta a ponta e checkpoints cobrem cockpit cliente, handoff consultivo, funil/cadencia admin, exportacao sanitizada e publicacao online.</p>
+          <a href="#qa-comercial">Abrir QA comercial</a>
         </article>
       </div>
     </section>

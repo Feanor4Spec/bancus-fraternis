@@ -3460,8 +3460,15 @@
   gap: 12px;
 }
 
+.bf-lousa-checkpoint-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
 .bf-lousa-lane,
 .bf-lousa-test-card,
+.bf-lousa-checkpoint-card,
 .bf-lousa-roadmap article,
 .bf-lousa-matrix a,
 .bf-lousa-contracts div {
@@ -3473,6 +3480,7 @@
 
 .bf-lousa-lane,
 .bf-lousa-test-card,
+.bf-lousa-checkpoint-card,
 .bf-lousa-roadmap article {
   display: flex;
   flex-direction: column;
@@ -3481,6 +3489,7 @@
 }
 
 .bf-lousa-lane > span,
+.bf-lousa-checkpoint-card > span,
 .bf-lousa-roadmap article > span {
   color: var(--bf-gold-700);
   font-size: 10px;
@@ -3516,6 +3525,7 @@
 
 .bf-lousa-lane h3,
 .bf-lousa-test-card h3,
+.bf-lousa-checkpoint-card h3,
 .bf-lousa-roadmap h3 {
   margin: 0;
   color: var(--bf-navy-900);
@@ -3524,11 +3534,22 @@
 
 .bf-lousa-lane p,
 .bf-lousa-test-card p,
+.bf-lousa-checkpoint-card p,
 .bf-lousa-roadmap p {
   margin: 0;
   color: var(--bf-muted);
   font-size: 13px;
   line-height: 1.5;
+}
+
+.bf-lousa-checkpoint-card small {
+  display: block;
+  min-height: 48px;
+  color: var(--bf-muted);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 .bf-lousa-links {
@@ -3540,6 +3561,7 @@
 
 .bf-lousa-links a,
 .bf-lousa-test-card a,
+.bf-lousa-checkpoint-card a,
 .bf-lousa-roadmap a {
   display: inline-flex;
   align-items: center;
@@ -3557,6 +3579,7 @@
 
 .bf-lousa-links a:hover,
 .bf-lousa-test-card a:hover,
+.bf-lousa-checkpoint-card a:hover,
 .bf-lousa-roadmap a:hover,
 .bf-lousa-matrix a:hover {
   border-color: rgba(212, 175, 55, .45);
@@ -3667,6 +3690,7 @@
   .bf-handoff-columns,
   .bf-lousa-lane-grid,
   .bf-lousa-test-grid,
+  .bf-lousa-checkpoint-grid,
   .bf-lousa-matrix,
   .bf-lousa-acceptance,
   .bf-lousa-contracts,

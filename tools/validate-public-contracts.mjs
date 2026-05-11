@@ -145,6 +145,8 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-products-selection-panel',
   'data-decision-journey-form',
   'data-v8-stagebar',
+  'data-lousa-commercial-qa',
+  'data-lousa-qa-checkpoint',
   'data-lousa-journey-checklist',
   'data-lousa-journey-acceptance'
 ].forEach((marker) => assert(contracts.includes(marker), `Marcador data-* nao documentado: ${marker}.`));
@@ -236,6 +238,8 @@ assert(designValidator.includes('tools/validate-navigable-journey.mjs'), 'valida
 assert(designValidator.includes('tools/validate-github-pages-deploy.mjs'), 'validate-design-system nao exige validate-github-pages-deploy.');
 assert(lousa.includes('data-lousa-journey-checklist'), 'lousa-navegacao.html sem checklist de jornada navegavel.');
 assert(lousa.includes('data-lousa-journey-acceptance'), 'lousa-navegacao.html sem criterios de aceite da jornada navegavel.');
+assert(lousa.includes('data-lousa-commercial-qa'), 'lousa-navegacao.html sem QA comercial navegavel.');
+assert(lousa.includes('data-lousa-qa-checkpoint'), 'lousa-navegacao.html sem checkpoints de QA comercial.');
 
 const calculators = JSON.parse(calculatorsJson);
 const calculatorCount = Array.isArray(calculators) ? calculators.length : 0;
@@ -267,7 +271,7 @@ const report = {
   ok: failures.length === 0,
   contracts: {
     localStorageKeys: 17,
-    dataMarkers: 53,
+    dataMarkers: 55,
     globals: 12,
     deepLinks: 10,
     validators: 15,

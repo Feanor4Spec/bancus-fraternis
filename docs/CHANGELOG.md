@@ -4,6 +4,28 @@
 
 ---
 
+## [v8.69.0] - 2026-05-11
+
+### Lousa de QA comercial
+
+#### Adicionado
+- `pages/lousa-navegacao.html` ganhou `data-lousa-commercial-qa`.
+- Criados seis checkpoints `data-lousa-qa-checkpoint` para cockpit cliente, handoff/cadencia, funil comercial, cadencia admin, exportacao sanitizada e smoke test online.
+- A lousa agora abre o Dashboard Admin direto em `#admin-funil-comercial` e em `?qa=funil-comercial#admin-funil-comercial`.
+
+#### Modificado
+- `tools/validate-navigable-journey.mjs` passou a proteger os checkpoints comerciais, links profundos e contratos de exportacao/cadencia.
+- Contratos publicos, mapa, plano, README e protocolo de testes foram atualizados para marcar a lousa de QA como entregue.
+
+#### Validado
+- `node --check tools/validate-navigable-journey.mjs`
+- `node tools/validate-navigable-journey.mjs`
+- `node tools/validate-public-contracts.mjs`
+- `node tools/validate-design-system.mjs`
+- Evidencia visual: `docs/test-prints/v8aj-lousa-qa-comercial-desktop.png`
+
+---
+
 ## [v8.68.0] - 2026-05-11
 
 ### Exportacao sanitizada do funil comercial

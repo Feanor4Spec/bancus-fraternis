@@ -1,6 +1,7 @@
 {
   "ok": true,
   "journeySteps": 10,
+  "qaCheckpoints": 6,
   "localRefs": 18,
   "requiredValidators": 9,
   "warnings": [],

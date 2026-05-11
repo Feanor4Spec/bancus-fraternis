@@ -54,7 +54,7 @@ Cada etapa deve responder quatro perguntas:
 | Handoff por origem | Concluido parcial | Filtro, badge, metricas, origem, aging, SLA, responsavel sugerido, plano de acao executavel por lead, leitura de proposta versionada/vencida e etapa comercial/cadencia vinda do Admin. |
 | Dashboards por funil/aging | Concluido parcial | Dashboard Cliente tem timeline, deep links e cockpit de retomada com proximo passo, handoff, proposta, simulacao e etapa comercial; Dashboard Admin agora tem proximas acoes, fila guiada executavel com dono/prazo/alvo/status/motivo, produtividade, carteira por consultor, funil comercial movel com historico local, cadencia por etapa, exportacao sanitizada do funil, funil por origem, aging, prioridade, responsavel sugerido, gargalos e alertas de proposta alterada apos handoff. |
 | Navegacao autenticada | Concluido parcial | Login local tem acesso rapido por perfil, redirect preservado e validador dedicado. |
-| Teste navegavel ponta a ponta | Concluido | `pages/lousa-navegacao.html` ganhou roteiro de Auth, Home, Produtos, Calculadoras, Trilha, Comparador, Simulador, Proposta, Handoff e Dashboards com `tools/validate-navigable-journey.mjs`. |
+| Teste navegavel ponta a ponta | Concluido | `pages/lousa-navegacao.html` ganhou roteiro de Auth, Home, Produtos, Calculadoras, Trilha, Comparador, Simulador, Proposta, Handoff e Dashboards, alem de checkpoints de QA comercial para cliente, consultor, funil, cadencia, exportacao e online. |
 | Publicacao segura em GitHub Pages | Concluido parcial | Selo demo/local, fallback `404.html`, CI em `.github/workflows/validate.yml` e `tools/validate-public-release-safety.mjs`. |
 | QA online da jornada publicada | Concluido | `tools/validate-online-journey-smoke.mjs` valida no GitHub Pages as 10 etapas da lousa, anchors, marcadores e fallback estatico; `docs/test-reports/online-journey-browser-report.json` registra a checagem renderizada. |
 | Performance do simulador online | Concluido parcial | Simulador passou a carregar `Tab_Grupos_Consorcio.compact.json` primeiro, preservando fallback para o JSON canonico e todos os 17.396 grupos validos. |
@@ -74,6 +74,7 @@ Cada etapa deve responder quatro perguntas:
 | 8 | Publicacao GitHub Pages | Concluido parcial | Projeto online, CI ativo, fallback 404, selo demo/local e validacao da base real publicada. | `tools/validate-github-pages-deploy.mjs`, `tools/validate-public-release-safety.mjs`. |
 | 9 | Cockpit do Dashboard Cliente | Concluido | Cliente ve proxima acao, handoff, proposta, simulacao e etapa comercial em uma leitura unica de retomada. | `data-client-continuity-cockpit`, `tools/validate-dashboard-continuity-flow.mjs`. |
 | 10 | Exportacao do funil/cadencia | Concluido | Admin exporta JSON anonimo para reuniao diaria, com schema, totais por etapa, leads anonimizados, leads parados e movimentacoes recentes. | `data-admin-commercial-pipeline-export`, `bank-fratern.admin-commercial-pipeline.v1`. |
+| 11 | Lousa de QA comercial | Concluido | Lousa ganhou checkpoints para cockpit cliente, cadencia consultiva, funil comercial, exportacao sanitizada e smoke test online. | `data-lousa-commercial-qa`, `tools/validate-navigable-journey.mjs`. |
 
 ## Proximos Passos Priorizados
 
@@ -82,7 +83,7 @@ Cada etapa deve responder quatro perguntas:
 | Concluido | Dashboard Cliente mais acionavel | Transformar timeline e retomadas em um cockpit com proximo passo claro, status do handoff, proposta, simulacao vinculada e etapa comercial quando existir. | `pages/dashboard-cliente.html`, `assets/js/client-dashboard.js`, `assets/css/bf-design-system-v8.css`. | Cliente entende em uma tela onde parou e qual CTA seguir. |
 | Concluido | Operacao consultiva conectada ao funil | Levar a etapa comercial e a cadencia para o Handoff Consultivo, para o consultor ver a mesma leitura do Admin. | `pages/handoff-consultivo.html`, `assets/js/handoff-consultivo.js`, `assets/js/services/handoff-consultivo.service.js`. | Consultor enxerga etapa, atraso de etapa e ultima movimentacao sem abrir o Admin. |
 | Concluido | Exportacao comercial do funil | Criada exportacao sanitizada do funil/cadencia para reuniao diaria, sem e-mail, telefone, CPF ou dados bloqueados. | `assets/js/admin-users.js`, `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md`, `tools/validate-admin-dashboard-source-funnel.mjs`. | JSON exportado possui schema, totais por etapa, leads anonimizados e zero dado sensivel. |
-| P2 | Lousa de QA atualizada | Atualizar a lousa navegavel para incluir funil comercial, cadencia, dashboard cliente e publicacao online como checkpoints visuais. | `pages/lousa-navegacao.html`, `tools/validate-navigable-journey.mjs`. | A lousa permite validar a jornada inteira sem abrir docs. |
+| Concluido | Lousa de QA atualizada | Lousa navegavel inclui funil comercial, cadencia, dashboard cliente, handoff consultivo, exportacao do funil e publicacao online como checkpoints visuais. | `pages/lousa-navegacao.html`, `tools/validate-navigable-journey.mjs`. | A lousa permite validar a jornada inteira sem abrir docs. |
 | P3 | Reducao de divida tecnica do simulador | Separar responsabilidades maiores de `js/app.js` em modulos menores, sem alterar contratos publicos. | `js/app.js`, `js/proposal-summary.js`, services existentes. | Validadores atuais continuam verdes e o fluxo do simulador nao muda para o usuario. |
 | P3 | Preparacao backend/API futura | Documentar fronteiras de migracao para usuarios, leads, simulacoes, propostas e handoffs, mantendo `localStorage` como fallback. | `docs/PLANO_IMPLEMENTACAO_EVOLUTIVO_BANK_FRATERN.md`, `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md`. | Plano tecnico define contratos de migracao sem iniciar backend produtivo. |
 
@@ -365,6 +366,7 @@ Status em 2026-05-11:
 - Criado `tools/validate-docs-modernization.mjs` com relatorio em `docs/test-reports/docs-modernization-report.json`.
 - `pages/lousa-navegacao.html` agora aponta contratos/docs e consultor com aging como estabilizados, preparando o proximo ciclo de teste navegavel ponta a ponta.
 - `pages/lousa-navegacao.html` ganhou o roteiro de teste navegavel com 10 etapas, criterios de aceite e links profundos para cada superficie critica.
+- `pages/lousa-navegacao.html` ganhou `data-lousa-commercial-qa` e checkpoints para cockpit cliente, cadencia consultiva, funil comercial, exportacao sanitizada e publicacao online.
 - `pages/dashboard-admin.html` passou a apontar para o roteiro da lousa no rail executivo e na stagebar administrativa.
 - Criado `tools/validate-navigable-journey.mjs` com relatorio em `docs/test-reports/navigable-journey-report.json`.
 - Governanca do funil comercial ganhou registros v8.62.0, v8.63.0 e v8.64.0 no changelog, com contratos e evidencias atualizados.
@@ -395,6 +397,7 @@ Criterios de aceite:
 - Catalogo de calculadoras e docs concordam em 19 calculadoras.
 - Contratos publicos ficam documentados antes de mudancas funcionais.
 - Roteiro navegavel da lousa cobre Auth, Home, Produtos, Calculadoras, Trilha, Comparador, Simulador, Proposta, Handoff e Dashboards.
+- QA comercial da lousa cobre cliente, consultor, funil, cadencia, exportacao sanitizada e publicacao online.
 
 Testes recomendados:
 
@@ -424,8 +427,9 @@ Testes recomendados:
 | Concluido parcial | Revisar CTAs Home/Produtos/Calculadoras/Trilha -> jornada. | Home retoma trilha ativa; Produtos e Calculadoras preservam contexto; Trilha reconhece origem e propaga `sourceFrom`. |
 | Concluido parcial | Evoluir dashboards por funil, origem e aging. | Dashboard Cliente ja tem timeline por etapa, contexto e aging; Admin consolida proximas acoes, fila guiada, produtividade, carteira, funil comercial movel, cadencia e exportacao sanitizada. |
 | Concluido | Exportar funil/cadencia de forma sanitizada. | Resolvido em 2026-05-11 com `bank-fratern.admin-commercial-pipeline.v1`, leads anonimizados e teste browser contra e-mail, CPF e telefone. |
+| Concluido | Atualizar lousa de QA comercial. | Resolvido em 2026-05-11 com `data-lousa-commercial-qa`, seis checkpoints visuais e validador atualizado. |
 | Concluido | Criar validador de aliases/rotas. | `tools/validate-route-aliases.mjs`. |
-| Baixa | Reduzir responsabilidades de `js/app.js` e `assets/js/bf-platform.js`. | Reduz risco em evolucoes futuras. |
+| P3 | Reduzir responsabilidades de `js/app.js` e `assets/js/bf-platform.js`. | Reduz risco em evolucoes futuras. |
 
 ## Contratos que Devem Ser Preservados
 
@@ -454,7 +458,7 @@ Testes recomendados:
 1. Fase 1: rotas, matriz de paginas e saneamento navegavel. Concluida.
 2. Fase 3: handoff por origem e operacao do consultor. Concluida parcialmente, com cockpit de aging/prioridade e plano executavel entregue.
 3. Fase 4: dashboards e funil. Admin avancou para fila guiada, produtividade, carteira, funil comercial movel, cadencia e exportacao sanitizada; essa leitura ja chegou ao consultor e ao Dashboard Cliente.
-4. Fase 2: continuidade da jornada. Em andamento; Home, Produtos, Calculadoras, Trilha contextual e cockpit do Dashboard Cliente foram implementados, faltando atualizar a lousa como QA visual completo.
+4. Fase 2: continuidade da jornada. Em andamento; Home, Produtos, Calculadoras, Trilha contextual, cockpit do Dashboard Cliente e lousa de QA visual foram implementados.
 5. Fase 5: governanca permanente e reducao de divida documental. Em andamento; contratos publicos, changelog, evidencias browser, CI/Pages e roteiro de teste navegavel estao ativos.
 6. Fase futura: backend/API. Fora do ciclo atual, mas deve ser preparado por documentacao de migracao preservando compatibilidade com `localStorage`.
 
