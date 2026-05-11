@@ -100,6 +100,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-admin-source-funnel',
   'data-admin-bottleneck-board',
   'data-handoff-consultant-cockpit',
+  'data-handoff-proposal-version',
   'data-login-form',
   'data-public-demo-notice',
   'data-client-continuity-timeline',
@@ -217,7 +218,7 @@ const report = {
   ok: failures.length === 0,
   contracts: {
     localStorageKeys: 13,
-    dataMarkers: 18,
+    dataMarkers: 19,
     globals: 12,
     deepLinks: 9,
     validators: 15,

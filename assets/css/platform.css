@@ -2498,6 +2498,50 @@
   color: var(--bf-muted);
 }
 
+.bf-handoff-proposal-chip {
+  display: grid;
+  gap: 4px;
+  margin: 8px 0 10px;
+  padding: 10px;
+  border: 1px solid var(--bf-line);
+  border-radius: 8px;
+  background: var(--bf-soft);
+}
+
+.bf-handoff-proposal-chip--alta,
+.bf-handoff-proposal-panel--alta {
+  border-color: rgba(220, 38, 38, .28);
+  background: linear-gradient(180deg, #fff, rgba(254, 226, 226, .5));
+}
+
+.bf-handoff-proposal-chip--media,
+.bf-handoff-proposal-panel--media {
+  border-color: var(--bf-warning-bd);
+  background: var(--bf-warning-bg);
+}
+
+.bf-handoff-proposal-chip--baixa,
+.bf-handoff-proposal-panel--baixa {
+  border-color: var(--bf-info-bd);
+  background: var(--bf-info-bg);
+}
+
+.bf-handoff-proposal-chip span,
+.bf-handoff-proposal-chip small,
+.bf-handoff-proposal-panel small,
+.bf-handoff-proposal-panel dt {
+  color: var(--bf-muted);
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.bf-handoff-proposal-chip strong,
+.bf-handoff-proposal-panel h3,
+.bf-handoff-proposal-panel dd {
+  color: var(--bf-navy-900);
+}
+
 .bf-handoff-origin-panel {
   padding: 14px;
   border: 1px solid var(--bf-line);
@@ -2508,6 +2552,40 @@
 .bf-handoff-origin-panel p {
   margin: 8px 0 0;
   color: var(--bf-text);
+}
+
+.bf-handoff-proposal-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, .8fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid var(--bf-line);
+  border-radius: 14px;
+}
+
+.bf-handoff-proposal-panel h3 {
+  margin: 8px 0 6px;
+  font-size: 18px;
+}
+
+.bf-handoff-proposal-panel p {
+  margin: 0;
+  color: var(--bf-muted);
+  line-height: 1.5;
+}
+
+.bf-handoff-proposal-panel dl {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.bf-handoff-proposal-panel dd {
+  margin: 4px 0 0;
+  font-weight: 950;
+  overflow-wrap: anywhere;
 }
 
 .bf-handoff-detail-grid {
@@ -2836,6 +2914,8 @@
   .bf-handoff-consultant-grid,
   .bf-handoff-action-grid,
   .bf-handoff-detail-grid,
+  .bf-handoff-proposal-panel,
+  .bf-handoff-proposal-panel dl,
   .bf-handoff-columns,
   .bf-lousa-lane-grid,
   .bf-lousa-test-grid,

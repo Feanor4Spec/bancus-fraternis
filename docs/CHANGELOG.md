@@ -4,6 +4,29 @@
 
 ---
 
+## [v8.56.0] - 2026-05-11
+
+### Inteligencia operacional de propostas versionadas
+
+#### Adicionado
+- `BFHandoffConsultivoService` passou a calcular `proposalState`, com versao travada, validade, snapshot, proposta vencida, proposta sem versao e retomada de proposta aberta.
+- O painel de handoff ganhou `data-handoff-proposal-version`, mostrando estado da versao, validade, snapshot e proximo passo no card e no detalhe do lead.
+- Dashboard Admin passou a ler `bank_fratern_proposal_versions_v1` e cruzar versoes com handoffs.
+
+#### Modificado
+- O cockpit do consultor agora destaca propostas vencidas e propostas sem snapshot.
+- O quadro de gargalos do Admin agora aponta proposta versionada sem handoff, proposta vencida e proposta alterada apos o handoff.
+- Validadores de handoff, funil admin e contratos publicos passaram a cobrir os novos sinais.
+
+#### Validado
+- `node --check assets/js/services/handoff-consultivo.service.js`
+- `node --check assets/js/handoff-consultivo.js`
+- `node --check assets/js/admin-users.js`
+- `node tools/validate-handoff-consultant-operations.mjs`
+- `node tools/validate-admin-dashboard-source-funnel.mjs`
+
+---
+
 ## [v8.55.0] - 2026-05-08
 
 ### Versionamento local da proposta

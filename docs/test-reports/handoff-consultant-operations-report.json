@@ -7,5 +7,10 @@
     "unassigned": 1,
     "waiting": 1
   },
+  "proposal": {
+    "expired": 1,
+    "unversioned": 1,
+    "expiredNextStep": "Revisar validade da proposta"
+  },
   "failures": []
 }

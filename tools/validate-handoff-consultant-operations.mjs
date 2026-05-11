@@ -51,6 +51,8 @@ const [pageHtml, uiSource, cssSource, serviceSource, designValidator, contractsD
   'renderConsultantCockpit',
   'handoffConsultantCockpitReady',
   'handoffConsultantActionCount',
+  'data-handoff-proposal-version',
+  'proposalVersionPanel',
   'matchesAging',
   'hydrateAssigneeOptions',
   'data-handoff-next-step'
@@ -58,12 +60,15 @@ const [pageHtml, uiSource, cssSource, serviceSource, designValidator, contractsD
 
 [
   'operationalState',
+  'proposalState',
   'consultantBoard',
   'slaHoursForPriority',
   'ageLabel',
   'enrichList',
   'overdue',
-  'unassigned'
+  'unassigned',
+  'proposalExpired',
+  'proposalUnversioned'
 ].forEach((marker) => assert(serviceSource.includes(marker), `handoff-consultivo.service.js sem ${marker}.`));
 
 [
@@ -71,7 +76,9 @@ const [pageHtml, uiSource, cssSource, serviceSource, designValidator, contractsD
   '.bf-handoff-action-grid',
   '.bf-handoff-action',
   '.bf-handoff-aging',
-  '.bf-handoff-next-step'
+  '.bf-handoff-next-step',
+  '.bf-handoff-proposal-panel',
+  '.bf-handoff-proposal-chip'
 ].forEach((selector) => assert(cssSource.includes(selector), `platform.css sem seletor ${selector}.`));
 
 assert(designValidator.includes('tools/validate-handoff-consultant-operations.mjs'), 'validate-design-system nao exige validate-handoff-consultant-operations.');
@@ -143,23 +150,48 @@ const qualifiedLead = {
   assignedTo: 'bruno@bankfratern.local',
   checklist: []
 };
+const expiredProposalLead = {
+  id: 'LEAD-PROP-EXPIRED',
+  status: 'em_atendimento',
+  priority: 'media',
+  ownerEmail: 'cliente4@bankfratern.local',
+  objectiveLabel: 'Proposta expirada',
+  sourceType: 'proposal',
+  sourceProposalId: 'PROP-EXP',
+  sourceProposalStatus: 'reviewed',
+  sourceProposalVersion: 2,
+  sourceProposalVersionId: 'PV-EXP-2',
+  sourceProposalVersionHash: 'HASH2',
+  sourceProposalValidUntil: '2026-05-01',
+  sourceProposalUpdatedAt: '2026-05-08T10:00:00.000Z',
+  createdAt: '2026-05-08T10:00:00.000Z',
+  updatedAt: '2026-05-08T10:00:00.000Z',
+  assignedTo: 'ana@bankfratern.local',
+  checklist: []
+};
 
 const overdueState = service.operationalState(overdueLead, referenceNow);
 const waitingState = service.operationalState(waitingLead, referenceNow);
 const qualifiedState = service.operationalState(qualifiedLead, referenceNow);
+const expiredProposalState = service.proposalState(expiredProposalLead, referenceNow);
 const board = service.consultantBoard([overdueLead, waitingLead, qualifiedLead], referenceNow);
+const proposalBoard = service.consultantBoard([overdueLead, expiredProposalLead], referenceNow);
 
 assert(overdueState.slaOverdue === true, 'Lead alta prioridade nao marcou SLA vencido.');
 assert(overdueState.unassigned === true, 'Lead sem responsavel nao marcou unassigned.');
 assert(overdueState.nextStep === 'Atribuir consultor', `Proximo passo inesperado: ${overdueState.nextStep}.`);
 assert(waitingState.waitingClient === true, 'Lead aguardando cliente 48h+ nao foi marcado.');
 assert(qualifiedState.open === false, 'Lead qualificado ainda aparece como aberto.');
+assert(expiredProposalState.expired === true, 'Proposta vencida nao foi detectada.');
+assert(expiredProposalState.nextStep === 'Revisar validade da proposta', `Proximo passo da proposta vencida inesperado: ${expiredProposalState.nextStep}.`);
 assert(board.open === 2, `Board deveria ter 2 abertos; recebeu ${board.open}.`);
 assert(board.overdue === 2, `Board deveria ter 2 SLA vencidos; recebeu ${board.overdue}.`);
 assert(board.waiting === 1, `Board deveria ter 1 aguardando; recebeu ${board.waiting}.`);
 assert(board.unassigned === 1, `Board deveria ter 1 sem responsavel; recebeu ${board.unassigned}.`);
 assert(board.nextActions.length === 2, `Board deveria listar 2 proximas acoes; recebeu ${board.nextActions.length}.`);
 assert(board.nextActions[0].id === 'LEAD-SLA', 'Lead de alta prioridade nao ficou no topo das proximas acoes.');
+assert(proposalBoard.proposalExpired === 1, `Board deveria ter 1 proposta vencida; recebeu ${proposalBoard.proposalExpired}.`);
+assert(proposalBoard.proposalUnversioned === 1, `Board deveria ter 1 proposta sem snapshot; recebeu ${proposalBoard.proposalUnversioned}.`);
 
 const report = {
   ok: failures.length === 0,
@@ -169,6 +201,11 @@ const report = {
     overdue: board.overdue,
     unassigned: board.unassigned,
     waiting: board.waiting
+  },
+  proposal: {
+    expired: proposalBoard.proposalExpired,
+    unversioned: proposalBoard.proposalUnversioned,
+    expiredNextStep: expiredProposalState.nextStep
   },
   failures
 };

@@ -260,6 +260,71 @@
     return '';
   }
 
+  function proposalState(item, now) {
+    if (!item || sourceType(item) !== 'proposal') {
+      return {
+        active: false,
+        tone: 'baixa',
+        label: 'Sem proposta',
+        nextStep: '',
+        reason: ''
+      };
+    }
+    const reference = now instanceof Date ? now : new Date(now || Date.now());
+    const validUntil = item.sourceProposalValidUntil || (item.summary && item.summary.propostaValidade) || '';
+    const validDate = validUntil ? new Date(`${validUntil}T23:59:59`) : null;
+    const expired = validDate && Number.isFinite(validDate.getTime()) ? validDate < reference : false;
+    const version = Number(item.sourceProposalVersion || (item.summary && item.summary.propostaVersao) || 0);
+    const locked = !!(item.sourceProposalVersionId || item.sourceProposalVersionHash || version > 0);
+    const status = item.sourceProposalStatus || '';
+    const reviewed = status === 'reviewed';
+    const versionHours = hoursSince(item.sourceProposalUpdatedAt || item.updatedAt || item.createdAt, reference);
+    let tone = 'baixa';
+    let label = locked ? `Versao ${version || '-'} travada` : 'Versao nao travada';
+    let nextStep = 'Acompanhar proposta';
+    let reason = locked
+      ? 'Proposta possui snapshot local preservado para atendimento consultivo.'
+      : 'Handoff antigo ou manual sem snapshot versionado da proposta.';
+
+    if (expired) {
+      tone = 'alta';
+      label = 'Proposta vencida';
+      nextStep = 'Revisar validade da proposta';
+      reason = 'A validade local da proposta expirou antes da conclusao do atendimento.';
+    } else if (!locked) {
+      tone = 'alta';
+      nextStep = 'Salvar versao da proposta';
+    } else if (!reviewed) {
+      tone = 'media';
+      label = 'Revisao incompleta';
+      nextStep = 'Concluir aceite da proposta';
+      reason = 'A proposta foi encaminhada sem status final de revisao local.';
+    } else if (versionHours >= 72 && isOpen(item)) {
+      tone = 'media';
+      label = 'Retomar proposta';
+      nextStep = 'Retomar cliente da proposta';
+      reason = 'A proposta esta aberta ha mais de 72h desde a ultima revisao/versionamento.';
+    }
+
+    return {
+      active: true,
+      version,
+      locked,
+      expired,
+      reviewed,
+      status,
+      validUntil,
+      versionId: item.sourceProposalVersionId || '',
+      sourceHash: item.sourceProposalVersionHash || '',
+      versionHours,
+      versionAgeLabel: ageLabel(versionHours),
+      tone,
+      label,
+      nextStep,
+      reason
+    };
+  }
+
   function operationalState(item, now) {
     const priority = item && item.priority ? item.priority : 'media';
     const lastEventAt = item && (item.updatedAt || item.createdAt);
@@ -269,7 +334,12 @@
     const open = isOpen(item);
     const slaOverdue = open && hours >= slaHours;
     const unassigned = open && !(item && item.assignedTo);
-    const tone = slaOverdue || (item && item.priority === 'alta') ? 'alta' : waitingClient || unassigned ? 'media' : 'baixa';
+    const proposal = proposalState(item, now);
+    const tone = slaOverdue || (item && item.priority === 'alta') || proposal.tone === 'alta'
+      ? 'alta'
+      : waitingClient || unassigned || proposal.tone === 'media'
+        ? 'media'
+        : 'baixa';
     const state = {
       open,
       hours,
@@ -279,10 +349,14 @@
       waitingClient,
       unassigned,
       suggestedAssignee: suggestedAssignee(item),
+      proposal,
       tone,
       nextStep: ''
     };
     state.nextStep = nextStepFor(item, state);
+    if (proposal.active && open && !unassigned && proposal.tone !== 'baixa') {
+      state.nextStep = proposal.nextStep;
+    }
     return state;
   }
 
@@ -305,6 +379,10 @@
     const waiting = open.filter((item) => item.operational.waitingClient);
     const unassigned = open.filter((item) => item.operational.unassigned);
     const highPriority = open.filter((item) => item.priority === 'alta');
+    const proposalOpen = open.filter((item) => item.operational.proposal && item.operational.proposal.active);
+    const proposalExpired = proposalOpen.filter((item) => item.operational.proposal.expired);
+    const proposalUnversioned = proposalOpen.filter((item) => item.operational.proposal.locked === false);
+    const proposalNeedsReview = proposalOpen.filter((item) => item.operational.proposal.tone !== 'baixa');
     const nextActions = open
       .slice()
       .sort((a, b) => {
@@ -328,6 +406,7 @@
         age: item.operational.ageLabel,
         hours: item.operational.hours,
         nextStep: item.operational.nextStep,
+        proposalState: item.operational.proposal && item.operational.proposal.active ? item.operational.proposal.label : '',
         suggestedAssignee: item.operational.suggestedAssignee || '',
         tone: item.operational.tone
       }));
@@ -339,6 +418,10 @@
       waiting: waiting.length,
       unassigned: unassigned.length,
       highPriority: highPriority.length,
+      proposalOpen: proposalOpen.length,
+      proposalExpired: proposalExpired.length,
+      proposalUnversioned: proposalUnversioned.length,
+      proposalNeedsReview: proposalNeedsReview.length,
       nextActions
     };
   }
@@ -748,6 +831,9 @@
     const overdue = source.filter((item) => item.operational && item.operational.slaOverdue).length;
     const waiting = source.filter((item) => item.operational && item.operational.waitingClient).length;
     const unassigned = source.filter((item) => item.operational && item.operational.unassigned).length;
+    const proposalExpired = source.filter((item) => item.operational && item.operational.proposal && item.operational.proposal.expired).length;
+    const proposalUnversioned = source.filter((item) => item.operational && item.operational.proposal && item.operational.proposal.active && item.operational.proposal.locked === false).length;
+    const proposalNeedsReview = source.filter((item) => item.operational && item.operational.proposal && item.operational.proposal.active && item.operational.proposal.tone !== 'baixa').length;
     const origins = source.reduce((acc, item) => {
       const key = sourceType(item);
       acc[key] = (acc[key] || 0) + 1;
@@ -764,6 +850,9 @@
       overdue,
       waiting,
       unassigned,
+      proposalExpired,
+      proposalUnversioned,
+      proposalNeedsReview,
       origins,
       proposal: origins.proposal || 0,
       journey: origins.journey || 0,
@@ -787,6 +876,7 @@
     hoursSince,
     ageLabel,
     slaHoursForPriority,
+    proposalState,
     operationalState,
     enrich,
     enrichList,

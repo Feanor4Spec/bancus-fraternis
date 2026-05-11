@@ -1,0 +1,38 @@
+{
+  "ok": true,
+  "seeded": {
+    "login": {
+      "ok": true,
+      "user": {
+        "id": "USR-SEED-1",
+        "name": "Administrador Bancus Fraternis",
+        "email": "admin@bankfratern.local",
+        "role": "admin",
+        "roleLabel": "Administrador",
+        "status": "active",
+        "statusLabel": "Ativo",
+        "department": "Operacao",
+        "phone": "(11) 4000-0001",
+        "createdAt": "2026-05-11T03:18:59.126Z",
+        "updatedAt": "2026-05-11T03:18:59.266Z",
+        "lastLoginAt": "2026-05-11T03:18:59.266Z"
+      }
+    },
+    "proposalId": "PROP-VISUAL-777"
+  },
+  "handoffState": {
+    "hasPanel": true,
+    "text": "Proposta revisada\nProposta PROP-VISUAL-777\n\nCliente Visual - criado em 08/05/2026, 09:00\n\nRever trilha\nStatus\nNovo\nEm atendimento\nAguardando cliente\nQualificado\nDescartado\nResponsavel local\nORIGEM\nProposta revisada\nPRIORIDADE OPERACIONAL\nSLA vencido\nAGING\n2d 15h\nSLA ALVO\n4h\nRESPONSAVEL SUGERIDO\nadmin@bankfratern.local\nPRODUTO\nConsorcio estruturado\nMODELO\nRevisada localmente\nRESERVA\n0.0 meses\nCAPACIDADE SEGURA\nR$ 2.100,00\nProximo passo\nRevisar validade da proposta\n\nLead ultrapassou o SLA recomendado para a prioridade atual.\n\nOrigem do atendimento\n\nstatus reviewed - versao 1 - snapshot PV-VISUAL-OLD-1 - validade 30/04/2026, 21:00\n\nProposta versionada\nProposta vencida\n\nA validade local da proposta expirou antes da conclusao do atendimento.\n\nPROPOSTA\nPROP-VISUAL-777\nVERSAO\n1\nVALIDADE\n2026-05-01\nATUALIZACAO\n9d 15h\nSNAPSHOT PV-VISUAL-OLD-1\nAbrir proposta\nChecklist\nRevisar proposta versionada: PROP-VISUAL-777\nConfirmar premissas financeiras\nPreparar documentacao\nNotas locais\nAdicionar nota\nNe",
+    "metrics": "Cockpit do consultor\nAging, prioridade e proximo passo por lead.\n\nA fila destaca SLA vencido, handoff sem responsavel, cliente aguardando retorno e qual acao iniciar agora.\n\nVer admin\nEM ABERTO\n1\nALTA PRIORIDADE\n1\nSLA VENCIDO\n1\nSEM RESPONSAVEL\nAGUARDANDO 48H+\nPROPOSTAS VENCIDAS\n1\nSEM SNAPSHOT\nPROPOSTA REVISADA - 2D 15H\nProposta PROP-VISUAL-777\n\nRevisar validade da proposta\n\nCLIENTE.VISUAL@BANKFRATERN.LOCAL - ADMIN@BANKFRATERN.LOCAL - PROPOSTA VENCIDA\nAbrir lead"
+  },
+  "adminState": {
+    "bottleneckCount": "3",
+    "hasOutdated": true,
+    "hasExpired": true,
+    "text": "Gargalos\nProximos passos priorizados\n\nDestaca proposta revisada sem handoff, proposta versionada vencida ou alterada depois do handoff, trilha sem comparador, handoff sem responsavel e SLA vencido.\n\nPROPOSTA VENCIDA\nALTA\n\nProposta PROP-VISUAL-777 venceu em 2026-05-01 e precisa de revisao antes da continuidade.\n\nadmin@bankfratern.local\n10d 3h\nRevisar validade\nRevisar validade\nSLA VENCIDO\nALTA\n\nProposta PROP-VISUAL-777 ultrapassou 4h sem conclusao.\n\ncliente.visual@bankfratern.local\n2d 15h\nPriorizar atendimento\nPriorizar atendimento\nPROPOSTA ALTERADA APOS HANDOFF\nALTA\n\nHandoff LEAD-VISUAL-PROP usa versao 1, mas a proposta PROP-VISUAL-777 ja tem versao 3.\n\ncliente.visual@bankfratern.local\nmenos de 1h\nAtualizar handoff\nAtualizar handoff"
+  },
+  "screenshots": [
+    "docs/test-prints/proposal-intelligence-handoff-desktop.png",
+    "docs/test-prints/proposal-intelligence-admin-desktop.png"
+  ]
+}

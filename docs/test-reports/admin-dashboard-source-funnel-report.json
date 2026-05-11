@@ -3,7 +3,7 @@
   "contracts": {
     "dashboardMarkers": 8,
     "sources": 7,
-    "bottlenecks": 4,
+    "bottlenecks": 7,
     "nextActions": 5,
     "simulatorBottomStagebar": true
   },

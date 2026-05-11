@@ -270,6 +270,7 @@ Melhoria implementada em 2026-05-07:
 - Dashboard Cliente passou a usar `from=dashboard` na continuidade, com linha do tempo Diagnostico -> Calculadora -> Trilha -> Comparador -> Simulacao -> Proposta -> Handoff.
 - Handoffs agora possuem origem inferida ou explicita: proposta revisada, trilha assistida, sinal de retomada, pacote importado ou origem local.
 - Propostas agora possuem historico versionado local, comparacao entre versoes e versao congelada antes do handoff.
+- Handoff e Admin agora leem validade, snapshot e mudancas de versao da proposta para destacar propostas vencidas ou alteradas depois do handoff.
 - O painel consultivo filtra por origem e mostra badge/resumo da origem nos cards e no detalhe.
 - O dashboard admin mostra metricas de propostas e trilhas na fila de handoff.
 - O contrato e coberto por `tools/validate-handoff-origins.mjs`.
@@ -410,7 +411,7 @@ Os marcadores mais importantes por area:
 | Comparador | `data-comparator-form`, `data-comparator-result`, `data-comparator-preset-summary`, `data-comparator-model-recommendation`. |
 | Simulador | `data-simulator-readiness`, `data-simulator-decision-strip`, `data-shelf-col`. |
 | Proposta | `data-proposal-acceptance-panel`, `data-proposal-handoff-bridge`, `data-proposal-builder-board`, `data-proposal-builder-readiness`, `data-proposal-builder-option`, `data-proposal-version-panel`, `data-proposal-version-history`, `data-proposal-version-comparison`. |
-| Handoff | `data-handoff-list`, `data-handoff-detail`, `data-handoff-metrics`, `data-handoff-recovery-signals`. |
+| Handoff | `data-handoff-list`, `data-handoff-detail`, `data-handoff-metrics`, `data-handoff-recovery-signals`, `data-handoff-proposal-version`. |
 | Cliente | `data-client-continuity-strip`, `data-client-decision-journey`, `data-client-recovery-signals`. |
 | Admin | `data-admin-next-actions`, `data-admin-source-funnel`, `data-admin-bottleneck-board`, `data-admin-recovery-queue`, `data-admin-recovery-packages`, `data-admin-journey-funnel`, `data-admin-operational-alerts`. |
 | Lousa | `data-lousa-journey-checklist`, `data-lousa-journey-acceptance`. |

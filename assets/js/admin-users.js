@@ -418,6 +418,11 @@
     return Array.isArray(history) ? history.filter((item) => item && item.proposalId) : [];
   }
 
+  function readAdminProposalVersions() {
+    const history = readAdminJson('bank_fratern_proposal_versions_v1', []);
+    return Array.isArray(history) ? history.filter((item) => item && item.proposalId) : [];
+  }
+
   function latestProposalReviews() {
     const map = new Map();
     readAdminProposalReviews().forEach((item) => {
@@ -428,6 +433,41 @@
       if (!current || nextDate.localeCompare(currentDate) >= 0) map.set(key, item);
     });
     return Array.from(map.values());
+  }
+
+  function latestProposalVersions() {
+    const map = new Map();
+    readAdminProposalVersions().forEach((item) => {
+      const key = item.proposalId;
+      const current = map.get(key);
+      const currentVersion = current ? Number(current.version || 0) : 0;
+      const nextVersion = Number(item.version || 0);
+      const currentDate = current ? String(current.updatedAt || current.createdAt || '') : '';
+      const nextDate = String(item.updatedAt || item.createdAt || '');
+      if (!current || nextVersion > currentVersion || (nextVersion === currentVersion && nextDate.localeCompare(currentDate) >= 0)) {
+        map.set(key, item);
+      }
+    });
+    return Array.from(map.values());
+  }
+
+  function proposalVersionMap() {
+    return new Map(latestProposalVersions().map((item) => [item.proposalId, item]));
+  }
+
+  function proposalReviewMap() {
+    return new Map(latestProposalReviews().map((item) => [item.proposalId, item]));
+  }
+
+  function proposalVersionExpired(item) {
+    if (!item || !item.validUntil) return false;
+    const expires = new Date(`${item.validUntil}T23:59:59`);
+    return Number.isFinite(expires.getTime()) && expires < new Date();
+  }
+
+  function proposalVersionAttention(item) {
+    if (!item) return false;
+    return proposalVersionExpired(item) || item.status !== 'reviewed';
   }
 
   function latestItemDate(item) {
@@ -555,6 +595,11 @@
       detail: item.statusLabel || item.status || 'Proposta revisada'
     }));
 
+    latestProposalVersions().forEach((item) => addSourceRecord(rows.proposal, item, {
+      high: proposalVersionAttention(item),
+      detail: item.version ? `Versao ${item.version} da proposta` : 'Proposta versionada'
+    }));
+
     recoveryItems.forEach((item) => addSourceRecord(rows[sourceFromRecoveryStage(item.stage)], item, {
       open: item.queueStatus !== 'handoff-criado',
       high: item.severity === 'alta',
@@ -618,7 +663,10 @@
     const service = window.BFHandoffConsultivoService;
     const handoffs = service ? service.list() : [];
     const events = window.BFJourneyAnalytics && window.BFJourneyAnalytics.all ? window.BFJourneyAnalytics.all() : [];
-    const proposalHandoffIds = new Set(handoffs.filter((item) => sourceFromHandoff(item, service) === 'proposal').map((item) => item.sourceProposalId).filter(Boolean));
+    const proposalHandoffs = handoffs.filter((item) => sourceFromHandoff(item, service) === 'proposal');
+    const proposalHandoffIds = new Set(proposalHandoffs.map((item) => item.sourceProposalId).filter(Boolean));
+    const versionsByProposal = proposalVersionMap();
+    const reviewsByProposal = proposalReviewMap();
     const rows = [];
 
     latestProposalReviews()
@@ -634,6 +682,58 @@
         href: 'simulador.html#step-9',
         hours: eventHoursSince(item.updatedAt || item.createdAt)
       }));
+
+    latestProposalVersions()
+      .filter((item) => !proposalHandoffIds.has(item.proposalId) && !reviewsByProposal.has(item.proposalId))
+      .forEach((item) => rows.push({
+        type: 'proposal-version-without-handoff',
+        title: 'Proposta versionada sem handoff',
+        reason: `Proposta ${item.proposalId} tem versao ${item.version || 0} salva, mas ainda nao virou fila consultiva.`,
+        severity: proposalVersionExpired(item) ? 'alta' : 'media',
+        age: eventAgeLabel(eventHoursSince(item.updatedAt || item.createdAt)),
+        ownerEmail: item.consultor || item.cliente || 'proposta local',
+        next: 'Criar handoff da proposta',
+        href: 'simulador.html#step-9',
+        hours: eventHoursSince(item.updatedAt || item.createdAt)
+      }));
+
+    latestProposalVersions()
+      .filter((item) => proposalVersionExpired(item))
+      .forEach((item) => rows.push({
+        type: 'proposal-expired',
+        title: 'Proposta vencida',
+        reason: `Proposta ${item.proposalId} venceu em ${item.validUntil || 'validade local'} e precisa de revisao antes da continuidade.`,
+        severity: 'alta',
+        age: eventAgeLabel(eventHoursSince(item.validUntil || item.updatedAt || item.createdAt)),
+        ownerEmail: item.consultor || item.cliente || 'proposta local',
+        next: 'Revisar validade',
+        href: 'simulador.html#step-9',
+        hours: eventHoursSince(item.validUntil || item.updatedAt || item.createdAt)
+      }));
+
+    proposalHandoffs
+      .filter((item) => {
+        const latest = versionsByProposal.get(item.sourceProposalId);
+        if (!latest || !isOpenHandoff(item)) return false;
+        const latestVersion = Number(latest.version || 0);
+        const handoffVersion = Number(item.sourceProposalVersion || 0);
+        const hashChanged = latest.sourceHash && item.sourceProposalVersionHash && latest.sourceHash !== item.sourceProposalVersionHash;
+        return latestVersion > handoffVersion || hashChanged;
+      })
+      .forEach((item) => {
+        const latest = versionsByProposal.get(item.sourceProposalId);
+        rows.push({
+          type: 'proposal-version-outdated-handoff',
+          title: 'Proposta alterada apos handoff',
+          reason: `Handoff ${item.id} usa versao ${item.sourceProposalVersion || 0}, mas a proposta ${item.sourceProposalId} ja tem versao ${latest.version || 0}.`,
+          severity: 'alta',
+          age: eventAgeLabel(eventHoursSince(latest.updatedAt || latest.createdAt)),
+          ownerEmail: item.ownerEmail || latest.consultor || 'proposta local',
+          next: 'Atualizar handoff',
+          href: 'handoff-consultivo.html#fila-handoff',
+          hours: eventHoursSince(latest.updatedAt || latest.createdAt)
+        });
+      });
 
     readAdminDecisionJourneys()
       .filter((item) => !hasComparatorAfter(item.ownerEmail || item.owner, item.updatedAt || item.createdAt, events))
@@ -695,7 +795,12 @@
         hours: Number(item.slaHours || item.hours || 0)
       }));
 
-    return rows.sort((a, b) => {
+    const uniqueRows = rows.filter((item, index, list) => {
+      const key = `${item.type}:${item.reason}`;
+      return list.findIndex((candidate) => `${candidate.type}:${candidate.reason}` === key) === index;
+    });
+
+    return uniqueRows.sort((a, b) => {
       const bySeverity = alertWeight(b.severity) - alertWeight(a.severity);
       if (bySeverity) return bySeverity;
       return Number(b.hours || 0) - Number(a.hours || 0);
@@ -746,7 +851,7 @@
           <div>
             <span class="bf-badge bf-badge--gold">Gargalos</span>
             <h3>Proximos passos priorizados</h3>
-            <p>Destaca proposta revisada sem handoff, trilha sem comparador, handoff sem responsavel e SLA vencido.</p>
+            <p>Destaca proposta revisada sem handoff, proposta versionada vencida ou alterada depois do handoff, trilha sem comparador, handoff sem responsavel e SLA vencido.</p>
           </div>
         </div>
         <div class="bf-admin-bottleneck-grid">

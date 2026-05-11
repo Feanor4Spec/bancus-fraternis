@@ -53,6 +53,9 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
   'readAdminDecisionJourneys',
   'readAdminCalculatorHistory',
   'latestProposalReviews',
+  'readAdminProposalVersions',
+  'latestProposalVersions',
+  'proposalVersionMap',
   'Responsavel sugerido',
   'adminSourceFunnelReady',
   'adminBottleneckCount'
@@ -70,6 +73,9 @@ const [dashboardHtml, adminUsersJs, platformCss, simulatorHtml] = await Promise.
 
 [
   'Proposta revisada sem handoff',
+  'Proposta versionada sem handoff',
+  'Proposta vencida',
+  'Proposta alterada apos handoff',
   'Trilha sem comparador',
   'Handoff sem responsavel',
   'SLA vencido'
@@ -96,7 +102,7 @@ const report = {
   contracts: {
     dashboardMarkers: 8,
     sources: 7,
-    bottlenecks: 4,
+    bottlenecks: 7,
     nextActions: adminUsersJs.includes('buildAdminNextActions') ? 5 : 0,
     simulatorBottomStagebar: simulatorHtml.includes('bf-v8-stagebar-shell')
   },

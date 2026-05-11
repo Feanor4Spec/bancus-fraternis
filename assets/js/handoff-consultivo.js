@@ -237,6 +237,8 @@
         ${metric('SLA vencido', board.overdue || 0, board.overdue ? 'warn' : '')}
         ${metric('Sem responsavel', board.unassigned || 0, board.unassigned ? 'warn' : '')}
         ${metric('Aguardando 48h+', board.waiting || 0, board.waiting ? 'warn' : '')}
+        ${metric('Propostas vencidas', board.proposalExpired || 0, board.proposalExpired ? 'warn' : '')}
+        ${metric('Sem snapshot', board.proposalUnversioned || 0, board.proposalUnversioned ? 'warn' : '')}
       </div>
       <div class="bf-handoff-action-grid">
         ${actions.length ? actions.map((action) => `
@@ -244,7 +246,7 @@
             <span>${escapeHtml(action.source)} - ${escapeHtml(action.age)}</span>
             <strong>${escapeHtml(action.title)}</strong>
             <p>${escapeHtml(action.nextStep)}</p>
-            <small>${escapeHtml(action.ownerEmail)} - ${escapeHtml(action.suggestedAssignee || 'responsavel a definir')}</small>
+            <small>${escapeHtml(action.ownerEmail)} - ${escapeHtml(action.suggestedAssignee || 'responsavel a definir')}${action.proposalState ? ` - ${escapeHtml(action.proposalState)}` : ''}</small>
             <button class="btn btn--ghost btn--sm" type="button" data-handoff-open="${escapeHtml(action.id)}">Abrir lead</button>
           </article>
         `).join('') : '<div class="bf-empty-state">Nenhuma acao consultiva pendente para os filtros atuais.</div>'}
@@ -349,7 +351,8 @@
     if (type === 'proposal') {
       return [
         item.sourceProposalStatus ? `status ${item.sourceProposalStatus}` : '',
-        item.sourceProposalVersion ? `versao ${item.sourceProposalVersion}` : '',
+        item.sourceProposalVersion ? `versao ${item.sourceProposalVersion}` : 'sem versao travada',
+        item.sourceProposalVersionId ? `snapshot ${item.sourceProposalVersionId}` : '',
         item.sourceProposalValidUntil ? `validade ${date(item.sourceProposalValidUntil)}` : ''
       ].filter(Boolean).join(' - ') || 'Proposta revisada localmente.';
     }
@@ -363,6 +366,49 @@
       return item.sourceSignalSeverity ? `Sinal ${item.sourceSignalSeverity} de retomada.` : 'Sinal de retomada local.';
     }
     return 'Handoff criado localmente.';
+  }
+
+  function proposalState(item) {
+    return service().proposalState ? service().proposalState(item) : ((item && item.operational && item.operational.proposal) || {
+      active: false,
+      tone: 'baixa',
+      label: '',
+      reason: ''
+    });
+  }
+
+  function proposalVersionChip(item) {
+    const state = proposalState(item);
+    if (!state.active) return '';
+    return `
+      <div class="bf-handoff-proposal-chip bf-handoff-proposal-chip--${escapeHtml(state.tone)}" data-handoff-proposal-version>
+        <span>${escapeHtml(state.label)}</span>
+        <strong>${escapeHtml(state.nextStep || 'Acompanhar proposta')}</strong>
+        <small>${escapeHtml(state.reason || sourceSummary(item))}</small>
+      </div>
+    `;
+  }
+
+  function proposalVersionPanel(item) {
+    const state = proposalState(item);
+    if (!state.active) return '';
+    return `
+      <section class="bf-handoff-proposal-panel bf-handoff-proposal-panel--${escapeHtml(state.tone)} bf-platform-section" data-handoff-proposal-version>
+        <div>
+          <span class="bf-badge bf-badge--gold">Proposta versionada</span>
+          <h3>${escapeHtml(state.label)}</h3>
+          <p>${escapeHtml(state.reason || 'Snapshot local preservado para atendimento consultivo.')}</p>
+        </div>
+        <dl>
+          <div><dt>Proposta</dt><dd>${escapeHtml(item.sourceProposalId || '-')}</dd></div>
+          <div><dt>Versao</dt><dd>${escapeHtml(state.version || '-')}</dd></div>
+          <div><dt>Validade</dt><dd>${escapeHtml(state.validUntil || '-')}</dd></div>
+          <div><dt>Atualizacao</dt><dd>${escapeHtml(state.versionAgeLabel || '-')}</dd></div>
+        </dl>
+        <small>${state.versionId ? `Snapshot ${escapeHtml(state.versionId)}` : 'Snapshot nao identificado em handoffs antigos.'}</small>
+        <a class="btn btn--ghost btn--sm" href="simulador.html#step-9">Abrir proposta</a>
+      </section>
+    `;
   }
 
   function card(item) {
@@ -383,6 +429,7 @@
         <h3>${escapeHtml(item.objectiveLabel || 'Lead consultivo')}</h3>
         <p>${escapeHtml(ownerLabel)} - ${escapeHtml(summary.productName || '-')} / ${escapeHtml(summary.modelName || '-')}</p>
         <small class="bf-handoff-origin-note">${escapeHtml(sourceSummary(item))}</small>
+        ${proposalVersionChip(item)}
         <div class="bf-mini-facts">
           <div><dt>Credito</dt><dd>${escapeHtml(money(summary.valorCredito || 0))}</dd></div>
           <div><dt>Checklist</dt><dd>${done}/${checklist.length}</dd></div>
@@ -520,6 +567,8 @@
         <span class="bf-badge bf-badge--navy">Origem do atendimento</span>
         <p>${escapeHtml(sourceSummary(item))}</p>
       </section>
+
+      ${proposalVersionPanel(item)}
 
       <div class="bf-handoff-columns">
         <section>

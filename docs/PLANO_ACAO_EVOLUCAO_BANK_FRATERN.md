@@ -51,8 +51,8 @@ Cada etapa deve responder quatro perguntas:
 | Trilha Assistida contextual | Concluido parcial | Entrada reconhece Produtos/Calculadoras e saidas usam `from=journey` com `sourceFrom`. |
 | Proposta/PDF com lousa seletiva | Concluido | Etapa 9 usa `proposal-builder-board`, presets consultivo/tecnico, prontidao de exportacao, selecao por grupos, `builder` em `ProposalSummary` e `tools/validate-proposal-builder.mjs`. |
 | Versionamento de propostas | Concluido | Etapa 9 usa `data-proposal-version-panel`, `BFProposalVersions`, historico por proposta, comparacao entre versoes e travamento da versao antes do handoff. |
-| Handoff por origem | Concluido parcial | Filtro, badge, metricas, origem, aging, SLA, responsavel sugerido e proximo passo operacional. |
-| Dashboards por funil/aging | Concluido parcial | Dashboard Cliente tem timeline/deep links; Dashboard Admin agora tem proximas acoes, funil por origem, aging, prioridade, responsavel sugerido e gargalos. |
+| Handoff por origem | Concluido parcial | Filtro, badge, metricas, origem, aging, SLA, responsavel sugerido, proximo passo operacional e leitura de proposta versionada/vencida. |
+| Dashboards por funil/aging | Concluido parcial | Dashboard Cliente tem timeline/deep links; Dashboard Admin agora tem proximas acoes, funil por origem, aging, prioridade, responsavel sugerido, gargalos e alertas de proposta alterada apos handoff. |
 | Navegacao autenticada | Concluido parcial | Login local tem acesso rapido por perfil, redirect preservado e validador dedicado. |
 | Teste navegavel ponta a ponta | Concluido | `pages/lousa-navegacao.html` ganhou roteiro de Auth, Home, Produtos, Calculadoras, Trilha, Comparador, Simulador, Proposta, Handoff e Dashboards com `tools/validate-navigable-journey.mjs`. |
 | Publicacao segura em GitHub Pages | Concluido parcial | Selo demo/local, fallback `404.html`, CI em `.github/workflows/validate.yml` e `tools/validate-public-release-safety.mjs`. |
@@ -171,6 +171,8 @@ Status em 2026-05-08:
 - Criado `tools/validate-handoff-origins.mjs`.
 - Etapa 9 do simulador passou a permitir proposta/PDF por lousa, com escolha de blocos, graficos, conceitos e formulas antes da exportacao.
 - Etapa 9 do simulador passou a salvar historico versionado da proposta, comparar mudancas de metricas/lousa e anexar a versao congelada ao handoff.
+- Handoff passou a mostrar `data-handoff-proposal-version`, validade, snapshot, proximo passo da proposta e alertas para proposta vencida ou sem versao travada.
+- Dashboard Admin passou a cruzar `bank_fratern_proposal_versions_v1` com handoffs para apontar proposta vencida, versionada sem handoff ou alterada apos o handoff.
 - Handoff do consultor ganhou cockpit com aging, SLA, prioridade, responsavel sugerido, filtro por responsavel/aging e proximas acoes.
 - Criado `tools/validate-proposal-versioning.mjs` com relatorio em `docs/test-reports/proposal-versioning-report.json`.
 - Criado `tools/validate-handoff-consultant-operations.mjs` com relatorio em `docs/test-reports/handoff-consultant-operations-report.json`.
@@ -191,6 +193,7 @@ Entregas:
 - Garantir que segunda criacao da mesma origem atualize o handoff existente, sem duplicidade.
 - Salvar versao da proposta antes de exportar/imprimir e antes de criar handoff. Concluido em 2026-05-08.
 - Exibir comparacao entre a ultima versao e a anterior antes do handoff. Concluido em 2026-05-08.
+- Alertar quando uma proposta for vencida, nao versionada ou alterada depois do handoff. Concluido em 2026-05-11.
 
 Arquivos provaveis:
 
@@ -204,6 +207,8 @@ Criterios de aceite:
 
 - Handoff de proposta mostra proposta, versao, validade e status de revisao.
 - Proposta mostra historico versionado, status de mudancas pendentes e comparacao com a versao anterior.
+- Handoff de proposta mostra snapshot, validade, status de versao e proximo passo operacional.
+- Admin destaca proposta vencida, proposta versionada sem handoff e proposta alterada apos handoff como gargalos acionaveis.
 - Handoff de trilha mostra objetivo, produto, modelo e proxima acao.
 - Handoff de retomada mostra etapa abandonada, severidade e aging.
 - Consultor consegue filtrar e priorizar por origem.
