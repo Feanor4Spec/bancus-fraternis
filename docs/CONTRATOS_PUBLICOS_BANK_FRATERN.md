@@ -84,6 +84,7 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | `BFFinancialFormulas`, `BFPriceFormulas`, `BFSacFormulas`, `BFConsorcioFormulas`, `BFComparisonFormulas` | Formulas reutilizadas. |
 | `BFDadosService` | Carga de datasets locais. |
 | `BFProposalBuilder` | Regras da lousa de proposta: storage, presets, prontidao, foco, dependencias e contadores. |
+| `BFProposalGovernance` | Renderizacao e leitura de formulario dos paineis de versionamento, aceite e ponte de handoff da proposta. |
 | `BFSimulatorJourney` | Contexto de origem, prefill e proximas acoes do simulador. |
 | `BFSimulatorState` | Snapshots de formulario, carrinho salvo e payload de simulacao. |
 | `BFProductsJourney` | Produtos, selecao e analytics de jornada. |
@@ -130,6 +131,7 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | `tools/validate-simulator-performance.mjs` | Base compacta do simulador, peso online e fallback para JSON legado. |
 | `tools/validate-simulator-refactor.mjs` | Modulos extraidos do simulador, payload salvo e acoes de jornada. |
 | `tools/validate-proposal-builder.mjs` | Lousa seletiva de proposta/PDF. |
+| `tools/validate-proposal-governance.mjs` | Governanca visual da proposta: versoes, aceite, historicos e handoff. |
 | `tools/validate-proposal-versioning.mjs` | Historico versionado da proposta e comparacao antes do handoff. |
 | `tools/validate-proposal-acceptance.mjs` | Revisao e aceite local da proposta. |
 | `tools/validate-proposal-handoff.mjs` | Proposta revisada para handoff. |

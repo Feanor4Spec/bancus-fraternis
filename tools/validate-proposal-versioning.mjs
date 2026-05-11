@@ -34,14 +34,17 @@ async function readText(relativePath) {
 const html = await readText('pages/simulador.html');
 const app = await readText('js/app.js');
 const service = await readText('js/proposal-versioning.js');
+const governance = await readText('js/proposal-governance.js');
 const handoffService = await readText('assets/js/services/handoff-consultivo.service.js');
 const css = await readText('css/styles.css');
 
 assert(html.includes('data-proposal-version-panel'), 'simulador.html sem painel de versionamento da proposta.');
 assert(html.includes('../js/proposal-versioning.js'), 'simulador.html nao carrega proposal-versioning.js.');
+assert(html.includes('../js/proposal-governance.js'), 'simulador.html nao carrega proposal-governance.js.');
 assert(app.includes('salvarVersaoProposta'), 'app.js sem salvarVersaoProposta().');
 assert(app.includes('limparVersoesProposta'), 'app.js sem limparVersoesProposta().');
-assert(app.includes('data-proposal-version-comparison'), 'app.js sem comparacao visual de versoes.');
+assert(app.includes('BFProposalGovernance'), 'app.js nao delega painel de versoes para BFProposalGovernance.');
+assert(governance.includes('data-proposal-version-comparison'), 'proposal-governance.js sem comparacao visual de versoes.');
 assert(app.includes('proposalVersion'), 'app.js nao injeta versao da proposta no handoff.');
 assert(service.includes('bank_fratern_proposal_versions_v1'), 'proposal-versioning.js sem chave localStorage publica.');
 assert(service.includes('compareRecords'), 'proposal-versioning.js sem compareRecords().');
@@ -162,8 +165,10 @@ const report = {
   uiContract: {
     htmlPanel: html.includes('data-proposal-version-panel'),
     serviceScript: html.includes('../js/proposal-versioning.js'),
+    governanceScript: html.includes('../js/proposal-governance.js'),
     appSave: app.includes('salvarVersaoProposta'),
-    comparisonMarker: app.includes('data-proposal-version-comparison'),
+    appDelegates: app.includes('BFProposalGovernance'),
+    comparisonMarker: governance.includes('data-proposal-version-comparison'),
     cssPanel: css.includes('.proposal-version-panel')
   },
   serviceContract: {

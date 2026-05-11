@@ -35,12 +35,17 @@ const html = await readText('pages/simulador.html');
 const app = await readText('js/app.js');
 const proposalSummary = await readText('js/proposal-summary.js');
 const service = await readText('js/proposal-acceptance.js');
+const governance = await readText('js/proposal-governance.js');
 const css = await readText('css/styles.css');
 
 assert(html.includes('data-proposal-acceptance-panel'), 'simulador.html sem painel de aceite da proposta.');
 assert(html.includes('../js/proposal-acceptance.js'), 'simulador.html nao carrega proposal-acceptance.js.');
+assert(html.includes('../js/proposal-governance.js'), 'simulador.html nao carrega proposal-governance.js.');
 assert(app.includes('salvarRevisaoProposta'), 'app.js sem salvarRevisaoProposta().');
 assert(app.includes('limparRevisaoProposta'), 'app.js sem limparRevisaoProposta().');
+assert(app.includes('BFProposalGovernance'), 'app.js nao delega painel de aceite para BFProposalGovernance.');
+assert(governance.includes('data-proposal-acceptance-history'), 'proposal-governance.js sem historico de aceite.');
+assert(governance.includes('data-proposal-handoff-bridge'), 'proposal-governance.js sem ponte de handoff.');
 assert(app.includes('proposalAcceptance: getCurrentProposalAcceptance()'), 'Payload salvo nao inclui proposalAcceptance.');
 assert(proposalSummary.includes('renderAcceptance(data)'), 'proposal-summary.js sem bloco renderAcceptance().');
 assert(proposalSummary.includes('ps-section--acceptance'), 'proposal-summary.js sem secao visual de aceite.');
@@ -82,7 +87,7 @@ const partial = context.BFProposalAcceptance.saveReview({
   proposal,
   reviewer: 'Analista Teste',
   reviewerRole: 'Mesa de revisao',
-  validUntil: '2026-05-10',
+  validUntil: '2026-05-20',
   notes: 'Validar documentacao antes do handoff.',
   checklist: { premissas: true, cliente: false, documentacao: false }
 });
@@ -92,7 +97,7 @@ const reviewed = context.BFProposalAcceptance.saveReview({
   proposal,
   reviewer: 'Analista Teste',
   reviewerRole: 'Mesa de revisao',
-  validUntil: '2026-05-10',
+  validUntil: '2026-05-20',
   notes: 'Premissas revisadas.',
   checklist: { premissas: true, cliente: true, documentacao: true }
 });
@@ -110,7 +115,9 @@ const report = {
   uiContract: {
     htmlPanel: html.includes('data-proposal-acceptance-panel'),
     serviceScript: html.includes('../js/proposal-acceptance.js'),
+    governanceScript: html.includes('../js/proposal-governance.js'),
     appSave: app.includes('salvarRevisaoProposta'),
+    appDelegates: app.includes('BFProposalGovernance'),
     pdfBlock: proposalSummary.includes('ps-section--acceptance'),
     cssPanel: css.includes('.proposal-acceptance-panel')
   },

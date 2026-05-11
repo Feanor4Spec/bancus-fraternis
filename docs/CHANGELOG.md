@@ -4,6 +4,29 @@
 
 ---
 
+## [v8.72.0] - 2026-05-11
+
+### Governanca visual da proposta modularizada
+
+#### Adicionado
+- Criado `js/proposal-governance.js` com `BFProposalGovernance` para renderizar versionamento, comparacao, aceite local, historicos, leitura do formulario e ponte de handoff.
+- Criado `tools/validate-proposal-governance.mjs` com relatorio em `docs/test-reports/proposal-governance-report.json`.
+
+#### Modificado
+- `js/app.js` passou a delegar a governanca visual da proposta para `BFProposalGovernance`, mantendo `App.salvarVersaoProposta`, `App.salvarRevisaoProposta` e `App.criarHandoffProposta` como contratos publicos.
+- `pages/simulador.html` passou a carregar `proposal-governance.js` antes do controlador principal.
+- Contratos publicos, mapa, plano, README, protocolo, validadores e CI foram atualizados para proteger o novo service.
+
+#### Validado
+- `node --check js/proposal-governance.js`
+- `node --check js/app.js`
+- `node tools/validate-proposal-governance.mjs`
+- `node tools/validate-proposal-acceptance.mjs`
+- `node tools/validate-proposal-versioning.mjs`
+- Browser local: passo 9 confirmou lousa, versionamento, aceite, historicos e ponte de handoff.
+
+---
+
 ## [v8.71.0] - 2026-05-11
 
 ### Service da lousa de proposta/PDF

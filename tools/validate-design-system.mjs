@@ -251,6 +251,7 @@ const requiredFiles = [
   'assets/js/services/admin-recovery.service.js',
   'js/shared-layout.js',
   'js/proposal-builder.js',
+  'js/proposal-governance.js',
   'js/simulator-journey.js',
   'js/simulator-state.js',
   'js/proposal-acceptance.js',
@@ -259,6 +260,7 @@ const requiredFiles = [
   'tools/validate-calculadoras.mjs',
   'tools/validate-simulator-performance.mjs',
   'tools/validate-simulator-refactor.mjs',
+  'tools/validate-proposal-governance.mjs',
   'tools/validate-dashboard-continuity-flow.mjs',
   'tools/validate-decision-flow.mjs',
   'tools/validate-decision-journey-context.mjs',
@@ -309,15 +311,17 @@ if (!adminUsersJs.includes('Handoff sem responsavel')) fail('admin-users.js sem 
 const simulatorHtml = await fs.readFile(path.join(root, 'pages/simulador.html'), 'utf8');
 const simulatorAppJs = await fs.readFile(path.join(root, 'js/app.js'), 'utf8');
 const proposalSummaryJs = await fs.readFile(path.join(root, 'js/proposal-summary.js'), 'utf8');
+const proposalGovernanceJs = await fs.readFile(path.join(root, 'js/proposal-governance.js'), 'utf8');
 if (!simulatorHtml.includes('data-proposal-acceptance-panel')) fail('simulador.html sem painel de aceite local da proposta.');
 if (!simulatorHtml.includes('data-proposal-version-panel')) fail('simulador.html sem painel de versoes da proposta.');
 if (!simulatorHtml.includes('../js/proposal-acceptance.js')) fail('simulador.html nao carrega proposal-acceptance.js.');
 if (!simulatorHtml.includes('../js/proposal-versioning.js')) fail('simulador.html nao carrega proposal-versioning.js.');
+if (!simulatorHtml.includes('../js/proposal-governance.js')) fail('simulador.html nao carrega proposal-governance.js.');
 if (!simulatorHtml.includes('../assets/js/services/handoff-consultivo.service.js')) fail('simulador.html nao carrega servico de handoff consultivo.');
 if (!simulatorAppJs.includes('salvarRevisaoProposta')) fail('app.js sem acao de salvar revisao da proposta.');
 if (!simulatorAppJs.includes('salvarVersaoProposta')) fail('app.js sem acao de salvar versao da proposta.');
 if (!simulatorAppJs.includes('criarHandoffProposta')) fail('app.js sem acao de criar handoff da proposta.');
-if (!simulatorAppJs.includes('data-proposal-handoff-bridge')) fail('app.js sem ponte visual proposta -> handoff.');
+if (!proposalGovernanceJs.includes('data-proposal-handoff-bridge')) fail('proposal-governance.js sem ponte visual proposta -> handoff.');
 if (!proposalSummaryJs.includes('ps-section--acceptance')) fail('proposal-summary.js sem bloco de aceite no PDF.');
 
 const asciiCssFiles = [

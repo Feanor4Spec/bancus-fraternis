@@ -44,6 +44,7 @@ const [
   app,
   proposalSummary,
   proposalBuilder,
+  proposalGovernance,
   calculatorsJson
 ] = await Promise.all([
   read('docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md'),
@@ -59,6 +60,7 @@ const [
   read('js/app.js'),
   read('js/proposal-summary.js'),
   read('js/proposal-builder.js'),
+  read('js/proposal-governance.js'),
   read('assets/data/calculadoras.json')
 ]);
 
@@ -164,6 +166,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'BFDecisionContext',
   'BFCalculadoras',
   'BFProposalBuilder',
+  'BFProposalGovernance',
   'BFSimulatorJourney',
   'BFSimulatorState',
   'BFComparatorModels',
@@ -197,6 +200,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'tools/validate-calculadoras.mjs',
   'tools/validate-admin-dashboard-source-funnel.mjs',
   'tools/validate-proposal-builder.mjs',
+  'tools/validate-proposal-governance.mjs',
   'tools/validate-proposal-versioning.mjs',
   'tools/validate-simulator-groups.mjs',
   'tools/validate-simulator-performance.mjs',
@@ -222,12 +226,17 @@ assert(adminDashboard.includes('href="#admin-proximos-passos"'), 'dashboard-admi
 assert(simulator.includes('data-proposal-builder-board'), 'simulador.html sem lousa de proposta documentada.');
 assert(simulator.includes('data-proposal-version-panel'), 'simulador.html sem painel de versionamento da proposta.');
 assert(simulator.includes('js/proposal-builder.js'), 'simulador.html sem modulo proposal-builder.');
+assert(simulator.includes('js/proposal-governance.js'), 'simulador.html sem modulo proposal-governance.');
 assert(simulator.includes('js/simulator-journey.js'), 'simulador.html sem modulo simulator-journey.');
 assert(simulator.includes('js/simulator-state.js'), 'simulador.html sem modulo simulator-state.');
 assert(app.includes('data-simulator-journey-actions'), 'app.js sem acoes de jornada do simulador.');
 assert(app.includes('BFProposalBuilder'), 'app.js nao delega lousa de proposta para BFProposalBuilder.');
+assert(app.includes('BFProposalGovernance'), 'app.js nao delega governanca de proposta para BFProposalGovernance.');
 assert(proposalBuilder.includes('bank_fratern_proposal_builder_v1'), 'proposal-builder.js sem chave da lousa de proposta.');
 assert(proposalBuilder.includes('BFProposalBuilder'), 'proposal-builder.js sem export global da lousa de proposta.');
+assert(proposalGovernance.includes('BFProposalGovernance'), 'proposal-governance.js sem export global da governanca de proposta.');
+assert(proposalGovernance.includes('data-proposal-version-comparison'), 'proposal-governance.js sem comparacao de versoes.');
+assert(proposalGovernance.includes('data-proposal-handoff-bridge'), 'proposal-governance.js sem ponte de handoff.');
 assert(app.includes('salvarVersaoProposta'), 'app.js sem acao publica de salvar versao da proposta.');
 assert(proposalSummary.includes('proposalBuilderDefaults'), 'proposal-summary.js sem defaults publicos da lousa.');
 assert(contracts.includes('data-handoff-assignee-filter'), 'Contrato publico nao documenta filtro de responsavel do handoff.');
@@ -285,9 +294,9 @@ const report = {
   contracts: {
     localStorageKeys: 17,
     dataMarkers: 56,
-    globals: 15,
+    globals: 16,
     deepLinks: 10,
-    validators: 16,
+    validators: 17,
     calculatorCount
   },
   warnings,

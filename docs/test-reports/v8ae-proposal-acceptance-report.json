@@ -3,7 +3,9 @@
   "uiContract": {
     "htmlPanel": true,
     "serviceScript": true,
+    "governanceScript": true,
     "appSave": true,
+    "appDelegates": true,
     "pdfBlock": true,
     "cssPanel": true
   },

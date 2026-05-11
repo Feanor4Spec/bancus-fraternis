@@ -1049,52 +1049,27 @@ const App = (() => {
   }
 
   function proposalVersionMetricValue(key, value) {
-    const n = Number(value || 0);
-    if (key === 'percentualPago') return `${Format.number(n, 1)}%`;
-    if (key === 'prazo' || key === 'prazoRestante') return `${Math.round(n)} meses`;
-    return Format.money(n);
+    return window.BFProposalGovernance && window.BFProposalGovernance.versionMetricValue
+      ? window.BFProposalGovernance.versionMetricValue(key, value, {
+        formatMoney: Format.money,
+        formatNumber: Format.number
+      })
+      : Format.money(value);
   }
 
   function proposalVersionBuilderLabel(builder) {
-    const current = builder || {};
-    return [
-      `${Number(current.sections || 0)}/${Number(current.sectionsTotal || 0)} blocos`,
-      `${Number(current.charts || 0)}/${Number(current.chartsTotal || 0)} graficos`,
-      `${Number(current.concepts || 0)}/${Number(current.conceptsTotal || 0)} conceitos`,
-      `${Number(current.formulas || 0)}/${Number(current.formulasTotal || 0)} formulas`
-    ].join(' | ');
+    return window.BFProposalGovernance && window.BFProposalGovernance.versionBuilderLabel
+      ? window.BFProposalGovernance.versionBuilderLabel(builder)
+      : '';
   }
 
   function renderProposalVersionComparison(comparison) {
-    if (!comparison) {
-      return '<p class="proposal-version-panel__muted">Salve ao menos duas versoes para comparar as mudancas antes do handoff.</p>';
-    }
-    const metrics = comparison.changedMetrics.slice(0, 4);
-    const builder = comparison.changedBuilder;
-    const status = comparison.statusChanged
-      ? `<article><span>Status</span><strong>${escapeSettingsText(comparison.left.statusLabel)} -> ${escapeSettingsText(comparison.right.statusLabel)}</strong></article>`
+    return window.BFProposalGovernance && window.BFProposalGovernance.renderVersionComparison
+      ? window.BFProposalGovernance.renderVersionComparison(comparison, {
+        formatMoney: Format.money,
+        formatNumber: Format.number
+      })
       : '';
-    const metricHtml = metrics.length ? metrics.map((item) => `
-      <article>
-        <span>${escapeSettingsText(item.label)}</span>
-        <strong>${proposalVersionMetricValue(item.key, item.before)} -> ${proposalVersionMetricValue(item.key, item.after)}</strong>
-        <small>${item.delta >= 0 ? '+' : ''}${proposalVersionMetricValue(item.key, item.delta)}</small>
-      </article>
-    `).join('') : '<article><span>Numeros</span><strong>Sem alteracao relevante</strong><small>Metricas financeiras preservadas.</small></article>';
-    const builderHtml = builder.length ? builder.map((item) => `
-      <article>
-        <span>${escapeSettingsText(item.label)}</span>
-        <strong>${item.before} -> ${item.after}</strong>
-        <small>${item.delta >= 0 ? '+' : ''}${item.delta} selecionados</small>
-      </article>
-    `).join('') : '';
-    return `
-      <div class="proposal-version-comparison" data-proposal-version-comparison>
-        ${status}
-        ${metricHtml}
-        ${builderHtml}
-      </div>
-    `;
   }
 
   function renderProposalVersionPanel(acceptance = null, builder = null) {
@@ -1102,7 +1077,9 @@ const App = (() => {
     if (!panel) return;
     const proposal = getCurrentProposalData();
     if (!proposal || typeof BFProposalVersions === 'undefined') {
-      panel.innerHTML = '<div class="proposal-version-panel__empty">Calcule a simulacao para salvar versoes e comparar mudancas da proposta.</div>';
+      panel.innerHTML = window.BFProposalGovernance && window.BFProposalGovernance.renderVersionEmpty
+        ? window.BFProposalGovernance.renderVersionEmpty()
+        : '<div class="proposal-version-panel__empty">Calcule a simulacao para salvar versoes e comparar mudancas da proposta.</div>';
       panel.dataset.proposalVersionStatus = 'empty';
       return;
     }
@@ -1113,57 +1090,23 @@ const App = (() => {
     const latest = history[0] || null;
     const saved = !!(latest && latest.sourceHash === currentSnapshot.sourceHash);
     const comparison = history.length > 1 ? BFProposalVersions.compareRecords(history[1], history[0]) : null;
-    const latestVersion = latest ? `v${latest.version}` : 'sem versao';
-    const statusLabel = saved ? 'Versao atual salva' : (latest ? 'Mudancas pendentes' : 'Primeira versao pendente');
-    const statusTone = saved ? 'success' : (latest ? 'warning' : 'info');
+    const rendered = window.BFProposalGovernance && window.BFProposalGovernance.renderVersionPanel
+      ? window.BFProposalGovernance.renderVersionPanel({
+        proposal,
+        currentSnapshot,
+        history,
+        latest,
+        saved,
+        comparison
+      }, {
+        formatMoney: Format.money,
+        formatNumber: Format.number
+      })
+      : null;
 
-    panel.dataset.proposalVersionStatus = saved ? 'saved' : 'pending';
-    panel.dataset.proposalVersionCount = String(history.length);
-    panel.innerHTML = `
-      <div class="proposal-version-panel__head">
-        <div>
-          <span class="proposal-version-panel__eyebrow">Historico da proposta</span>
-          <h3>Versoes e comparacao antes do handoff</h3>
-          <p>Salve snapshots da proposta para comparar mudancas de numeros, lousa, validade e aceite antes de encaminhar ao atendimento.</p>
-        </div>
-        <div class="proposal-version-status proposal-version-status--${statusTone}">
-          <span>Status</span>
-          <strong>${escapeSettingsText(statusLabel)}</strong>
-          <small>${escapeSettingsText(latestVersion)}</small>
-        </div>
-      </div>
-      <div class="proposal-version-panel__actions">
-        <button class="btn btn--primary" type="button" onclick="App.salvarVersaoProposta()">Salvar versao atual</button>
-        <button class="btn btn--ghost" type="button" onclick="App.limparVersoesProposta()">Limpar versoes desta proposta</button>
-      </div>
-      <div class="proposal-version-current">
-        <article>
-          <span>Cliente</span>
-          <strong>${escapeSettingsText(currentSnapshot.cliente)}</strong>
-          <small>${escapeSettingsText(currentSnapshot.proposalId)}</small>
-        </article>
-        <article>
-          <span>Credito</span>
-          <strong>${Format.money(currentSnapshot.metrics.creditoTotal)}</strong>
-          <small>Parcela ${Format.money(currentSnapshot.metrics.parcelaAtual)}</small>
-        </article>
-        <article>
-          <span>Lousa</span>
-          <strong>${escapeSettingsText(proposalVersionBuilderLabel(currentSnapshot.builder))}</strong>
-          <small>Selecao que entra no PDF final.</small>
-        </article>
-      </div>
-      ${renderProposalVersionComparison(comparison)}
-      <div class="proposal-version-history" data-proposal-version-history>
-        <strong>Historico versionado</strong>
-        ${history.length ? history.map(item => `
-          <article data-proposal-version-item="${escapeSettingsText(String(item.version || ''))}">
-            <span>${escapeSettingsText(item.versionLabel)} | ${escapeSettingsText(item.statusLabel || item.status)}</span>
-            <small>${escapeSettingsText(item.savedAtLabel)} | ${escapeSettingsText(proposalVersionBuilderLabel(item.builder))}</small>
-          </article>
-        `).join('') : '<p>Nenhuma versao salva para esta proposta.</p>'}
-      </div>
-    `;
+    panel.dataset.proposalVersionStatus = rendered ? rendered.status : (saved ? 'saved' : 'pending');
+    panel.dataset.proposalVersionCount = String(rendered ? rendered.count : history.length);
+    panel.innerHTML = rendered ? rendered.html : renderProposalVersionComparison(comparison);
   }
 
   function salvarVersaoProposta(options = {}) {
@@ -1200,13 +1143,28 @@ const App = (() => {
   }
 
   function proposalAcceptanceField(id) {
-    const el = document.getElementById(id);
-    return el ? el.value : '';
+    const form = window.BFProposalGovernance && window.BFProposalGovernance.readAcceptanceForm
+      ? window.BFProposalGovernance.readAcceptanceForm(document)
+      : {};
+    const fieldMap = {
+      proposalReviewer: 'reviewer',
+      proposalReviewerRole: 'reviewerRole',
+      proposalValidUntil: 'validUntil',
+      proposalReviewNotes: 'notes'
+    };
+    return form[fieldMap[id]] || '';
   }
 
   function proposalAcceptanceChecked(id) {
-    const el = document.getElementById(id);
-    return !!(el && el.checked);
+    const form = window.BFProposalGovernance && window.BFProposalGovernance.readAcceptanceForm
+      ? window.BFProposalGovernance.readAcceptanceForm(document)
+      : {};
+    const fieldMap = {
+      proposalCheckPremissas: 'premissas',
+      proposalCheckCliente: 'cliente',
+      proposalCheckDocumentacao: 'documentacao'
+    };
+    return !!(form.checklist && form.checklist[fieldMap[id]]);
   }
 
   function getProposalHandoff(proposalId) {
@@ -1219,91 +1177,28 @@ const App = (() => {
     if (!panel) return;
     const proposal = getCurrentProposalData();
     if (!proposal || typeof BFProposalAcceptance === 'undefined') {
-      panel.innerHTML = '<div class="proposal-acceptance-panel__empty">Calcule a simulacao para registrar revisao, validade e aceite local da proposta.</div>';
+      panel.innerHTML = window.BFProposalGovernance && window.BFProposalGovernance.renderAcceptanceEmpty
+        ? window.BFProposalGovernance.renderAcceptanceEmpty()
+        : '<div class="proposal-acceptance-panel__empty">Calcule a simulacao para registrar revisao, validade e aceite local da proposta.</div>';
       return;
     }
 
     const current = acceptance || BFProposalAcceptance.latest(proposal.id) || BFProposalAcceptance.createDraft(proposal);
     const history = BFProposalAcceptance.history(proposal.id, 4);
-    const checked = current.checklist || {};
-    const statusTone = current.status === 'reviewed' ? 'success' : (current.status === 'expired' ? 'danger' : 'warning');
-    const reviewer = escapeSettingsText(current.reviewer || proposal.consultor || '');
-    const reviewerRole = escapeSettingsText(current.reviewerRole || 'Consultor responsavel');
-    const notes = escapeSettingsText(current.notes || '');
-    const validUntil = escapeSettingsText(current.validUntil || '');
     const handoff = getProposalHandoff(proposal.id);
-    const handoffReady = !!handoff;
-    const handoffLocked = current.status !== 'reviewed';
-    const handoffStatus = handoffReady
-      ? `Handoff ${handoff.id} criado na fila consultiva.`
-      : (handoffLocked ? 'Conclua a revisao para liberar o handoff.' : 'Proposta revisada pronta para virar lead consultivo.');
+    const rendered = window.BFProposalGovernance && window.BFProposalGovernance.renderAcceptancePanel
+      ? window.BFProposalGovernance.renderAcceptancePanel({
+        proposal,
+        current,
+        history,
+        handoff
+      })
+      : null;
 
-    panel.dataset.proposalAcceptanceStatus = current.status || 'pending';
-    panel.dataset.proposalAcceptanceReady = current.status === 'reviewed' ? 'true' : 'false';
-    panel.dataset.proposalHandoffReady = handoffReady ? 'true' : 'false';
-    panel.innerHTML = `
-      <div class="proposal-acceptance-panel__head">
-        <div>
-          <span class="proposal-acceptance-panel__eyebrow">Governanca da proposta</span>
-          <h3>Revisao e aceite local</h3>
-          <p>Registre a versao revisada antes de exportar, imprimir ou encaminhar para atendimento consultivo.</p>
-        </div>
-        <div class="proposal-acceptance-status proposal-acceptance-status--${statusTone}">
-          <span>Status</span>
-          <strong>${escapeSettingsText(current.statusLabel || 'Em revisao')}</strong>
-          <small>${current.version ? `Versao ${current.version}` : 'Sem versao registrada'}</small>
-        </div>
-      </div>
-      <div class="proposal-acceptance-form">
-        <label>
-          <span>Responsavel pela revisao</span>
-          <input id="proposalReviewer" class="form-input" type="text" value="${reviewer}" placeholder="Nome do responsavel">
-        </label>
-        <label>
-          <span>Papel na revisao</span>
-          <input id="proposalReviewerRole" class="form-input" type="text" value="${reviewerRole}" placeholder="Consultor responsavel">
-        </label>
-        <label>
-          <span>Validade da proposta</span>
-          <input id="proposalValidUntil" class="form-input" type="date" value="${validUntil}">
-        </label>
-      </div>
-      <div class="proposal-acceptance-checks">
-        <label><input id="proposalCheckPremissas" type="checkbox" ${checked.premissas ? 'checked' : ''}> Premissas financeiras conferidas</label>
-        <label><input id="proposalCheckCliente" type="checkbox" ${checked.cliente ? 'checked' : ''}> Contexto do cliente revisado</label>
-        <label><input id="proposalCheckDocumentacao" type="checkbox" ${checked.documentacao ? 'checked' : ''}> Documentacao e handoff mapeados</label>
-      </div>
-      <label class="proposal-acceptance-notes">
-        <span>Observacao da revisao</span>
-        <textarea id="proposalReviewNotes" class="form-textarea" rows="3" placeholder="Ex: Validar limite de lance embutido antes do envio.">${notes}</textarea>
-      </label>
-      <div class="proposal-acceptance-actions">
-        <button class="btn btn--primary" type="button" onclick="App.salvarRevisaoProposta()">Registrar revisao</button>
-        <button class="btn btn--ghost" type="button" onclick="App.limparRevisaoProposta()">Limpar revisoes desta proposta</button>
-      </div>
-      <div class="proposal-handoff-bridge" data-proposal-handoff-bridge>
-        <div>
-          <span class="proposal-handoff-bridge__eyebrow">Continuidade consultiva</span>
-          <strong>${escapeSettingsText(handoffStatus)}</strong>
-          <small>${handoffReady ? 'Acompanhe checklist, responsavel, notas e auditoria no handoff consultivo.' : 'Nenhum dado e enviado para terceiros nesta etapa; o lead fica salvo localmente.'}</small>
-        </div>
-        <div class="proposal-handoff-bridge__actions">
-          <button class="btn btn--primary" type="button" onclick="App.criarHandoffProposta()" ${handoffLocked ? 'disabled aria-disabled="true"' : ''}>
-            ${handoffReady ? 'Atualizar handoff' : 'Criar handoff'}
-          </button>
-          <a class="btn btn--ghost" href="handoff-consultivo.html#fila-handoff">${handoffReady ? `Abrir ${escapeSettingsText(handoff.id)}` : 'Abrir fila'}</a>
-        </div>
-      </div>
-      <div class="proposal-acceptance-history" data-proposal-acceptance-history>
-        <strong>Historico local</strong>
-        ${history.length ? history.map(item => `
-          <article>
-            <span>${escapeSettingsText(item.statusLabel)}${item.version ? ` | v${item.version}` : ''}</span>
-            <small>${escapeSettingsText(item.reviewer)} - ${item.updatedAt ? new Date(item.updatedAt).toLocaleString('pt-BR') : 'sem data'}</small>
-          </article>
-        `).join('') : '<p>Nenhuma revisao registrada para esta proposta.</p>'}
-      </div>
-    `;
+    panel.dataset.proposalAcceptanceStatus = rendered ? rendered.status : (current.status || 'pending');
+    panel.dataset.proposalAcceptanceReady = rendered && rendered.ready ? 'true' : (current.status === 'reviewed' ? 'true' : 'false');
+    panel.dataset.proposalHandoffReady = rendered && rendered.handoffReady ? 'true' : (handoff ? 'true' : 'false');
+    panel.innerHTML = rendered ? rendered.html : '';
   }
 
   function salvarRevisaoProposta() {
@@ -1312,17 +1207,26 @@ const App = (() => {
       showToast('Calcule a simulacao antes de registrar revisao.', 'error');
       return;
     }
+    const form = window.BFProposalGovernance && window.BFProposalGovernance.readAcceptanceForm
+      ? window.BFProposalGovernance.readAcceptanceForm(document)
+      : {
+        reviewer: proposalAcceptanceField('proposalReviewer'),
+        reviewerRole: proposalAcceptanceField('proposalReviewerRole'),
+        validUntil: proposalAcceptanceField('proposalValidUntil'),
+        notes: proposalAcceptanceField('proposalReviewNotes'),
+        checklist: {
+          premissas: proposalAcceptanceChecked('proposalCheckPremissas'),
+          cliente: proposalAcceptanceChecked('proposalCheckCliente'),
+          documentacao: proposalAcceptanceChecked('proposalCheckDocumentacao')
+        }
+      };
     const record = BFProposalAcceptance.saveReview({
       proposal,
-      reviewer: proposalAcceptanceField('proposalReviewer') || proposal.consultor,
-      reviewerRole: proposalAcceptanceField('proposalReviewerRole') || 'Consultor responsavel',
-      validUntil: proposalAcceptanceField('proposalValidUntil'),
-      notes: proposalAcceptanceField('proposalReviewNotes'),
-      checklist: {
-        premissas: proposalAcceptanceChecked('proposalCheckPremissas'),
-        cliente: proposalAcceptanceChecked('proposalCheckCliente'),
-        documentacao: proposalAcceptanceChecked('proposalCheckDocumentacao')
-      }
+      reviewer: form.reviewer || proposal.consultor,
+      reviewerRole: form.reviewerRole || 'Consultor responsavel',
+      validUntil: form.validUntil,
+      notes: form.notes,
+      checklist: form.checklist
     });
 
     if (!record) {
