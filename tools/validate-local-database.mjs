@@ -241,6 +241,13 @@ try {
 
   const adminDashboard = await read('pages/dashboard-admin.html');
   const adminUsers = await read('assets/js/admin-users.js');
+  const storageJs = await read('js/storage.js');
+  const proposalVersioning = await read('js/proposal-versioning.js');
+  const proposalAcceptance = await read('js/proposal-acceptance.js');
+  const proposalBuilder = await read('js/proposal-builder.js');
+  const decisionContext = await read('assets/js/services/decision-context.service.js');
+  const decisionJourney = await read('assets/js/services/trilha-decisao.service.js');
+  const handoffService = await read('assets/js/services/handoff-consultivo.service.js');
   [
     'data-admin-backend-events',
     'data-admin-backend-event',
@@ -258,6 +265,18 @@ try {
     'listEvents(30)'
   ].forEach((marker) => {
     assert(adminDashboard.includes(marker) || adminUsers.includes(marker), `Painel admin de eventos sem contrato ${marker}.`);
+  });
+
+  [
+    [storageJs, 'simulation', 'Storage.saveSimulation sem snapshot server-side de simulacao.'],
+    [proposalVersioning, 'proposal-version', 'BFProposalVersions sem snapshot server-side de versao.'],
+    [proposalAcceptance, 'proposal-acceptance', 'BFProposalAcceptance sem snapshot server-side de aceite.'],
+    [proposalBuilder, 'proposal-builder', 'BFProposalBuilder sem snapshot server-side da lousa.'],
+    [decisionContext, 'financial-profile', 'BFDecisionContext sem snapshot server-side de perfil.'],
+    [decisionJourney, 'decision-journey', 'BFTrilhaDecisaoService sem snapshot server-side da trilha.'],
+    [handoffService, 'handoff', 'BFHandoffConsultivoService sem snapshot server-side de handoff.']
+  ].forEach(([text, marker, message]) => {
+    assert(text.includes('recordSnapshot') && text.includes(marker), message);
   });
 
   const inspector = await read('tools/inspect-local-sql-environment.mjs');

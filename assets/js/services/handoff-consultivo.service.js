@@ -97,6 +97,28 @@
     api.recordEvent(type, payload, meta).catch(() => {});
   }
 
+  function publishBackendSnapshot(type, payload, meta = {}) {
+    const api = window.BFBackendApi;
+    if (!api || typeof api.recordSnapshot !== 'function') return;
+    api.recordSnapshot(type, payload, meta).catch(() => {});
+  }
+
+  function publishHandoffSnapshot(handoff, action) {
+    if (!handoff || !handoff.id) return;
+    publishBackendSnapshot('handoff', { ...handoff, snapshotAction: action || 'save' }, {
+      id: `SNP-HANDOFF-${handoff.id}`,
+      source: 'handoff-consultivo',
+      ownerEmail: handoff.ownerEmail || '',
+      actorEmail: currentActor().email,
+      entityId: handoff.id,
+      title: handoff.objectiveLabel || handoff.objective || handoff.id,
+      status: handoff.status || 'novo',
+      storageKey: HANDOFF_KEY,
+      createdAt: handoff.createdAt || '',
+      updatedAt: handoff.updatedAt || handoff.createdAt || ''
+    });
+  }
+
   function list() {
     const parsed = readJson(HANDOFF_KEY, []);
     return Array.isArray(parsed) ? parsed : [];
@@ -915,6 +937,7 @@
       const items = list().map((item) => item.id === existing.id ? next : item);
       saveList(items);
       recordAudit('refresh', next, { sourceJourneyId: journey.id });
+      publishHandoffSnapshot(next, 'refresh');
       return next;
     }
 
@@ -939,6 +962,7 @@
     };
     saveList([handoff].concat(list()));
     recordAudit('create', handoff, { sourceJourneyId: journey.id });
+    publishHandoffSnapshot(handoff, 'create');
     return handoff;
   }
 
@@ -996,6 +1020,7 @@
       };
       saveList(list().map((item) => item.id === existing.id ? next : item));
       recordAudit('signal-refresh', next, { sourceSignalId: signal.id });
+      publishHandoffSnapshot(next, 'signal-refresh');
       return next;
     }
 
@@ -1020,6 +1045,7 @@
     };
     saveList([handoff].concat(list()));
     recordAudit('signal-create', handoff, { sourceSignalId: signal.id });
+    publishHandoffSnapshot(handoff, 'signal-create');
     return handoff;
   }
 
@@ -1085,6 +1111,7 @@
       };
       saveList(list().map((item) => item.id === existing.id ? next : item));
       recordAudit('proposal-refresh', next, { sourceProposalId: proposal.id, status: proposalStatus });
+      publishHandoffSnapshot(next, 'proposal-refresh');
       return next;
     }
 
@@ -1116,6 +1143,7 @@
     };
     saveList([handoff].concat(list()));
     recordAudit('proposal-create', handoff, { sourceProposalId: proposal.id, status: proposalStatus });
+    publishHandoffSnapshot(handoff, 'proposal-create');
     return handoff;
   }
 
@@ -1142,6 +1170,7 @@
     }
     saveList(list().map((item) => item.id === id ? next : item));
     if (action) recordAudit(action, next, patch || {});
+    publishHandoffSnapshot(next, action || 'update');
     return next;
   }
 

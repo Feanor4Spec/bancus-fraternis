@@ -93,6 +93,18 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | `POST /api/snapshots` | Cria ou atualiza snapshot sanitizado de simulacao, trilha, proposta, lousa, perfil, modelos ou handoff. | Exige bearer token; preservar compatibilidade com `localStorage`. |
 | `GET /api/snapshots` | Lista snapshots recentes, com filtro opcional por `type`. | Exige papel `admin`. |
 
+Hooks reais que tentam gravar snapshots quando `BFBackendApi` esta disponivel:
+
+| Origem | Tipo de snapshot | Fonte local preservada |
+| --- | --- | --- |
+| `Storage.saveSimulation` | `simulation` | `consorciopro_simulations` |
+| `BFProposalVersions.save` | `proposal-version` | `bank_fratern_proposal_versions_v1` |
+| `BFProposalAcceptance.saveReview` | `proposal-acceptance` | `bank_fratern_proposal_acceptances_v1` |
+| `BFProposalBuilder.saveConfig` | `proposal-builder` | `bank_fratern_proposal_builder_v1` |
+| `BFDecisionContext.saveProfilePatch` | `financial-profile` | `bf_financial_profile_v1` |
+| `BFTrilhaDecisaoService.save` | `decision-journey` | `bf_decision_journey_v1:<owner>` |
+| `BFHandoffConsultivoService.create/update` | `handoff` | `bf_consultive_handoffs_v1` |
+
 ## Exports Globais
 
 | Export | Papel publico |

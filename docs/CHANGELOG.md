@@ -4,6 +4,32 @@
 
 ---
 
+## [v8.84.0] - 2026-05-12
+
+### Snapshots reais da jornada conectados ao backend local
+
+#### Adicionado
+- Salvamento de simulacoes em `Storage.saveSimulation` agora tenta gravar snapshot `simulation` em `/api/snapshots`.
+- Versionamento, aceite e lousa da proposta agora tentam gravar snapshots `proposal-version`, `proposal-acceptance` e `proposal-builder`.
+- Trilha assistida, perfil financeiro e handoff consultivo agora tentam gravar snapshots `decision-journey`, `financial-profile` e `handoff`.
+
+#### Modificado
+- A sincronizacao e progressiva: falha de API, falta de sessao ou modo `file://` nao bloqueiam `localStorage`.
+- Validadores de contratos e banco local passaram a proteger os hooks reais de `recordSnapshot`.
+
+#### Validado
+- `node --check js/storage.js`
+- `node --check js/proposal-versioning.js`
+- `node --check js/proposal-acceptance.js`
+- `node --check js/proposal-builder.js`
+- `node --check assets/js/services/decision-context.service.js`
+- `node --check assets/js/services/trilha-decisao.service.js`
+- `node --check assets/js/services/handoff-consultivo.service.js`
+- `node tools/validate-local-database.mjs`
+- `node tools/validate-public-contracts.mjs`
+
+---
+
 ## [v8.83.0] - 2026-05-12
 
 ### Snapshots server-side de jornada

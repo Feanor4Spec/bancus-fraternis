@@ -49,6 +49,12 @@ const [
   proposalSummary,
   proposalBuilder,
   proposalGovernance,
+  proposalVersioning,
+  proposalAcceptance,
+  storageJs,
+  decisionContext,
+  decisionJourney,
+  handoffService,
   calculatorsJson
 ] = await Promise.all([
   read('docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md'),
@@ -69,6 +75,12 @@ const [
   read('js/proposal-summary.js'),
   read('js/proposal-builder.js'),
   read('js/proposal-governance.js'),
+  read('js/proposal-versioning.js'),
+  read('js/proposal-acceptance.js'),
+  read('js/storage.js'),
+  read('assets/js/services/decision-context.service.js'),
+  read('assets/js/services/trilha-decisao.service.js'),
+  read('assets/js/services/handoff-consultivo.service.js'),
   read('assets/data/calculadoras.json')
 ]);
 
@@ -265,6 +277,17 @@ assert(adminDashboard.includes('data-admin-backend-events'), 'dashboard-admin.ht
 assert(backendApi.includes('listEvents'), 'BFBackendApi sem leitura de eventos server-side.');
 assert(backendApi.includes('recordSnapshot'), 'BFBackendApi sem gravacao de snapshots server-side.');
 assert(backendApi.includes('listSnapshots'), 'BFBackendApi sem leitura de snapshots server-side.');
+[
+  [storageJs, 'simulation'],
+  [proposalVersioning, 'proposal-version'],
+  [proposalAcceptance, 'proposal-acceptance'],
+  [proposalBuilder, 'proposal-builder'],
+  [decisionContext, 'financial-profile'],
+  [decisionJourney, 'decision-journey'],
+  [handoffService, 'handoff']
+].forEach(([text, marker]) => {
+  assert(text.includes('recordSnapshot') && text.includes(marker), `Hook server-side de snapshot ausente para ${marker}.`);
+});
 assert(backendApi.includes('databaseStatus'), 'BFBackendApi sem status tecnico do banco local.');
 assert(backendApi.includes('importLocalSnapshot'), 'BFBackendApi sem importacao guiada localStorage -> SQLite.');
 assert(server.includes('/api/database/status'), 'server.js sem endpoint de status tecnico do banco.');

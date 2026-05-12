@@ -65,6 +65,12 @@
     api.recordEvent(type, payload, meta).catch(() => {});
   }
 
+  function publishBackendSnapshot(type, payload, meta = {}) {
+    const api = window.BFBackendApi;
+    if (!api || typeof api.recordSnapshot !== 'function') return;
+    api.recordSnapshot(type, payload, meta).catch(() => {});
+  }
+
   function toNumber(value) {
     const numeric = Number(value);
     return Number.isFinite(numeric) ? numeric : 0;
@@ -153,6 +159,17 @@
       updatedAt: timestamp()
     };
     writeJson(PROFILE_KEY, profile);
+    publishBackendSnapshot('financial-profile', snapshotProfile(profile), {
+      id: `SNP-PROFILE-${currentActorEmail() || 'anon'}`,
+      source: source || 'decision-context',
+      ownerEmail: currentActorEmail(),
+      actorEmail: currentActorEmail(),
+      entityId: currentActorEmail() || 'anon',
+      title: 'Perfil financeiro',
+      status: 'updated',
+      storageKey: PROFILE_KEY,
+      updatedAt: profile.updatedAt
+    });
     recordEvent('profile-patch', {
       source: source || 'decision-context',
       keys: Object.keys(clean)

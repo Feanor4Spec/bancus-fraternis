@@ -42,6 +42,41 @@ const BFProposalVersions = (() => {
     }
   }
 
+  function currentActorEmail() {
+    try {
+      const user = window.BFAuth && window.BFAuth.getCurrentUser ? window.BFAuth.getCurrentUser() : null;
+      return user && user.email ? user.email : '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function publishBackendSnapshot(type, payload, meta) {
+    try {
+      const api = window.BFBackendApi;
+      if (!api || typeof api.recordSnapshot !== 'function') return;
+      api.recordSnapshot(type, payload || {}, meta || {}).catch(() => {});
+    } catch (e) {
+      // Integracao opcional para localhost; historico local segue como fonte primaria.
+    }
+  }
+
+  function publishProposalVersionSnapshot(record) {
+    if (!record || !record.id) return;
+    publishBackendSnapshot('proposal-version', record, {
+      id: `SNP-PV-${record.id}`,
+      source: 'proposal-versioning',
+      ownerEmail: '',
+      actorEmail: currentActorEmail(),
+      entityId: record.proposalId || record.id,
+      title: record.label || `Versao ${record.version || ''}`.trim(),
+      status: record.status || 'draft',
+      storageKey: STORAGE_KEY,
+      createdAt: record.createdAt || '',
+      updatedAt: record.updatedAt || record.createdAt || ''
+    });
+  }
+
   function cleanText(value, max = 160) {
     return String(value == null ? '' : value).trim().slice(0, max);
   }
@@ -231,7 +266,9 @@ const BFProposalVersions = (() => {
     });
 
     const list = [record].concat(loadAll()).slice(0, MAX_ITEMS);
-    return saveAll(list) ? record : null;
+    if (!saveAll(list)) return null;
+    publishProposalVersionSnapshot(record);
+    return record;
   }
 
   const metricLabels = {

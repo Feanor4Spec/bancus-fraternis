@@ -43,6 +43,43 @@ const Storage = (() => {
     }
   }
 
+  function _currentActorEmail() {
+    try {
+      const root = typeof window !== 'undefined' ? window : globalThis;
+      const user = root.BFAuth && root.BFAuth.getCurrentUser ? root.BFAuth.getCurrentUser() : null;
+      return user && user.email ? user.email : '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function _publishBackendSnapshot(type, payload, meta) {
+    try {
+      const root = typeof window !== 'undefined' ? window : globalThis;
+      const api = root.BFBackendApi;
+      if (!api || typeof api.recordSnapshot !== 'function') return;
+      api.recordSnapshot(type, payload || {}, meta || {}).catch(() => {});
+    } catch (e) {
+      // Snapshot server-side e progressivo; localStorage continua sendo a fonte segura do prototipo estatico.
+    }
+  }
+
+  function _publishSimulationSnapshot(entry) {
+    if (!entry || !entry.id) return;
+    _publishBackendSnapshot('simulation', entry, {
+      id: `SNP-SIM-${entry.id}`,
+      source: 'simulator-storage',
+      ownerEmail: entry.clienteEmail || entry.consultorEmail || '',
+      actorEmail: _currentActorEmail() || entry.consultorEmail || '',
+      entityId: entry.id,
+      title: entry.nome || entry.id,
+      status: entry.status || 'saved',
+      storageKey: STORAGE_KEY,
+      createdAt: entry.criadoEm || '',
+      updatedAt: entry.atualizadoEm || ''
+    });
+  }
+
   function _summary(entry, includeDetails) {
     const resumo = entry.resumo || (entry.resultado && entry.resultado.resumo ? entry.resultado.resumo : null);
     const base = {
@@ -133,7 +170,9 @@ const Storage = (() => {
       list.splice(MAX_SIMULATIONS);
     }
 
-    return _saveAll(list) ? entry : null;
+    if (!_saveAll(list)) return null;
+    _publishSimulationSnapshot(entry);
+    return entry;
   }
 
   function loadSimulations(options = {}) {

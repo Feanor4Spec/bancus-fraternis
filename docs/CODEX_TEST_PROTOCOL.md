@@ -1353,6 +1353,7 @@ Validacoes obrigatorias:
 - `POST /api/events` deve remover senha, token, CPF, telefone, WhatsApp, hash e salt do payload.
 - `POST /api/snapshots` deve remover senha, token, CPF, telefone, WhatsApp, hash e salt do payload.
 - `GET /api/snapshots` deve exigir admin e aceitar filtro opcional por tipo.
+- Salvamentos reais de simulacao, proposta, lousa, perfil, trilha e handoff devem chamar `BFBackendApi.recordSnapshot` sem bloquear `localStorage`.
 - `pages/dashboard-admin.html` deve renderizar `data-admin-backend-events` com metricas e ultimos eventos quando houver sessao admin da API.
 - `pages/dashboard-admin.html` deve renderizar `data-admin-backend-table` e `data-admin-backend-database-provider` no painel de banco.
 - `pages/dashboard-admin.html` deve renderizar `data-admin-local-import-panel`, `data-admin-local-snapshot-count`, preview e execucao da migracao guiada.

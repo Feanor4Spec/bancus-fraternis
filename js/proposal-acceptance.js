@@ -42,6 +42,41 @@ const BFProposalAcceptance = (() => {
     }
   }
 
+  function currentActorEmail() {
+    try {
+      const user = window.BFAuth && window.BFAuth.getCurrentUser ? window.BFAuth.getCurrentUser() : null;
+      return user && user.email ? user.email : '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function publishBackendSnapshot(type, payload, meta) {
+    try {
+      const api = window.BFBackendApi;
+      if (!api || typeof api.recordSnapshot !== 'function') return;
+      api.recordSnapshot(type, payload || {}, meta || {}).catch(() => {});
+    } catch (e) {
+      // API local opcional; aceite local continua funcionando em file:// e GitHub Pages.
+    }
+  }
+
+  function publishAcceptanceSnapshot(record) {
+    if (!record || !record.id) return;
+    publishBackendSnapshot('proposal-acceptance', record, {
+      id: `SNP-REV-${record.id}`,
+      source: 'proposal-acceptance',
+      ownerEmail: '',
+      actorEmail: currentActorEmail() || record.reviewer || '',
+      entityId: record.proposalId || record.id,
+      title: record.statusLabel || 'Revisao de proposta',
+      status: record.status || 'pending',
+      storageKey: STORAGE_KEY,
+      createdAt: record.createdAt || '',
+      updatedAt: record.updatedAt || record.createdAt || ''
+    });
+  }
+
   function cleanText(value, max = 240) {
     return String(value == null ? '' : value).trim().slice(0, max);
   }
@@ -166,7 +201,9 @@ const BFProposalAcceptance = (() => {
     const list = loadAll().filter(item => item.id !== record.id);
     list.unshift(record);
     if (list.length > MAX_ITEMS) list.splice(MAX_ITEMS);
-    return saveAll(list) ? record : null;
+    if (!saveAll(list)) return null;
+    publishAcceptanceSnapshot(record);
+    return record;
   }
 
   function clear(proposalId) {

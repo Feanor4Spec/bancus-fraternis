@@ -94,6 +94,7 @@ Cada etapa deve responder quatro perguntas:
 | 23 | Diagnostico backend SQL local | Concluido parcial | API ganhou `/api/database/status`, Admin mostra provider/tabelas/PRAGMAs do SQLite e o inspetor local detecta CLIs, portas e servicos SQL externos. | `BFBackendApi.databaseStatus`, `data-admin-backend-table`, `tools/inspect-local-sql-environment.mjs`. |
 | 24 | Migracao guiada localStorage -> SQLite | Concluido parcial | Admin previsualiza e executa importacao idempotente de usuarios/eventos locais para o SQLite, com senha temporaria para novos usuarios. | `POST /api/database/import-local`, `BFBackendApi.importLocalSnapshot`, `data-admin-local-import-panel`. |
 | 25 | Snapshots server-side de jornada | Concluido parcial | SQLite guarda snapshots sanitizados de simulacao, trilha, proposta, lousa, perfil, modelos e handoff; Admin importa esses estados pelo painel guiado. | `POST /api/snapshots`, `GET /api/snapshots`, `data-admin-local-snapshot-count`, `BFBackendApi.recordSnapshot`. |
+| 26 | Hooks reais de snapshot | Concluido parcial | Salvamentos reais de simulacao, perfil, trilha, proposta, lousa e handoff tentam sincronizar `/api/snapshots` sem bloquear `localStorage`. | `Storage.saveSimulation`, `BFProposalVersions.save`, `BFProposalAcceptance.saveReview`, `BFProposalBuilder.saveConfig`, `BFTrilhaDecisaoService.save`, `BFHandoffConsultivoService`. |
 
 ## Proximos Passos Priorizados
 
@@ -113,6 +114,7 @@ Cada etapa deve responder quatro perguntas:
 | Concluido parcial | Diagnostico do backend SQL local | Expor status tecnico do SQLite ativo e detectar se PostgreSQL, MySQL ou SQL Server estao instalados/escutando antes de trocar provider. | `server.js`, `js/backend/db.js`, `assets/js/admin-users.js`, `tools/inspect-local-sql-environment.mjs`. | Admin ve provider, tabelas e integridade; relatorio local mostra portas e ferramentas SQL disponiveis. |
 | Concluido parcial | Migracao guiada localStorage -> SQLite | Criar acao controlada para importar usuarios/eventos/snapshots locais para o banco local, com previsualizacao e relatorio. | `server.js`, `assets/js/admin-users.js`, `js/backend/db.js`, `tools/validate-local-database.mjs`. | Admin consegue consolidar dados locais no SQLite sem duplicar registros e atualizando snapshots pelo mesmo id. |
 | Concluido parcial | Snapshots server-side | Persistir estados recuperaveis para preparar migracao futura de simulacoes, propostas, trilhas e handoffs. | `server.js`, `assets/js/services/backend-api.service.js`, `assets/js/admin-users.js`, `js/backend/db.js`. | API local cria/lista snapshots sanitizados e Admin mostra quantidade local importavel. |
+| Concluido parcial | Hooks reais de snapshot | Conectar os pontos reais de salvamento ao endpoint `/api/snapshots`, mantendo fallback estatico. | `js/storage.js`, `js/proposal-versioning.js`, `js/proposal-acceptance.js`, `js/proposal-builder.js`, `assets/js/services/decision-context.service.js`, `assets/js/services/trilha-decisao.service.js`, `assets/js/services/handoff-consultivo.service.js`. | Salvar simulacao/proposta/trilha/handoff continua funcionando offline e sincroniza no SQLite quando houver API local. |
 | P3 | Proxima extracao do simulador | Separar calculo/orquestracao de resultado em modulo menor, mantendo `App.*` como fachada publica. | `js/app.js`, `js/engine.js`, novo service de resultado do simulador. | Reduzir `app.js` sem quebrar resultados, proposta, PDF e simulacoes salvas. |
 | P3 | Backend/API produtivo futuro | Documentar fronteiras de migracao para usuarios, leads, simulacoes, propostas e handoffs, mantendo `localStorage` como fallback publico. | `docs/PLANO_IMPLEMENTACAO_EVOLUTIVO_BANK_FRATERN.md`, `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md`, `docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md`. | Plano tecnico define contratos de migracao do SQLite local para backend hospedado. |
 
@@ -468,6 +470,7 @@ Testes recomendados:
 | Concluido parcial | Diagnosticar ambiente SQL local. | Resolvido em 2026-05-12 com `/api/database/status`, tabelas SQLite no Admin e `tools/inspect-local-sql-environment.mjs`. |
 | Concluido parcial | Migrar dados locais para SQLite. | Resolvido em 2026-05-12 com preview/execucao em `data-admin-local-import-panel`, endpoint `/api/database/import-local`, deduplicacao por e-mail/id/evento e snapshots atualizaveis. |
 | Concluido parcial | Criar snapshots server-side de jornada. | Resolvido em 2026-05-12 com tabela `snapshots`, `/api/snapshots`, `BFBackendApi.recordSnapshot/listSnapshots` e coleta Admin de simulacao, proposta, trilha, perfil, modelos e handoff. |
+| Concluido parcial | Conectar salvamentos reais ao banco local. | Resolvido em 2026-05-12 com hooks best-effort de `recordSnapshot` em simulacao, proposta, lousa, perfil, trilha e handoff. |
 | Concluido | Criar validador de aliases/rotas. | `tools/validate-route-aliases.mjs`. |
 | P3 | Continuar reduzindo responsabilidades de `js/app.js` e `assets/js/bf-platform.js`. | Proximo corte recomendado: calculo/orquestracao de resultado do simulador. |
 
@@ -502,7 +505,8 @@ Testes recomendados:
 4. Fase 2: continuidade da jornada. Em andamento; Home, Produtos, Calculadoras, Trilha contextual, cockpit do Dashboard Cliente, lousa de QA visual e primeiras acoes contextuais do simulador foram implementados.
 5. Fase 5: governanca permanente e reducao de divida documental. Em andamento; contratos publicos, changelog, evidencias browser, CI/Pages e roteiro de teste navegavel estao ativos.
 6. Fase local de banco/API: iniciada para usuarios, sessoes, eventos e snapshots, ainda com fallback estatico obrigatorio.
-7. Fase futura: backend/API produtivo. Migrar SQLite local para servico hospedado preservando compatibilidade com `localStorage`.
+7. Proximo ciclo backend local: ler snapshots server-side no Dashboard Cliente/Admin como fonte preferencial quando a API existir.
+8. Fase futura: backend/API produtivo. Migrar SQLite local para servico hospedado preservando compatibilidade com `localStorage`.
 
 Essa ordem reduz risco: primeiro tira friccao de acesso, depois melhora operacao comercial, depois aprofunda experiencia e governanca.
 

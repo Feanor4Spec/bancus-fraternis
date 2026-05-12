@@ -88,6 +88,33 @@
     return `${JOURNEY_HISTORY_KEY}:${currentOwner()}`;
   }
 
+  function publishBackendSnapshot(type, payload, meta) {
+    try {
+      const api = window.BFBackendApi;
+      if (!api || typeof api.recordSnapshot !== 'function') return;
+      api.recordSnapshot(type, payload || {}, meta || {}).catch(() => {});
+    } catch (error) {
+      // A trilha continua local quando a API progressiva nao esta disponivel.
+    }
+  }
+
+  function publishJourneySnapshot(record) {
+    if (!record || !record.id) return;
+    const owner = record.owner || currentOwner();
+    publishBackendSnapshot('decision-journey', record, {
+      id: `SNP-TRI-${record.id}`,
+      source: 'decision-journey',
+      ownerEmail: owner === 'anon' ? '' : owner,
+      actorEmail: owner === 'anon' ? '' : owner,
+      entityId: record.id,
+      title: record.objectiveLabel || record.objective || 'Trilha assistida',
+      status: record.nextAction && record.nextAction.type ? record.nextAction.type : 'saved',
+      storageKey: `${JOURNEY_KEY}:${owner}`,
+      createdAt: record.createdAt || '',
+      updatedAt: record.updatedAt || ''
+    });
+  }
+
   function number(value, fallback = 0) {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : fallback;
@@ -473,6 +500,7 @@
         updatedAt: now
       }
     });
+    publishJourneySnapshot(record);
     return record;
   }
 

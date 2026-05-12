@@ -41,6 +41,7 @@ As contas seed sao recriadas automaticamente quando faltarem no localStorage.
 - Em `localhost`, operacoes de usuario feitas pelo Admin sao espelhadas no SQLite com senha hasheada via `scrypt-sha256`.
 - Eventos de auth, jornada, handoff, funil e modelos podem ser persistidos em `/api/events` com payload sanitizado.
 - Snapshots de simulacao, trilha, proposta, lousa, perfil, modelos e handoff podem ser persistidos em `/api/snapshots`.
+- Salvamentos reais dessas areas tentam sincronizar snapshots com o SQLite local quando a sessao `bf_backend_session_v1` existe; em modo estatico tudo continua no `localStorage`.
 - Admin pode consultar `/api/database/status` no painel para confirmar provider, tabelas, integridade e arquivos locais.
 - Admin pode previsualizar e executar a migracao guiada do `localStorage` para SQLite sem sobrescrever usuarios/eventos existentes e atualizando snapshots pelo mesmo `id`.
 

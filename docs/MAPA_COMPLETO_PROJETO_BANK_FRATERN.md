@@ -318,7 +318,7 @@ Melhoria implementada em 2026-05-07:
 | `js/proposal-summary.js` | Renderer da proposta comercial e graficos do PDF/preview. |
 | `js/proposal-acceptance.js` | Aceite e revisao local da proposta. |
 | `js/proposal-versioning.js` | Historico versionado, snapshots e comparacao da proposta antes do handoff. |
-| `js/storage.js` | Simulacoes salvas e estatisticas de carteira. |
+| `js/storage.js` | Simulacoes salvas, estatisticas de carteira e sincronizacao opcional de snapshot `simulation` no backend local. |
 | `js/settings.js` | Preferencias locais e defaults. |
 | `js/auth.js` | Usuarios locais, sessao, papeis e guardas. |
 | `js/backend/db.js` | Banco local SQLite para usuarios, sessoes, eventos, snapshots, status tecnico e importacao guiada. |
@@ -568,7 +568,7 @@ Governanca documental: docs ativos passaram a usar Bancus Fraternis como platafo
 O vetor recomendado para o proximo ciclo continua sendo produto e jornada, agora com foco em reduzir risco tecnico sem quebrar contratos publicos:
 
 1. Continuar a modularizacao do simulador, extraindo calculo/orquestracao de resultado e integracoes de proposta sem quebrar `App.*`.
-2. Conectar gradualmente simulador, proposta, trilha e handoff ao contrato `/api/snapshots`, mantendo `localStorage` como fallback publico.
+2. Preparar leitura server-side desses snapshots no Dashboard Cliente e nos cockpits operacionais, mantendo fallback por `localStorage`.
 3. Preparar migracao futura do SQLite local para backend/API produtivo sem quebrar `localStorage`, deep links e services globais.
 4. Manter a lousa como porta de QA visual a cada nova entrega funcional.
 

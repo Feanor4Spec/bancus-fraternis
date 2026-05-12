@@ -202,10 +202,53 @@
     }
   }
 
+  function currentOwnerEmail() {
+    try {
+      const user = global.BFAuth && global.BFAuth.getCurrentUser ? global.BFAuth.getCurrentUser() : null;
+      return user && user.email ? user.email : 'anon';
+    } catch (e) {
+      return 'anon';
+    }
+  }
+
+  function snapshotIdForOwner(owner) {
+    return `SNP-PB-${String(owner || 'anon').replace(/[^A-Za-z0-9_-]/g, '_')}`;
+  }
+
+  function publishBackendSnapshot(config) {
+    try {
+      const api = global.BFBackendApi;
+      if (!api || typeof api.recordSnapshot !== 'function') return;
+      const owner = currentOwnerEmail();
+      const now = new Date().toISOString();
+      const normalized = normalizeConfig(config);
+      api.recordSnapshot('proposal-builder', {
+        ...normalized,
+        counts: selectionCounts(normalized),
+        focus: focusLabel(normalized),
+        pageEstimate: pageEstimate(normalized),
+        updatedAt: now
+      }, {
+        id: snapshotIdForOwner(owner),
+        source: 'proposal-builder',
+        ownerEmail: owner === 'anon' ? '' : owner,
+        actorEmail: owner === 'anon' ? '' : owner,
+        entityId: owner,
+        title: 'Lousa de proposta',
+        status: focusLabel(normalized),
+        storageKey: STORAGE_KEY,
+        updatedAt: now
+      }).catch(() => {});
+    } catch (e) {
+      // Lousa segue local quando a API progressiva nao esta ativa.
+    }
+  }
+
   function saveConfig(config, storage = global.localStorage) {
     const normalized = normalizeConfig(config);
     try {
       if (storage && storage.setItem) storage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+      publishBackendSnapshot(normalized);
     } catch (e) {
       if (global.console && global.console.warn) {
         global.console.warn('Nao foi possivel salvar a lousa da proposta.', e);
