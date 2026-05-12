@@ -14,6 +14,95 @@
       .replace(/'/g, '&#39;');
   }
 
+  const FIELD_GUIDANCE = {
+    'custos-fixos': {
+      rendaLiquida: 'Base mensal apos descontos. Ela sustenta todo o diagnostico.',
+      moradia: 'Aluguel, financiamento, condominio e contas recorrentes da moradia.',
+      alimentacao: 'Mercado, refeicoes e custos recorrentes de alimentacao.',
+      transporte: 'Combustivel, aplicativo, transporte publico, seguro e manutencao.',
+      dividas: 'Parcelas ja contratadas, cartoes, emprestimos e financiamentos.',
+      outros: 'Custos fixos que nao entraram nas categorias anteriores.'
+    },
+    'reserva-emergencia': {
+      gastoMensal: 'Use o custo mensal essencial, nao o gasto eventual.',
+      mesesCobertura: 'Meta conservadora costuma ficar entre 3 e 12 meses.',
+      reservaAtual: 'Saldo disponivel para emergencia, com liquidez.'
+    },
+    'capacidade-credito': {
+      rendaMensal: 'Renda mensal recorrente usada para medir comprometimento.',
+      gastoMensal: 'Custos essenciais antes de assumir nova parcela.',
+      dividasMensais: 'Parcelas ja assumidas que reduzem a margem.',
+      reservaAtual: 'Protecao de caixa para nao depender do credito.',
+      comprometimentoMaximo: 'Limite da renda que pode ficar em parcelas.',
+      margemFluxo: 'Parte da folga mensal que pode virar nova parcela.',
+      mesesReservaMinima: 'Reserva minima preservada antes de recomendar credito.'
+    },
+    'lance-consorcio': {
+      valorCarta: 'Credito desejado para compra do bem.',
+      reservaAtual: 'Caixa disponivel antes do lance.',
+      gastoMensal: 'Custo mensal usado para preservar reserva minima.',
+      capacidadePagamento: 'Parcela segura vinda da capacidade de credito ou informada manualmente.',
+      lanceDesejadoPct: 'Percentual da carta que voce pretende ofertar.',
+      limiteLancePct: 'Teto prudencial para nao concentrar caixa demais no lance.',
+      mesesReservaMinima: 'Reserva que deve sobrar mesmo depois do lance.'
+    },
+    'compra-vista-parcelado': {
+      precoCheio: 'Preco sem desconto, antes de comparar alternativas.',
+      descontoVista: 'Desconto real para pagamento a vista.',
+      parcelas: 'Quantidade de parcelas do plano parcelado.',
+      valorParcela: 'Valor mensal da parcela informada pelo vendedor.',
+      taxaOportunidadeMes: 'Retorno mensal estimado para o dinheiro que ficaria investido.',
+      rendaMensal: 'Renda mensal para medir peso da parcela.',
+      gastoMensal: 'Custo mensal usado para avaliar liquidez.',
+      reservaAtual: 'Caixa disponivel antes da compra.',
+      prioridadeCompra: 'Criterio principal da decisao.'
+    }
+  };
+
+  const FIELD_RULES = {
+    'custos-fixos': {
+      rendaLiquida: { minExclusive: 0 },
+      moradia: { min: 0 },
+      alimentacao: { min: 0 },
+      transporte: { min: 0 },
+      dividas: { min: 0 },
+      outros: { min: 0 }
+    },
+    'reserva-emergencia': {
+      gastoMensal: { minExclusive: 0 },
+      mesesCobertura: { minExclusive: 0, max: 60 },
+      reservaAtual: { min: 0 }
+    },
+    'capacidade-credito': {
+      rendaMensal: { minExclusive: 0 },
+      gastoMensal: { min: 0 },
+      dividasMensais: { min: 0 },
+      reservaAtual: { min: 0 },
+      comprometimentoMaximo: { minExclusive: 0, max: 80, suffix: '%' },
+      margemFluxo: { minExclusive: 0, max: 100, suffix: '%' },
+      mesesReservaMinima: { minExclusive: 0, max: 60 }
+    },
+    'lance-consorcio': {
+      valorCarta: { minExclusive: 0 },
+      reservaAtual: { min: 0 },
+      gastoMensal: { minExclusive: 0 },
+      capacidadePagamento: { min: 0 },
+      lanceDesejadoPct: { min: 0, max: 100, suffix: '%' },
+      limiteLancePct: { minExclusive: 0, max: 100, suffix: '%' },
+      mesesReservaMinima: { minExclusive: 0, max: 60 }
+    },
+    'compra-vista-parcelado': {
+      precoCheio: { minExclusive: 0 },
+      descontoVista: { min: 0, max: 100, suffix: '%' },
+      parcelas: { minExclusive: 0, max: 600, integer: true },
+      valorParcela: { minExclusive: 0 },
+      taxaOportunidadeMes: { min: 0, max: 100, suffix: '%' },
+      rendaMensal: { minExclusive: 0 },
+      gastoMensal: { min: 0 },
+      reservaAtual: { min: 0 }
+    }
+  };
+
   function money(value) {
     return window.BFFormatters.currency(value);
   }
@@ -356,25 +445,143 @@
     `).join('');
   }
 
-  function renderField(field, value) {
+  function fieldGuidance(slug, field) {
+    return FIELD_GUIDANCE[slug] && FIELD_GUIDANCE[slug][field.name]
+      ? FIELD_GUIDANCE[slug][field.name]
+      : 'Informe um valor realista para manter a leitura da jornada.';
+  }
+
+  function fieldRule(slug, field) {
+    const base = field.type === 'select'
+      ? { required: true }
+      : { required: true, min: 0 };
+    return {
+      ...base,
+      ...((FIELD_RULES[slug] && FIELD_RULES[slug][field.name]) || {})
+    };
+  }
+
+  function renderLimitAttributes(rule) {
+    const attrs = [];
+    if (Number.isFinite(Number(rule.min))) attrs.push(`min="${escapeHtml(rule.min)}"`);
+    if (Number.isFinite(Number(rule.max))) attrs.push(`max="${escapeHtml(rule.max)}"`);
+    return attrs.join(' ');
+  }
+
+  function limitLabel(value, suffix = '') {
+    return `${Number(value).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}${suffix}`;
+  }
+
+  function renderField(field, value, slug) {
+    const rule = fieldRule(slug, field);
+    const helpId = `calc-help-${field.name}`;
+    const errorId = `calc-error-${field.name}`;
+    const describedBy = `${helpId} ${errorId}`;
     if (field.type === 'select') {
       return `
-        <label>${escapeHtml(field.label)}
-          <select name="${escapeHtml(field.name)}">
+        <label class="bf-calculator-field" data-calculator-field="${escapeHtml(field.name)}" data-calculator-field-state="valid">
+          <span>${escapeHtml(field.label)}</span>
+          <select name="${escapeHtml(field.name)}" required aria-describedby="${escapeHtml(describedBy)}" data-calculator-input>
             ${(field.options || []).map((option) => `<option value="${escapeHtml(option)}"${String(option) === String(value) ? ' selected' : ''}>${escapeHtml(option)}</option>`).join('')}
           </select>
+          <small id="${escapeHtml(helpId)}" class="bf-calculator-field-help">${escapeHtml(fieldGuidance(slug, field))}</small>
+          <small id="${escapeHtml(errorId)}" class="bf-calculator-field-error" data-calculator-field-error></small>
         </label>
       `;
     }
     return `
-      <label>${escapeHtml(field.label)}
-        <input name="${escapeHtml(field.name)}" type="${escapeHtml(field.type || 'number')}" step="${escapeHtml(field.step || '1')}" value="${escapeHtml(value)}">
+      <label class="bf-calculator-field" data-calculator-field="${escapeHtml(field.name)}" data-calculator-field-state="valid">
+        <span>${escapeHtml(field.label)}</span>
+        <input name="${escapeHtml(field.name)}" type="${escapeHtml(field.type || 'number')}" step="${escapeHtml(field.step || '1')}" value="${escapeHtml(value)}" ${renderLimitAttributes(rule)} required aria-describedby="${escapeHtml(describedBy)}" data-calculator-input>
+        <small id="${escapeHtml(helpId)}" class="bf-calculator-field-help">${escapeHtml(fieldGuidance(slug, field))}</small>
+        <small id="${escapeHtml(errorId)}" class="bf-calculator-field-error" data-calculator-field-error></small>
       </label>
     `;
   }
 
   function formValues(form) {
     return Object.fromEntries(new FormData(form).entries());
+  }
+
+  function numericValue(raw) {
+    return Number(String(raw == null ? '' : raw).replace(',', '.'));
+  }
+
+  function validateField(slug, field, rawValue) {
+    const rule = fieldRule(slug, field);
+    const label = field.label || field.name;
+    const text = String(rawValue == null ? '' : rawValue).trim();
+    if (rule.required && text === '') {
+      return `${label}: preencha este campo para atualizar a previa.`;
+    }
+    if (field.type === 'select') {
+      const options = (field.options || []).map(String);
+      if (!options.includes(text)) return `${label}: selecione uma opcao valida.`;
+      return '';
+    }
+    const value = numericValue(text);
+    if (!Number.isFinite(value)) return `${label}: use um numero valido.`;
+    if (rule.integer && !Number.isInteger(value)) return `${label}: use um numero inteiro.`;
+    if (Number.isFinite(Number(rule.minExclusive)) && value <= Number(rule.minExclusive)) {
+      return `${label}: use valor maior que ${limitLabel(rule.minExclusive, rule.suffix)}.`;
+    }
+    if (Number.isFinite(Number(rule.min)) && value < Number(rule.min)) {
+      return `${label}: use valor a partir de ${limitLabel(rule.min, rule.suffix)}.`;
+    }
+    if (Number.isFinite(Number(rule.max)) && value > Number(rule.max)) {
+      return `${label}: use valor ate ${limitLabel(rule.max, rule.suffix)}.`;
+    }
+    return '';
+  }
+
+  function fieldContainer(form, name) {
+    return Array.from(form.querySelectorAll('[data-calculator-field]')).find((node) => node.dataset.calculatorField === name) || null;
+  }
+
+  function applyFieldValidation(form, issues) {
+    Array.from(form.querySelectorAll('[data-calculator-field]')).forEach((node) => {
+      node.dataset.calculatorFieldState = 'valid';
+      const input = node.querySelector('[data-calculator-input]');
+      const error = node.querySelector('[data-calculator-field-error]');
+      if (input) input.setAttribute('aria-invalid', 'false');
+      if (error) error.textContent = '';
+    });
+    issues.forEach((issue) => {
+      const node = fieldContainer(form, issue.name);
+      if (!node) return;
+      node.dataset.calculatorFieldState = 'invalid';
+      const input = node.querySelector('[data-calculator-input]');
+      const error = node.querySelector('[data-calculator-field-error]');
+      if (input) input.setAttribute('aria-invalid', 'true');
+      if (error) error.textContent = issue.message;
+    });
+  }
+
+  function renderFormAlert(form, validation) {
+    const target = form.querySelector('[data-calculator-form-alert]');
+    if (!target) return;
+    if (validation.ok) {
+      target.hidden = true;
+      target.innerHTML = '';
+      return;
+    }
+    target.hidden = false;
+    target.innerHTML = `
+      <strong>Revise ${validation.issues.length} campo${validation.issues.length === 1 ? '' : 's'} antes de salvar.</strong><br>
+      ${escapeHtml(validation.issues[0].message)}
+    `;
+  }
+
+  function validateForm(form, meta) {
+    const values = formValues(form);
+    const issues = (meta.fields || []).map((field) => ({
+      name: field.name,
+      message: validateField(meta.slug, field, values[field.name])
+    })).filter((issue) => issue.message);
+    const validation = { ok: issues.length === 0, issues, values };
+    applyFieldValidation(form, issues);
+    renderFormAlert(form, validation);
+    return validation;
   }
 
   function renderMetric(item) {
@@ -473,7 +680,8 @@
 
     const form = qs('[data-calculator-form]');
     form.innerHTML = `
-      ${(meta.fields || []).map((field) => renderField(field, defaults[field.name])).join('')}
+      <article class="bf-platform-alert bf-platform-alert--warn bf-calculator-form-alert" data-calculator-form-alert hidden></article>
+      ${(meta.fields || []).map((field) => renderField(field, defaults[field.name], slug)).join('')}
       <button class="btn btn--primary" type="submit">Calcular e salvar cenario</button>
     `;
     renderRelated(list, meta);
@@ -481,16 +689,47 @@
     renderHistory(qs('[data-calculator-history]'));
     renderCalculatorDecisionBridge(null);
 
+    let renderSerial = 0;
+    let previewTimer = null;
+
+    async function renderPreviewFromForm() {
+      const validation = validateForm(form, meta);
+      if (!validation.ok) {
+        document.body.dataset.calculatorValidation = 'invalid';
+        document.body.dataset.calculatorReady = `${slug}:invalid`;
+        return;
+      }
+      const current = ++renderSerial;
+      const preview = await window.BFCalculadoras.simulate(slug, validation.values, { persist: false });
+      if (current !== renderSerial) return;
+      renderResult(preview, { preview: true });
+      document.body.dataset.calculatorValidation = 'valid';
+      document.body.dataset.calculatorReady = `${slug}:preview`;
+    }
+
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
-      const result = await window.BFCalculadoras.simulate(slug, formValues(form), { persist: true });
+      const validation = validateForm(form, meta);
+      if (!validation.ok) {
+        document.body.dataset.calculatorValidation = 'invalid';
+        document.body.dataset.calculatorReady = `${slug}:invalid`;
+        return;
+      }
+      const current = ++renderSerial;
+      const result = await window.BFCalculadoras.simulate(slug, validation.values, { persist: true });
+      if (current !== renderSerial) return;
       renderResult(result, { persisted: true });
+      document.body.dataset.calculatorValidation = 'valid';
       document.body.dataset.calculatorReady = slug;
     });
 
-    const preview = await window.BFCalculadoras.simulate(slug, formValues(form), { persist: false });
-    renderResult(preview, { preview: true });
-    document.body.dataset.calculatorReady = `${slug}:preview`;
+    form.addEventListener('input', () => {
+      window.clearTimeout(previewTimer);
+      previewTimer = window.setTimeout(renderPreviewFromForm, 250);
+    });
+    form.addEventListener('change', renderPreviewFromForm);
+
+    await renderPreviewFromForm();
   }
 
   async function init() {

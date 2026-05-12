@@ -13,6 +13,8 @@ Correcoes deste ciclo:
 - A previa inicial chama `window.BFCalculadoras.simulate(slug, input, { persist: false })`.
 - O botao `Calcular e salvar cenario` chama `simulate(..., { persist: true })`.
 - O resultado expõe `data-calculator-result-mode="preview|saved"` para QA e jornada.
+- Campos expõem `data-calculator-field`, `data-calculator-field-error` e alerta consolidado `data-calculator-form-alert`.
+- Custos Fixos, Reserva, Capacidade, Lance e Compra têm ajuda contextual e limites especificos.
 - O validador `tools/validate-calculator-journey.mjs` executa as 19 calculadoras e garante que previa nao grava `localStorage`.
 
 ## Contratos funcionais
@@ -57,15 +59,18 @@ Correcoes deste ciclo:
 1. Hub `pages/calculadoras.html` apresenta trilhas e cards por categoria.
 2. Pagina individual renderiza defaults do perfil financeiro local.
 3. Resultado inicial aparece como `preview`, sem gravar historico, perfil ou auditoria.
-4. Usuario ajusta campos e clica `Calcular e salvar cenario`.
-5. Resultado passa para `saved`, grava `historyId`, atualiza perfil local e registra evento de decisao.
-6. Ponte contextual preserva `calculatorSlug`, `historyId`, `preset` e origem para Simulador, Trilha, Comparador e Dashboard Cliente.
+4. Usuario ajusta campos; valores validos atualizam a previa sem persistencia.
+5. Campos invalidos mostram erro local e bloqueiam o salvamento.
+6. Usuario clica `Calcular e salvar cenario`.
+7. Resultado passa para `saved`, grava `historyId`, atualiza perfil local e registra evento de decisao.
+8. Ponte contextual preserva `calculatorSlug`, `historyId`, `preset` e origem para Simulador, Trilha, Comparador e Dashboard Cliente.
 
 ## Debitos tratados neste ciclo
 
 - Removido submit automatico que salvava cenario sem acao explicita.
 - Adicionado marcador de modo do resultado para QA automatizado.
 - Criado validador de jornada das 19 calculadoras com simulacao de previa e submit persistente.
+- Adicionada validacao guiada por campo antes de preview/salvamento.
 
 ## Proximas evolucoes recomendadas
 

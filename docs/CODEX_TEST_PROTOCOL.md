@@ -573,6 +573,8 @@ Validacoes obrigatorias:
 - `assets/js/services/decision-context.service.js` deve expor `BFDecisionContext`.
 - `pages/calculadoras.html` deve recomendar a trilha minima: `custos-fixos -> reserva-emergencia -> compra-vista-parcelado -> comparador`.
 - Toda pagina individual deve abrir uma previa com `data-calculator-result-mode="preview"` sem gravar `bf_financial_profile_v1`, `bf_calculator_history_v1` ou `bf_decision_context_audit_v1`.
+- Campos invalidos devem expor `data-calculator-field-error`, alerta `data-calculator-form-alert` e bloquear o submit persistente.
+- Campos validos alterados pelo usuario devem atualizar a previa sem persistencia.
 - O botao `Calcular e salvar cenario` deve trocar o modo para `saved`, gravar historico local e atualizar o perfil financeiro.
 - `pages/calculadora-capacidade-credito.html` deve gravar parcela segura, folga mensal, comprometimento projetado e perfil.
 - `pages/calculadora-lance-consorcio.html` deve gravar lance seguro, impacto na reserva e lance sugerido.

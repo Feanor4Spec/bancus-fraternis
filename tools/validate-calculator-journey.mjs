@@ -101,6 +101,7 @@ async function createContext() {
 
 const catalog = await readJson('assets/data/calculadoras.json');
 const pageJs = await readText('assets/js/calculadoras-page.js');
+const platformCss = await readText('assets/css/platform.css');
 const docsMap = await readText('docs/MAPA_COMPLETO_PROJETO_BANK_FRATERN.md');
 let functionMap = '';
 try {
@@ -114,8 +115,18 @@ assert(pageJs.includes('data-calculator-result-mode'), 'Jornada nao expoe modo d
 assert(pageJs.includes('persist: false'), 'Previa inicial das calculadoras deve chamar simulate com persist:false.');
 assert(pageJs.includes('persist: true'), 'Submit das calculadoras deve declarar persist:true.');
 assert(!pageJs.includes("form.dispatchEvent(new Event('submit'"), 'Pagina individual ainda dispara submit automaticamente no carregamento.');
+assert(pageJs.includes('data-calculator-form-alert'), 'Formulario da calculadora nao expoe alerta de validacao.');
+assert(pageJs.includes('data-calculator-field'), 'Formulario da calculadora nao expoe marcador de campo.');
+assert(pageJs.includes('data-calculator-field-error'), 'Formulario da calculadora nao expoe erro por campo.');
+assert(pageJs.includes('validateForm(form, meta)'), 'Pagina de calculadora nao valida formulario antes de calcular.');
+assert(pageJs.includes('renderPreviewFromForm'), 'Pagina de calculadora nao atualiza previa sem persistencia apos edicao.');
+assert(platformCss.includes('.bf-calculator-field[data-calculator-field-state="invalid"]'), 'CSS nao estiliza estado invalido de campo da calculadora.');
 assert(docsMap.includes('19 calculadoras'), 'Mapa completo nao registra o catalogo de 19 calculadoras.');
 assert(functionMap.includes('Mapa de funcoes das calculadoras'), 'Mapa funcional das calculadoras nao foi criado.');
+
+['custos-fixos', 'reserva-emergencia', 'capacidade-credito', 'lance-consorcio', 'compra-vista-parcelado'].forEach((slug) => {
+  assert(pageJs.includes(`'${slug}'`), `Jornada critica sem orientacao de campo para ${slug}.`);
+});
 
 const context = await createContext();
 const storage = context.localStorage;
@@ -195,6 +206,10 @@ const report = {
   calculators: serviceCatalog.length,
   previewDoesNotPersist: previewHistoryCount === 0 && previewProfileStored === null && previewAuditStored === null,
   persistentSubmitChecked: ['capacidade-credito', 'lance-consorcio'],
+  formValidation: {
+    markers: ['data-calculator-form-alert', 'data-calculator-field', 'data-calculator-field-error'],
+    criticalSlugs: ['custos-fixos', 'reserva-emergencia', 'capacidade-credito', 'lance-consorcio', 'compra-vista-parcelado']
+  },
   generatedAt: new Date().toISOString(),
   previewReport,
   failures

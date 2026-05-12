@@ -266,6 +266,8 @@ assert(contracts.includes('data-demo-login'), 'Contrato publico nao documenta ac
 assert(contracts.includes('.bf-demo-chip'), 'Contrato publico nao documenta selo demo do shell.');
 assert(contracts.includes('data-public-demo-notice'), 'Contrato publico nao documenta aviso publico de demo.');
 assert(contracts.includes('data-calculator-result-mode'), 'Contrato publico nao documenta modo do resultado das calculadoras.');
+assert(contracts.includes('data-calculator-form-alert'), 'Contrato publico nao documenta alerta de validacao das calculadoras.');
+assert(contracts.includes('data-calculator-field-error'), 'Contrato publico nao documenta erro por campo das calculadoras.');
 assert(await exists('404.html'), 'Fallback 404.html ausente.');
 assert(await exists('.github/workflows/validate.yml'), 'Workflow de validacao publica ausente.');
 

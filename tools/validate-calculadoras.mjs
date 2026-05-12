@@ -81,6 +81,9 @@ if (!pageText.includes('persist: false')) fail('Pagina de calculadora deve gerar
 if (!pageText.includes('persist: true')) fail('Submit da calculadora deve declarar persist:true.');
 if (pageText.includes("form.dispatchEvent(new Event('submit'")) fail('Pagina de calculadora ainda dispara submit automatico no carregamento.');
 if (!pageText.includes('data-calculator-result-mode')) fail('Resultado da calculadora deve expor data-calculator-result-mode.');
+if (!pageText.includes('data-calculator-form-alert')) fail('Formulario da calculadora deve expor alerta de validacao.');
+if (!pageText.includes('data-calculator-field-error')) fail('Formulario da calculadora deve expor erro por campo.');
+if (!pageText.includes('validateForm(form, meta)')) fail('Formulario da calculadora deve validar antes de simular.');
 
 const formulaContext = { window: {}, console };
 vm.createContext(formulaContext);

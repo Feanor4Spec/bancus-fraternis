@@ -6,7 +6,21 @@
     "capacidade-credito",
     "lance-consorcio"
   ],
-  "generatedAt": "2026-05-12T00:42:46.753Z",
+  "formValidation": {
+    "markers": [
+      "data-calculator-form-alert",
+      "data-calculator-field",
+      "data-calculator-field-error"
+    ],
+    "criticalSlugs": [
+      "custos-fixos",
+      "reserva-emergencia",
+      "capacidade-credito",
+      "lance-consorcio",
+      "compra-vista-parcelado"
+    ]
+  },
+  "generatedAt": "2026-05-12T01:21:47.632Z",
   "previewReport": [
     {
       "slug": "juros-compostos",

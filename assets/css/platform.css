@@ -2421,6 +2421,47 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.bf-calculator-form-alert {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.bf-calculator-field {
+  display: grid;
+  gap: 7px;
+}
+
+.bf-calculator-field span {
+  font-weight: 850;
+  color: var(--bf-navy);
+}
+
+.bf-calculator-field-help,
+.bf-calculator-field-error {
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.bf-calculator-field-help {
+  color: var(--bf-muted);
+}
+
+.bf-calculator-field-error {
+  display: none;
+  color: var(--bf-danger, #b91c1c);
+  font-weight: 750;
+}
+
+.bf-calculator-field[data-calculator-field-state="invalid"] input,
+.bf-calculator-field[data-calculator-field-state="invalid"] select {
+  border-color: var(--bf-danger-bd, #fecaca);
+  background: var(--bf-danger-bg, #fff1f2);
+}
+
+.bf-calculator-field[data-calculator-field-state="invalid"] .bf-calculator-field-error {
+  display: block;
+}
+
 .bf-calculator-form button {
   grid-column: 1 / -1;
   justify-self: start;

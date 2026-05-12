@@ -4,6 +4,28 @@
 
 ---
 
+## [v8.76.0] - 2026-05-11
+
+### Validacao guiada das calculadoras
+
+#### Adicionado
+- Campos das calculadoras individuais agora exibem ajuda contextual, estado invalido e erro por campo com `data-calculator-field` e `data-calculator-field-error`.
+- Formulario das calculadoras ganhou alerta consolidado `data-calculator-form-alert`.
+- As calculadoras criticas Custos Fixos, Reserva, Capacidade, Lance e Compra receberam orientacoes e limites especificos.
+
+#### Modificado
+- A previa passa a ser recalculada sem persistencia durante edicao valida do formulario.
+- O submit valida todos os campos antes de gravar perfil e historico local.
+- Validadores de calculadoras, jornada e contratos publicos foram reforcados para proteger os novos marcadores.
+
+#### Validado
+- `node --check assets/js/calculadoras-page.js`
+- `node tools/validate-calculator-journey.mjs`
+- `node tools/validate-calculadoras.mjs`
+- Browser local: campo invalido bloqueia salvamento e mostra erro; valor corrigido volta para previa e depois salva.
+
+---
+
 ## [v8.75.0] - 2026-05-11
 
 ### Jornada das calculadoras saneada
