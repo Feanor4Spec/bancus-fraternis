@@ -61,7 +61,7 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | Proposta | `data-proposal-acceptance-panel`, `data-proposal-handoff-bridge`, `data-proposal-builder-board`, `data-proposal-builder-readiness`, `data-proposal-builder-option`, `data-proposal-version-panel`, `data-proposal-version-history`, `data-proposal-version-comparison`. |
 | Handoff | `data-handoff-list`, `data-handoff-detail`, `data-handoff-metrics`, `data-handoff-recovery-signals`, `data-handoff-consultant-cockpit`, `data-handoff-action-plan`, `data-handoff-action-execution`, `data-handoff-action-reason`, `data-handoff-action-history`, `data-handoff-assignee-filter`, `data-handoff-aging-filter`, `data-handoff-proposal-version`, `data-handoff-commercial-stage`, `data-handoff-commercial-stage-panel`, `data-handoff-commercial-stage-history`. |
 | Dashboard Cliente | `data-client-continuity-strip`, `data-client-continuity-cockpit`, `data-client-next-action`, `data-client-handoff-status`, `data-client-proposal-status`, `data-client-simulation-context`, `data-client-commercial-stage`, `data-client-continuity-timeline`, `data-client-decision-journey`, `data-client-recovery-signals`. |
-| Dashboard Admin | `data-admin-next-actions`, `data-admin-action-queue`, `data-admin-action-execution`, `data-admin-action-reason`, `data-admin-action-history`, `data-admin-action-owner-history`, `data-admin-consultant-productivity`, `data-admin-consultant-productivity-row`, `data-admin-consultant-portfolio`, `data-admin-consultant-portfolio-row`, `data-admin-consultant-portfolio-lead`, `data-admin-consultant-portfolio-filters`, `data-admin-portfolio-filter`, `data-admin-consultant-portfolio-export`, `data-admin-consultant-portfolio-priority`, `data-admin-consultant-portfolio-priority-lead`, `data-admin-commercial-pipeline`, `data-admin-commercial-pipeline-export`, `data-admin-commercial-stage`, `data-admin-commercial-lead`, `data-admin-commercial-stage-select`, `data-admin-commercial-stage-history`, `data-admin-commercial-stage-insights`, `data-admin-commercial-stage-movement`, `data-admin-commercial-stage-stuck-lead`, `data-admin-commercial-stage-summary`, `data-admin-source-funnel`, `data-admin-bottleneck-board`, `data-admin-backend-events`, `data-admin-backend-event`, `data-admin-backend-event-refresh`, `data-admin-journey-funnel`, `data-admin-operational-alerts`, `data-admin-recovery-queue`, `data-admin-recovery-packages`. |
+| Dashboard Admin | `data-admin-next-actions`, `data-admin-action-queue`, `data-admin-action-execution`, `data-admin-action-reason`, `data-admin-action-history`, `data-admin-action-owner-history`, `data-admin-consultant-productivity`, `data-admin-consultant-productivity-row`, `data-admin-consultant-portfolio`, `data-admin-consultant-portfolio-row`, `data-admin-consultant-portfolio-lead`, `data-admin-consultant-portfolio-filters`, `data-admin-portfolio-filter`, `data-admin-consultant-portfolio-export`, `data-admin-consultant-portfolio-priority`, `data-admin-consultant-portfolio-priority-lead`, `data-admin-commercial-pipeline`, `data-admin-commercial-pipeline-export`, `data-admin-commercial-stage`, `data-admin-commercial-lead`, `data-admin-commercial-stage-select`, `data-admin-commercial-stage-history`, `data-admin-commercial-stage-insights`, `data-admin-commercial-stage-movement`, `data-admin-commercial-stage-stuck-lead`, `data-admin-commercial-stage-summary`, `data-admin-source-funnel`, `data-admin-bottleneck-board`, `data-admin-backend-events`, `data-admin-backend-event`, `data-admin-backend-table`, `data-admin-backend-database-provider`, `data-admin-backend-event-refresh`, `data-admin-journey-funnel`, `data-admin-operational-alerts`, `data-admin-recovery-queue`, `data-admin-recovery-packages`. |
 | Lousa navegavel | `data-lousa-commercial-qa`, `data-lousa-qa-checkpoint`, `data-lousa-journey-checklist`, `data-lousa-journey-acceptance`. |
 | Shell v8 | `data-v8-stagebar`, `data-bf-visual-version`, `data-shell-header`, `data-shell-footer`, `data-bf-page`. |
 
@@ -77,6 +77,7 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | Endpoint | Uso | Compatibilidade |
 | --- | --- | --- |
 | `GET /api/health` | Verifica API local, schema `bancus-fraternis.local-db.v1` e estatisticas agregadas. | Deve responder sem autenticacao. |
+| `GET /api/database/status` | Retorna provider, driver, arquivos SQLite, PRAGMAs, tabelas e runtime local. | Exige papel `admin`; nao deve ser usado em publicacao estatica. |
 | `POST /api/auth/login` | Autentica usuarios seed ou cadastrados no SQLite e cria sessao server-side. | Nao substitui `BFAuth.login`; apenas espelha quando houver servidor local. |
 | `POST /api/auth/logout` | Revoga token da sessao de API. | Deve limpar tambem `bf_backend_session_v1` no browser. |
 | `GET /api/auth/me` | Retorna usuario e sessao da API local. | Exige bearer token. |
@@ -94,7 +95,7 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | Export | Papel publico |
 | --- | --- |
 | `BFAuth` | Autenticacao, usuarios locais e guardas por papel. |
-| `BFBackendApi` | Ponte progressiva para API local Node/SQLite: sessao de backend, usuarios, gravacao/listagem de eventos e fallback estatico. |
+| `BFBackendApi` | Ponte progressiva para API local Node/SQLite: sessao de backend, usuarios, status tecnico do banco, gravacao/listagem de eventos e fallback estatico. |
 | `Settings` | Preferencias historicas do simulador. |
 | `BFHome` | Home contextual e continuidade. |
 | `BFDecisionContext` | Perfil financeiro, historico e prefill de simulacao. |
@@ -141,6 +142,7 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | `tools/validate-public-contracts.mjs` | Este documento, contratos publicos e DoD. |
 | `tools/validate-public-release-safety.mjs` | Exposicao publica, paths locais, dados pessoais de exemplo, aviso demo, fallback estatico e CI. |
 | `tools/validate-local-database.mjs` | Banco local SQLite, seeds, hash de senha, sessao, eventos sanitizados e contratos de API. |
+| `tools/inspect-local-sql-environment.mjs` | Diagnostico local de CLIs, portas padrao e servicos SQL externos antes de trocar provider. |
 | `tools/validate-docs-modernization.mjs` | README ativo, docs historicos e contagem atual de 19 calculadoras. |
 | `tools/validate-auth-navigation.mjs` | Login local, seed users, redirect seguro e bloqueio por papel. |
 | `tools/validate-navigable-journey.mjs` | Roteiro ponta a ponta da lousa, links, marcadores e contratos de QA de jornada. |

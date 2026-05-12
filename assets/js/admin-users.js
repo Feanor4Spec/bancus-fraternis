@@ -34,6 +34,14 @@
     }
   }
 
+  function formatBytes(value) {
+    const bytes = Number(value || 0);
+    if (!Number.isFinite(bytes) || bytes <= 0) return '0 KB';
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
   function setMessage(message, tone) {
     const target = qs('[data-admin-message]');
     if (!target) return;
@@ -3018,13 +3026,25 @@
     document.body.dataset.adminBackendEventsReady = 'loading';
   }
 
-  function renderBackendEventsResult(target, health, events) {
+  function renderBackendEventsResult(target, health, events, databaseStatus) {
     const list = Array.isArray(events) ? events : [];
     const stats = health && health.stats ? health.stats : {};
+    const dbStatus = databaseStatus && databaseStatus.ok ? databaseStatus : {};
+    const dbFiles = dbStatus.files || {};
+    const dbMainFile = dbFiles.main || {};
+    const sqlite = dbStatus.sqlite || {};
+    const tables = Array.isArray(dbStatus.tables) ? dbStatus.tables : [];
     const sources = list.reduce((set, event) => {
       if (event && event.source) set.add(event.source);
       return set;
     }, new Set());
+    const tableRows = tables.map((table) => `
+      <article class="bf-history-item" data-admin-backend-table="${escapeHtml(table.name || '')}">
+        <span>Tabela SQLite</span>
+        <strong>${escapeHtml(table.name || '-')}</strong>
+        <small>${Number(table.rows || 0)} registros</small>
+      </article>
+    `).join('');
     const rows = list.slice(0, 8).map((event) => `
       <article class="bf-history-item" data-admin-backend-event="${escapeHtml(event.id || '')}">
         <span>${escapeHtml(eventSourceLabel(event.source))}</span>
@@ -3048,11 +3068,20 @@
         <article class="bf-platform-metric"><small>Usuarios SQLite</small><strong>${Number(stats.users || 0)}</strong></article>
         <article class="bf-platform-metric"><small>Sessoes ativas</small><strong>${Number(stats.activeSessions || 0)}</strong></article>
         <article class="bf-platform-metric"><small>Fontes recentes</small><strong>${sources.size}</strong></article>
+        <article class="bf-platform-metric"><small>Provider</small><strong>${escapeHtml(dbStatus.provider || 'sqlite')}</strong></article>
+        <article class="bf-platform-metric"><small>Arquivo</small><strong>${escapeHtml(formatBytes(dbMainFile.sizeBytes))}</strong></article>
+        <article class="bf-platform-metric"><small>Journal</small><strong>${escapeHtml(sqlite.journalMode || '-')}</strong></article>
+        <article class="bf-platform-metric"><small>Integridade</small><strong>${escapeHtml(sqlite.quickCheck || '-')}</strong></article>
       </div>
-      <div class="bf-calculator-history">${rows || '<div class="bf-empty-state">Nenhum evento server-side registrado ainda.</div>'}</div>
+      <div class="bf-admin-mini-grid">
+        <div class="bf-calculator-history">${tableRows || '<div class="bf-empty-state">Tabelas ainda nao lidas pela API local.</div>'}</div>
+        <div class="bf-calculator-history">${rows || '<div class="bf-empty-state">Nenhum evento server-side registrado ainda.</div>'}</div>
+      </div>
     `;
     document.body.dataset.adminBackendEventsReady = 'true';
     document.body.dataset.adminBackendEventCount = String(list.length);
+    document.body.dataset.adminBackendDatabaseProvider = dbStatus.provider || 'sqlite';
+    target.dataset.adminBackendDatabaseProvider = dbStatus.provider || 'sqlite';
   }
 
   function renderBackendEventsError(target, result) {
@@ -3098,9 +3127,10 @@
     }
 
     renderBackendEventsLoading(target);
-    const [health, eventResult] = await Promise.all([
+    const [health, eventResult, databaseStatus] = await Promise.all([
       api.health(),
-      api.listEvents(30)
+      api.listEvents(30),
+      typeof api.databaseStatus === 'function' ? api.databaseStatus() : Promise.resolve(null)
     ]);
 
     if (!eventResult || !eventResult.ok) {
@@ -3108,7 +3138,12 @@
       return;
     }
 
-    renderBackendEventsResult(target, health && health.ok ? health : null, eventResult.events || []);
+    renderBackendEventsResult(
+      target,
+      health && health.ok ? health : null,
+      eventResult.events || [],
+      databaseStatus && databaseStatus.ok ? databaseStatus : null
+    );
   }
 
   function renderComparatorAudit() {

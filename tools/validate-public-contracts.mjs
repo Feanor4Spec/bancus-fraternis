@@ -41,6 +41,7 @@ const [
   adminDashboard,
   adminUsers,
   backendApi,
+  server,
   simulator,
   app,
   simulatorShelf,
@@ -60,6 +61,7 @@ const [
   read('pages/dashboard-admin.html'),
   read('assets/js/admin-users.js'),
   read('assets/js/services/backend-api.service.js'),
+  read('server.js'),
   read('pages/simulador.html'),
   read('js/app.js'),
   read('js/simulator-shelf.js'),
@@ -139,6 +141,8 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-admin-bottleneck-board',
   'data-admin-backend-events',
   'data-admin-backend-event',
+  'data-admin-backend-table',
+  'data-admin-backend-database-provider',
   'data-admin-backend-event-refresh',
   'data-handoff-consultant-cockpit',
   'data-handoff-action-plan',
@@ -210,6 +214,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'tools/validate-public-contracts.mjs',
   'tools/validate-public-release-safety.mjs',
   'tools/validate-local-database.mjs',
+  'tools/inspect-local-sql-environment.mjs',
   'tools/validate-design-system.mjs',
   'tools/validate-calculadoras.mjs',
   'tools/validate-calculator-journey.mjs',
@@ -238,12 +243,19 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-admin-source-funnel',
   'data-admin-bottleneck-board',
   'data-admin-backend-events',
+  'data-admin-backend-table',
+  'data-admin-backend-database-provider',
   'data-admin-backend-event-refresh'
-].forEach((marker) => assert(adminUsers.includes(marker), `admin-users.js sem marcador publico ${marker}.`));
+].forEach((marker) => {
+  assert(adminUsers.includes(marker) || adminDashboard.includes(marker), `Dashboard Admin sem marcador publico ${marker}.`);
+});
 
 assert(adminDashboard.includes('href="#admin-proximos-passos"'), 'dashboard-admin.html sem atalho para proximos passos.');
 assert(adminDashboard.includes('data-admin-backend-events'), 'dashboard-admin.html sem painel de eventos do banco local.');
 assert(backendApi.includes('listEvents'), 'BFBackendApi sem leitura de eventos server-side.');
+assert(backendApi.includes('databaseStatus'), 'BFBackendApi sem status tecnico do banco local.');
+assert(server.includes('/api/database/status'), 'server.js sem endpoint de status tecnico do banco.');
+assert(apiDocs.includes('/api/database/status'), 'api-docs.html sem endpoint de status tecnico do banco.');
 assert(simulator.includes('data-proposal-builder-board'), 'simulador.html sem lousa de proposta documentada.');
 assert(simulator.includes('data-proposal-version-panel'), 'simulador.html sem painel de versionamento da proposta.');
 assert(simulator.includes('js/proposal-builder.js'), 'simulador.html sem modulo proposal-builder.');
@@ -331,10 +343,10 @@ const report = {
   ok: failures.length === 0,
   contracts: {
     localStorageKeys: 18,
-    dataMarkers: 59,
+    dataMarkers: 61,
     globals: 19,
     deepLinks: 10,
-    validators: 20,
+    validators: 21,
     calculatorCount
   },
   warnings,

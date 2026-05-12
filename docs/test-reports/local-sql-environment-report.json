@@ -1,0 +1,103 @@
+{
+  "ok": true,
+  "generatedAt": "2026-05-12T03:20:16.762Z",
+  "runtime": {
+    "node": "24.15.0",
+    "platform": "win32"
+  },
+  "summary": {
+    "activeExternalSqlServers": 0,
+    "installedExternalSqlCliTools": 0,
+    "runningSqlServices": 0,
+    "bancusNodeListening": true
+  },
+  "cliTools": [
+    {
+      "name": "psql",
+      "provider": "postgresql",
+      "installed": false,
+      "paths": []
+    },
+    {
+      "name": "mysql",
+      "provider": "mysql",
+      "installed": false,
+      "paths": []
+    },
+    {
+      "name": "sqlcmd",
+      "provider": "mssql",
+      "installed": false,
+      "paths": []
+    },
+    {
+      "name": "sqlite3",
+      "provider": "sqlite",
+      "installed": false,
+      "paths": []
+    },
+    {
+      "name": "node",
+      "provider": "runtime",
+      "installed": true,
+      "paths": [
+        "node.exe",
+        "node.exe",
+        "node.exe"
+      ]
+    },
+    {
+      "name": "npm",
+      "provider": "runtime",
+      "installed": true,
+      "paths": [
+        "npm",
+        "npm.cmd"
+      ]
+    }
+  ],
+  "ports": [
+    {
+      "provider": "postgresql",
+      "label": "PostgreSQL",
+      "host": "127.0.0.1",
+      "port": 5432,
+      "listening": false,
+      "error": "ECONNREFUSED"
+    },
+    {
+      "provider": "mysql",
+      "label": "MySQL/MariaDB",
+      "host": "127.0.0.1",
+      "port": 3306,
+      "listening": false,
+      "error": "ECONNREFUSED"
+    },
+    {
+      "provider": "mssql",
+      "label": "SQL Server",
+      "host": "127.0.0.1",
+      "port": 1433,
+      "listening": false,
+      "error": "ECONNREFUSED"
+    },
+    {
+      "provider": "bancus-node",
+      "label": "Bancus Node server",
+      "host": "127.0.0.1",
+      "port": 8081,
+      "listening": true,
+      "error": ""
+    },
+    {
+      "provider": "local-http",
+      "label": "Local HTTP 8080",
+      "host": "127.0.0.1",
+      "port": 8080,
+      "listening": true,
+      "error": ""
+    }
+  ],
+  "services": [],
+  "recommendation": "Nenhum PostgreSQL/MySQL/SQL Server escutando em porta padrao; manter SQLite ativo e validar instalacao do servidor antes de trocar provider."
+}

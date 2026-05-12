@@ -111,6 +111,10 @@
     return request('/api/auth/me');
   }
 
+  function databaseStatus() {
+    return request('/api/database/status');
+  }
+
   function listUsers() {
     return request('/api/users');
   }
@@ -168,6 +172,7 @@
     authLogin,
     authLogout,
     currentUser,
+    databaseStatus,
     listUsers,
     createUser,
     updateUser,

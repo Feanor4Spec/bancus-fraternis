@@ -29,6 +29,8 @@ server-8080.err
 server-8080.err.log
 server-8080.out
 server-8080.out.log
+server-*.err.log
+server-*.out.log
 
 # Backups/checkpoints pesados
 versions/

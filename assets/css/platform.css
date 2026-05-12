@@ -839,10 +839,15 @@
 .bf-admin-action-queue,
 .bf-admin-consultant-productivity,
 .bf-admin-consultant-portfolio,
-.bf-admin-commercial-pipeline {
+.bf-admin-commercial-pipeline,
+.bf-admin-mini-grid {
   display: grid;
   gap: 14px;
   padding-top: 4px;
+}
+
+.bf-admin-mini-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .bf-admin-next-actions {
@@ -3767,6 +3772,7 @@
   .bf-admin-commercial-stage dl,
   .bf-admin-commercial-lead__actions,
   .bf-admin-commercial-insights__grid,
+  .bf-admin-mini-grid,
   .bf-handoff-action-plan,
   .bf-admin-source-grid,
   .bf-admin-bottleneck-grid,

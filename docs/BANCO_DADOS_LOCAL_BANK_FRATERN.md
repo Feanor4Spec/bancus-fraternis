@@ -16,6 +16,7 @@ Esta entrega cria a primeira camada server-side do Bancus Fraternis sem quebrar 
 | `js/auth.js` | Continua sendo a fachada publica de auth e espelha login/usuarios no banco quando a API existe. |
 | `assets/js/admin-users.js` | Dashboard Admin le `/api/events` e mostra eventos server-side quando ha sessao de API. |
 | `tools/validate-local-database.mjs` | Validador de schema, seeds, login, sessao e eventos sanitizados. |
+| `tools/inspect-local-sql-environment.mjs` | Diagnostico de CLIs, portas padrao e servicos SQL locais para proxima troca de provider. |
 
 ## Banco
 
@@ -56,6 +57,7 @@ As senhas seed continuam documentadas em `docs/AUTH_ADMIN_LOCAL.md` para demonst
 | Endpoint | Uso |
 | --- | --- |
 | `GET /api/health` | Status da API e estatisticas agregadas. |
+| `GET /api/database/status` | Status tecnico admin: provider, driver, PRAGMAs, arquivos, tabelas e runtime. |
 | `POST /api/auth/login` | Login server-side e emissao de token. |
 | `POST /api/auth/logout` | Revogacao de token. |
 | `GET /api/auth/me` | Usuario da sessao de API. |
@@ -75,12 +77,14 @@ As senhas seed continuam documentadas em `docs/AUTH_ADMIN_LOCAL.md` para demonst
 - Usuarios criados no Admin sao salvos primeiro no `localStorage` e espelhados no SQLite quando houver sessao de API admin.
 - Eventos de jornada, contexto financeiro, modelos, handoff, acoes operacionais e funil comercial tentam gravar em `/api/events`.
 - Dashboard Admin exibe `data-admin-backend-events` com metricas do SQLite e ultimos eventos quando houver sessao admin da API.
+- O mesmo painel exibe `data-admin-backend-table` e `data-admin-backend-database-provider` para confirmar provider, arquivo, PRAGMAs e tabelas ativas.
 - Produção futura deve trocar o SQLite local por backend hospedado, controle de permissao server-side completo, LGPD e politicas de backup.
 
 ## Validacao
 
 ```bash
 node tools/validate-local-database.mjs
+node tools/inspect-local-sql-environment.mjs
 ```
 
 Valida:
@@ -94,3 +98,4 @@ Valida:
 - criacao de novo usuario com senha hasheada;
 - evento persistido sem senha, token ou telefone no payload;
 - presenca dos contratos `/api/*` no servidor.
+- ambiente local para SQL externo em portas padrao (`5432`, `3306`, `1433`) e CLIs (`psql`, `mysql`, `sqlcmd`).

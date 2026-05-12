@@ -117,6 +117,34 @@ function safeJson(value) {
   }
 }
 
+function safeRelativePath(filePath) {
+  const relative = path.relative(process.cwd(), filePath);
+  return relative && !relative.startsWith('..') && !path.isAbsolute(relative) ? relative : path.basename(filePath);
+}
+
+function fileInfo(filePath) {
+  try {
+    const stat = fs.statSync(filePath);
+    return {
+      exists: true,
+      path: safeRelativePath(filePath),
+      sizeBytes: stat.size,
+      updatedAt: stat.mtime.toISOString()
+    };
+  } catch (error) {
+    return {
+      exists: false,
+      path: safeRelativePath(filePath),
+      sizeBytes: 0,
+      updatedAt: ''
+    };
+  }
+}
+
+function quoteIdentifier(identifier) {
+  return `"${String(identifier || '').replace(/"/g, '""')}"`;
+}
+
 function isSensitiveKey(key) {
   const normalized = String(key || '').toLowerCase();
   return SENSITIVE_EVENT_KEYS.some((item) => normalized.includes(item));
@@ -552,6 +580,49 @@ class BancusDatabase {
       users: Number(users.total || 0),
       events: Number(events.total || 0),
       activeSessions: Number(sessions.total || 0)
+    };
+  }
+
+  databaseStatus() {
+    const sqliteVersion = this.db.prepare('SELECT sqlite_version() AS version').get();
+    const journalMode = this.db.prepare('PRAGMA journal_mode').get();
+    const foreignKeys = this.db.prepare('PRAGMA foreign_keys').get();
+    const quickCheck = this.db.prepare('PRAGMA quick_check').get();
+    const tableRows = this.db.prepare(`
+      SELECT name
+      FROM sqlite_schema
+      WHERE type = 'table'
+        AND name NOT LIKE 'sqlite_%'
+      ORDER BY name ASC
+    `).all();
+    const tables = tableRows.map((row) => {
+      const count = this.db.prepare(`SELECT COUNT(*) AS total FROM ${quoteIdentifier(row.name)}`).get();
+      return { name: row.name, rows: Number(count.total || 0) };
+    });
+
+    return {
+      ok: true,
+      provider: 'sqlite',
+      driver: 'node:sqlite DatabaseSync',
+      schemaVersion: this.schemaVersion,
+      databasePath: safeRelativePath(this.dbPath),
+      runtime: {
+        node: process.versions.node,
+        platform: process.platform
+      },
+      files: {
+        main: fileInfo(this.dbPath),
+        wal: fileInfo(`${this.dbPath}-wal`),
+        shm: fileInfo(`${this.dbPath}-shm`)
+      },
+      sqlite: {
+        version: sqliteVersion && sqliteVersion.version ? sqliteVersion.version : '',
+        journalMode: journalMode && journalMode.journal_mode ? journalMode.journal_mode : '',
+        foreignKeys: Boolean(Number(foreignKeys && foreignKeys.foreign_keys)),
+        quickCheck: quickCheck && quickCheck.quick_check ? quickCheck.quick_check : ''
+      },
+      stats: this.stats(),
+      tables
     };
   }
 }

@@ -265,6 +265,17 @@ async function handleApiRequest(req, res) {
     return true;
   }
 
+  if (pathname === '/api/database/status') {
+    if (req.method !== 'GET') {
+      methodNotAllowed(res);
+      return true;
+    }
+    const context = requireAuth(req, res, ['admin']);
+    if (!context) return true;
+    sendJson(res, 200, localDatabase.databaseStatus());
+    return true;
+  }
+
   if (pathname === '/api/users') {
     const context = requireAuth(req, res, ['admin']);
     if (!context) return true;

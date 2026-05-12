@@ -92,9 +92,17 @@ try {
   const events = localDb.listEvents({ limit: 10 });
   assert(events.length >= 1 && events[0].type === 'validator-event', 'Listagem de eventos nao retornou evento recente.');
 
+  const databaseStatus = localDb.databaseStatus();
+  assert(databaseStatus.ok, 'Status tecnico do banco local deveria retornar ok.');
+  assert(databaseStatus.provider === 'sqlite', 'Provider ativo deveria ser sqlite.');
+  assert(databaseStatus.files && databaseStatus.files.main && databaseStatus.files.main.exists, 'Status do banco nao encontrou arquivo SQLite principal.');
+  assert(databaseStatus.sqlite && databaseStatus.sqlite.quickCheck === 'ok', 'PRAGMA quick_check do SQLite nao retornou ok.');
+  assert(Array.isArray(databaseStatus.tables) && databaseStatus.tables.length >= 3, 'Status do banco deveria listar tabelas principais.');
+
   const server = await read('server.js');
   [
     '/api/health',
+    '/api/database/status',
     '/api/auth/login',
     '/api/auth/logout',
     '/api/auth/me',
@@ -108,6 +116,7 @@ try {
     'window.BFBackendApi',
     'bf_backend_session_v1',
     'authLogin',
+    'databaseStatus',
     'recordEvent',
     'listEvents',
     'createUser',
@@ -119,10 +128,18 @@ try {
   [
     'data-admin-backend-events',
     'data-admin-backend-event',
+    'data-admin-backend-table',
+    'data-admin-backend-database-provider',
     'data-admin-backend-event-refresh',
+    'databaseStatus',
     'listEvents(30)'
   ].forEach((marker) => {
     assert(adminDashboard.includes(marker) || adminUsers.includes(marker), `Painel admin de eventos sem contrato ${marker}.`);
+  });
+
+  const inspector = await read('tools/inspect-local-sql-environment.mjs');
+  ['postgresql', 'mysql', 'mssql', 'local-sql-environment-report.json'].forEach((marker) => {
+    assert(inspector.includes(marker), `Inspetor SQL local sem marcador ${marker}.`);
   });
 
   const report = {
@@ -130,6 +147,8 @@ try {
     schemaVersion: SCHEMA_VERSION,
     seedUsers: initialStats.users,
     events: localDb.listEvents({ limit: 50 }).length,
+    provider: databaseStatus.provider,
+    tables: databaseStatus.tables.length,
     warnings,
     failures
   };

@@ -58,8 +58,8 @@ Separado como runtime, evidencia, backup ou historico:
 | Arquivo | Papel atual |
 | --- | --- |
 | `index.html` | Redirect simples para `pages/index.html`. |
-| `server.js` | Servidor canonico local. Usa porta `8080` por padrao, serve `/` como `pages/index.html`, cria aliases curtos para todas as paginas HTML em `pages/` e expõe API local `/api/*` para auth, usuarios e eventos. |
-| `js/backend/db.js` | Camada SQLite local: schema, seeds, hash `scrypt-sha256`, sessoes e eventos sanitizados. |
+| `server.js` | Servidor canonico local. Usa porta `8080` por padrao, serve `/` como `pages/index.html`, cria aliases curtos para todas as paginas HTML em `pages/` e expoe API local `/api/*` para auth, usuarios, status do banco e eventos. |
+| `js/backend/db.js` | Camada SQLite local: schema, seeds, hash `scrypt-sha256`, sessoes, eventos sanitizados e diagnostico tecnico do provider. |
 | `js/server.js` | Servidor legado do simulador antigo. Mantido como historico tecnico, nao como entrada principal. |
 | `Sistema.gitignore` | Ignora editor, node, python, envs, chaves e temporarios. |
 
@@ -69,7 +69,7 @@ Contrato confirmado:
 - Todas as paginas continuam acessiveis por `/pages/<arquivo>.html`.
 - Todas as paginas tambem respondem por URL curta, como `/trilha-decisao.html`.
 - O contrato e coberto por `tools/validate-route-aliases.mjs`.
-- Quando roda via Node, `GET /api/health`, `/api/auth/*`, `/api/users` e `/api/events` usam SQLite local em `.runtime/`.
+- Quando roda via Node, `GET /api/health`, `/api/database/status`, `/api/auth/*`, `/api/users` e `/api/events` usam SQLite local em `.runtime/`.
 - Quando publicado em GitHub Pages ou aberto por `file://`, as paginas seguem funcionando com fallback em `localStorage`.
 
 ## Estrutura de Diretorios
@@ -321,7 +321,7 @@ Melhoria implementada em 2026-05-07:
 | `js/storage.js` | Simulacoes salvas e estatisticas de carteira. |
 | `js/settings.js` | Preferencias locais e defaults. |
 | `js/auth.js` | Usuarios locais, sessao, papeis e guardas. |
-| `js/backend/db.js` | Banco local SQLite para usuarios, sessoes e eventos. |
+| `js/backend/db.js` | Banco local SQLite para usuarios, sessoes, eventos e status tecnico. |
 | `js/shared-layout.js` | Shell comum, header/footer, contrato v8 e estado de conta. |
 | `js/home.js` | Home contextual, cockpit de continuidade e retomada de trilha ativa. |
 | `js/portfolio-live.js` | Carteira, oportunidades, agenda e insights. |
@@ -522,7 +522,8 @@ Scripts confirmados em `tools/`:
 | `validate-admin-dashboard-source-funnel.mjs` | Cockpit Admin, origem, gargalos e proximas acoes. |
 | `validate-public-contracts.mjs` | Matriz de contratos publicos, DoD e governanca de compatibilidade. |
 | `validate-public-release-safety.mjs` | Publicacao segura: paths locais, dados pessoais de exemplo, selo demo, fallback estatico e CI. |
-| `validate-local-database.mjs` | SQLite local, seeds, login, sessoes, eventos sanitizados e contratos de API. |
+| `validate-local-database.mjs` | SQLite local, seeds, login, sessoes, eventos sanitizados, status tecnico e contratos de API. |
+| `inspect-local-sql-environment.mjs` | Diagnostico local de CLIs, portas padrao e servicos SQL externos. |
 | `validate-docs-modernization.mjs` | README ativo, docs historicos marcados e catalogo atual de 19 calculadoras. |
 | `run-v8af-browser-evidence.mjs` | Evidencias visuais do fluxo proposta/handoff. |
 
@@ -560,6 +561,7 @@ Governanca documental: docs ativos passaram a usar Bancus Fraternis como platafo
 9. Tratar GitHub Pages como superficie publica: toda mudanca online deve preservar selo demo, fallback estatico e auditoria de publicacao segura.
 10. Considerar performance ao tocar na base grande `data_base/Tab_Grupos_Consorcio.json`; regenerar e validar `data_base/Tab_Grupos_Consorcio.compact.json` quando a base canonica mudar.
 11. Tratar SQLite local como infraestrutura de desenvolvimento: `.runtime/` nao entra no Git e backend produtivo ainda exige hospedagem, LGPD, backup e permissao server-side completa.
+12. Antes de trocar o provider SQLite, confirmar servidor externo com `tools/inspect-local-sql-environment.mjs`.
 
 ## Proximos Vetores
 

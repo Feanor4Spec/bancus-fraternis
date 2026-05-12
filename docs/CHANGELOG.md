@@ -4,6 +4,27 @@
 
 ---
 
+## [v8.81.0] - 2026-05-12
+
+### Diagnostico backend SQL local
+
+#### Adicionado
+- API local ganhou `GET /api/database/status` para status tecnico admin do SQLite ativo.
+- Dashboard Admin passou a mostrar provider, arquivo, journal, integridade e tabelas do banco local.
+- Criado `tools/inspect-local-sql-environment.mjs` para detectar CLIs, portas padrao e servicos SQL externos.
+
+#### Modificado
+- `BFBackendApi` agora expoe `databaseStatus()` para o painel Admin.
+- Validadores, contratos, mapa e plano foram atualizados para preparar a proxima evolucao de provider SQL.
+
+#### Validado
+- `node --check server.js`
+- `node --check js/backend/db.js`
+- `node tools/validate-local-database.mjs`
+- `node tools/inspect-local-sql-environment.mjs`
+
+---
+
 ## [v8.80.0] - 2026-05-12
 
 ### Eventos server-side no Dashboard Admin
