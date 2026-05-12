@@ -572,6 +572,8 @@ Validacoes obrigatorias:
 - `assets/data/calculadoras.json` deve conter 19 calculadoras.
 - `assets/js/services/decision-context.service.js` deve expor `BFDecisionContext`.
 - `pages/calculadoras.html` deve recomendar a trilha minima: `custos-fixos -> reserva-emergencia -> compra-vista-parcelado -> comparador`.
+- Toda pagina individual deve abrir uma previa com `data-calculator-result-mode="preview"` sem gravar `bf_financial_profile_v1`, `bf_calculator_history_v1` ou `bf_decision_context_audit_v1`.
+- O botao `Calcular e salvar cenario` deve trocar o modo para `saved`, gravar historico local e atualizar o perfil financeiro.
 - `pages/calculadora-capacidade-credito.html` deve gravar parcela segura, folga mensal, comprometimento projetado e perfil.
 - `pages/calculadora-lance-consorcio.html` deve gravar lance seguro, impacto na reserva e lance sugerido.
 - `pages/simulador.html?from=calculator&calculatorSlug=capacidade-credito&historyId=<id>` deve exibir prontidao e preservar origem no decision strip.
@@ -590,6 +592,7 @@ $node='<node-runtime>'
 & $node --check js\storage.js
 & $node --check assets\js\client-dashboard.js
 & $node tools\validate-calculadoras.mjs
+& $node tools\validate-calculator-journey.mjs
 & $node tools\validate-design-system.mjs
 ```
 
@@ -602,6 +605,7 @@ Evidencias esperadas:
 - `docs/test-prints/v8r-simulador-prontidao-desktop.png`
 - `docs/test-prints/v8r-dashboard-cliente-continuidade-desktop.png`
 - `docs/test-prints/v8r-calculadoras-jornada-report.json`
+- `docs/test-reports/calculator-journey-report.json`
 - Checkpoint ZIP em `versions/`
 
 Prints minimos do ciclo v8:

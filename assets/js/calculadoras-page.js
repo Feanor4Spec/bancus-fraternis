@@ -409,10 +409,20 @@
     `;
   }
 
-  function renderResult(result) {
+  function renderResult(result, options = {}) {
     const target = qs('[data-calculator-result]');
     if (!target) return;
+    const mode = options.persisted || result.historyId ? 'saved' : 'preview';
+    const modeTone = mode === 'saved' ? 'success' : 'info';
+    const modeTitle = mode === 'saved' ? 'Cenario salvo' : 'Previa sem salvar';
+    const modeMessage = mode === 'saved'
+      ? 'Resultado gravado no perfil financeiro e no historico local.'
+      : 'Resultado demonstrativo inicial. Ajuste os campos e salve quando fizer sentido.';
     target.innerHTML = `
+      <article class="bf-platform-alert bf-platform-alert--${modeTone}" data-calculator-result-mode="${mode}">
+        <strong>${escapeHtml(modeTitle)}</strong><br>
+        ${escapeHtml(modeMessage)}
+      </article>
       <div class="bf-platform-metrics bf-calculator-metrics">
         ${result.metrics.map(renderMetric).join('')}
       </div>
@@ -473,12 +483,14 @@
 
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
-      const result = await window.BFCalculadoras.simulate(slug, formValues(form));
-      renderResult(result);
+      const result = await window.BFCalculadoras.simulate(slug, formValues(form), { persist: true });
+      renderResult(result, { persisted: true });
       document.body.dataset.calculatorReady = slug;
     });
 
-    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    const preview = await window.BFCalculadoras.simulate(slug, formValues(form), { persist: false });
+    renderResult(preview, { preview: true });
+    document.body.dataset.calculatorReady = `${slug}:preview`;
   }
 
   async function init() {

@@ -1,10 +1,12 @@
 # Calculadoras Funcionais Bancus Fraternis
 
-Atualizado em 2026-04-26.
+Atualizado em 2026-05-11.
 
 ## Escopo Implementado
 
 O Bancus Fraternis recebeu o ecossistema estatico/progressivo de calculadoras financeiras em HTML, CSS e JavaScript puro. A implementacao cria uma entrada unica em `pages/calculadoras.html`, 19 paginas individuais, catalogo JSON, premissas locais, motor comum de formulas, servico de simulacao por slug, perfil financeiro consolidado em `localStorage`, historico unificado, contexto de decisao compartilhado e recomendacoes explicaveis.
+
+Atualizacao de jornada: paginas individuais agora abrem em modo de previa sem persistencia e so gravam perfil/historico quando o usuario aciona `Calcular e salvar cenario`.
 
 ## Rotas
 
@@ -45,6 +47,7 @@ O Bancus Fraternis recebeu o ecossistema estatico/progressivo de calculadoras fi
 | `assets/js/calculadoras-governanca.js` | Painel admin de premissas, matriz funcional e golden tests |
 | `assets/css/platform.css` | UI de hub, cards, historico, perfil e resultados |
 | `tools/validate-calculadoras.mjs` | Validacao automatizada de catalogo, paginas, premissas e formulas |
+| `tools/validate-calculator-journey.mjs` | Validacao das 19 calculadoras, previa sem persistencia e submit persistente |
 | `tools/validate-decision-flow.mjs` | Validacao funcional da jornada calculadora -> simulador -> historico |
 
 ## Matriz Funcional
@@ -91,6 +94,16 @@ Chaves locais:
 - `bf_decision_context_audit_v1`
 
 Regra de seguranca: CPF, telefone, e-mail, nome e dados pessoais continuam fora do contexto compartilhado. Dados pessoais so entram no payload da simulacao quando o usuario salva explicitamente.
+
+## Jornada de Previa e Salvamento
+
+Contrato atual das paginas individuais:
+
+- Ao carregar uma calculadora, `assets/js/calculadoras-page.js` executa `BFCalculadoras.simulate(slug, input, { persist: false })`.
+- O bloco de resultado recebe `data-calculator-result-mode="preview"`.
+- A previa nao grava `bf_financial_profile_v1`, `bf_calculator_history_v1` nem `bf_decision_context_audit_v1`.
+- Ao clicar `Calcular e salvar cenario`, o submit executa `BFCalculadoras.simulate(slug, input, { persist: true })`.
+- O resultado salvo recebe `data-calculator-result-mode="saved"`, `historyId` e atualiza perfil/historico local.
 
 ## Perfil Financeiro Consolidado
 

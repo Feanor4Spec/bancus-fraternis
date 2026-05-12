@@ -43,6 +43,7 @@ jobs:
           node tools/validate-public-contracts.mjs
           node tools/validate-docs-modernization.mjs
           node tools/validate-calculadoras.mjs
+          node tools/validate-calculator-journey.mjs
           node tools/validate-simulator-groups.mjs
           node tools/validate-simulator-performance.mjs
           node tools/validate-simulator-refactor.mjs

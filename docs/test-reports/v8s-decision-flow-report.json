@@ -3,21 +3,21 @@
   "calculators": 19,
   "flow": {
     "emptyReadinessScore": 0,
-    "capacityHistoryId": "CALC-MP1V3PYT",
+    "capacityHistoryId": "CALC-MP1WPVA7",
     "capacityPayment": 2000,
-    "bidHistoryId": "CALC-MP1V3PYT",
+    "bidHistoryId": "CALC-MP1WPVA8",
     "safeBid": 25000,
     "calculatorRoutes": {
-      "simulator": "simulador.html?from=calculator&calculatorSlug=capacidade-credito&historyId=CALC-MP1V3PYT&preset=comprar_bem",
-      "journey": "trilha-decisao.html?from=calculator&calculatorSlug=capacidade-credito&historyId=CALC-MP1V3PYT&preset=comprar_bem",
-      "comparator": "comparador.html?from=calculator&calculatorSlug=capacidade-credito&historyId=CALC-MP1V3PYT&preset=comprar_bem",
-      "calculator": "calculadora-capacidade-credito.html?from=calculator&calculatorSlug=capacidade-credito&historyId=CALC-MP1V3PYT&preset=comprar_bem"
+      "simulator": "simulador.html?from=calculator&calculatorSlug=capacidade-credito&historyId=CALC-MP1WPVA7&preset=comprar_bem",
+      "journey": "trilha-decisao.html?from=calculator&calculatorSlug=capacidade-credito&historyId=CALC-MP1WPVA7&preset=comprar_bem",
+      "comparator": "comparador.html?from=calculator&calculatorSlug=capacidade-credito&historyId=CALC-MP1WPVA7&preset=comprar_bem",
+      "calculator": "calculadora-capacidade-credito.html?from=calculator&calculatorSlug=capacidade-credito&historyId=CALC-MP1WPVA7&preset=comprar_bem"
     },
     "prefillSource": "calculator",
     "prefillCalculatorSlug": "capacidade-credito",
     "readinessScore": 100,
-    "simulationId": "SIM-MP1V3PYV",
-    "simulatorHistoryId": "hist_1778543876407_30b4e7",
+    "simulationId": "SIM-MP1WPVA9",
+    "simulatorHistoryId": "hist_1778546589346_bbf881",
     "finalHistoryCount": 3,
     "auditCount": 7
   },

@@ -7,7 +7,7 @@ O Bancus Fraternis e uma plataforma estatica/progressiva para apoiar decisao fin
 ## Estado Atual
 
 - 52 paginas navegaveis em `pages/`, com aliases curtos cobertos por `server.js`.
-- 19 calculadoras financeiras no catalogo ativo.
+- 19 calculadoras financeiras no catalogo ativo, com mapa funcional, previa sem persistencia e salvamento explicito por submit.
 - Simulador conectado a base real com 17.396 grupos validos.
 - Simulador iniciou modularizacao tecnica com `BFSimulatorJourney`, `BFSimulatorState`, `BFSimulatorShelf`, `BFSimulatorCart`, `BFProposalBuilder` e `BFProposalGovernance` para contexto, proximas acoes, snapshots, retomada, prateleira, carrinho/projeto, lousa de proposta/PDF e governanca visual de versionamento/aceite.
 - Fluxo principal: Home -> Produtos -> Calculadoras -> Trilha Assistida -> Comparador -> Simulador -> Proposta -> Handoff -> Dashboards.
@@ -51,7 +51,7 @@ http://localhost:8080/dashboard-admin.html
 | --- | --- |
 | Home e shell | `index.html`, `js/shared-layout.js`, `assets/css/bf-design-system-v8.css` |
 | Produtos | `pages/produtos.html`, `assets/js/products-page.js`, `assets/js/products-journey.js` |
-| Calculadoras | `pages/calculadoras.html`, `pages/calculadora-*.html`, `assets/data/calculadoras.json` |
+| Calculadoras | `pages/calculadoras.html`, `pages/calculadora-*.html`, `assets/data/calculadoras.json`, `docs/MAPA_FUNCOES_CALCULADORAS_BANK_FRATERN.md` |
 | Trilha Assistida | `pages/trilha-decisao.html`, `assets/js/decision-journey-page.js` |
 | Comparador | `pages/comparador.html`, `assets/js/comparador-page.js` |
 | Simulador | `pages/simulador.html`, `js/app.js`, `js/simulator-journey.js`, `js/simulator-state.js`, `js/simulator-shelf.js`, `js/simulator-cart.js`, `js/proposal-builder.js`, `js/proposal-governance.js`, `js/shelf-data.js`, `js/shelf-engine.js` |
@@ -64,6 +64,7 @@ http://localhost:8080/dashboard-admin.html
 ## Documentos-Chave
 
 - `docs/MAPA_COMPLETO_PROJETO_BANK_FRATERN.md`: leitura completa do projeto, paginas, dados, contratos e lacunas.
+- `docs/MAPA_FUNCOES_CALCULADORAS_BANK_FRATERN.md`: mapa das 19 funcoes de calculadoras, inputs, motor, saidas e continuidade.
 - `docs/PLANO_ACAO_EVOLUCAO_BANK_FRATERN.md`: fases de evolucao e status do que ja foi implementado.
 - `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md`: contratos publicos de `localStorage`, `data-*`, deep links, exports globais e Definition of Done.
 - `docs/CODEX_TEST_PROTOCOL.md`: protocolo de testes e evidencias.
@@ -81,6 +82,7 @@ node tools/validate-docs-modernization.mjs
 node tools/validate-online-journey-smoke.mjs
 node tools/validate-github-pages-deploy.mjs
 node tools/validate-calculadoras.mjs
+node tools/validate-calculator-journey.mjs
 node tools/validate-route-aliases.mjs
 node tools/validate-simulator-groups.mjs
 node tools/validate-simulator-performance.mjs

@@ -53,7 +53,7 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | Publicacao demo | `data-public-demo-notice`, `.bf-demo-chip`. |
 | Home | `data-home-hero-contextual`, `data-home-continuity-cockpit`, `data-home-next-actions`, `data-journey-analytics`. |
 | Produtos | `data-products-grid`, `data-products-filter`, `data-products-selection-panel`, `data-products-compare-link`, `data-products-decision-strip`. |
-| Calculadoras | `data-calculator-form`, `data-calculator-result`, `data-calculator-history`, `data-calculators-hub`, `data-calculator-decision-strip`. |
+| Calculadoras | `data-calculator-form`, `data-calculator-result`, `data-calculator-result-mode`, `data-calculator-history`, `data-calculators-hub`, `data-calculator-decision-strip`. |
 | Trilha | `data-decision-journey-form`, `data-decision-journey-state`, `data-decision-journey-steps`, `data-decision-journey-actions`. |
 | Comparador | `data-comparator-form`, `data-comparator-result`, `data-comparator-preset-summary`, `data-comparator-model-recommendation`. |
 | Simulador | `data-simulator-readiness`, `data-simulator-decision-strip`, `data-simulator-journey-actions`, `data-v8-stagebar`, `data-shelf-col`. |
@@ -128,7 +128,8 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | `tools/validate-github-pages-deploy.mjs` | Deploy publico no GitHub Pages, marca Bancus Fraternis, lousa, simulador e base real online. |
 | `tools/validate-design-system.mjs` | Contrato visual, referencias, paginas ativas e validadores obrigatorios. |
 | `tools/validate-route-aliases.mjs` | Paridade de 52 paginas e aliases curtos. |
-| `tools/validate-calculadoras.mjs` | Catalogo atual de 19 calculadoras, premissas e golden tests. |
+| `tools/validate-calculadoras.mjs` | Catalogo atual de 19 calculadoras, premissas, golden tests e contrato de previa sem submit automatico. |
+| `tools/validate-calculator-journey.mjs` | Execucao das 19 calculadoras, previa sem persistencia, submit persistente e mapa funcional. |
 | `tools/validate-simulator-groups.mjs` | Base real do simulador: 17.396 grupos validos. |
 | `tools/validate-simulator-performance.mjs` | Base compacta do simulador, peso online e fallback para JSON legado. |
 | `tools/validate-simulator-refactor.mjs` | Modulos extraidos do simulador, payload salvo e acoes de jornada. |

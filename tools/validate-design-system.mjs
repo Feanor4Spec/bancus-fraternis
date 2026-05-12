@@ -260,6 +260,7 @@ const requiredFiles = [
   'js/proposal-versioning.js',
   'assets/js/services/handoff-consultivo.service.js',
   'tools/validate-calculadoras.mjs',
+  'tools/validate-calculator-journey.mjs',
   'tools/validate-simulator-performance.mjs',
   'tools/validate-simulator-refactor.mjs',
   'tools/validate-simulator-shelf.mjs',

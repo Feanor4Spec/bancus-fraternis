@@ -76,6 +76,12 @@ for (const slug of slugs) {
   if (!serviceText.includes(`case '${slug}':`)) fail(`Servico de calculadoras nao implementa slug: ${slug}.`);
 }
 
+const pageText = await fs.readFile(path.join(root, 'assets/js/calculadoras-page.js'), 'utf8');
+if (!pageText.includes('persist: false')) fail('Pagina de calculadora deve gerar previa inicial com persist:false.');
+if (!pageText.includes('persist: true')) fail('Submit da calculadora deve declarar persist:true.');
+if (pageText.includes("form.dispatchEvent(new Event('submit'")) fail('Pagina de calculadora ainda dispara submit automatico no carregamento.');
+if (!pageText.includes('data-calculator-result-mode')) fail('Resultado da calculadora deve expor data-calculator-result-mode.');
+
 const formulaContext = { window: {}, console };
 vm.createContext(formulaContext);
 const formulaText = await fs.readFile(path.join(root, 'assets/js/formulas/financial.formulas.js'), 'utf8');

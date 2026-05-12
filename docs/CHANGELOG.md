@@ -4,6 +4,28 @@
 
 ---
 
+## [v8.75.0] - 2026-05-11
+
+### Jornada das calculadoras saneada
+
+#### Adicionado
+- Criado `docs/MAPA_FUNCOES_CALCULADORAS_BANK_FRATERN.md` com o mapa das 19 calculadoras, inputs, motor, saidas, perfil gerado e continuidade.
+- Criado `tools/validate-calculator-journey.mjs` com execucao das 19 calculadoras, previa sem persistencia e submit persistente de capacidade/lance.
+- Criado relatorio `docs/test-reports/calculator-journey-report.json`.
+
+#### Modificado
+- `assets/js/calculadoras-page.js` passou a renderizar previa inicial com `persist:false` e submit explicito com `persist:true`.
+- Resultados de calculadora agora expõem `data-calculator-result-mode="preview|saved"`.
+- `tools/validate-calculadoras.mjs`, CI, README, mapa, plano, contratos publicos e protocolo de teste foram atualizados para proteger a jornada corrigida.
+
+#### Validado
+- `node --check assets/js/calculadoras-page.js`
+- `node --check tools/validate-calculator-journey.mjs`
+- `node tools/validate-calculator-journey.mjs`
+- `node tools/validate-calculadoras.mjs`
+
+---
+
 ## [v8.74.0] - 2026-05-11
 
 ### Prateleira do simulador modularizada

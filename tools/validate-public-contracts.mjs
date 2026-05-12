@@ -204,6 +204,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'tools/validate-public-release-safety.mjs',
   'tools/validate-design-system.mjs',
   'tools/validate-calculadoras.mjs',
+  'tools/validate-calculator-journey.mjs',
   'tools/validate-admin-dashboard-source-funnel.mjs',
   'tools/validate-proposal-builder.mjs',
   'tools/validate-proposal-governance.mjs',
@@ -264,6 +265,7 @@ assert(contracts.includes('data-client-commercial-stage'), 'Contrato publico nao
 assert(contracts.includes('data-demo-login'), 'Contrato publico nao documenta acesso rapido do login.');
 assert(contracts.includes('.bf-demo-chip'), 'Contrato publico nao documenta selo demo do shell.');
 assert(contracts.includes('data-public-demo-notice'), 'Contrato publico nao documenta aviso publico de demo.');
+assert(contracts.includes('data-calculator-result-mode'), 'Contrato publico nao documenta modo do resultado das calculadoras.');
 assert(await exists('404.html'), 'Fallback 404.html ausente.');
 assert(await exists('.github/workflows/validate.yml'), 'Workflow de validacao publica ausente.');
 

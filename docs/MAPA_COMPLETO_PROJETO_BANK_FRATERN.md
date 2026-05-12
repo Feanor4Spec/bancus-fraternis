@@ -16,7 +16,7 @@ Estado confirmado nesta leitura:
 - 15 services em `assets/js/services/`.
 - 5 arquivos de formulas em `assets/js/formulas/`.
 - 5 componentes em `assets/js/components/`.
-- 34 scripts de validacao/evidencia em `tools/`.
+- 39 scripts de validacao/evidencia em `tools/`.
 - 52 aliases curtos confirmados em `server.js`, um para cada pagina HTML em `pages/`.
 
 O centro de produto e uma jornada continua:
@@ -140,7 +140,7 @@ Contrato confirmado:
 
 ### Calculadoras
 
-Todas usam o mesmo padrao de pagina e o motor `assets/js/calculadoras-page.js`.
+Todas usam o mesmo padrao de pagina, o motor de render `assets/js/calculadoras-page.js` e o service `assets/js/services/calculadoras.service.js`. O mapa operacional das funcoes esta em `docs/MAPA_FUNCOES_CALCULADORAS_BANK_FRATERN.md`.
 
 | Pagina | Estado | Conteudo |
 | --- | --- | --- |
@@ -211,13 +211,14 @@ Contratos principais: `data-products-grid`, `data-products-selection-panel`, `da
 ```text
 Hub de calculadoras
   -> calculadora individual
+  -> previa sem persistencia
+  -> submit explicito
   -> resultado + recomendacao
-  -> perfil consolidado
-  -> historico
+  -> perfil consolidado e historico
   -> simulador, comparador ou dashboard cliente
 ```
 
-Contratos principais: `data-calculator-form`, `data-calculator-result`, `BFCalculadoras`, `BFFinancialFormulas`, `BFDecisionContext`, `BFCalculatorJourney`, deep links com `from=calculator|calculators`, `calculatorSlug`, `historyId` e `preset`.
+Contratos principais: `data-calculator-form`, `data-calculator-result`, `data-calculator-result-mode`, `BFCalculadoras`, `BFFinancialFormulas`, `BFDecisionContext`, `BFCalculatorJourney`, deep links com `from=calculator|calculators`, `calculatorSlug`, `historyId` e `preset`.
 
 ### Jornada de trilha assistida
 
@@ -427,7 +428,7 @@ Os marcadores mais importantes por area:
 | --- | --- |
 | Home | `data-home-hero-contextual`, `data-home-continuity-cockpit`, `data-home-next-actions`. |
 | Produtos | `data-products-grid`, `data-products-filter`, `data-products-selection-panel`, `data-products-compare-link`. |
-| Calculadoras | `data-calculator-form`, `data-calculator-result`, `data-calculator-history`, `data-calculators-hub`. |
+| Calculadoras | `data-calculator-form`, `data-calculator-result`, `data-calculator-result-mode`, `data-calculator-history`, `data-calculators-hub`. |
 | Trilha | `data-decision-journey-form`, `data-decision-journey-state`, `data-decision-journey-steps`, `data-decision-journey-actions`. |
 | Comparador | `data-comparator-form`, `data-comparator-result`, `data-comparator-preset-summary`, `data-comparator-model-recommendation`. |
 | Simulador | `data-simulator-readiness`, `data-simulator-decision-strip`, `data-simulator-journey-actions`, `data-shelf-col`. |
@@ -494,7 +495,8 @@ Scripts confirmados em `tools/`:
 | `validate-simulator-shelf.mjs` | Prateleira do simulador, ordem de scripts, filtros, ordenacao, paginacao, tabela e detalhe do grupo. |
 | `validate-simulator-cart.mjs` | Carrinho/projeto estruturado do simulador, ordem de scripts, totais, edicao e render do passo 4/5. |
 | `validate-handoff-origins.mjs` | Origem dos handoffs por proposta, trilha, sinal e pacote importado. |
-| `validate-calculadoras.mjs` | Catalogo, paginas, premissas e formulas. |
+| `validate-calculadoras.mjs` | Catalogo, paginas, premissas, formulas e contrato de previa sem submit automatico. |
+| `validate-calculator-journey.mjs` | Execucao das 19 calculadoras, previa sem persistencia, submit persistente e mapa funcional. |
 | `validate-dashboard-continuity-flow.mjs` | Timeline e deep links do Dashboard Cliente. |
 | `validate-decision-flow.mjs` | Fluxo calculadora -> simulador -> historico. |
 | `validate-decision-journey-context.mjs` | Contexto de entrada e saida da Trilha Assistida. |
@@ -526,6 +528,7 @@ Scripts confirmados em `tools/`:
 | `docs/DESIGN_SYSTEM_V8_BANK_FRATERN.md` | Contrato visual v8. |
 | `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md` | Contratos publicos de localStorage, data markers, deep links, exports globais e DoD. |
 | `docs/CALCULADORAS_FUNCIONAIS_BANK_FRATERN.md` | Ecossistema de calculadoras. |
+| `docs/MAPA_FUNCOES_CALCULADORAS_BANK_FRATERN.md` | Mapa funcional das 19 calculadoras, inputs, motor, saidas e continuidade. |
 | `docs/TRILHA_ASSISTIDA_DECISAO.md` | Trilha assistida. |
 | `docs/HANDOFF_CONSULTIVO_LEADS.md` | Handoff consultivo. |
 | `docs/AUTH_ADMIN_LOCAL.md` | Auth local e admin. |

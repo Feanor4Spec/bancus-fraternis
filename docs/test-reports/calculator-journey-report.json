@@ -1,0 +1,279 @@
+{
+  "ok": true,
+  "calculators": 19,
+  "previewDoesNotPersist": true,
+  "persistentSubmitChecked": [
+    "capacidade-credito",
+    "lance-consorcio"
+  ],
+  "generatedAt": "2026-05-12T00:42:46.753Z",
+  "previewReport": [
+    {
+      "slug": "juros-compostos",
+      "nome": "Juros Compostos",
+      "page": "pages/calculadora-juros-compostos.html",
+      "inputs": 4,
+      "metrics": 3,
+      "memory": 2,
+      "rows": 0,
+      "profilePatchKeys": [
+        "patrimonioEstimado",
+        "capacidadeAporte"
+      ]
+    },
+    {
+      "slug": "juros-simples",
+      "nome": "Juros Simples",
+      "page": "pages/calculadora-juros-simples.html",
+      "inputs": 3,
+      "metrics": 3,
+      "memory": 2,
+      "rows": 0,
+      "profilePatchKeys": []
+    },
+    {
+      "slug": "primeiro-milhao",
+      "nome": "Primeiro Milhao",
+      "page": "pages/calculadora-primeiro-milhao.html",
+      "inputs": 5,
+      "metrics": 3,
+      "memory": 2,
+      "rows": 0,
+      "profilePatchKeys": [
+        "objetivoPrincipal",
+        "metaPatrimonial",
+        "capacidadeAporte"
+      ]
+    },
+    {
+      "slug": "aposentadoria",
+      "nome": "Aposentadoria",
+      "page": "pages/calculadora-aposentadoria.html",
+      "inputs": 6,
+      "metrics": 3,
+      "memory": 2,
+      "rows": 0,
+      "profilePatchKeys": [
+        "objetivoPrincipal",
+        "patrimonioEstimado",
+        "capacidadeAporte"
+      ]
+    },
+    {
+      "slug": "renda",
+      "nome": "Calculadora de Renda",
+      "page": "pages/calculadora-renda.html",
+      "inputs": 4,
+      "metrics": 3,
+      "memory": 2,
+      "rows": 0,
+      "profilePatchKeys": [
+        "patrimonioEstimado",
+        "rendaDesejada"
+      ]
+    },
+    {
+      "slug": "reserva-emergencia",
+      "nome": "Reserva de Emergencia",
+      "page": "pages/calculadora-reserva-emergencia.html",
+      "inputs": 3,
+      "metrics": 3,
+      "memory": 2,
+      "rows": 0,
+      "profilePatchKeys": [
+        "gastoMensal",
+        "reservaAtual",
+        "reservaIdeal",
+        "coberturaReservaPct"
+      ]
+    },
+    {
+      "slug": "poupanca-selic",
+      "nome": "Poupanca x Selic",
+      "page": "pages/calculadora-poupanca-selic.html",
+      "inputs": 5,
+      "metrics": 3,
+      "memory": 2,
+      "rows": 0,
+      "profilePatchKeys": [
+        "taxaOportunidadeMes"
+      ]
+    },
+    {
+      "slug": "renda-fixa",
+      "nome": "Comparador de Renda Fixa",
+      "page": "pages/calculadora-renda-fixa.html",
+      "inputs": 8,
+      "metrics": 3,
+      "memory": 3,
+      "rows": 2,
+      "profilePatchKeys": [
+        "taxaOportunidadeMes"
+      ]
+    },
+    {
+      "slug": "compra-vista-parcelado",
+      "nome": "Compra a Vista ou Parcelado",
+      "page": "pages/calculadora-compra-vista-parcelado.html",
+      "inputs": 9,
+      "metrics": 6,
+      "memory": 4,
+      "rows": 2,
+      "profilePatchKeys": [
+        "taxaOportunidadeMes",
+        "rendaMensal",
+        "gastoMensal",
+        "reservaAtual",
+        "reservaIdeal",
+        "parcelaConsumo",
+        "ultimaDecisaoCompra"
+      ]
+    },
+    {
+      "slug": "pix-parcelado",
+      "nome": "Pix Parcelado",
+      "page": "pages/calculadora-pix-parcelado.html",
+      "inputs": 3,
+      "metrics": 3,
+      "memory": 2,
+      "rows": 6,
+      "profilePatchKeys": [
+        "parcelasCredito"
+      ]
+    },
+    {
+      "slug": "alugar-financiar",
+      "nome": "Alugar x Financiar",
+      "page": "pages/calculadora-alugar-financiar.html",
+      "inputs": 7,
+      "metrics": 3,
+      "memory": 2,
+      "rows": 0,
+      "profilePatchKeys": [
+        "objetivoPrincipal",
+        "parcelasCredito"
+      ]
+    },
+    {
+      "slug": "cartoes",
+      "nome": "Comparador de Cartoes",
+      "page": "pages/calculadora-cartoes.html",
+      "inputs": 3,
+      "metrics": 3,
+      "memory": 2,
+      "rows": 4,
+      "profilePatchKeys": [
+        "rendaMensal",
+        "gastoCartao"
+      ]
+    },
+    {
+      "slug": "realidade-brasileira",
+      "nome": "Salario diante da Realidade Brasileira",
+      "page": "pages/calculadora-realidade-brasileira.html",
+      "inputs": 2,
+      "metrics": 3,
+      "memory": 2,
+      "rows": 0,
+      "profilePatchKeys": [
+        "rendaMensal",
+        "uf"
+      ]
+    },
+    {
+      "slug": "rentabilidade",
+      "nome": "Simulador de Rentabilidade",
+      "page": "pages/calculadora-rentabilidade.html",
+      "inputs": 4,
+      "metrics": 3,
+      "memory": 2,
+      "rows": 5,
+      "profilePatchKeys": [
+        "patrimonioEstimado",
+        "capacidadeAporte"
+      ]
+    },
+    {
+      "slug": "acoes",
+      "nome": "Comparador de Acoes",
+      "page": "pages/calculadora-acoes.html",
+      "inputs": 4,
+      "metrics": 3,
+      "memory": 2,
+      "rows": 3,
+      "profilePatchKeys": []
+    },
+    {
+      "slug": "cdb",
+      "nome": "Calculadora de CDB",
+      "page": "pages/calculadora-cdb.html",
+      "inputs": 4,
+      "metrics": 3,
+      "memory": 2,
+      "rows": 0,
+      "profilePatchKeys": [
+        "taxaOportunidadeMes"
+      ]
+    },
+    {
+      "slug": "capacidade-credito",
+      "nome": "Capacidade de Credito",
+      "page": "pages/calculadora-capacidade-credito.html",
+      "inputs": 7,
+      "metrics": 5,
+      "memory": 3,
+      "rows": 3,
+      "profilePatchKeys": [
+        "rendaMensal",
+        "gastoMensal",
+        "dividasMensais",
+        "reservaAtual",
+        "capacidadeAporte",
+        "capacidadePagamento",
+        "comprometimentoRenda",
+        "comprometimentoProjetado",
+        "readinessScore"
+      ]
+    },
+    {
+      "slug": "lance-consorcio",
+      "nome": "Lance em Consorcio",
+      "page": "pages/calculadora-lance-consorcio.html",
+      "inputs": 7,
+      "metrics": 5,
+      "memory": 3,
+      "rows": 3,
+      "profilePatchKeys": [
+        "valorCredito",
+        "valorCarta",
+        "reservaAtual",
+        "gastoMensal",
+        "capacidadePagamento",
+        "lanceProprioSugerido",
+        "lanceProprioSugeridoPct",
+        "lanceSeguroPct",
+        "parcelaProjetada",
+        "readinessScore"
+      ]
+    },
+    {
+      "slug": "custos-fixos",
+      "nome": "Custos Fixos",
+      "page": "pages/calculadora-custos-fixos.html",
+      "inputs": 6,
+      "metrics": 3,
+      "memory": 2,
+      "rows": 0,
+      "profilePatchKeys": [
+        "rendaMensal",
+        "gastoMensal",
+        "capacidadeAporte",
+        "capacidadePagamento",
+        "comprometimentoRenda",
+        "dividasMensais",
+        "readinessScore"
+      ]
+    }
+  ],
+  "failures": []
+}
