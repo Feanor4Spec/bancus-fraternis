@@ -1893,6 +1893,9 @@ const App = (() => {
   // ══════════════════════════════════════════
 
   function getPageSize() {
+    if (window.BFSimulatorShelf && window.BFSimulatorShelf.pageSizeFromSettings) {
+      return window.BFSimulatorShelf.pageSizeFromSettings(typeof Settings !== 'undefined' ? Settings : null);
+    }
     try {
       const size = (typeof Settings !== 'undefined' && Settings.get) ? Number(Settings.get('pageSize')) : 50;
       return Number.isFinite(size) && size > 0 ? Math.min(500, Math.max(10, Math.round(size))) : 50;
@@ -1904,6 +1907,10 @@ const App = (() => {
   let _shelfHiddenColumns = new Set();
 
   function _loadShelfHiddenColumns() {
+    if (window.BFSimulatorShelf && window.BFSimulatorShelf.loadHiddenColumns) {
+      _shelfHiddenColumns = window.BFSimulatorShelf.loadHiddenColumns(typeof Settings !== 'undefined' ? Settings : null);
+      return;
+    }
     try {
       const saved = (typeof Settings !== 'undefined' && Settings.get) ? Settings.get('shelfHiddenColumns') : [];
       _shelfHiddenColumns = new Set(Array.isArray(saved) ? saved : []);
@@ -1913,6 +1920,11 @@ const App = (() => {
   }
 
   function syncShelfControls() {
+    if (window.BFSimulatorShelf && window.BFSimulatorShelf.syncControls) {
+      _loadShelfHiddenColumns();
+      window.BFSimulatorShelf.syncControls(document, _shelfHiddenColumns, getPageSize());
+      return;
+    }
     const pageSizeEl = document.getElementById('shelfPageSize');
     if (pageSizeEl) pageSizeEl.value = String(getPageSize());
     _loadShelfHiddenColumns();
@@ -1923,6 +1935,10 @@ const App = (() => {
   }
 
   function applyShelfColumnVisibility() {
+    if (window.BFSimulatorShelf && window.BFSimulatorShelf.applyColumnVisibility) {
+      window.BFSimulatorShelf.applyColumnVisibility(document, _shelfHiddenColumns);
+      return;
+    }
     document.querySelectorAll('[data-shelf-col]').forEach(el => {
       const col = el.getAttribute('data-shelf-col');
       el.hidden = _shelfHiddenColumns.has(col);
@@ -1930,8 +1946,12 @@ const App = (() => {
   }
 
   function changeShelfPageSize(value) {
-    const n = parseInt(value, 10);
-    const pageSize = Number.isFinite(n) && n > 0 ? Math.min(500, Math.max(10, n)) : 50;
+    const pageSize = window.BFSimulatorShelf && window.BFSimulatorShelf.normalizePageSize
+      ? window.BFSimulatorShelf.normalizePageSize(value)
+      : (() => {
+          const n = parseInt(value, 10);
+          return Number.isFinite(n) && n > 0 ? Math.min(500, Math.max(10, n)) : 50;
+        })();
     if (typeof Settings !== 'undefined' && Settings.set) Settings.set('pageSize', pageSize);
     _shelfCurrentPage = 1;
     const pageSizeEl = document.getElementById('shelfPageSize');
@@ -1941,15 +1961,31 @@ const App = (() => {
 
   function toggleShelfColumn(colName, checked) {
     if (!colName) return;
-    if (checked) _shelfHiddenColumns.delete(colName);
-    else _shelfHiddenColumns.add(colName);
-    if (typeof Settings !== 'undefined' && Settings.set) {
-      Settings.set('shelfHiddenColumns', Array.from(_shelfHiddenColumns));
+    if (window.BFSimulatorShelf && window.BFSimulatorShelf.updateHiddenColumns) {
+      _shelfHiddenColumns = window.BFSimulatorShelf.updateHiddenColumns(_shelfHiddenColumns, colName, checked, {
+        settings: typeof Settings !== 'undefined' ? Settings : null
+      });
+    } else {
+      if (checked) _shelfHiddenColumns.delete(colName);
+      else _shelfHiddenColumns.add(colName);
+      if (typeof Settings !== 'undefined' && Settings.set) {
+        Settings.set('shelfHiddenColumns', Array.from(_shelfHiddenColumns));
+      }
     }
     applyShelfColumnVisibility();
   }
 
   function populateShelfFilters() {
+    if (window.BFSimulatorShelf && window.BFSimulatorShelf.populateAdminFilter) {
+      const catalog = (typeof ShelfCatalog !== 'undefined' && Array.isArray(ShelfCatalog)) ? ShelfCatalog : [];
+      const result = window.BFSimulatorShelf.populateAdminFilter(
+        document,
+        catalog,
+        typeof ShelfEngine !== 'undefined' ? ShelfEngine : null
+      );
+      if (result.changed) applyConfiguredDefaults({ forceFilters: true });
+      return;
+    }
     const sel = document.getElementById('filtroAdministradora');
     if (!sel) return;
     const catalog = (typeof ShelfCatalog !== 'undefined' && Array.isArray(ShelfCatalog)) ? ShelfCatalog : [];
@@ -1970,6 +2006,9 @@ const App = (() => {
   }
 
   function getShelfFilters() {
+    if (window.BFSimulatorShelf && window.BFSimulatorShelf.readFilters) {
+      return window.BFSimulatorShelf.readFilters(document);
+    }
     return {
       administradora: document.getElementById('filtroAdministradora')?.value || '',
       segmento: document.getElementById('filtroProduto')?.value || '',
@@ -2020,10 +2059,16 @@ const App = (() => {
         progress.setStage('filters', 'active');
       }
       const filters = getShelfFilters();
-      let groups = ShelfEngine.filterGroups ? ShelfEngine.filterGroups(catalog, filters) : [...catalog];
       const sortBy = document.getElementById('shelfSort')?.value || 'maior_score';
       if (progress) progress.journey(82, 'Ordenando e paginando resultados.', 'loading');
-      groups = ShelfEngine.sortGroups ? ShelfEngine.sortGroups(groups, sortBy) : groups;
+      const groups = window.BFSimulatorShelf && window.BFSimulatorShelf.filterAndSortGroups
+        ? window.BFSimulatorShelf.filterAndSortGroups(catalog, filters, sortBy, {
+            shelfEngine: ShelfEngine,
+            autoScore: appSettings.autoScore
+          })
+        : ShelfEngine.sortGroups
+          ? ShelfEngine.sortGroups(ShelfEngine.filterGroups ? ShelfEngine.filterGroups(catalog, filters) : [...catalog], sortBy)
+          : (ShelfEngine.filterGroups ? ShelfEngine.filterGroups(catalog, filters) : [...catalog]);
       shelfGroups = Array.isArray(groups) ? groups : [];
       _shelfCurrentPage = 1;
       renderShelfPage();
@@ -2065,17 +2110,19 @@ const App = (() => {
   function renderShelfPage() {
     const pageSize = getPageSize();
     const groups = Array.isArray(shelfGroups) ? shelfGroups : [];
-    const pag = (typeof ShelfEngine !== 'undefined' && ShelfEngine.paginateGroups)
-      ? ShelfEngine.paginateGroups(groups, _shelfCurrentPage, pageSize)
-      : {
-          data: groups.slice((_shelfCurrentPage - 1) * pageSize, _shelfCurrentPage * pageSize),
-          totalGroups: groups.length,
-          totalPages: Math.max(1, Math.ceil(groups.length / pageSize)),
-          currentPage: _shelfCurrentPage,
-          pageSize,
-          startIdx: groups.length ? ((_shelfCurrentPage - 1) * pageSize) + 1 : 0,
-          endIdx: Math.min(_shelfCurrentPage * pageSize, groups.length)
-        };
+    const pag = window.BFSimulatorShelf && window.BFSimulatorShelf.paginateGroups
+      ? window.BFSimulatorShelf.paginateGroups(groups, _shelfCurrentPage, pageSize, typeof ShelfEngine !== 'undefined' ? ShelfEngine : null)
+      : (typeof ShelfEngine !== 'undefined' && ShelfEngine.paginateGroups)
+        ? ShelfEngine.paginateGroups(groups, _shelfCurrentPage, pageSize)
+        : {
+            data: groups.slice((_shelfCurrentPage - 1) * pageSize, _shelfCurrentPage * pageSize),
+            totalGroups: groups.length,
+            totalPages: Math.max(1, Math.ceil(groups.length / pageSize)),
+            currentPage: _shelfCurrentPage,
+            pageSize,
+            startIdx: groups.length ? ((_shelfCurrentPage - 1) * pageSize) + 1 : 0,
+            endIdx: Math.min(_shelfCurrentPage * pageSize, groups.length)
+          };
     _shelfCurrentPage = pag.currentPage;
     renderShelfTable(pag.data, pag);
     renderPaginationControls(pag);
@@ -2083,6 +2130,10 @@ const App = (() => {
   }
 
   function renderPaginationControls(pag) {
+    if (window.BFSimulatorShelf && window.BFSimulatorShelf.applyPaginationControls) {
+      window.BFSimulatorShelf.applyPaginationControls(document, pag);
+      return;
+    }
     const container = document.getElementById('shelf-pagination');
     const info = document.getElementById('shelf-page-info');
     const prevBtn = document.getElementById('shelf-prev-page');
@@ -2111,6 +2162,11 @@ const App = (() => {
   }
 
   function limparFiltros() {
+    if (window.BFSimulatorShelf && window.BFSimulatorShelf.clearFilters) {
+      window.BFSimulatorShelf.clearFilters(document);
+      buscarGrupos();
+      return;
+    }
     const ids = ['filtroAdministradora', 'filtroProduto', 'filtroPrazoMin', 'filtroPrazoMax',
                  'filtroCartaMin', 'filtroCartaMax', 'filtroTaxaMax', 'filtroClassificacao', 'filtroSaude', 'filtroMaturidade', 'filtroBusca'];
     ids.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
@@ -2142,6 +2198,16 @@ const App = (() => {
     const tbody = document.getElementById('shelf-table-body');
     const countEl = document.getElementById('shelf-count');
     if (!tbody) return;
+    if (window.BFSimulatorShelf && window.BFSimulatorShelf.renderTable) {
+      const rendered = window.BFSimulatorShelf.renderTable(groups, pag, {
+        projectItems: projetoEstruturado.itens,
+        formatMoney: Format.money,
+        formatNumber: Format.number
+      });
+      if (countEl) countEl.textContent = rendered.countText;
+      tbody.innerHTML = rendered.bodyHtml;
+      return;
+    }
     const total = pag ? pag.totalGroups : groups.length;
     if (countEl) countEl.textContent = `${total.toLocaleString('pt-BR')} grupo${total !== 1 ? 's' : ''} encontrado${total !== 1 ? 's' : ''}`;
 
@@ -2194,6 +2260,23 @@ const App = (() => {
 
     const titleEl = document.getElementById('shelf-detail-title');
     const contentEl = document.getElementById('shelf-detail-content');
+    if (window.BFSimulatorShelf && window.BFSimulatorShelf.renderDetail) {
+      if (titleEl) titleEl.textContent = window.BFSimulatorShelf.detailTitle(g);
+      if (contentEl) {
+        contentEl.innerHTML = window.BFSimulatorShelf.renderDetail(g, {
+          heuristicEngine: typeof HeuristicEngine !== 'undefined' ? HeuristicEngine : null,
+          getEffectiveLanceEmbutidoMax,
+          formatMoney: Format.money,
+          formatNumber: Format.number
+        });
+      }
+      if (window.BFSimulatorShelf.setDetailAddVisible) {
+        window.BFSimulatorShelf.setDetailAddVisible(document, true);
+      }
+      const modal = document.getElementById('shelf-detail-modal');
+      if (modal) modal.style.display = 'flex';
+      return;
+    }
     if (titleEl) titleEl.textContent = `${g.iconSegmento} ${g.nomeAdministradora || 'Admin'} — Grupo ${g.codigoGrupo}`;
 
     // V7: Gerar análise heurística
@@ -2967,8 +3050,12 @@ const App = (() => {
     }
 
     // Esconde o botão "Adicionar ao Projeto" no modal reaproveitado
-    const addBtn = modal?.querySelector('.shelf-detail-card > div:last-child button');
-    if (addBtn) addBtn.style.display = 'none';
+    if (window.BFSimulatorShelf && window.BFSimulatorShelf.setDetailAddVisible) {
+      window.BFSimulatorShelf.setDetailAddVisible(document, false);
+    } else {
+      const addBtn = modal?.querySelector('.shelf-detail-card > div:last-child button');
+      if (addBtn) addBtn.style.display = 'none';
+    }
 
     modal.style.display = 'flex';
   }

@@ -4,6 +4,31 @@
 
 ---
 
+## [v8.74.0] - 2026-05-11
+
+### Prateleira do simulador modularizada
+
+#### Adicionado
+- Criado `js/simulator-shelf.js` com `BFSimulatorShelf` para filtros, page size, colunas, ordenacao, paginacao, tabela e detalhe do grupo.
+- Criado `tools/validate-simulator-shelf.mjs` com relatorio em `docs/test-reports/simulator-shelf-report.json`.
+
+#### Modificado
+- `js/app.js` passou a delegar a prateleira para `BFSimulatorShelf`, mantendo `App.buscarGrupos`, `App.limparFiltros`, `App.verDetalheGrupo`, `App.shelfGoToPage`, `App.changeShelfPageSize` e `App.toggleShelfColumn` como contratos publicos.
+- `pages/simulador.html` passou a carregar `simulator-shelf.js` entre `shelf-engine.js` e `simulator-cart.js`.
+- Contratos publicos, mapa, plano, README, protocolo, validadores e CI foram atualizados para proteger o novo service.
+
+#### Validado
+- `node --check js/simulator-shelf.js`
+- `node --check js/app.js`
+- `node tools/validate-simulator-shelf.mjs`
+- `node tools/validate-simulator-cart.mjs`
+- `node tools/validate-simulator-refactor.mjs`
+- `node tools/validate-simulator-groups.mjs`
+- `node tools/validate-public-contracts.mjs`
+- Browser local: simulador abriu em `127.0.0.1`, exemplo carregou, prateleira renderizou 50 linhas e carrinho/projeto ficou presente no DOM.
+
+---
+
 ## [v8.73.0] - 2026-05-11
 
 ### Carrinho/projeto do simulador modularizado

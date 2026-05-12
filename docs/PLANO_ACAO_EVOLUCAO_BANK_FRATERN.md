@@ -79,6 +79,7 @@ Cada etapa deve responder quatro perguntas:
 | 13 | Lousa de proposta modularizada | Concluido parcial | Storage, presets, opcoes, dependencias, foco, prontidao e estimativa de paginas da proposta/PDF sairam do controlador principal. | `BFProposalBuilder`, `js/proposal-builder.js`, `tools/validate-proposal-builder.mjs`. |
 | 14 | Governanca visual da proposta modularizada | Concluido parcial | Renderizacao de versoes, comparacao, aceite, historicos, leitura do formulario e ponte de handoff sairam do controlador principal. | `BFProposalGovernance`, `js/proposal-governance.js`, `tools/validate-proposal-governance.mjs`. |
 | 15 | Carrinho/projeto do simulador modularizado | Concluido parcial | Criacao/remocao/edicao de itens, totais, render do carrinho e aplicacao de resultados sairam do controlador principal para service dedicado. | `BFSimulatorCart`, `js/simulator-cart.js`, `tools/validate-simulator-cart.mjs`. |
+| 16 | Prateleira do simulador modularizada | Concluido parcial | Filtros, page size, colunas, ordenacao, paginacao, tabela e detalhe do grupo sairam do controlador principal para service dedicado. | `BFSimulatorShelf`, `js/simulator-shelf.js`, `tools/validate-simulator-shelf.mjs`. |
 
 ## Proximos Passos Priorizados
 
@@ -88,8 +89,8 @@ Cada etapa deve responder quatro perguntas:
 | Concluido | Operacao consultiva conectada ao funil | Levar a etapa comercial e a cadencia para o Handoff Consultivo, para o consultor ver a mesma leitura do Admin. | `pages/handoff-consultivo.html`, `assets/js/handoff-consultivo.js`, `assets/js/services/handoff-consultivo.service.js`. | Consultor enxerga etapa, atraso de etapa e ultima movimentacao sem abrir o Admin. |
 | Concluido | Exportacao comercial do funil | Criada exportacao sanitizada do funil/cadencia para reuniao diaria, sem e-mail, telefone, CPF ou dados bloqueados. | `assets/js/admin-users.js`, `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md`, `tools/validate-admin-dashboard-source-funnel.mjs`. | JSON exportado possui schema, totais por etapa, leads anonimizados e zero dado sensivel. |
 | Concluido | Lousa de QA atualizada | Lousa navegavel inclui funil comercial, cadencia, dashboard cliente, handoff consultivo, exportacao do funil e publicacao online como checkpoints visuais. | `pages/lousa-navegacao.html`, `tools/validate-navigable-journey.mjs`. | A lousa permite validar a jornada inteira sem abrir docs. |
-| Concluido parcial | Reducao de divida tecnica do simulador | Separadas responsabilidades de contexto/jornada, salvar/carregar, carrinho/projeto, lousa de proposta/PDF e governanca visual da proposta em services dedicados, sem alterar contratos publicos. | `js/app.js`, `js/simulator-journey.js`, `js/simulator-state.js`, `js/simulator-cart.js`, `js/proposal-builder.js`, `js/proposal-governance.js`, `tools/validate-simulator-refactor.mjs`, `tools/validate-simulator-cart.mjs`, `tools/validate-proposal-builder.mjs`, `tools/validate-proposal-governance.mjs`. | Validadores atuais continuam verdes e o fluxo do simulador nao muda para o usuario. |
-| P3 | Proxima extracao do simulador | Separar filtros, paginacao e detalhe da prateleira em modulo menor, mantendo `App.*` como fachada publica. | `js/app.js`, `js/shelf-engine.js`, novo service de prateleira. | Reduzir `app.js` sem quebrar busca, filtros, detalhes, proposta, PDF e simulacoes salvas. |
+| Concluido parcial | Reducao de divida tecnica do simulador | Separadas responsabilidades de contexto/jornada, salvar/carregar, prateleira, carrinho/projeto, lousa de proposta/PDF e governanca visual da proposta em services dedicados, sem alterar contratos publicos. | `js/app.js`, `js/simulator-journey.js`, `js/simulator-state.js`, `js/simulator-shelf.js`, `js/simulator-cart.js`, `js/proposal-builder.js`, `js/proposal-governance.js`, `tools/validate-simulator-refactor.mjs`, `tools/validate-simulator-shelf.mjs`, `tools/validate-simulator-cart.mjs`, `tools/validate-proposal-builder.mjs`, `tools/validate-proposal-governance.mjs`. | Validadores atuais continuam verdes e o fluxo do simulador nao muda para o usuario. |
+| P3 | Proxima extracao do simulador | Separar calculo/orquestracao de resultado em modulo menor, mantendo `App.*` como fachada publica. | `js/app.js`, `js/engine.js`, novo service de resultado do simulador. | Reduzir `app.js` sem quebrar resultados, proposta, PDF e simulacoes salvas. |
 | P3 | Preparacao backend/API futura | Documentar fronteiras de migracao para usuarios, leads, simulacoes, propostas e handoffs, mantendo `localStorage` como fallback. | `docs/PLANO_IMPLEMENTACAO_EVOLUTIVO_BANK_FRATERN.md`, `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md`. | Plano tecnico define contratos de migracao sem iniciar backend produtivo. |
 
 ## Fase 1 - Saneamento da Jornada Navegavel
@@ -404,7 +405,7 @@ Criterios de aceite:
 - Contratos publicos ficam documentados antes de mudancas funcionais.
 - Roteiro navegavel da lousa cobre Auth, Home, Produtos, Calculadoras, Trilha, Comparador, Simulador, Proposta, Handoff e Dashboards.
 - QA comercial da lousa cobre cliente, consultor, funil, cadencia, exportacao sanitizada e publicacao online.
-- Simulador passou a expor `BFSimulatorJourney`, `BFSimulatorState`, `BFSimulatorCart`, `BFProposalBuilder` e `BFProposalGovernance`, reduzindo responsabilidades do `js/app.js` em contexto, prefill, proximas acoes, snapshots, payload salvo, carrinho/projeto, lousa da proposta/PDF, versionamento visual, aceite e ponte de handoff.
+- Simulador passou a expor `BFSimulatorJourney`, `BFSimulatorState`, `BFSimulatorShelf`, `BFSimulatorCart`, `BFProposalBuilder` e `BFProposalGovernance`, reduzindo responsabilidades do `js/app.js` em contexto, prefill, proximas acoes, snapshots, payload salvo, prateleira, carrinho/projeto, lousa da proposta/PDF, versionamento visual, aceite e ponte de handoff.
 
 Testes recomendados:
 
@@ -412,6 +413,7 @@ Testes recomendados:
 - `node tools/validate-public-contracts.mjs`
 - `node tools/validate-navigable-journey.mjs`
 - `node tools/validate-simulator-refactor.mjs`
+- `node tools/validate-simulator-shelf.mjs`
 - `node tools/validate-simulator-cart.mjs`
 - `node tools/validate-docs-modernization.mjs`
 - `node tools/validate-calculadoras.mjs`
@@ -437,9 +439,9 @@ Testes recomendados:
 | Concluido parcial | Evoluir dashboards por funil, origem e aging. | Dashboard Cliente ja tem timeline por etapa, contexto e aging; Admin consolida proximas acoes, fila guiada, produtividade, carteira, funil comercial movel, cadencia e exportacao sanitizada. |
 | Concluido | Exportar funil/cadencia de forma sanitizada. | Resolvido em 2026-05-11 com `bank-fratern.admin-commercial-pipeline.v1`, leads anonimizados e teste browser contra e-mail, CPF e telefone. |
 | Concluido | Atualizar lousa de QA comercial. | Resolvido em 2026-05-11 com `data-lousa-commercial-qa`, seis checkpoints visuais e validador atualizado. |
-| Concluido parcial | Modularizar o simulador. | Cortes entregues em 2026-05-11 com `BFSimulatorJourney`, `BFSimulatorState`, `BFSimulatorCart`, `BFProposalBuilder`, `BFProposalGovernance`, acoes de jornada, carrinho/projeto e validadores dedicados. |
+| Concluido parcial | Modularizar o simulador. | Cortes entregues em 2026-05-11 com `BFSimulatorJourney`, `BFSimulatorState`, `BFSimulatorShelf`, `BFSimulatorCart`, `BFProposalBuilder`, `BFProposalGovernance`, acoes de jornada, prateleira, carrinho/projeto e validadores dedicados. |
 | Concluido | Criar validador de aliases/rotas. | `tools/validate-route-aliases.mjs`. |
-| P3 | Continuar reduzindo responsabilidades de `js/app.js` e `assets/js/bf-platform.js`. | Proximo corte recomendado: filtros/paginacao/detalhe da prateleira. |
+| P3 | Continuar reduzindo responsabilidades de `js/app.js` e `assets/js/bf-platform.js`. | Proximo corte recomendado: calculo/orquestracao de resultado do simulador. |
 
 ## Contratos que Devem Ser Preservados
 

@@ -33,6 +33,7 @@ jobs:
           node --check js/proposal-governance.js
           node --check js/simulator-journey.js
           node --check js/simulator-state.js
+          node --check js/simulator-shelf.js
           node --check js/simulator-cart.js
           node --check js/app.js
 
@@ -45,6 +46,7 @@ jobs:
           node tools/validate-simulator-groups.mjs
           node tools/validate-simulator-performance.mjs
           node tools/validate-simulator-refactor.mjs
+          node tools/validate-simulator-shelf.mjs
           node tools/validate-simulator-cart.mjs
           node tools/validate-proposal-builder.mjs
           node tools/validate-proposal-governance.mjs

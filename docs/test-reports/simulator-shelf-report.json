@@ -1,0 +1,31 @@
+{
+  "ok": true,
+  "scriptOrder": {
+    "shelfEngineBeforeShelf": true,
+    "shelfBeforeCart": true,
+    "shelfBeforeApp": true
+  },
+  "filters": {
+    "administradora": "Admin QA",
+    "segmento": "1",
+    "prazoMin": "36",
+    "prazoMax": "180",
+    "cartaMin": "50000",
+    "cartaMax": "300000",
+    "taxaMax": "20",
+    "classificacao": "A",
+    "saude": "Controlada",
+    "maturidade": "Madura",
+    "fgts": true,
+    "parcelaReduzida": false,
+    "busca": "1001"
+  },
+  "pagination": {
+    "currentPage": 2,
+    "startIdx": 3,
+    "endIdx": 4
+  },
+  "tableLength": 1363,
+  "detailLength": 2378,
+  "failures": []
+}
