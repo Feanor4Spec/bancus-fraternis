@@ -2933,6 +2933,15 @@
 
   function actionLabel(action) {
     const labels = {
+      'auth-login': 'Login API',
+      'auth-logout': 'Logout API',
+      'auth-login-failed': 'Login recusado',
+      'user-created': 'Usuario criado',
+      'user-updated': 'Usuario atualizado',
+      'user-deleted': 'Usuario removido',
+      'user-password-reset': 'Senha redefinida',
+      'user-status-changed': 'Status alterado',
+      'validator-event': 'Evento validador',
       create: 'Criado',
       update: 'Atualizado',
       delete: 'Excluido',
@@ -2944,6 +2953,162 @@
       'governance:archived': 'Arquivado'
     };
     return labels[action] || action || 'Evento';
+  }
+
+  function backendApi() {
+    return window.BFBackendApi && typeof window.BFBackendApi === 'object' ? window.BFBackendApi : null;
+  }
+
+  function eventSourceLabel(source) {
+    const labels = {
+      'server-api': 'API local',
+      validator: 'Validador',
+      'journey-analytics': 'Jornada',
+      'decision-context': 'Contexto',
+      'handoff-consultivo': 'Handoff',
+      'operational-action-audit': 'Plano de acao',
+      'admin-commercial-stage': 'Funil comercial',
+      'comparator-model-audit': 'Modelos',
+      browser: 'Browser'
+    };
+    return labels[source] || String(source || 'Evento');
+  }
+
+  function eventPayloadSummary(event) {
+    const payload = event && event.payload && typeof event.payload === 'object' ? event.payload : {};
+    const keys = Object.keys(payload).filter(Boolean);
+    if (!keys.length) return 'Payload sanitizado sem campos adicionais.';
+    return `Campos: ${keys.slice(0, 6).join(', ')}${keys.length > 6 ? '...' : ''}.`;
+  }
+
+  function renderBackendEventsUnavailable(target, message, detail) {
+    target.innerHTML = `
+      <div class="bf-admin-panel-heading">
+        <div>
+          <span class="bf-badge bf-badge--navy">Banco local</span>
+          <h2>Eventos server-side</h2>
+        </div>
+        <a class="btn btn--ghost btn--sm" href="api-docs.html#api-endpoints">Ver API</a>
+      </div>
+      <div class="bf-platform-metrics">
+        <article class="bf-platform-metric is-strong"><small>Status</small><strong>Fallback</strong></article>
+        <article class="bf-platform-metric"><small>Eventos</small><strong>0</strong></article>
+        <article class="bf-platform-metric"><small>Fonte</small><strong>localStorage</strong></article>
+      </div>
+      <div class="bf-empty-state">
+        <strong>${escapeHtml(message)}</strong>
+        <p>${escapeHtml(detail)}</p>
+      </div>
+    `;
+    document.body.dataset.adminBackendEventsReady = 'fallback';
+    document.body.dataset.adminBackendEventCount = '0';
+  }
+
+  function renderBackendEventsLoading(target) {
+    target.innerHTML = `
+      <div class="bf-admin-panel-heading">
+        <div>
+          <span class="bf-badge bf-badge--navy">Banco local</span>
+          <h2>Eventos server-side</h2>
+        </div>
+        <button class="btn btn--ghost btn--sm" type="button" data-admin-backend-event-refresh>Atualizar</button>
+      </div>
+      <div class="bf-empty-state">Carregando eventos do SQLite local...</div>
+    `;
+    document.body.dataset.adminBackendEventsReady = 'loading';
+  }
+
+  function renderBackendEventsResult(target, health, events) {
+    const list = Array.isArray(events) ? events : [];
+    const stats = health && health.stats ? health.stats : {};
+    const sources = list.reduce((set, event) => {
+      if (event && event.source) set.add(event.source);
+      return set;
+    }, new Set());
+    const rows = list.slice(0, 8).map((event) => `
+      <article class="bf-history-item" data-admin-backend-event="${escapeHtml(event.id || '')}">
+        <span>${escapeHtml(eventSourceLabel(event.source))}</span>
+        <strong>${escapeHtml(actionLabel(event.type))}</strong>
+        <small>${escapeHtml(formatDate(event.createdAt))} - ${escapeHtml(event.actorEmail || event.ownerEmail || 'anon')}</small>
+        <small>${escapeHtml(event.entityType || 'evento')}${event.entityId ? ` - ${escapeHtml(event.entityId)}` : ''}</small>
+        <small>${escapeHtml(eventPayloadSummary(event))}</small>
+      </article>
+    `).join('');
+
+    target.innerHTML = `
+      <div class="bf-admin-panel-heading">
+        <div>
+          <span class="bf-badge bf-badge--navy">Banco local</span>
+          <h2>Eventos server-side</h2>
+        </div>
+        <button class="btn btn--ghost btn--sm" type="button" data-admin-backend-event-refresh>Atualizar</button>
+      </div>
+      <div class="bf-platform-metrics">
+        <article class="bf-platform-metric is-strong"><small>Eventos no banco</small><strong>${Number(stats.events || list.length || 0)}</strong></article>
+        <article class="bf-platform-metric"><small>Usuarios SQLite</small><strong>${Number(stats.users || 0)}</strong></article>
+        <article class="bf-platform-metric"><small>Sessoes ativas</small><strong>${Number(stats.activeSessions || 0)}</strong></article>
+        <article class="bf-platform-metric"><small>Fontes recentes</small><strong>${sources.size}</strong></article>
+      </div>
+      <div class="bf-calculator-history">${rows || '<div class="bf-empty-state">Nenhum evento server-side registrado ainda.</div>'}</div>
+    `;
+    document.body.dataset.adminBackendEventsReady = 'true';
+    document.body.dataset.adminBackendEventCount = String(list.length);
+  }
+
+  function renderBackendEventsError(target, result) {
+    const status = result && result.status ? `HTTP ${result.status}` : 'Sem conexao';
+    const message = result && result.message ? result.message : 'Nao foi possivel ler os eventos da API local.';
+    target.innerHTML = `
+      <div class="bf-admin-panel-heading">
+        <div>
+          <span class="bf-badge bf-badge--warning">Banco local</span>
+          <h2>Eventos server-side</h2>
+        </div>
+        <button class="btn btn--ghost btn--sm" type="button" data-admin-backend-event-refresh>Atualizar</button>
+      </div>
+      <div class="bf-platform-metrics">
+        <article class="bf-platform-metric is-warn"><small>Status</small><strong>${escapeHtml(status)}</strong></article>
+        <article class="bf-platform-metric"><small>Eventos</small><strong>0</strong></article>
+        <article class="bf-platform-metric"><small>Acao</small><strong>Login API</strong></article>
+      </div>
+      <div class="bf-empty-state">
+        <strong>${escapeHtml(message)}</strong>
+        <p>Entre novamente pelo login em localhost para criar a sessao bf_backend_session_v1 e liberar /api/events.</p>
+      </div>
+    `;
+    document.body.dataset.adminBackendEventsReady = 'error';
+    document.body.dataset.adminBackendEventCount = '0';
+  }
+
+  async function renderBackendEvents() {
+    const target = qs('[data-admin-backend-events]');
+    if (!target) return;
+    const api = backendApi();
+    if (!api || typeof api.available !== 'function' || !api.available()) {
+      renderBackendEventsUnavailable(
+        target,
+        'API local indisponivel neste modo.',
+        'Em GitHub Pages ou file://, o painel preserva a experiencia estatica e usa apenas localStorage.'
+      );
+      return;
+    }
+    if (typeof api.listEvents !== 'function' || typeof api.health !== 'function') {
+      renderBackendEventsUnavailable(target, 'Cliente da API local incompleto.', 'Atualize BFBackendApi antes de ler eventos server-side.');
+      return;
+    }
+
+    renderBackendEventsLoading(target);
+    const [health, eventResult] = await Promise.all([
+      api.health(),
+      api.listEvents(30)
+    ]);
+
+    if (!eventResult || !eventResult.ok) {
+      renderBackendEventsError(target, eventResult || health);
+      return;
+    }
+
+    renderBackendEventsResult(target, health && health.ok ? health : null, eventResult.events || []);
   }
 
   function renderComparatorAudit() {
@@ -3056,6 +3221,7 @@
     renderAdminRecoveryPackages();
     renderHandoffSummary();
     renderComparatorAudit();
+    renderBackendEvents();
     renderTable();
   }
 
@@ -3151,6 +3317,13 @@
         setMessage(result.message, result.ok ? 'success' : 'error');
         renderAll();
       }
+    });
+
+    qs('[data-admin-backend-events]')?.addEventListener('click', (event) => {
+      const refreshButton = event.target.closest('[data-admin-backend-event-refresh]');
+      if (!refreshButton) return;
+      setMessage('Atualizando eventos do banco local.', 'success');
+      renderBackendEvents();
     });
 
     qs('[data-admin-journey-funnel]')?.addEventListener('click', (event) => {

@@ -4,6 +4,28 @@
 
 ---
 
+## [v8.80.0] - 2026-05-12
+
+### Eventos server-side no Dashboard Admin
+
+#### Adicionado
+- Dashboard Admin ganhou painel `data-admin-backend-events` para ler os eventos persistidos no SQLite local.
+- `BFBackendApi` passou a expor `listEvents(limit)` para consumir `GET /api/events`.
+- Painel mostra metricas do banco local, sessoes ativas, usuarios SQLite, fontes recentes e ultimos eventos.
+
+#### Modificado
+- Contratos publicos, mapa, plano e validador de banco local foram atualizados para proteger o painel de eventos.
+- O painel preserva fallback em GitHub Pages e `file://`, sem exigir backend para navegar.
+
+#### Validado
+- `node --check assets/js/admin-users.js`
+- `node --check assets/js/services/backend-api.service.js`
+- `node tools/validate-local-database.mjs`
+- `node tools/validate-public-contracts.mjs`
+- `node tools/validate-design-system.mjs`
+
+---
+
 ## [v8.79.0] - 2026-05-12
 
 ### Banco local de usuarios e eventos

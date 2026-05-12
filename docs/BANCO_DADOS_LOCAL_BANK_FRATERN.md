@@ -14,6 +14,7 @@ Esta entrega cria a primeira camada server-side do Bancus Fraternis sem quebrar 
 | `server.js` | Servidor estatico + endpoints `/api/*`. |
 | `assets/js/services/backend-api.service.js` | Ponte do navegador para a API local com fallback silencioso. |
 | `js/auth.js` | Continua sendo a fachada publica de auth e espelha login/usuarios no banco quando a API existe. |
+| `assets/js/admin-users.js` | Dashboard Admin le `/api/events` e mostra eventos server-side quando ha sessao de API. |
 | `tools/validate-local-database.mjs` | Validador de schema, seeds, login, sessao e eventos sanitizados. |
 
 ## Banco
@@ -73,6 +74,7 @@ As senhas seed continuam documentadas em `docs/AUTH_ADMIN_LOCAL.md` para demonst
 - `BFBackendApi` e progressivo: falhas de rede nao bloqueiam login, jornada ou dashboard.
 - Usuarios criados no Admin sao salvos primeiro no `localStorage` e espelhados no SQLite quando houver sessao de API admin.
 - Eventos de jornada, contexto financeiro, modelos, handoff, acoes operacionais e funil comercial tentam gravar em `/api/events`.
+- Dashboard Admin exibe `data-admin-backend-events` com metricas do SQLite e ultimos eventos quando houver sessao admin da API.
 - Produção futura deve trocar o SQLite local por backend hospedado, controle de permissao server-side completo, LGPD e politicas de backup.
 
 ## Validacao

@@ -43,6 +43,13 @@
     }, 220);
   }
 
+  function waitForBackendSession(result) {
+    if (!result || !result.backendLogin || typeof result.backendLogin.finally !== 'function') {
+      return Promise.resolve(null);
+    }
+    return result.backendLogin;
+  }
+
   function performLogin(email, password) {
     if (!window.BFAuth || !window.BFAuth.login) {
       setProgress(10, 'Autenticacao indisponivel');
@@ -61,11 +68,14 @@
       return result;
     }
 
-    setProgress(100, 'Sessao criada');
-    setStatus('Login realizado. Redirecionando para a area segura.', 'success');
-    document.body.dataset.loginRedirectReady = 'true';
     document.body.dataset.loginRedirectTarget = redirectTarget(result.user);
-    goToTarget(result.user);
+    setProgress(82, 'Sincronizando API local');
+    waitForBackendSession(result).finally(() => {
+      setProgress(100, 'Sessao criada');
+      setStatus('Login realizado. Redirecionando para a area segura.', 'success');
+      document.body.dataset.loginRedirectReady = 'true';
+      goToTarget(result.user);
+    });
     return result;
   }
 

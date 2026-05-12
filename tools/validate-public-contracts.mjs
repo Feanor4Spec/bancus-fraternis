@@ -40,6 +40,7 @@ const [
   lousa,
   adminDashboard,
   adminUsers,
+  backendApi,
   simulator,
   app,
   simulatorShelf,
@@ -58,6 +59,7 @@ const [
   read('pages/lousa-navegacao.html'),
   read('pages/dashboard-admin.html'),
   read('assets/js/admin-users.js'),
+  read('assets/js/services/backend-api.service.js'),
   read('pages/simulador.html'),
   read('js/app.js'),
   read('js/simulator-shelf.js'),
@@ -135,6 +137,9 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-admin-commercial-pipeline-export',
   'data-admin-source-funnel',
   'data-admin-bottleneck-board',
+  'data-admin-backend-events',
+  'data-admin-backend-event',
+  'data-admin-backend-event-refresh',
   'data-handoff-consultant-cockpit',
   'data-handoff-action-plan',
   'data-handoff-action-execution',
@@ -231,10 +236,14 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-admin-action-execution',
   'data-admin-consultant-productivity',
   'data-admin-source-funnel',
-  'data-admin-bottleneck-board'
+  'data-admin-bottleneck-board',
+  'data-admin-backend-events',
+  'data-admin-backend-event-refresh'
 ].forEach((marker) => assert(adminUsers.includes(marker), `admin-users.js sem marcador publico ${marker}.`));
 
 assert(adminDashboard.includes('href="#admin-proximos-passos"'), 'dashboard-admin.html sem atalho para proximos passos.');
+assert(adminDashboard.includes('data-admin-backend-events'), 'dashboard-admin.html sem painel de eventos do banco local.');
+assert(backendApi.includes('listEvents'), 'BFBackendApi sem leitura de eventos server-side.');
 assert(simulator.includes('data-proposal-builder-board'), 'simulador.html sem lousa de proposta documentada.');
 assert(simulator.includes('data-proposal-version-panel'), 'simulador.html sem painel de versionamento da proposta.');
 assert(simulator.includes('js/proposal-builder.js'), 'simulador.html sem modulo proposal-builder.');
@@ -322,7 +331,7 @@ const report = {
   ok: failures.length === 0,
   contracts: {
     localStorageKeys: 18,
-    dataMarkers: 56,
+    dataMarkers: 59,
     globals: 19,
     deepLinks: 10,
     validators: 20,

@@ -337,7 +337,7 @@ Melhoria implementada em 2026-05-07:
 | `assets/js/calculadoras-page.js` | Hub e paginas individuais de calculadoras. |
 | `assets/js/calculadoras-governanca.js` | Premissas, catalogo e golden tests. |
 | `assets/js/client-dashboard.js` | Dashboard cliente e continuidade. |
-| `assets/js/admin-users.js` | Admin, usuarios, funil, recuperacao, pacotes, SLA, metas e auditoria. |
+| `assets/js/admin-users.js` | Admin, usuarios, funil, recuperacao, pacotes, SLA, metas, eventos SQLite e auditoria. |
 | `assets/js/handoff-consultivo.js` | UI do painel de handoff. |
 | `assets/js/trilha-decisao.js` | UI da trilha assistida. |
 | `assets/js/modelos-biblioteca.js` | Biblioteca de modelos. |
@@ -566,7 +566,7 @@ Governanca documental: docs ativos passaram a usar Bancus Fraternis como platafo
 O vetor recomendado para o proximo ciclo continua sendo produto e jornada, agora com foco em reduzir risco tecnico sem quebrar contratos publicos:
 
 1. Continuar a modularizacao do simulador, extraindo calculo/orquestracao de resultado e integracoes de proposta sem quebrar `App.*`.
-2. Evoluir o painel admin de eventos server-side, consumindo `/api/events` quando houver sessao de API local.
+2. Criar migracao guiada `localStorage` -> SQLite para consolidar dados de usuarios/eventos com previsualizacao e relatorio.
 3. Preparar migracao futura do SQLite local para backend/API produtivo sem quebrar `localStorage`, deep links e services globais.
 4. Manter a lousa como porta de QA visual a cada nova entrega funcional.
 

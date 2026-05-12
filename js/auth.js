@@ -104,8 +104,10 @@
 
   function syncBackendLogin(email, password) {
     const api = backendApi();
-    if (!api || typeof api.authLogin !== 'function') return;
-    mirrorBackend(api.authLogin(email, password));
+    if (!api || typeof api.authLogin !== 'function') return Promise.resolve({ ok: false, fallback: true });
+    const promise = api.authLogin(email, password);
+    mirrorBackend(promise);
+    return promise;
   }
 
   function syncBackendLogout() {
@@ -322,8 +324,8 @@
     }
 
     writeSession(users[index] || user);
-    syncBackendLogin(email, password);
-    return { ok: true, user: publicUser(users[index] || user) };
+    const backendLogin = syncBackendLogin(email, password);
+    return { ok: true, user: publicUser(users[index] || user), backendLogin };
   }
 
   function logout() {

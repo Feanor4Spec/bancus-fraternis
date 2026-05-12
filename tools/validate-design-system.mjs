@@ -312,6 +312,9 @@ if (!adminUsersJs.includes('data-admin-package-route')) fail('admin-users.js sem
 if (!adminUsersJs.includes('data-admin-package-goal-input')) fail('admin-users.js sem metas de conversao por consultor.');
 if (!adminUsersJs.includes('data-admin-source-funnel')) fail('admin-users.js sem funil administrativo por origem.');
 if (!adminUsersJs.includes('data-admin-bottleneck-board')) fail('admin-users.js sem quadro administrativo de gargalos.');
+if (!adminUsersJs.includes('data-admin-backend-events')) fail('admin-users.js sem painel de eventos do banco local.');
+if (!adminUsersJs.includes('data-admin-backend-event-refresh')) fail('admin-users.js sem acao de atualizar eventos do banco local.');
+if (!adminUsersJs.includes('listEvents(30)')) fail('admin-users.js sem leitura de eventos da API local.');
 if (!adminUsersJs.includes('Proposta revisada sem handoff')) fail('admin-users.js sem gargalo de proposta revisada sem handoff.');
 if (!adminUsersJs.includes('Trilha sem comparador')) fail('admin-users.js sem gargalo de trilha sem comparador.');
 if (!adminUsersJs.includes('Handoff sem responsavel')) fail('admin-users.js sem gargalo de handoff sem responsavel.');

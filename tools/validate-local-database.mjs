@@ -109,9 +109,21 @@ try {
     'bf_backend_session_v1',
     'authLogin',
     'recordEvent',
+    'listEvents',
     'createUser',
     'toggleStatus'
   ].forEach((marker) => assert(backendApi.includes(marker), `backend-api.service.js sem contrato ${marker}.`));
+
+  const adminDashboard = await read('pages/dashboard-admin.html');
+  const adminUsers = await read('assets/js/admin-users.js');
+  [
+    'data-admin-backend-events',
+    'data-admin-backend-event',
+    'data-admin-backend-event-refresh',
+    'listEvents(30)'
+  ].forEach((marker) => {
+    assert(adminDashboard.includes(marker) || adminUsers.includes(marker), `Painel admin de eventos sem contrato ${marker}.`);
+  });
 
   const report = {
     ok: failures.length === 0,

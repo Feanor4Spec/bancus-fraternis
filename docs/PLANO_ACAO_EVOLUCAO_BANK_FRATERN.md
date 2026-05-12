@@ -62,7 +62,7 @@ Cada etapa deve responder quatro perguntas:
 | Publicacao segura em GitHub Pages | Concluido parcial | Selo demo/local, fallback `404.html`, CI em `.github/workflows/validate.yml` e `tools/validate-public-release-safety.mjs`. |
 | QA online da jornada publicada | Concluido | `tools/validate-online-journey-smoke.mjs` valida no GitHub Pages as 10 etapas da lousa, anchors, marcadores e fallback estatico; `docs/test-reports/online-journey-browser-report.json` registra a checagem renderizada. |
 | Performance do simulador online | Concluido parcial | Simulador passou a carregar `Tab_Grupos_Consorcio.compact.json` primeiro, preservando fallback para o JSON canonico e todos os 17.396 grupos validos. |
-| Banco local de usuarios e eventos | Concluido parcial | SQLite local em `.runtime/`, endpoints `/api/auth/*`, `/api/users`, `/api/events`, `BFBackendApi`, hash `scrypt-sha256`, sessoes server-side e fallback estatico preservado. |
+| Banco local de usuarios e eventos | Concluido parcial | SQLite local em `.runtime/`, endpoints `/api/auth/*`, `/api/users`, `/api/events`, `BFBackendApi`, painel Admin de eventos server-side, hash `scrypt-sha256`, sessoes server-side e fallback estatico preservado. |
 | Governanca permanente | Em andamento | Changelog, mapa, plano, validadores, contratos publicos e lousa navegavel atualizados por entrega. |
 
 ## Mapa de Implementacao Atualizado
@@ -90,6 +90,7 @@ Cada etapa deve responder quatro perguntas:
 | 19 | Coerencia de cenario nas calculadoras | Concluido parcial | Custos acima da renda, reserva insuficiente, folga baixa, lance acima do limite e compra que fragiliza caixa agora geram alerta nao bloqueante. | `data-calculator-coherence-alert`, `data-calculator-coherence`, `tools/validate-calculator-journey.mjs`. |
 | 20 | Proxima acao dinamica nas calculadoras | Concluido parcial | Ponte de decisao destaca o CTA principal conforme risco e slug da calculadora, preservando trilha, comparador, simulador e dashboard como alternativas. | `data-calculator-next-action`, `data-calculator-next-action-card`, `buildCalculatorNextAction`. |
 | 21 | Banco local de usuarios e eventos | Concluido parcial | API local Node/SQLite guarda usuarios, sessoes e eventos sanitizados, enquanto GitHub Pages e `file://` seguem com `localStorage`. | `js/backend/db.js`, `assets/js/services/backend-api.service.js`, `tools/validate-local-database.mjs`. |
+| 22 | Eventos server-side no Admin | Concluido parcial | Dashboard Admin le `/api/events`, mostra metricas do SQLite, ultimos eventos e estado de fallback quando a API local nao esta disponivel. | `data-admin-backend-events`, `data-admin-backend-event-refresh`, `BFBackendApi.listEvents`. |
 
 ## Proximos Passos Priorizados
 
@@ -105,7 +106,7 @@ Cada etapa deve responder quatro perguntas:
 | Concluido parcial | Erros cross-field das calculadoras | Adicionados alertas de coerencia entre campos, como custos muito acima da renda, reserva insuficiente para lance ou parcela acima da renda. | `assets/js/calculadoras-page.js`, `assets/css/platform.css`, `tools/validate-calculator-journey.mjs`. | Usuario recebe alerta de risco sem impedir cenarios reais de diagnostico. |
 | Concluido parcial | Prioridade visual da proxima acao | CTAs pos-calculo agora destacam o caminho certo conforme o alerta: reduzir custos, montar reserva, calcular capacidade, ir ao simulador ou comparar alternativas. | `assets/js/calculadoras-page.js`, `tools/validate-calculator-journey.mjs`. | O proximo passo muda conforme risco e origem do calculo. |
 | P0 | Mensagem de continuidade por perfil | Usar dados do perfil consolidado para ajustar texto do CTA e timeline: cliente sem renda, sem reserva, com capacidade pronta ou com lance sugerido. | `assets/js/calculadoras-page.js`, `assets/js/services/decision-context.service.js`. | Ponte de calculadora conversa com o estado real do perfil, nao apenas com o slug atual. |
-| P1 | Painel admin de eventos do banco local | Expor leitura de `/api/events` no Dashboard Admin quando houver sessao de API, mantendo vazio/fallback no estatico. | `pages/dashboard-admin.html`, `assets/js/admin-users.js`, `assets/js/services/backend-api.service.js`. | Admin ve ultimos eventos server-side sem expor senha, token, CPF ou telefone. |
+| Concluido parcial | Painel admin de eventos do banco local | Exposta leitura de `/api/events` no Dashboard Admin quando houver sessao de API, mantendo fallback no estatico. | `pages/dashboard-admin.html`, `assets/js/admin-users.js`, `assets/js/services/backend-api.service.js`. | Admin ve ultimos eventos server-side sem expor senha, token, CPF ou telefone. |
 | P2 | Migracao guiada localStorage -> SQLite | Criar acao controlada para importar usuarios/eventos locais para o banco local, com previsualizacao e relatorio. | `js/auth.js`, `assets/js/admin-users.js`, `js/backend/db.js`, novo validador. | Admin consegue consolidar dados locais no SQLite sem duplicar registros. |
 | P3 | Proxima extracao do simulador | Separar calculo/orquestracao de resultado em modulo menor, mantendo `App.*` como fachada publica. | `js/app.js`, `js/engine.js`, novo service de resultado do simulador. | Reduzir `app.js` sem quebrar resultados, proposta, PDF e simulacoes salvas. |
 | P3 | Backend/API produtivo futuro | Documentar fronteiras de migracao para usuarios, leads, simulacoes, propostas e handoffs, mantendo `localStorage` como fallback publico. | `docs/PLANO_IMPLEMENTACAO_EVOLUTIVO_BANK_FRATERN.md`, `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md`, `docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md`. | Plano tecnico define contratos de migracao do SQLite local para backend hospedado. |
@@ -458,6 +459,7 @@ Testes recomendados:
 | Concluido | Atualizar lousa de QA comercial. | Resolvido em 2026-05-11 com `data-lousa-commercial-qa`, seis checkpoints visuais e validador atualizado. |
 | Concluido parcial | Modularizar o simulador. | Cortes entregues em 2026-05-11 com `BFSimulatorJourney`, `BFSimulatorState`, `BFSimulatorShelf`, `BFSimulatorCart`, `BFProposalBuilder`, `BFProposalGovernance`, acoes de jornada, prateleira, carrinho/projeto e validadores dedicados. |
 | Concluido parcial | Criar banco local para usuarios, senhas e eventos. | Resolvido em 2026-05-12 com SQLite local, API `/api/*`, `BFBackendApi`, hash `scrypt-sha256` e validador dedicado. |
+| Concluido parcial | Expor eventos do banco local no Admin. | Resolvido em 2026-05-12 com painel `data-admin-backend-events`, refresh, metricas do SQLite e leitura de `/api/events`. |
 | Concluido | Criar validador de aliases/rotas. | `tools/validate-route-aliases.mjs`. |
 | P3 | Continuar reduzindo responsabilidades de `js/app.js` e `assets/js/bf-platform.js`. | Proximo corte recomendado: calculo/orquestracao de resultado do simulador. |
 

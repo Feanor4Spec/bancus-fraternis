@@ -153,6 +153,11 @@
     });
   }
 
+  function listEvents(limit = 30) {
+    const safeLimit = Math.max(1, Math.min(100, Number(limit || 30)));
+    return request(`/api/events?limit=${encodeURIComponent(safeLimit)}`);
+  }
+
   window.BFBackendApi = {
     SESSION_KEY,
     available: canUseApi,
@@ -169,6 +174,7 @@
     deleteUser,
     resetPassword,
     toggleStatus,
-    recordEvent
+    recordEvent,
+    listEvents
   };
 })();

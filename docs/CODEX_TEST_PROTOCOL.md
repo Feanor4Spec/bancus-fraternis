@@ -1348,6 +1348,8 @@ Validacoes obrigatorias:
 - `GET /api/users` deve exigir sessao admin.
 - Criacao de usuario deve salvar senha com hash server-side e permitir login posterior.
 - `POST /api/events` deve remover senha, token, CPF, telefone, WhatsApp, hash e salt do payload.
+- `pages/dashboard-admin.html` deve renderizar `data-admin-backend-events` com metricas e ultimos eventos quando houver sessao admin da API.
+- Em modo estatico, `data-admin-backend-events` deve exibir fallback sem bloquear o restante do Dashboard Admin.
 - GitHub Pages e `file://` devem continuar funcionando via fallback `localStorage`.
 
 ## Persistencia e retomada
