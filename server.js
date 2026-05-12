@@ -297,6 +297,8 @@ async function handleApiRequest(req, res) {
         payload: {
           usersImported: result.users.imported,
           eventsImported: result.events.imported,
+          snapshotsCreated: result.snapshots ? result.snapshots.created : 0,
+          snapshotsUpdated: result.snapshots ? result.snapshots.updated : 0,
           usersSkippedExisting: result.users.skippedExisting,
           eventsSkippedExisting: result.events.skippedExisting,
           source: result.source
@@ -304,6 +306,52 @@ async function handleApiRequest(req, res) {
       }, context);
     }
     sendJson(res, 200, result);
+    return true;
+  }
+
+  if (pathname === '/api/snapshots') {
+    if (req.method === 'POST') {
+      const context = requireAuth(req, res);
+      if (!context) return true;
+      const body = await readJsonBody(req);
+      const result = localDatabase.upsertSnapshot({
+        id: body.id,
+        type: body.type,
+        source: body.source || 'browser',
+        ownerEmail: body.ownerEmail,
+        actorEmail: context.user.email,
+        entityId: body.entityId,
+        title: body.title,
+        status: body.status,
+        storageKey: body.storageKey,
+        payload: body.payload || body.details || {},
+        createdAt: body.createdAt,
+        updatedAt: body.updatedAt
+      });
+      recordApiEvent(result.created ? 'snapshot-created' : 'snapshot-updated', {
+        ownerEmail: result.snapshot.ownerEmail,
+        entityType: 'snapshot',
+        entityId: result.snapshot.id,
+        payload: {
+          type: result.snapshot.type,
+          source: result.snapshot.source,
+          status: result.snapshot.status
+        }
+      }, context);
+      sendJson(res, result.created ? 201 : 200, { ok: true, ...result });
+      return true;
+    }
+
+    if (req.method === 'GET') {
+      const context = requireAuth(req, res, ['admin']);
+      if (!context) return true;
+      const limit = Number(parsedUrl.searchParams.get('limit') || 100);
+      const type = parsedUrl.searchParams.get('type') || '';
+      sendJson(res, 200, { ok: true, snapshots: localDatabase.listSnapshots({ limit, type }) });
+      return true;
+    }
+
+    methodNotAllowed(res);
     return true;
   }
 

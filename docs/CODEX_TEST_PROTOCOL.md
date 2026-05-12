@@ -1338,6 +1338,7 @@ Validacao automatica:
 ```powershell
 & $node --check js\backend\db.js
 & $node --check assets\js\services\backend-api.service.js
+& $node --check assets\js\admin-users.js
 & $node tools\validate-local-database.mjs
 ```
 
@@ -1345,14 +1346,16 @@ Validacoes obrigatorias:
 
 - `GET /api/health` deve responder `schema='bancus-fraternis.local-db.v1'` quando `node server.js` estiver ativo.
 - `GET /api/database/status` deve exigir admin e retornar provider `sqlite`, tabelas, arquivos e `quickCheck='ok'`.
-- `POST /api/database/import-local` deve exigir admin, aceitar preview/execucao e pular usuarios/eventos ja existentes.
+- `POST /api/database/import-local` deve exigir admin, aceitar preview/execucao, pular usuarios/eventos ja existentes e atualizar snapshots pelo mesmo `id`.
 - Login seed em `/api/auth/login` deve retornar usuario publico e token, sem hash/salt/senha.
 - `GET /api/users` deve exigir sessao admin.
 - Criacao de usuario deve salvar senha com hash server-side e permitir login posterior.
 - `POST /api/events` deve remover senha, token, CPF, telefone, WhatsApp, hash e salt do payload.
+- `POST /api/snapshots` deve remover senha, token, CPF, telefone, WhatsApp, hash e salt do payload.
+- `GET /api/snapshots` deve exigir admin e aceitar filtro opcional por tipo.
 - `pages/dashboard-admin.html` deve renderizar `data-admin-backend-events` com metricas e ultimos eventos quando houver sessao admin da API.
 - `pages/dashboard-admin.html` deve renderizar `data-admin-backend-table` e `data-admin-backend-database-provider` no painel de banco.
-- `pages/dashboard-admin.html` deve renderizar `data-admin-local-import-panel`, preview e execucao da migracao guiada.
+- `pages/dashboard-admin.html` deve renderizar `data-admin-local-import-panel`, `data-admin-local-snapshot-count`, preview e execucao da migracao guiada.
 - Em modo estatico, `data-admin-backend-events` deve exibir fallback sem bloquear o restante do Dashboard Admin.
 - GitHub Pages e `file://` devem continuar funcionando via fallback `localStorage`.
 - `node tools/inspect-local-sql-environment.mjs` deve gerar `docs/test-reports/local-sql-environment-report.json` com portas SQL padrao e CLIs detectadas.

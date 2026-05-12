@@ -206,6 +206,30 @@ function publicEvent(row) {
   };
 }
 
+function publicSnapshot(row) {
+  if (!row) return null;
+  let payload = {};
+  try {
+    payload = JSON.parse(row.payload_json || '{}');
+  } catch (error) {
+    payload = {};
+  }
+  return {
+    id: row.id,
+    type: row.type,
+    source: row.source,
+    ownerEmail: row.owner_email || '',
+    actorEmail: row.actor_email || '',
+    entityId: row.entity_id || '',
+    title: row.title || '',
+    status: row.status || '',
+    storageKey: row.storage_key || '',
+    payload,
+    createdAt: row.created_at || '',
+    updatedAt: row.updated_at || ''
+  };
+}
+
 function countBy(items, key) {
   return (items || []).reduce((acc, item) => {
     const value = String(item && item[key] ? item[key] : 'desconhecido');
@@ -291,12 +315,30 @@ function initializeSchema(db) {
       created_at TEXT NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS snapshots (
+      id TEXT PRIMARY KEY,
+      type TEXT NOT NULL,
+      source TEXT NOT NULL DEFAULT 'api',
+      owner_email TEXT DEFAULT '',
+      actor_email TEXT DEFAULT '',
+      entity_id TEXT DEFAULT '',
+      title TEXT DEFAULT '',
+      status TEXT DEFAULT '',
+      storage_key TEXT DEFAULT '',
+      payload_json TEXT NOT NULL DEFAULT '{}',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
     CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
     CREATE INDEX IF NOT EXISTS idx_sessions_token_hash ON sessions(token_hash);
     CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
     CREATE INDEX IF NOT EXISTS idx_events_created_at ON events(created_at);
     CREATE INDEX IF NOT EXISTS idx_events_type ON events(type);
     CREATE INDEX IF NOT EXISTS idx_events_owner_email ON events(owner_email);
+    CREATE INDEX IF NOT EXISTS idx_snapshots_type ON snapshots(type);
+    CREATE INDEX IF NOT EXISTS idx_snapshots_owner_email ON snapshots(owner_email);
+    CREATE INDEX IF NOT EXISTS idx_snapshots_updated_at ON snapshots(updated_at);
   `);
 }
 
@@ -352,6 +394,11 @@ class BancusDatabase {
   hasEvent(id) {
     if (!id) return false;
     return Boolean(this.db.prepare('SELECT id FROM events WHERE id = ? LIMIT 1').get(String(id || '')));
+  }
+
+  hasSnapshot(id) {
+    if (!id) return false;
+    return Boolean(this.db.prepare('SELECT id FROM snapshots WHERE id = ? LIMIT 1').get(String(id || '')));
   }
 
   getUserById(id) {
@@ -585,13 +632,90 @@ class BancusDatabase {
     return rows.map(publicEvent);
   }
 
+  upsertSnapshot(input = {}) {
+    const timestamp = nowIso();
+    const snapshot = {
+      id: normalizeText(input.id) || makeId('SNP'),
+      type: normalizeText(input.type, 'snapshot'),
+      source: normalizeText(input.source, 'api'),
+      ownerEmail: normalizeEmail(input.ownerEmail),
+      actorEmail: normalizeEmail(input.actorEmail),
+      entityId: normalizeText(input.entityId),
+      title: normalizeText(input.title),
+      status: normalizeText(input.status),
+      storageKey: normalizeText(input.storageKey),
+      payload: sanitizeEventPayload(input.payload || input.details || {}),
+      createdAt: normalizeText(input.createdAt) || timestamp,
+      updatedAt: normalizeText(input.updatedAt) || timestamp
+    };
+    const exists = this.hasSnapshot(snapshot.id);
+    this.db.prepare(`
+      INSERT INTO snapshots (
+        id, type, source, owner_email, actor_email, entity_id, title, status, storage_key, payload_json, created_at, updated_at
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        type = excluded.type,
+        source = excluded.source,
+        owner_email = excluded.owner_email,
+        actor_email = excluded.actor_email,
+        entity_id = excluded.entity_id,
+        title = excluded.title,
+        status = excluded.status,
+        storage_key = excluded.storage_key,
+        payload_json = excluded.payload_json,
+        updated_at = excluded.updated_at
+    `).run(
+      snapshot.id,
+      snapshot.type,
+      snapshot.source,
+      snapshot.ownerEmail,
+      snapshot.actorEmail,
+      snapshot.entityId,
+      snapshot.title,
+      snapshot.status,
+      snapshot.storageKey,
+      safeJson(snapshot.payload),
+      snapshot.createdAt,
+      snapshot.updatedAt
+    );
+    return {
+      created: !exists,
+      snapshot: publicSnapshot({
+        id: snapshot.id,
+        type: snapshot.type,
+        source: snapshot.source,
+        owner_email: snapshot.ownerEmail,
+        actor_email: snapshot.actorEmail,
+        entity_id: snapshot.entityId,
+        title: snapshot.title,
+        status: snapshot.status,
+        storage_key: snapshot.storageKey,
+        payload_json: safeJson(snapshot.payload),
+        created_at: snapshot.createdAt,
+        updated_at: snapshot.updatedAt
+      })
+    };
+  }
+
+  listSnapshots(options = {}) {
+    const limit = Math.max(1, Math.min(500, Number(options.limit || 100)));
+    const type = normalizeText(options.type);
+    const rows = type
+      ? this.db.prepare('SELECT * FROM snapshots WHERE type = ? ORDER BY updated_at DESC LIMIT ?').all(type, limit)
+      : this.db.prepare('SELECT * FROM snapshots ORDER BY updated_at DESC LIMIT ?').all(limit);
+    return rows.map(publicSnapshot);
+  }
+
   importLocalSnapshot(input = {}, options = {}) {
     const dryRun = options.dryRun !== false;
     const timestamp = nowIso();
     const users = Array.isArray(input.users) ? input.users.slice(0, 250) : [];
     const events = Array.isArray(input.events) ? input.events.slice(0, 500) : [];
+    const snapshots = Array.isArray(input.snapshots) ? input.snapshots.slice(0, 300) : [];
     const userRows = [];
     const eventRows = [];
+    const snapshotRows = [];
     const summary = {
       ok: true,
       dryRun,
@@ -611,6 +735,14 @@ class BancusDatabase {
         skippedExisting: 0,
         invalid: 0,
         bySource: {}
+      },
+      snapshots: {
+        total: snapshots.length,
+        importable: 0,
+        created: 0,
+        updated: 0,
+        invalid: 0,
+        byType: {}
       }
     };
 
@@ -667,6 +799,32 @@ class BancusDatabase {
     });
     summary.events.bySource = countBy(eventRows, 'source');
 
+    snapshots.forEach((item) => {
+      const id = normalizeText(item && item.id);
+      const type = normalizeText(item && item.type, 'snapshot');
+      if (!id || !type) {
+        summary.snapshots.invalid += 1;
+        return;
+      }
+      const snapshot = {
+        id,
+        type,
+        source: normalizeText(item && item.source, 'localStorage'),
+        ownerEmail: item && item.ownerEmail,
+        actorEmail: item && item.actorEmail ? item.actorEmail : options.actorEmail || '',
+        entityId: item && item.entityId,
+        title: item && item.title,
+        status: item && item.status,
+        storageKey: item && item.storageKey,
+        payload: item && (item.payload || item.details) ? (item.payload || item.details) : {},
+        createdAt: item && item.createdAt ? item.createdAt : timestamp,
+        updatedAt: item && item.updatedAt ? item.updatedAt : timestamp
+      };
+      summary.snapshots.importable += 1;
+      snapshotRows.push(snapshot);
+    });
+    summary.snapshots.byType = countBy(snapshotRows, 'type');
+
     if (dryRun) return summary;
 
     this.db.exec('BEGIN');
@@ -702,6 +860,11 @@ class BancusDatabase {
         this.recordEvent(event);
         summary.events.imported += 1;
       });
+      snapshotRows.forEach((snapshot) => {
+        const result = this.upsertSnapshot(snapshot);
+        if (result.created) summary.snapshots.created += 1;
+        else summary.snapshots.updated += 1;
+      });
       this.db.exec('COMMIT');
     } catch (error) {
       this.db.exec('ROLLBACK');
@@ -714,11 +877,13 @@ class BancusDatabase {
   stats() {
     const users = this.db.prepare('SELECT COUNT(*) AS total FROM users').get();
     const events = this.db.prepare('SELECT COUNT(*) AS total FROM events').get();
+    const snapshots = this.db.prepare('SELECT COUNT(*) AS total FROM snapshots').get();
     const sessions = this.db.prepare("SELECT COUNT(*) AS total FROM sessions WHERE revoked_at = '' AND expires_at > ?").get(nowIso());
     return {
       schemaVersion: this.schemaVersion,
       users: Number(users.total || 0),
       events: Number(events.total || 0),
+      snapshots: Number(snapshots.total || 0),
       activeSessions: Number(sessions.total || 0)
     };
   }

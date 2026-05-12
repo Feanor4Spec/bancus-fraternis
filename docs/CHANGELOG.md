@@ -4,6 +4,32 @@
 
 ---
 
+## [v8.83.0] - 2026-05-12
+
+### Snapshots server-side de jornada
+
+#### Adicionado
+- SQLite local ganhou tabela `snapshots` para estados recuperaveis de simulacao, trilha, proposta, lousa, perfil, modelos e handoff.
+- API local ganhou `POST /api/snapshots` e `GET /api/snapshots`.
+- Dashboard Admin passou a coletar snapshots do `localStorage` no painel de migracao guiada.
+- `BFBackendApi` passou a expor `recordSnapshot(type, payload, meta)` e `listSnapshots(limit, type)`.
+
+#### Modificado
+- `POST /api/database/import-local` agora aceita usuarios, eventos e snapshots em um unico snapshot local.
+- Painel Admin mostra `data-admin-local-snapshot-count` e metricas de snapshots SQLite.
+- Documentacao, contratos e validadores foram atualizados para proteger a migracao progressiva.
+
+#### Validado
+- `node --check js/backend/db.js`
+- `node --check server.js`
+- `node --check assets/js/services/backend-api.service.js`
+- `node --check assets/js/admin-users.js`
+- `node tools/validate-local-database.mjs`
+- `node tools/validate-public-contracts.mjs`
+- `node tools/validate-design-system.mjs`
+
+---
+
 ## [v8.82.0] - 2026-05-12
 
 ### Migracao guiada localStorage para SQLite

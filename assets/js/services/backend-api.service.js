@@ -167,9 +167,36 @@
     });
   }
 
+  function recordSnapshot(type, payload, meta = {}) {
+    if (!type) return Promise.resolve({ ok: false, message: 'Tipo de snapshot ausente.' });
+    return request('/api/snapshots', {
+      method: 'POST',
+      body: {
+        id: meta.id || '',
+        type,
+        source: meta.source || pageSource(),
+        ownerEmail: meta.ownerEmail || '',
+        entityId: meta.entityId || '',
+        title: meta.title || '',
+        status: meta.status || '',
+        storageKey: meta.storageKey || '',
+        payload: payload || {},
+        createdAt: meta.createdAt || '',
+        updatedAt: meta.updatedAt || ''
+      }
+    });
+  }
+
   function listEvents(limit = 30) {
     const safeLimit = Math.max(1, Math.min(100, Number(limit || 30)));
     return request(`/api/events?limit=${encodeURIComponent(safeLimit)}`);
+  }
+
+  function listSnapshots(limit = 30, type = '') {
+    const safeLimit = Math.max(1, Math.min(100, Number(limit || 30)));
+    const query = new URLSearchParams({ limit: String(safeLimit) });
+    if (type) query.set('type', type);
+    return request(`/api/snapshots?${query.toString()}`);
   }
 
   window.BFBackendApi = {
@@ -191,6 +218,8 @@
     resetPassword,
     toggleStatus,
     recordEvent,
-    listEvents
+    recordSnapshot,
+    listEvents,
+    listSnapshots
   };
 })();

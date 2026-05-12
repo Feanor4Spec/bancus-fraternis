@@ -12,25 +12,25 @@
       "name": "home",
       "url": "https://feanor4spec.github.io/bancus-fraternis/pages/index.html",
       "status": 200,
-      "bytes": 23935
+      "bytes": 24006
     },
     {
       "name": "lousa",
       "url": "https://feanor4spec.github.io/bancus-fraternis/pages/lousa-navegacao.html#roteiro-navegavel",
       "status": 200,
-      "bytes": 19520
+      "bytes": 19588
     },
     {
       "name": "simulador",
       "url": "https://feanor4spec.github.io/bancus-fraternis/pages/simulador.html",
       "status": 200,
-      "bytes": 62484
+      "bytes": 62555
     },
     {
       "name": "login",
       "url": "https://feanor4spec.github.io/bancus-fraternis/pages/login.html",
       "status": 200,
-      "bytes": 3565
+      "bytes": 3667
     }
   ],
   "fallback404": {

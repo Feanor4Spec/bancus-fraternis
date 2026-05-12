@@ -62,7 +62,7 @@ Cada etapa deve responder quatro perguntas:
 | Publicacao segura em GitHub Pages | Concluido parcial | Selo demo/local, fallback `404.html`, CI em `.github/workflows/validate.yml` e `tools/validate-public-release-safety.mjs`. |
 | QA online da jornada publicada | Concluido | `tools/validate-online-journey-smoke.mjs` valida no GitHub Pages as 10 etapas da lousa, anchors, marcadores e fallback estatico; `docs/test-reports/online-journey-browser-report.json` registra a checagem renderizada. |
 | Performance do simulador online | Concluido parcial | Simulador passou a carregar `Tab_Grupos_Consorcio.compact.json` primeiro, preservando fallback para o JSON canonico e todos os 17.396 grupos validos. |
-| Banco local de usuarios e eventos | Concluido parcial | SQLite local em `.runtime/`, endpoints `/api/database/status`, `/api/auth/*`, `/api/users`, `/api/events`, `BFBackendApi`, painel Admin de eventos/status server-side, hash `scrypt-sha256`, sessoes server-side e fallback estatico preservado. |
+| Banco local de usuarios, eventos e snapshots | Concluido parcial | SQLite local em `.runtime/`, endpoints `/api/database/status`, `/api/auth/*`, `/api/users`, `/api/events`, `/api/snapshots`, `BFBackendApi`, painel Admin de eventos/status/snapshots server-side, hash `scrypt-sha256`, sessoes server-side e fallback estatico preservado. |
 | Governanca permanente | Em andamento | Changelog, mapa, plano, validadores, contratos publicos e lousa navegavel atualizados por entrega. |
 
 ## Mapa de Implementacao Atualizado
@@ -93,6 +93,7 @@ Cada etapa deve responder quatro perguntas:
 | 22 | Eventos server-side no Admin | Concluido parcial | Dashboard Admin le `/api/events`, mostra metricas do SQLite, ultimos eventos e estado de fallback quando a API local nao esta disponivel. | `data-admin-backend-events`, `data-admin-backend-event-refresh`, `BFBackendApi.listEvents`. |
 | 23 | Diagnostico backend SQL local | Concluido parcial | API ganhou `/api/database/status`, Admin mostra provider/tabelas/PRAGMAs do SQLite e o inspetor local detecta CLIs, portas e servicos SQL externos. | `BFBackendApi.databaseStatus`, `data-admin-backend-table`, `tools/inspect-local-sql-environment.mjs`. |
 | 24 | Migracao guiada localStorage -> SQLite | Concluido parcial | Admin previsualiza e executa importacao idempotente de usuarios/eventos locais para o SQLite, com senha temporaria para novos usuarios. | `POST /api/database/import-local`, `BFBackendApi.importLocalSnapshot`, `data-admin-local-import-panel`. |
+| 25 | Snapshots server-side de jornada | Concluido parcial | SQLite guarda snapshots sanitizados de simulacao, trilha, proposta, lousa, perfil, modelos e handoff; Admin importa esses estados pelo painel guiado. | `POST /api/snapshots`, `GET /api/snapshots`, `data-admin-local-snapshot-count`, `BFBackendApi.recordSnapshot`. |
 
 ## Proximos Passos Priorizados
 
@@ -110,7 +111,8 @@ Cada etapa deve responder quatro perguntas:
 | P0 | Mensagem de continuidade por perfil | Usar dados do perfil consolidado para ajustar texto do CTA e timeline: cliente sem renda, sem reserva, com capacidade pronta ou com lance sugerido. | `assets/js/calculadoras-page.js`, `assets/js/services/decision-context.service.js`. | Ponte de calculadora conversa com o estado real do perfil, nao apenas com o slug atual. |
 | Concluido parcial | Painel admin de eventos do banco local | Exposta leitura de `/api/events` no Dashboard Admin quando houver sessao de API, mantendo fallback no estatico. | `pages/dashboard-admin.html`, `assets/js/admin-users.js`, `assets/js/services/backend-api.service.js`. | Admin ve ultimos eventos server-side sem expor senha, token, CPF ou telefone. |
 | Concluido parcial | Diagnostico do backend SQL local | Expor status tecnico do SQLite ativo e detectar se PostgreSQL, MySQL ou SQL Server estao instalados/escutando antes de trocar provider. | `server.js`, `js/backend/db.js`, `assets/js/admin-users.js`, `tools/inspect-local-sql-environment.mjs`. | Admin ve provider, tabelas e integridade; relatorio local mostra portas e ferramentas SQL disponiveis. |
-| Concluido parcial | Migracao guiada localStorage -> SQLite | Criar acao controlada para importar usuarios/eventos locais para o banco local, com previsualizacao e relatorio. | `server.js`, `assets/js/admin-users.js`, `js/backend/db.js`, `tools/validate-local-database.mjs`. | Admin consegue consolidar dados locais no SQLite sem duplicar registros. |
+| Concluido parcial | Migracao guiada localStorage -> SQLite | Criar acao controlada para importar usuarios/eventos/snapshots locais para o banco local, com previsualizacao e relatorio. | `server.js`, `assets/js/admin-users.js`, `js/backend/db.js`, `tools/validate-local-database.mjs`. | Admin consegue consolidar dados locais no SQLite sem duplicar registros e atualizando snapshots pelo mesmo id. |
+| Concluido parcial | Snapshots server-side | Persistir estados recuperaveis para preparar migracao futura de simulacoes, propostas, trilhas e handoffs. | `server.js`, `assets/js/services/backend-api.service.js`, `assets/js/admin-users.js`, `js/backend/db.js`. | API local cria/lista snapshots sanitizados e Admin mostra quantidade local importavel. |
 | P3 | Proxima extracao do simulador | Separar calculo/orquestracao de resultado em modulo menor, mantendo `App.*` como fachada publica. | `js/app.js`, `js/engine.js`, novo service de resultado do simulador. | Reduzir `app.js` sem quebrar resultados, proposta, PDF e simulacoes salvas. |
 | P3 | Backend/API produtivo futuro | Documentar fronteiras de migracao para usuarios, leads, simulacoes, propostas e handoffs, mantendo `localStorage` como fallback publico. | `docs/PLANO_IMPLEMENTACAO_EVOLUTIVO_BANK_FRATERN.md`, `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md`, `docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md`. | Plano tecnico define contratos de migracao do SQLite local para backend hospedado. |
 
@@ -464,7 +466,8 @@ Testes recomendados:
 | Concluido parcial | Criar banco local para usuarios, senhas e eventos. | Resolvido em 2026-05-12 com SQLite local, API `/api/*`, `BFBackendApi`, hash `scrypt-sha256` e validador dedicado. |
 | Concluido parcial | Expor eventos do banco local no Admin. | Resolvido em 2026-05-12 com painel `data-admin-backend-events`, refresh, metricas do SQLite e leitura de `/api/events`. |
 | Concluido parcial | Diagnosticar ambiente SQL local. | Resolvido em 2026-05-12 com `/api/database/status`, tabelas SQLite no Admin e `tools/inspect-local-sql-environment.mjs`. |
-| Concluido parcial | Migrar dados locais para SQLite. | Resolvido em 2026-05-12 com preview/execucao em `data-admin-local-import-panel`, endpoint `/api/database/import-local` e deduplicacao por e-mail/id/evento. |
+| Concluido parcial | Migrar dados locais para SQLite. | Resolvido em 2026-05-12 com preview/execucao em `data-admin-local-import-panel`, endpoint `/api/database/import-local`, deduplicacao por e-mail/id/evento e snapshots atualizaveis. |
+| Concluido parcial | Criar snapshots server-side de jornada. | Resolvido em 2026-05-12 com tabela `snapshots`, `/api/snapshots`, `BFBackendApi.recordSnapshot/listSnapshots` e coleta Admin de simulacao, proposta, trilha, perfil, modelos e handoff. |
 | Concluido | Criar validador de aliases/rotas. | `tools/validate-route-aliases.mjs`. |
 | P3 | Continuar reduzindo responsabilidades de `js/app.js` e `assets/js/bf-platform.js`. | Proximo corte recomendado: calculo/orquestracao de resultado do simulador. |
 
@@ -481,7 +484,7 @@ Testes recomendados:
 - Carga real da prateleira: 17.418 registros brutos, 17.396 grupos validos e 22 registros sem `valorCartaRef` em `data_base/Tab_Grupos_Consorcio.json`.
 - Estrutura de proposta/aceite/handoff ja validada nos scripts v8AD, v8AE e v8AF.
 - Matriz publica: `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md`.
-- Banco local progressivo: `docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md`, `BFBackendApi`, `bf_backend_session_v1`, `/api/database/status`, `/api/auth/*`, `/api/users` e `/api/events`.
+- Banco local progressivo: `docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md`, `BFBackendApi`, `bf_backend_session_v1`, `/api/database/status`, `/api/auth/*`, `/api/users`, `/api/events` e `/api/snapshots`.
 
 ## Fora de Escopo deste Plano
 
@@ -498,7 +501,7 @@ Testes recomendados:
 3. Fase 4: dashboards e funil. Admin avancou para fila guiada, produtividade, carteira, funil comercial movel, cadencia e exportacao sanitizada; essa leitura ja chegou ao consultor e ao Dashboard Cliente.
 4. Fase 2: continuidade da jornada. Em andamento; Home, Produtos, Calculadoras, Trilha contextual, cockpit do Dashboard Cliente, lousa de QA visual e primeiras acoes contextuais do simulador foram implementados.
 5. Fase 5: governanca permanente e reducao de divida documental. Em andamento; contratos publicos, changelog, evidencias browser, CI/Pages e roteiro de teste navegavel estao ativos.
-6. Fase local de banco/API: iniciada para usuarios, sessoes e eventos, ainda com fallback estatico obrigatorio.
+6. Fase local de banco/API: iniciada para usuarios, sessoes, eventos e snapshots, ainda com fallback estatico obrigatorio.
 7. Fase futura: backend/API produtivo. Migrar SQLite local para servico hospedado preservando compatibilidade com `localStorage`.
 
 Essa ordem reduz risco: primeiro tira friccao de acesso, depois melhora operacao comercial, depois aprofunda experiencia e governanca.

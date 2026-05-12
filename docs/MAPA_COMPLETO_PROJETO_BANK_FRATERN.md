@@ -6,7 +6,7 @@ Este mapa foi recriado a partir da leitura real do workspace. Ele documenta o Ba
 
 ## Sumario Executivo
 
-O projeto e uma aplicacao web estatica/progressiva em HTML, CSS e JavaScript puro, com primeira camada local Node/SQLite para usuarios, sessoes e eventos. A plataforma usa dados locais em JSON, base real de grupos de consorcio em `data_base/`, persistencia por `localStorage`, services globais no browser, API local opcional e validadores Node em `tools/`.
+O projeto e uma aplicacao web estatica/progressiva em HTML, CSS e JavaScript puro, com primeira camada local Node/SQLite para usuarios, sessoes, eventos e snapshots recuperaveis. A plataforma usa dados locais em JSON, base real de grupos de consorcio em `data_base/`, persistencia por `localStorage`, services globais no browser, API local opcional e validadores Node em `tools/`.
 
 Estado confirmado nesta leitura:
 
@@ -59,7 +59,7 @@ Separado como runtime, evidencia, backup ou historico:
 | --- | --- |
 | `index.html` | Redirect simples para `pages/index.html`. |
 | `server.js` | Servidor canonico local. Usa porta `8080` por padrao, serve `/` como `pages/index.html`, cria aliases curtos para todas as paginas HTML em `pages/` e expoe API local `/api/*` para auth, usuarios, status do banco e eventos. |
-| `js/backend/db.js` | Camada SQLite local: schema, seeds, hash `scrypt-sha256`, sessoes, eventos sanitizados e diagnostico tecnico do provider. |
+| `js/backend/db.js` | Camada SQLite local: schema, seeds, hash `scrypt-sha256`, sessoes, eventos/snapshots sanitizados e diagnostico tecnico do provider. |
 | `js/server.js` | Servidor legado do simulador antigo. Mantido como historico tecnico, nao como entrada principal. |
 | `Sistema.gitignore` | Ignora editor, node, python, envs, chaves e temporarios. |
 
@@ -69,7 +69,7 @@ Contrato confirmado:
 - Todas as paginas continuam acessiveis por `/pages/<arquivo>.html`.
 - Todas as paginas tambem respondem por URL curta, como `/trilha-decisao.html`.
 - O contrato e coberto por `tools/validate-route-aliases.mjs`.
-- Quando roda via Node, `GET /api/health`, `/api/database/status`, `POST /api/database/import-local`, `/api/auth/*`, `/api/users` e `/api/events` usam SQLite local em `.runtime/`.
+- Quando roda via Node, `GET /api/health`, `/api/database/status`, `POST /api/database/import-local`, `/api/auth/*`, `/api/users`, `/api/events` e `/api/snapshots` usam SQLite local em `.runtime/`.
 - Quando publicado em GitHub Pages ou aberto por `file://`, as paginas seguem funcionando com fallback em `localStorage`.
 
 ## Estrutura de Diretorios
@@ -321,7 +321,7 @@ Melhoria implementada em 2026-05-07:
 | `js/storage.js` | Simulacoes salvas e estatisticas de carteira. |
 | `js/settings.js` | Preferencias locais e defaults. |
 | `js/auth.js` | Usuarios locais, sessao, papeis e guardas. |
-| `js/backend/db.js` | Banco local SQLite para usuarios, sessoes, eventos, status tecnico e importacao guiada. |
+| `js/backend/db.js` | Banco local SQLite para usuarios, sessoes, eventos, snapshots, status tecnico e importacao guiada. |
 | `js/shared-layout.js` | Shell comum, header/footer, contrato v8 e estado de conta. |
 | `js/home.js` | Home contextual, cockpit de continuidade e retomada de trilha ativa. |
 | `js/portfolio-live.js` | Carteira, oportunidades, agenda e insights. |
@@ -350,7 +350,7 @@ Melhoria implementada em 2026-05-07:
 
 | Service | Export | Responsabilidade |
 | --- | --- | --- |
-| `backend-api.service.js` | `BFBackendApi` | Ponte para API local Node/SQLite, status tecnico, importacao guiada e fallback estatico. |
+| `backend-api.service.js` | `BFBackendApi` | Ponte para API local Node/SQLite, status tecnico, eventos, snapshots, importacao guiada e fallback estatico. |
 | `dados.service.js` | `BFDadosService` | Le datasets locais. |
 | `calculadoras.service.js` | `BFCalculadoras` | Simula calculadoras, perfil, historico e recomendacoes. |
 | `decision-context.service.js` | `BFDecisionContext` | Perfil financeiro, historico, prefill e auditoria nao sensivel. |
@@ -522,7 +522,7 @@ Scripts confirmados em `tools/`:
 | `validate-admin-dashboard-source-funnel.mjs` | Cockpit Admin, origem, gargalos e proximas acoes. |
 | `validate-public-contracts.mjs` | Matriz de contratos publicos, DoD e governanca de compatibilidade. |
 | `validate-public-release-safety.mjs` | Publicacao segura: paths locais, dados pessoais de exemplo, selo demo, fallback estatico e CI. |
-| `validate-local-database.mjs` | SQLite local, seeds, login, sessoes, eventos sanitizados, status tecnico e contratos de API. |
+| `validate-local-database.mjs` | SQLite local, seeds, login, sessoes, eventos, snapshots sanitizados, status tecnico e contratos de API. |
 | `inspect-local-sql-environment.mjs` | Diagnostico local de CLIs, portas padrao e servicos SQL externos. |
 | `validate-docs-modernization.mjs` | README ativo, docs historicos marcados e catalogo atual de 19 calculadoras. |
 | `run-v8af-browser-evidence.mjs` | Evidencias visuais do fluxo proposta/handoff. |
@@ -532,7 +532,7 @@ Scripts confirmados em `tools/`:
 | Documento | Uso |
 | --- | --- |
 | `docs/README.md` | Porta atual do Bancus Fraternis, com rotas, estado do produto, validadores e contratos preservados. |
-| `docs/CHANGELOG.md` | Historico ate v8.51. |
+| `docs/CHANGELOG.md` | Historico vivo de versoes e entregas. |
 | `docs/PLANO_IMPLEMENTACAO_EVOLUTIVO_BANK_FRATERN.md` | Evolucao detalhada de fases v8. |
 | `docs/PLANO_SALTO_PLATAFORMA_BANK_FRATERN.md` | Salto de simulador para plataforma. |
 | `docs/DESIGN_SYSTEM_V8_BANK_FRATERN.md` | Contrato visual v8. |
@@ -568,7 +568,7 @@ Governanca documental: docs ativos passaram a usar Bancus Fraternis como platafo
 O vetor recomendado para o proximo ciclo continua sendo produto e jornada, agora com foco em reduzir risco tecnico sem quebrar contratos publicos:
 
 1. Continuar a modularizacao do simulador, extraindo calculo/orquestracao de resultado e integracoes de proposta sem quebrar `App.*`.
-2. Evoluir a migracao guiada para incluir snapshots de simulacoes/propostas quando houver schema server-side dedicado.
+2. Conectar gradualmente simulador, proposta, trilha e handoff ao contrato `/api/snapshots`, mantendo `localStorage` como fallback publico.
 3. Preparar migracao futura do SQLite local para backend/API produtivo sem quebrar `localStorage`, deep links e services globais.
 4. Manter a lousa como porta de QA visual a cada nova entrega funcional.
 

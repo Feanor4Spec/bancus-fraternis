@@ -412,7 +412,7 @@
 
   function localImportOwnerFromKey(key) {
     const text = String(key || '');
-    const scopedPrefixes = ['bf_journey_analytics_v1:', 'bf_decision_journey_history_v1:', 'bf_decision_journey_v1:'];
+    const scopedPrefixes = ['bf_journey_analytics_v1:', 'bf_decision_journey_history_v1:', 'bf_decision_journey_v1:', 'bf_comparator_models_v1:'];
     const prefix = scopedPrefixes.find((item) => text.startsWith(item));
     return prefix ? text.slice(prefix.length) || 'anon' : '';
   }
@@ -476,9 +476,69 @@
     return events.slice(0, 500);
   }
 
+  function normalizeLocalSnapshot(key, item, index, config) {
+    if (!item || typeof item !== 'object') return null;
+    const ownerEmail = item.ownerEmail || item.owner || localImportOwnerFromKey(key) || '';
+    const updatedAt = item.updatedAt || item.createdAt || item.savedAt || item.generatedAt || '';
+    const entityId = item.id || item.proposalId || item.handoffId || item.journeyId || item.historyId || item.simulationId || item.modelId || `${config.type}-${index}`;
+    const title = item.title || item.name || item.cliente || item.clientName || item.objectiveLabel || item.productName || config.title || config.type;
+    const id = `SNP-${stableHash([key, index, entityId, config.type, updatedAt].join('|'))}`;
+    return {
+      id,
+      type: config.type,
+      source: config.source,
+      ownerEmail,
+      actorEmail: item.actorEmail || item.updatedBy || ownerEmail || '',
+      entityId,
+      title,
+      status: item.status || item.queueStatus || item.operationalStatus || item.stage || '',
+      storageKey: key,
+      createdAt: item.createdAt || item.savedAt || updatedAt,
+      updatedAt,
+      payload: {
+        storageKey: key,
+        localId: item.id || '',
+        ...item
+      }
+    };
+  }
+
+  function collectLocalSnapshotRecords() {
+    const configs = [
+      { key: 'consorciopro_simulations', type: 'simulation', source: 'simulator-storage', title: 'Simulacao salva', mode: 'array' },
+      { prefix: 'bf_decision_journey_v1:', type: 'decision-journey', source: 'decision-journey', title: 'Trilha ativa', mode: 'object' },
+      { prefix: 'bf_decision_journey_history_v1:', type: 'decision-journey-history', source: 'decision-journey', title: 'Historico de trilha', mode: 'array' },
+      { key: 'bank_fratern_proposal_versions_v1', type: 'proposal-version', source: 'proposal-versioning', title: 'Versao de proposta', mode: 'array' },
+      { key: 'bank_fratern_proposal_acceptances_v1', type: 'proposal-acceptance', source: 'proposal-acceptance', title: 'Aceite de proposta', mode: 'array' },
+      { key: 'bank_fratern_proposal_builder_v1', type: 'proposal-builder', source: 'proposal-builder', title: 'Lousa de proposta', mode: 'object' },
+      { key: 'bf_consultive_handoffs_v1', type: 'handoff', source: 'handoff-consultivo', title: 'Handoff consultivo', mode: 'array' },
+      { key: 'bf_financial_profile_v1', type: 'financial-profile', source: 'decision-context', title: 'Perfil financeiro', mode: 'object' },
+      { prefix: 'bf_comparator_models_v1:', type: 'comparator-models', source: 'comparator-models', title: 'Modelos comparador', mode: 'array' }
+    ];
+    const keys = adminLocalStorageKeys();
+    const rows = [];
+
+    configs.forEach((config) => {
+      const matchedKeys = config.prefix
+        ? keys.filter((key) => String(key || '').startsWith(config.prefix))
+        : keys.filter((key) => key === config.key);
+      matchedKeys.forEach((key) => {
+        const value = readAdminJson(key, config.mode === 'array' ? [] : null);
+        const list = config.mode === 'array' ? (Array.isArray(value) ? value : []) : (value ? [value] : []);
+        list.forEach((item, index) => {
+          const normalized = normalizeLocalSnapshot(key, item, index, config);
+          if (normalized) rows.push(normalized);
+        });
+      });
+    });
+
+    return rows.slice(0, 300);
+  }
+
   function collectLocalImportSnapshot() {
     const users = window.BFAuth && window.BFAuth.listUsers ? window.BFAuth.listUsers() : [];
     const events = collectLocalImportEvents();
+    const snapshots = collectLocalSnapshotRecords();
     return {
       source: 'admin-local-storage',
       generatedAt: new Date().toISOString(),
@@ -491,7 +551,8 @@
         department: user.department || '',
         phone: user.phone || ''
       })),
-      events
+      events,
+      snapshots
     };
   }
 
@@ -3145,6 +3206,9 @@
           Eventos: ${Number(result.events && result.events.importable || 0)} importaveis,
           ${Number(result.events && result.events.imported || 0)} importados,
           ${Number(result.events && result.events.skippedExisting || 0)} ja existentes.
+          Snapshots: ${Number(result.snapshots && result.snapshots.importable || 0)} importaveis,
+          ${Number(result.snapshots && result.snapshots.created || 0)} criados,
+          ${Number(result.snapshots && result.snapshots.updated || 0)} atualizados.
         </p>
         <small>Novos usuarios recebem senha temporaria ${escapeHtml(result.temporaryPassword || window.BFAuth.DEFAULT_PASSWORD || 'Temp@123')}.</small>
       </div>
@@ -3152,7 +3216,11 @@
   }
 
   function renderLocalImportPanel(snapshot) {
-    const sourceCount = new Set((snapshot.events || []).map((event) => event.source).filter(Boolean)).size;
+    const sourceCount = new Set([
+      ...(snapshot.events || []).map((event) => event.source),
+      ...(snapshot.snapshots || []).map((item) => item.source)
+    ].filter(Boolean)).size;
+    const snapshotTypeCount = new Set((snapshot.snapshots || []).map((item) => item.type).filter(Boolean)).size;
     return `
       <div class="bf-admin-import-panel" data-admin-local-import-panel>
         <div class="bf-admin-panel-heading">
@@ -3168,6 +3236,8 @@
         <div class="bf-platform-metrics">
           <article class="bf-platform-metric"><small>Usuarios locais</small><strong>${snapshot.users.length}</strong></article>
           <article class="bf-platform-metric"><small>Eventos locais</small><strong>${snapshot.events.length}</strong></article>
+          <article class="bf-platform-metric" data-admin-local-snapshot-count><small>Snapshots locais</small><strong>${snapshot.snapshots.length}</strong></article>
+          <article class="bf-platform-metric"><small>Tipos de snapshot</small><strong>${snapshotTypeCount}</strong></article>
           <article class="bf-platform-metric"><small>Fontes locais</small><strong>${sourceCount}</strong></article>
           <article class="bf-platform-metric"><small>Modo</small><strong>Sem sobrescrever</strong></article>
         </div>
@@ -3217,6 +3287,7 @@
       <div class="bf-platform-metrics">
         <article class="bf-platform-metric is-strong"><small>Eventos no banco</small><strong>${Number(stats.events || list.length || 0)}</strong></article>
         <article class="bf-platform-metric"><small>Usuarios SQLite</small><strong>${Number(stats.users || 0)}</strong></article>
+        <article class="bf-platform-metric"><small>Snapshots SQLite</small><strong>${Number(stats.snapshots || 0)}</strong></article>
         <article class="bf-platform-metric"><small>Sessoes ativas</small><strong>${Number(stats.activeSessions || 0)}</strong></article>
         <article class="bf-platform-metric"><small>Fontes recentes</small><strong>${sources.size}</strong></article>
         <article class="bf-platform-metric"><small>Provider</small><strong>${escapeHtml(dbStatus.provider || 'sqlite')}</strong></article>

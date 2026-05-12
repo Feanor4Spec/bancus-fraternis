@@ -35,6 +35,7 @@ try {
   const initialStats = localDb.stats();
   assert(initialStats.schemaVersion === SCHEMA_VERSION, 'Schema do banco local nao confere.');
   assert(initialStats.users === 3, `Banco local deveria criar 3 usuarios seed; criou ${initialStats.users}.`);
+  assert(initialStats.snapshots === 0, 'Banco local novo nao deveria iniciar com snapshots.');
 
   const adminLogin = localDb.login('admin@bankfratern.local', 'Admin@123');
   assert(adminLogin.ok, 'Login seed admin falhou no banco local.');
@@ -92,12 +93,47 @@ try {
   const events = localDb.listEvents({ limit: 10 });
   assert(events.length >= 1 && events[0].type === 'validator-event', 'Listagem de eventos nao retornou evento recente.');
 
+  const snapshot = localDb.upsertSnapshot({
+    id: 'SNP-VALIDATOR',
+    type: 'simulation',
+    source: 'validator',
+    ownerEmail: 'validator@example.com',
+    actorEmail: 'admin@bankfratern.local',
+    entityId: 'simulation-1',
+    title: 'Snapshot validador',
+    status: 'saved',
+    storageKey: 'consorciopro_simulations',
+    payload: {
+      amount: 150,
+      password: 'nao-gravar',
+      nested: { token: 'nao-gravar', safe: true }
+    }
+  });
+  assert(snapshot.created, 'Snapshot inicial deveria ser criado.');
+  assert(snapshot.snapshot && snapshot.snapshot.payload.amount === 150, 'Snapshot deveria preservar payload seguro.');
+  assert(!Object.prototype.hasOwnProperty.call(snapshot.snapshot.payload, 'password'), 'Snapshot vazou password.');
+  assert(snapshot.snapshot.payload.nested && snapshot.snapshot.payload.nested.safe === true, 'Snapshot aninhado seguro nao foi preservado.');
+  assert(!Object.prototype.hasOwnProperty.call(snapshot.snapshot.payload.nested, 'token'), 'Snapshot aninhado vazou token.');
+  const snapshotUpdate = localDb.upsertSnapshot({
+    id: 'SNP-VALIDATOR',
+    type: 'simulation',
+    source: 'validator',
+    ownerEmail: 'validator@example.com',
+    entityId: 'simulation-1',
+    title: 'Snapshot validador atualizado',
+    status: 'updated',
+    payload: { amount: 175 }
+  });
+  assert(!snapshotUpdate.created && snapshotUpdate.snapshot.status === 'updated', 'Snapshot repetido deveria atualizar registro existente.');
+  const snapshots = localDb.listSnapshots({ limit: 10, type: 'simulation' });
+  assert(snapshots.some((item) => item.id === 'SNP-VALIDATOR'), 'Listagem de snapshots nao retornou snapshot criado.');
+
   const databaseStatus = localDb.databaseStatus();
   assert(databaseStatus.ok, 'Status tecnico do banco local deveria retornar ok.');
   assert(databaseStatus.provider === 'sqlite', 'Provider ativo deveria ser sqlite.');
   assert(databaseStatus.files && databaseStatus.files.main && databaseStatus.files.main.exists, 'Status do banco nao encontrou arquivo SQLite principal.');
   assert(databaseStatus.sqlite && databaseStatus.sqlite.quickCheck === 'ok', 'PRAGMA quick_check do SQLite nao retornou ok.');
-  assert(Array.isArray(databaseStatus.tables) && databaseStatus.tables.length >= 3, 'Status do banco deveria listar tabelas principais.');
+  assert(Array.isArray(databaseStatus.tables) && databaseStatus.tables.length >= 4, 'Status do banco deveria listar tabelas principais.');
 
   const importSnapshot = {
     source: 'validator-local-storage',
@@ -128,23 +164,51 @@ try {
           phone: '(11) 90000-0000'
         }
       }
+    ],
+    snapshots: [
+      {
+        id: 'SNP-LOCAL-IMPORT',
+        type: 'proposal-version',
+        source: 'proposal-versioning',
+        ownerEmail: 'local-import@example.com',
+        actorEmail: 'admin@bankfratern.local',
+        entityId: 'PROP-LOCAL-1',
+        title: 'Proposta importada',
+        status: 'reviewed',
+        storageKey: 'bank_fratern_proposal_versions_v1',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        payload: {
+          proposalId: 'PROP-LOCAL-1',
+          amount: 300,
+          password: 'nao-gravar',
+          phone: '(11) 90000-0000'
+        }
+      }
     ]
   };
   const importPreview = localDb.importLocalSnapshot(importSnapshot, { dryRun: true, actorEmail: 'admin@bankfratern.local' });
   assert(importPreview.dryRun && importPreview.users.importable === 1, 'Preview de importacao deveria encontrar usuario importavel.');
   assert(importPreview.events.importable === 1, 'Preview de importacao deveria encontrar evento importavel.');
+  assert(importPreview.snapshots.importable === 1, 'Preview de importacao deveria encontrar snapshot importavel.');
   const importRun = localDb.importLocalSnapshot(importSnapshot, { dryRun: false, actorEmail: 'admin@bankfratern.local' });
   assert(importRun.users.imported === 1, 'Importacao local deveria criar usuario no SQLite.');
   assert(importRun.events.imported === 1, 'Importacao local deveria criar evento no SQLite.');
+  assert(importRun.snapshots.created === 1, 'Importacao local deveria criar snapshot no SQLite.');
   const importRepeat = localDb.importLocalSnapshot(importSnapshot, { dryRun: false, actorEmail: 'admin@bankfratern.local' });
   assert(importRepeat.users.skippedExisting === 1, 'Importacao repetida deveria pular usuario existente.');
   assert(importRepeat.events.skippedExisting === 1, 'Importacao repetida deveria pular evento existente.');
+  assert(importRepeat.snapshots.updated === 1, 'Importacao repetida deveria atualizar snapshot existente.');
   const importedLogin = localDb.login('local-import@example.com', 'Temp@123');
   assert(importedLogin.ok, 'Usuario importado deveria autenticar com senha temporaria.');
   const importedEvent = localDb.listEvents({ limit: 20 }).find((item) => item.id === 'LS-VALIDATOR-EVENT');
   assert(importedEvent && importedEvent.payload.amount === 200, 'Evento importado deveria preservar payload seguro.');
   assert(importedEvent && !Object.prototype.hasOwnProperty.call(importedEvent.payload, 'password'), 'Evento importado vazou password.');
   assert(importedEvent && !Object.prototype.hasOwnProperty.call(importedEvent.payload, 'phone'), 'Evento importado vazou phone.');
+  const importedSnapshot = localDb.listSnapshots({ limit: 20, type: 'proposal-version' }).find((item) => item.id === 'SNP-LOCAL-IMPORT');
+  assert(importedSnapshot && importedSnapshot.payload.amount === 300, 'Snapshot importado deveria preservar payload seguro.');
+  assert(importedSnapshot && !Object.prototype.hasOwnProperty.call(importedSnapshot.payload, 'password'), 'Snapshot importado vazou password.');
+  assert(importedSnapshot && !Object.prototype.hasOwnProperty.call(importedSnapshot.payload, 'phone'), 'Snapshot importado vazou phone.');
 
   const server = await read('server.js');
   [
@@ -156,6 +220,7 @@ try {
     '/api/auth/me',
     '/api/users',
     '/api/events',
+    '/api/snapshots',
     'SCHEMA_VERSION'
   ].forEach((marker) => assert(server.includes(marker), `server.js sem contrato de API local: ${marker}.`));
 
@@ -167,7 +232,9 @@ try {
     'databaseStatus',
     'importLocalSnapshot',
     'recordEvent',
+    'recordSnapshot',
     'listEvents',
+    'listSnapshots',
     'createUser',
     'toggleStatus'
   ].forEach((marker) => assert(backendApi.includes(marker), `backend-api.service.js sem contrato ${marker}.`));
@@ -183,6 +250,8 @@ try {
     'data-admin-local-import-preview',
     'data-admin-local-import-run',
     'data-admin-local-import-result',
+    'data-admin-local-snapshot-count',
+    'collectLocalSnapshotRecords',
     'collectLocalImportSnapshot',
     'data-admin-backend-event-refresh',
     'databaseStatus',
@@ -201,10 +270,12 @@ try {
     schemaVersion: SCHEMA_VERSION,
     seedUsers: initialStats.users,
     events: localDb.listEvents({ limit: 50 }).length,
+    snapshots: localDb.listSnapshots({ limit: 50 }).length,
     provider: databaseStatus.provider,
     tables: databaseStatus.tables.length,
     importedUsers: importRun.users.imported,
     importedEvents: importRun.events.imported,
+    importedSnapshots: importRun.snapshots.created,
     warnings,
     failures
   };

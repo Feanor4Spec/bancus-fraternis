@@ -148,6 +148,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-admin-local-import-preview',
   'data-admin-local-import-run',
   'data-admin-local-import-result',
+  'data-admin-local-snapshot-count',
   'data-handoff-consultant-cockpit',
   'data-handoff-action-plan',
   'data-handoff-action-execution',
@@ -253,7 +254,8 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-admin-local-import-panel',
   'data-admin-local-import-preview',
   'data-admin-local-import-run',
-  'data-admin-local-import-result'
+  'data-admin-local-import-result',
+  'data-admin-local-snapshot-count'
 ].forEach((marker) => {
   assert(adminUsers.includes(marker) || adminDashboard.includes(marker), `Dashboard Admin sem marcador publico ${marker}.`);
 });
@@ -261,12 +263,16 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
 assert(adminDashboard.includes('href="#admin-proximos-passos"'), 'dashboard-admin.html sem atalho para proximos passos.');
 assert(adminDashboard.includes('data-admin-backend-events'), 'dashboard-admin.html sem painel de eventos do banco local.');
 assert(backendApi.includes('listEvents'), 'BFBackendApi sem leitura de eventos server-side.');
+assert(backendApi.includes('recordSnapshot'), 'BFBackendApi sem gravacao de snapshots server-side.');
+assert(backendApi.includes('listSnapshots'), 'BFBackendApi sem leitura de snapshots server-side.');
 assert(backendApi.includes('databaseStatus'), 'BFBackendApi sem status tecnico do banco local.');
 assert(backendApi.includes('importLocalSnapshot'), 'BFBackendApi sem importacao guiada localStorage -> SQLite.');
 assert(server.includes('/api/database/status'), 'server.js sem endpoint de status tecnico do banco.');
 assert(server.includes('/api/database/import-local'), 'server.js sem endpoint de importacao localStorage -> SQLite.');
+assert(server.includes('/api/snapshots'), 'server.js sem endpoint de snapshots server-side.');
 assert(apiDocs.includes('/api/database/status'), 'api-docs.html sem endpoint de status tecnico do banco.');
 assert(apiDocs.includes('/api/database/import-local'), 'api-docs.html sem endpoint de importacao localStorage -> SQLite.');
+assert(apiDocs.includes('/api/snapshots'), 'api-docs.html sem endpoint de snapshots server-side.');
 assert(simulator.includes('data-proposal-builder-board'), 'simulador.html sem lousa de proposta documentada.');
 assert(simulator.includes('data-proposal-version-panel'), 'simulador.html sem painel de versionamento da proposta.');
 assert(simulator.includes('js/proposal-builder.js'), 'simulador.html sem modulo proposal-builder.');
@@ -354,7 +360,7 @@ const report = {
   ok: failures.length === 0,
   contracts: {
     localStorageKeys: 18,
-    dataMarkers: 65,
+    dataMarkers: 66,
     globals: 19,
     deepLinks: 10,
     validators: 21,

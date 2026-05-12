@@ -4,14 +4,14 @@ Atualizado em 2026-05-12.
 
 ## Objetivo
 
-Esta camada implementa login, sessao local, papeis de acesso e painel administrativo em HTML/CSS/JS puro. A partir de 2026-05-12, quando o projeto roda via `node server.js`, ela tambem espelha login, criacao de usuarios, senha, status e eventos para o SQLite local documentado em `docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md`.
+Esta camada implementa login, sessao local, papeis de acesso e painel administrativo em HTML/CSS/JS puro. A partir de 2026-05-12, quando o projeto roda via `node server.js`, ela tambem espelha login, criacao de usuarios, senha, status, eventos e snapshots para o SQLite local documentado em `docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md`.
 
 ## Arquivos principais
 
 - `js/auth.js`: servico central de usuarios, sessao, papeis e protecao de paginas.
 - `assets/js/services/backend-api.service.js`: ponte opcional para API local Node/SQLite.
-- `js/backend/db.js`: banco local SQLite com usuarios, sessoes, eventos e status tecnico.
-- `server.js`: endpoints `/api/database/status`, `/api/database/import-local`, `/api/auth/*`, `/api/users` e `/api/events`.
+- `js/backend/db.js`: banco local SQLite com usuarios, sessoes, eventos, snapshots e status tecnico.
+- `server.js`: endpoints `/api/database/status`, `/api/database/import-local`, `/api/auth/*`, `/api/users`, `/api/events` e `/api/snapshots`.
 - `pages/login.html`: tela de login com contas de demonstracao e barra de progresso.
 - `pages/dashboard-admin.html`: painel de administracao de usuarios.
 - `assets/js/login.js`: comportamento da tela de login.
@@ -40,8 +40,9 @@ As contas seed sao recriadas automaticamente quando faltarem no localStorage.
 - Em `localhost`, `BFBackendApi` tenta autenticar tambem em `/api/auth/login` e armazena a sessao em `bf_backend_session_v1`.
 - Em `localhost`, operacoes de usuario feitas pelo Admin sao espelhadas no SQLite com senha hasheada via `scrypt-sha256`.
 - Eventos de auth, jornada, handoff, funil e modelos podem ser persistidos em `/api/events` com payload sanitizado.
+- Snapshots de simulacao, trilha, proposta, lousa, perfil, modelos e handoff podem ser persistidos em `/api/snapshots`.
 - Admin pode consultar `/api/database/status` no painel para confirmar provider, tabelas, integridade e arquivos locais.
-- Admin pode previsualizar e executar a migracao guiada do `localStorage` para SQLite sem sobrescrever usuarios ou eventos existentes.
+- Admin pode previsualizar e executar a migracao guiada do `localStorage` para SQLite sem sobrescrever usuarios/eventos existentes e atualizando snapshots pelo mesmo `id`.
 
 ## Chaves locais
 
@@ -54,7 +55,7 @@ As contas seed sao recriadas automaticamente quando faltarem no localStorage.
 - Arquivo padrao: `.runtime/bancus-fraternis.sqlite`.
 - Tabelas: `users`, `sessions`, `events`.
 - Status tecnico: `GET /api/database/status` e `node tools/inspect-local-sql-environment.mjs`.
-- Migracao guiada: `POST /api/database/import-local`; novos usuarios recebem senha temporaria `Temp@123`.
+- Migracao guiada: `POST /api/database/import-local`; novos usuarios recebem senha temporaria `Temp@123` e snapshots repetidos sao atualizados.
 - `.runtime/` fica fora do Git.
 - Validador: `node tools/validate-local-database.mjs`.
 
