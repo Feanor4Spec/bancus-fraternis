@@ -14,7 +14,7 @@ Esta entrega cria a primeira camada server-side do Bancus Fraternis sem quebrar 
 | `server.js` | Servidor estatico + endpoints `/api/*`. |
 | `assets/js/services/backend-api.service.js` | Ponte do navegador para a API local com fallback silencioso. |
 | `js/auth.js` | Continua sendo a fachada publica de auth e espelha login/usuarios no banco quando a API existe. |
-| `assets/js/admin-users.js` | Dashboard Admin le `/api/events` e mostra eventos server-side quando ha sessao de API. |
+| `assets/js/admin-users.js` | Dashboard Admin le `/api/events`, mostra eventos/status server-side e executa migracao guiada do `localStorage`. |
 | `tools/validate-local-database.mjs` | Validador de schema, seeds, login, sessao e eventos sanitizados. |
 | `tools/inspect-local-sql-environment.mjs` | Diagnostico de CLIs, portas padrao e servicos SQL locais para proxima troca de provider. |
 
@@ -58,6 +58,7 @@ As senhas seed continuam documentadas em `docs/AUTH_ADMIN_LOCAL.md` para demonst
 | --- | --- |
 | `GET /api/health` | Status da API e estatisticas agregadas. |
 | `GET /api/database/status` | Status tecnico admin: provider, driver, PRAGMAs, arquivos, tabelas e runtime. |
+| `POST /api/database/import-local` | Preview/execucao admin de usuarios e eventos locais para SQLite, sem sobrescrever duplicados. |
 | `POST /api/auth/login` | Login server-side e emissao de token. |
 | `POST /api/auth/logout` | Revogacao de token. |
 | `GET /api/auth/me` | Usuario da sessao de API. |
@@ -78,6 +79,7 @@ As senhas seed continuam documentadas em `docs/AUTH_ADMIN_LOCAL.md` para demonst
 - Eventos de jornada, contexto financeiro, modelos, handoff, acoes operacionais e funil comercial tentam gravar em `/api/events`.
 - Dashboard Admin exibe `data-admin-backend-events` com metricas do SQLite e ultimos eventos quando houver sessao admin da API.
 - O mesmo painel exibe `data-admin-backend-table` e `data-admin-backend-database-provider` para confirmar provider, arquivo, PRAGMAs e tabelas ativas.
+- A migracao guiada usa `data-admin-local-import-panel`, `data-admin-local-import-preview` e `data-admin-local-import-run`; usuarios existentes sao pulados e novos usuarios recebem senha temporaria `Temp@123`.
 - Produção futura deve trocar o SQLite local por backend hospedado, controle de permissao server-side completo, LGPD e politicas de backup.
 
 ## Validacao
@@ -97,5 +99,6 @@ Valida:
 - usuario publico sem hash/salt;
 - criacao de novo usuario com senha hasheada;
 - evento persistido sem senha, token ou telefone no payload;
+- preview e execucao idempotente da migracao `localStorage` -> SQLite;
 - presenca dos contratos `/api/*` no servidor.
 - ambiente local para SQL externo em portas padrao (`5432`, `3306`, `1433`) e CLIs (`psql`, `mysql`, `sqlcmd`).

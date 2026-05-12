@@ -144,6 +144,10 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-admin-backend-table',
   'data-admin-backend-database-provider',
   'data-admin-backend-event-refresh',
+  'data-admin-local-import-panel',
+  'data-admin-local-import-preview',
+  'data-admin-local-import-run',
+  'data-admin-local-import-result',
   'data-handoff-consultant-cockpit',
   'data-handoff-action-plan',
   'data-handoff-action-execution',
@@ -245,7 +249,11 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-admin-backend-events',
   'data-admin-backend-table',
   'data-admin-backend-database-provider',
-  'data-admin-backend-event-refresh'
+  'data-admin-backend-event-refresh',
+  'data-admin-local-import-panel',
+  'data-admin-local-import-preview',
+  'data-admin-local-import-run',
+  'data-admin-local-import-result'
 ].forEach((marker) => {
   assert(adminUsers.includes(marker) || adminDashboard.includes(marker), `Dashboard Admin sem marcador publico ${marker}.`);
 });
@@ -254,8 +262,11 @@ assert(adminDashboard.includes('href="#admin-proximos-passos"'), 'dashboard-admi
 assert(adminDashboard.includes('data-admin-backend-events'), 'dashboard-admin.html sem painel de eventos do banco local.');
 assert(backendApi.includes('listEvents'), 'BFBackendApi sem leitura de eventos server-side.');
 assert(backendApi.includes('databaseStatus'), 'BFBackendApi sem status tecnico do banco local.');
+assert(backendApi.includes('importLocalSnapshot'), 'BFBackendApi sem importacao guiada localStorage -> SQLite.');
 assert(server.includes('/api/database/status'), 'server.js sem endpoint de status tecnico do banco.');
+assert(server.includes('/api/database/import-local'), 'server.js sem endpoint de importacao localStorage -> SQLite.');
 assert(apiDocs.includes('/api/database/status'), 'api-docs.html sem endpoint de status tecnico do banco.');
+assert(apiDocs.includes('/api/database/import-local'), 'api-docs.html sem endpoint de importacao localStorage -> SQLite.');
 assert(simulator.includes('data-proposal-builder-board'), 'simulador.html sem lousa de proposta documentada.');
 assert(simulator.includes('data-proposal-version-panel'), 'simulador.html sem painel de versionamento da proposta.');
 assert(simulator.includes('js/proposal-builder.js'), 'simulador.html sem modulo proposal-builder.');
@@ -343,7 +354,7 @@ const report = {
   ok: failures.length === 0,
   contracts: {
     localStorageKeys: 18,
-    dataMarkers: 61,
+    dataMarkers: 65,
     globals: 19,
     deepLinks: 10,
     validators: 21,

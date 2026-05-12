@@ -5,6 +5,7 @@
   const ADMIN_COMMERCIAL_STAGE_STATE_KEY = 'bf_admin_commercial_stage_states_v1';
   const ADMIN_COMMERCIAL_STAGE_AUDIT_KEY = 'bf_admin_commercial_stage_audit_v1';
   const ADMIN_COMMERCIAL_STAGE_AUDIT_LIMIT = 160;
+  let backendLocalImportState = { loading: false, result: null };
 
   function qs(selector) {
     return document.querySelector(selector);
@@ -397,6 +398,101 @@
     } catch (error) {
       return false;
     }
+  }
+
+  function stableHash(value) {
+    const text = String(value || '');
+    let hash = 2166136261;
+    for (let index = 0; index < text.length; index += 1) {
+      hash ^= text.charCodeAt(index);
+      hash = Math.imul(hash, 16777619);
+    }
+    return (hash >>> 0).toString(16).toUpperCase().padStart(8, '0');
+  }
+
+  function localImportOwnerFromKey(key) {
+    const text = String(key || '');
+    const scopedPrefixes = ['bf_journey_analytics_v1:', 'bf_decision_journey_history_v1:', 'bf_decision_journey_v1:'];
+    const prefix = scopedPrefixes.find((item) => text.startsWith(item));
+    return prefix ? text.slice(prefix.length) || 'anon' : '';
+  }
+
+  function localImportType(prefix, action) {
+    const cleanAction = String(action || 'event').trim() || 'event';
+    return cleanAction.startsWith(`${prefix}:`) ? cleanAction : `${prefix}:${cleanAction}`;
+  }
+
+  function normalizeLocalImportEvent(key, event, index, config) {
+    if (!event || typeof event !== 'object') return null;
+    const action = event.type || event.action || event.status || event.calculatorSlug || 'event';
+    const type = localImportType(config.typePrefix, action);
+    const ownerEmail = event.ownerEmail || event.owner || localImportOwnerFromKey(key) || '';
+    const entityId = event.handoffId || event.modelId || event.actionKey || event.journeyId || event.historyId || event.id || '';
+    const createdAt = event.createdAt || event.updatedAt || event.importedAt || event.completedAt || '';
+    const id = `LS-${stableHash([key, index, event.id || entityId, type, createdAt].join('|'))}`;
+    return {
+      id,
+      type,
+      source: config.source,
+      ownerEmail,
+      actorEmail: event.actorEmail || event.updatedBy || ownerEmail || '',
+      entityType: config.entityType,
+      entityId,
+      createdAt,
+      payload: {
+        storageKey: key,
+        localId: event.id || '',
+        ...event
+      }
+    };
+  }
+
+  function collectLocalImportEvents() {
+    const configs = [
+      { key: 'bf_decision_context_audit_v1', source: 'decision-context', typePrefix: 'decision-context', entityType: 'decision-context' },
+      { prefix: 'bf_journey_analytics_v1:', source: 'journey-analytics', typePrefix: 'journey', entityType: 'journey-event' },
+      { key: 'bf_calculator_history_v1', source: 'calculator-history', typePrefix: 'calculator', entityType: 'calculator' },
+      { key: 'bf_comparator_model_audit_v1', source: 'comparator-model-audit', typePrefix: 'comparator-model', entityType: 'comparator-model' },
+      { key: 'bf_consultive_handoff_audit_v1', source: 'handoff-consultivo', typePrefix: 'handoff', entityType: 'handoff' },
+      { key: 'bf_operational_action_audit_v1', source: 'operational-action-audit', typePrefix: 'operational-action', entityType: 'operational-action' },
+      { key: 'bf_admin_commercial_stage_audit_v1', source: 'admin-commercial-stage', typePrefix: 'admin-commercial-stage', entityType: 'commercial-stage' },
+      { key: 'bf_admin_recovery_audit_v1', source: 'admin-recovery', typePrefix: 'admin-recovery', entityType: 'recovery' }
+    ];
+    const events = [];
+    const keys = adminLocalStorageKeys();
+    configs.forEach((config) => {
+      const matchedKeys = config.prefix
+        ? keys.filter((key) => String(key || '').startsWith(config.prefix))
+        : keys.filter((key) => key === config.key);
+      matchedKeys.forEach((key) => {
+        const list = readAdminJson(key, []);
+        if (!Array.isArray(list)) return;
+        list.forEach((event, index) => {
+          const normalized = normalizeLocalImportEvent(key, event, index, config);
+          if (normalized) events.push(normalized);
+        });
+      });
+    });
+    return events.slice(0, 500);
+  }
+
+  function collectLocalImportSnapshot() {
+    const users = window.BFAuth && window.BFAuth.listUsers ? window.BFAuth.listUsers() : [];
+    const events = collectLocalImportEvents();
+    return {
+      source: 'admin-local-storage',
+      generatedAt: new Date().toISOString(),
+      users: users.map((user) => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        status: user.status,
+        department: user.department || '',
+        phone: user.phone || ''
+      })),
+      events
+    };
   }
 
   function scopedOwnerFromKey(key, prefix) {
@@ -3026,8 +3122,63 @@
     document.body.dataset.adminBackendEventsReady = 'loading';
   }
 
+  function renderLocalImportResult() {
+    const state = backendLocalImportState || {};
+    const result = state.result;
+    if (state.loading) {
+      return '<div class="bf-empty-state" data-admin-local-import-result>Processando migracao guiada...</div>';
+    }
+    if (!result) {
+      return '<div class="bf-empty-state" data-admin-local-import-result>Use a previsualizacao antes de importar. A execucao nao sobrescreve usuarios ou eventos existentes.</div>';
+    }
+    if (!result.ok) {
+      return `<div class="bf-empty-state" data-admin-local-import-result><strong>Importacao indisponivel</strong><p>${escapeHtml(result.message || 'Nao foi possivel processar o snapshot local.')}</p></div>`;
+    }
+    const mode = result.dryRun ? 'Previsualizacao' : 'Importacao executada';
+    return `
+      <div class="bf-empty-state" data-admin-local-import-result>
+        <strong>${mode}</strong>
+        <p>
+          Usuarios: ${Number(result.users && result.users.importable || 0)} importaveis,
+          ${Number(result.users && result.users.imported || 0)} importados,
+          ${Number(result.users && result.users.skippedExisting || 0)} ja existentes.
+          Eventos: ${Number(result.events && result.events.importable || 0)} importaveis,
+          ${Number(result.events && result.events.imported || 0)} importados,
+          ${Number(result.events && result.events.skippedExisting || 0)} ja existentes.
+        </p>
+        <small>Novos usuarios recebem senha temporaria ${escapeHtml(result.temporaryPassword || window.BFAuth.DEFAULT_PASSWORD || 'Temp@123')}.</small>
+      </div>
+    `;
+  }
+
+  function renderLocalImportPanel(snapshot) {
+    const sourceCount = new Set((snapshot.events || []).map((event) => event.source).filter(Boolean)).size;
+    return `
+      <div class="bf-admin-import-panel" data-admin-local-import-panel>
+        <div class="bf-admin-panel-heading">
+          <div>
+            <span class="bf-badge bf-badge--warning">Migracao guiada</span>
+            <h3>localStorage para SQLite</h3>
+          </div>
+          <div class="bf-admin-actions">
+            <button class="btn btn--ghost btn--sm" type="button" data-admin-local-import-preview>Previsualizar</button>
+            <button class="btn btn--primary btn--sm" type="button" data-admin-local-import-run>Importar</button>
+          </div>
+        </div>
+        <div class="bf-platform-metrics">
+          <article class="bf-platform-metric"><small>Usuarios locais</small><strong>${snapshot.users.length}</strong></article>
+          <article class="bf-platform-metric"><small>Eventos locais</small><strong>${snapshot.events.length}</strong></article>
+          <article class="bf-platform-metric"><small>Fontes locais</small><strong>${sourceCount}</strong></article>
+          <article class="bf-platform-metric"><small>Modo</small><strong>Sem sobrescrever</strong></article>
+        </div>
+        ${renderLocalImportResult()}
+      </div>
+    `;
+  }
+
   function renderBackendEventsResult(target, health, events, databaseStatus) {
     const list = Array.isArray(events) ? events : [];
+    const snapshot = collectLocalImportSnapshot();
     const stats = health && health.stats ? health.stats : {};
     const dbStatus = databaseStatus && databaseStatus.ok ? databaseStatus : {};
     const dbFiles = dbStatus.files || {};
@@ -3077,6 +3228,7 @@
         <div class="bf-calculator-history">${tableRows || '<div class="bf-empty-state">Tabelas ainda nao lidas pela API local.</div>'}</div>
         <div class="bf-calculator-history">${rows || '<div class="bf-empty-state">Nenhum evento server-side registrado ainda.</div>'}</div>
       </div>
+      ${renderLocalImportPanel(snapshot)}
     `;
     document.body.dataset.adminBackendEventsReady = 'true';
     document.body.dataset.adminBackendEventCount = String(list.length);
@@ -3246,6 +3398,30 @@
     `).join('');
   }
 
+  async function handleLocalImport(dryRun) {
+    const api = backendApi();
+    if (!api || typeof api.importLocalSnapshot !== 'function') {
+      backendLocalImportState = {
+        loading: false,
+        result: { ok: false, message: 'BFBackendApi.importLocalSnapshot indisponivel neste runtime.' }
+      };
+      renderBackendEvents();
+      return;
+    }
+    backendLocalImportState = { loading: true, result: null };
+    renderBackendEvents();
+    const snapshot = collectLocalImportSnapshot();
+    const result = await api.importLocalSnapshot(snapshot, { dryRun });
+    backendLocalImportState = { loading: false, result };
+    setMessage(
+      result && result.ok
+        ? (result.dryRun ? 'Previsualizacao da migracao concluida.' : 'Migracao localStorage -> SQLite concluida.')
+        : 'Nao foi possivel processar a migracao guiada.',
+      result && result.ok ? 'success' : 'error'
+    );
+    renderBackendEvents();
+  }
+
   function renderAll() {
     renderCurrentUser();
     renderOperationalStrip();
@@ -3356,9 +3532,20 @@
 
     qs('[data-admin-backend-events]')?.addEventListener('click', (event) => {
       const refreshButton = event.target.closest('[data-admin-backend-event-refresh]');
-      if (!refreshButton) return;
-      setMessage('Atualizando eventos do banco local.', 'success');
-      renderBackendEvents();
+      if (refreshButton) {
+        setMessage('Atualizando eventos do banco local.', 'success');
+        renderBackendEvents();
+        return;
+      }
+      const previewButton = event.target.closest('[data-admin-local-import-preview]');
+      if (previewButton) {
+        handleLocalImport(true);
+        return;
+      }
+      const runButton = event.target.closest('[data-admin-local-import-run]');
+      if (runButton) {
+        handleLocalImport(false);
+      }
     });
 
     qs('[data-admin-journey-funnel]')?.addEventListener('click', (event) => {

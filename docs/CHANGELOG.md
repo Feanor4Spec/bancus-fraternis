@@ -4,6 +4,29 @@
 
 ---
 
+## [v8.82.0] - 2026-05-12
+
+### Migracao guiada localStorage para SQLite
+
+#### Adicionado
+- API local ganhou `POST /api/database/import-local` com modo preview e execucao.
+- Dashboard Admin ganhou painel `data-admin-local-import-panel` para consolidar usuarios/eventos locais no SQLite.
+- `BFBackendApi` passou a expor `importLocalSnapshot(snapshot, options)`.
+
+#### Modificado
+- Importacao e idempotente: usuarios existentes por id/e-mail e eventos existentes por id sao pulados.
+- Novos usuarios importados recebem senha temporaria `Temp@123`; eventos importados continuam sanitizados pelo backend.
+- Validadores, contratos, mapa e plano foram atualizados para proteger a migracao.
+
+#### Validado
+- `node --check js/backend/db.js`
+- `node --check server.js`
+- `node --check assets/js/admin-users.js`
+- `node tools/validate-local-database.mjs`
+- `node tools/validate-public-contracts.mjs`
+
+---
+
 ## [v8.81.0] - 2026-05-12
 
 ### Diagnostico backend SQL local

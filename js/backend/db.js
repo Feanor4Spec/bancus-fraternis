@@ -8,6 +8,7 @@ const DEFAULT_DB_PATH = path.join(__dirname, '..', '..', '.runtime', 'bancus-fra
 const SESSION_TTL_MS = 1000 * 60 * 60 * 8;
 const PASSWORD_ALGORITHM = 'scrypt-sha256';
 const MAX_EVENT_PAYLOAD_CHARS = 50000;
+const IMPORT_TEMP_PASSWORD = 'Temp@123';
 
 const ROLE_LABELS = {
   admin: 'Administrador',
@@ -205,6 +206,14 @@ function publicEvent(row) {
   };
 }
 
+function countBy(items, key) {
+  return (items || []).reduce((acc, item) => {
+    const value = String(item && item[key] ? item[key] : 'desconhecido');
+    acc[value] = Number(acc[value] || 0) + 1;
+    return acc;
+  }, {});
+}
+
 function validateUserPayload(payload, options = {}) {
   const data = payload || {};
   const name = normalizeText(data.name);
@@ -338,6 +347,11 @@ class BancusDatabase {
   listUsers() {
     const rows = this.db.prepare('SELECT * FROM users ORDER BY name COLLATE NOCASE ASC').all();
     return rows.map(publicUser);
+  }
+
+  hasEvent(id) {
+    if (!id) return false;
+    return Boolean(this.db.prepare('SELECT id FROM events WHERE id = ? LIMIT 1').get(String(id || '')));
   }
 
   getUserById(id) {
@@ -569,6 +583,132 @@ class BancusDatabase {
     const limit = Math.max(1, Math.min(500, Number(options.limit || 100)));
     const rows = this.db.prepare('SELECT * FROM events ORDER BY created_at DESC LIMIT ?').all(limit);
     return rows.map(publicEvent);
+  }
+
+  importLocalSnapshot(input = {}, options = {}) {
+    const dryRun = options.dryRun !== false;
+    const timestamp = nowIso();
+    const users = Array.isArray(input.users) ? input.users.slice(0, 250) : [];
+    const events = Array.isArray(input.events) ? input.events.slice(0, 500) : [];
+    const userRows = [];
+    const eventRows = [];
+    const summary = {
+      ok: true,
+      dryRun,
+      source: normalizeText(input.source, 'localStorage'),
+      temporaryPassword: IMPORT_TEMP_PASSWORD,
+      users: {
+        total: users.length,
+        importable: 0,
+        imported: 0,
+        skippedExisting: 0,
+        invalid: 0
+      },
+      events: {
+        total: events.length,
+        importable: 0,
+        imported: 0,
+        skippedExisting: 0,
+        invalid: 0,
+        bySource: {}
+      }
+    };
+
+    users.forEach((item) => {
+      const validation = validateUserPayload({
+        id: item && item.id,
+        name: item && item.name,
+        email: item && item.email,
+        role: item && item.role,
+        status: item && item.status,
+        department: item && item.department,
+        phone: item && item.phone,
+        password: IMPORT_TEMP_PASSWORD
+      });
+      if (!validation.ok) {
+        summary.users.invalid += 1;
+        return;
+      }
+      const data = validation.data;
+      const id = data.id && /^[A-Za-z0-9_-]{3,80}$/.test(data.id) ? data.id : makeId('USR');
+      if (this.getUserById(id) || this.getUserByEmail(data.email)) {
+        summary.users.skippedExisting += 1;
+        return;
+      }
+      summary.users.importable += 1;
+      userRows.push({ ...data, id });
+    });
+
+    events.forEach((item) => {
+      const id = normalizeText(item && item.id);
+      const type = normalizeText(item && item.type, 'local-storage-event');
+      if (!id || !type) {
+        summary.events.invalid += 1;
+        return;
+      }
+      if (this.hasEvent(id)) {
+        summary.events.skippedExisting += 1;
+        return;
+      }
+      const event = {
+        id,
+        type,
+        source: normalizeText(item && item.source, 'localStorage'),
+        ownerEmail: item && item.ownerEmail,
+        actorEmail: item && item.actorEmail ? item.actorEmail : options.actorEmail || '',
+        sessionId: item && item.sessionId,
+        entityType: item && item.entityType ? item.entityType : 'local-storage',
+        entityId: item && item.entityId,
+        payload: item && (item.payload || item.details) ? (item.payload || item.details) : {},
+        createdAt: item && item.createdAt ? item.createdAt : timestamp
+      };
+      summary.events.importable += 1;
+      eventRows.push(event);
+    });
+    summary.events.bySource = countBy(eventRows, 'source');
+
+    if (dryRun) return summary;
+
+    this.db.exec('BEGIN');
+    try {
+      userRows.forEach((data) => {
+        const credentials = hashPassword(IMPORT_TEMP_PASSWORD);
+        this.db.prepare(`
+          INSERT INTO users (
+            id, name, email, role, status, department, phone,
+            password_hash, password_salt, password_algorithm, password_updated_at,
+            created_at, updated_at, last_login_at
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).run(
+          data.id,
+          data.name,
+          data.email,
+          data.role,
+          data.status,
+          data.department,
+          data.phone,
+          credentials.hash,
+          credentials.salt,
+          credentials.algorithm,
+          timestamp,
+          timestamp,
+          timestamp,
+          ''
+        );
+        summary.users.imported += 1;
+      });
+      eventRows.forEach((event) => {
+        this.recordEvent(event);
+        summary.events.imported += 1;
+      });
+      this.db.exec('COMMIT');
+    } catch (error) {
+      this.db.exec('ROLLBACK');
+      throw error;
+    }
+
+    return summary;
   }
 
   stats() {

@@ -317,6 +317,10 @@ if (!adminUsersJs.includes('data-admin-backend-event-refresh')) fail('admin-user
 if (!adminUsersJs.includes('listEvents(30)')) fail('admin-users.js sem leitura de eventos da API local.');
 if (!adminUsersJs.includes('databaseStatus')) fail('admin-users.js sem status tecnico do banco local.');
 if (!adminUsersJs.includes('data-admin-backend-table')) fail('admin-users.js sem lista de tabelas SQLite.');
+if (!adminUsersJs.includes('data-admin-local-import-panel')) fail('admin-users.js sem painel de migracao localStorage para SQLite.');
+if (!adminUsersJs.includes('data-admin-local-import-preview')) fail('admin-users.js sem previsualizacao de migracao localStorage.');
+if (!adminUsersJs.includes('data-admin-local-import-run')) fail('admin-users.js sem execucao de migracao localStorage.');
+if (!adminUsersJs.includes('importLocalSnapshot')) fail('admin-users.js sem chamada de importacao localStorage para SQLite.');
 if (!adminUsersJs.includes('Proposta revisada sem handoff')) fail('admin-users.js sem gargalo de proposta revisada sem handoff.');
 if (!adminUsersJs.includes('Trilha sem comparador')) fail('admin-users.js sem gargalo de trilha sem comparador.');
 if (!adminUsersJs.includes('Handoff sem responsavel')) fail('admin-users.js sem gargalo de handoff sem responsavel.');

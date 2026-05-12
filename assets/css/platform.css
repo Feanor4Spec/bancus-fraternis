@@ -850,6 +850,21 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.bf-admin-import-panel {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--bf-line);
+}
+
+.bf-admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
 .bf-admin-next-actions {
   padding: 16px;
   border: 1px solid rgba(11, 44, 82, .12);
@@ -3773,6 +3788,7 @@
   .bf-admin-commercial-lead__actions,
   .bf-admin-commercial-insights__grid,
   .bf-admin-mini-grid,
+  .bf-admin-actions,
   .bf-handoff-action-plan,
   .bf-admin-source-grid,
   .bf-admin-bottleneck-grid,

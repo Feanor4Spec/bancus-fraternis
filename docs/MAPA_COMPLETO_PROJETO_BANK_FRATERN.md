@@ -69,7 +69,7 @@ Contrato confirmado:
 - Todas as paginas continuam acessiveis por `/pages/<arquivo>.html`.
 - Todas as paginas tambem respondem por URL curta, como `/trilha-decisao.html`.
 - O contrato e coberto por `tools/validate-route-aliases.mjs`.
-- Quando roda via Node, `GET /api/health`, `/api/database/status`, `/api/auth/*`, `/api/users` e `/api/events` usam SQLite local em `.runtime/`.
+- Quando roda via Node, `GET /api/health`, `/api/database/status`, `POST /api/database/import-local`, `/api/auth/*`, `/api/users` e `/api/events` usam SQLite local em `.runtime/`.
 - Quando publicado em GitHub Pages ou aberto por `file://`, as paginas seguem funcionando com fallback em `localStorage`.
 
 ## Estrutura de Diretorios
@@ -321,7 +321,7 @@ Melhoria implementada em 2026-05-07:
 | `js/storage.js` | Simulacoes salvas e estatisticas de carteira. |
 | `js/settings.js` | Preferencias locais e defaults. |
 | `js/auth.js` | Usuarios locais, sessao, papeis e guardas. |
-| `js/backend/db.js` | Banco local SQLite para usuarios, sessoes, eventos e status tecnico. |
+| `js/backend/db.js` | Banco local SQLite para usuarios, sessoes, eventos, status tecnico e importacao guiada. |
 | `js/shared-layout.js` | Shell comum, header/footer, contrato v8 e estado de conta. |
 | `js/home.js` | Home contextual, cockpit de continuidade e retomada de trilha ativa. |
 | `js/portfolio-live.js` | Carteira, oportunidades, agenda e insights. |
@@ -337,7 +337,7 @@ Melhoria implementada em 2026-05-07:
 | `assets/js/calculadoras-page.js` | Hub e paginas individuais de calculadoras. |
 | `assets/js/calculadoras-governanca.js` | Premissas, catalogo e golden tests. |
 | `assets/js/client-dashboard.js` | Dashboard cliente e continuidade. |
-| `assets/js/admin-users.js` | Admin, usuarios, funil, recuperacao, pacotes, SLA, metas, eventos SQLite e auditoria. |
+| `assets/js/admin-users.js` | Admin, usuarios, funil, recuperacao, pacotes, SLA, metas, eventos SQLite, migracao guiada e auditoria. |
 | `assets/js/handoff-consultivo.js` | UI do painel de handoff. |
 | `assets/js/trilha-decisao.js` | UI da trilha assistida. |
 | `assets/js/modelos-biblioteca.js` | Biblioteca de modelos. |
@@ -350,7 +350,7 @@ Melhoria implementada em 2026-05-07:
 
 | Service | Export | Responsabilidade |
 | --- | --- | --- |
-| `backend-api.service.js` | `BFBackendApi` | Ponte para API local Node/SQLite com fallback estatico. |
+| `backend-api.service.js` | `BFBackendApi` | Ponte para API local Node/SQLite, status tecnico, importacao guiada e fallback estatico. |
 | `dados.service.js` | `BFDadosService` | Le datasets locais. |
 | `calculadoras.service.js` | `BFCalculadoras` | Simula calculadoras, perfil, historico e recomendacoes. |
 | `decision-context.service.js` | `BFDecisionContext` | Perfil financeiro, historico, prefill e auditoria nao sensivel. |
@@ -568,7 +568,7 @@ Governanca documental: docs ativos passaram a usar Bancus Fraternis como platafo
 O vetor recomendado para o proximo ciclo continua sendo produto e jornada, agora com foco em reduzir risco tecnico sem quebrar contratos publicos:
 
 1. Continuar a modularizacao do simulador, extraindo calculo/orquestracao de resultado e integracoes de proposta sem quebrar `App.*`.
-2. Criar migracao guiada `localStorage` -> SQLite para consolidar dados de usuarios/eventos com previsualizacao e relatorio.
+2. Evoluir a migracao guiada para incluir snapshots de simulacoes/propostas quando houver schema server-side dedicado.
 3. Preparar migracao futura do SQLite local para backend/API produtivo sem quebrar `localStorage`, deep links e services globais.
 4. Manter a lousa como porta de QA visual a cada nova entrega funcional.
 

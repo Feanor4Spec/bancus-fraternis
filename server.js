@@ -4,6 +4,7 @@ const path = require('path');
 
 const PORT = Number(process.env.PORT) || 8080;
 const ROOT_DIR = __dirname;
+const MAX_JSON_BODY_BYTES = 4 * 1024 * 1024;
 let localDatabase = null;
 let SCHEMA_VERSION = 'bancus-fraternis.local-db.v1';
 
@@ -122,8 +123,8 @@ function readRequestBody(req) {
     let body = '';
     req.on('data', (chunk) => {
       body += chunk;
-      if (body.length > 1024 * 1024) {
-        reject(new Error('Payload excede o limite de 1MB.'));
+      if (body.length > MAX_JSON_BODY_BYTES) {
+        reject(new Error('Payload excede o limite de 4MB.'));
         req.destroy();
       }
     });
@@ -273,6 +274,36 @@ async function handleApiRequest(req, res) {
     const context = requireAuth(req, res, ['admin']);
     if (!context) return true;
     sendJson(res, 200, localDatabase.databaseStatus());
+    return true;
+  }
+
+  if (pathname === '/api/database/import-local') {
+    if (req.method !== 'POST') {
+      methodNotAllowed(res);
+      return true;
+    }
+    const context = requireAuth(req, res, ['admin']);
+    if (!context) return true;
+    const body = await readJsonBody(req);
+    const result = localDatabase.importLocalSnapshot(body, {
+      dryRun: body.dryRun !== false,
+      actorEmail: context.user.email
+    });
+    if (!result.dryRun) {
+      recordApiEvent('local-storage-import', {
+        ownerEmail: context.user.email,
+        entityType: 'database',
+        entityId: 'local-storage-import',
+        payload: {
+          usersImported: result.users.imported,
+          eventsImported: result.events.imported,
+          usersSkippedExisting: result.users.skippedExisting,
+          eventsSkippedExisting: result.events.skippedExisting,
+          source: result.source
+        }
+      }, context);
+    }
+    sendJson(res, 200, result);
     return true;
   }
 

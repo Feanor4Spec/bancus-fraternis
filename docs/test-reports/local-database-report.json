@@ -2,9 +2,11 @@
   "ok": true,
   "schemaVersion": "bancus-fraternis.local-db.v1",
   "seedUsers": 3,
-  "events": 1,
+  "events": 2,
   "provider": "sqlite",
   "tables": 3,
+  "importedUsers": 1,
+  "importedEvents": 1,
   "warnings": [],
   "failures": []
 }

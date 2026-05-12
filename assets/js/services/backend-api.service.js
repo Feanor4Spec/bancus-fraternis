@@ -115,6 +115,16 @@
     return request('/api/database/status');
   }
 
+  function importLocalSnapshot(snapshot, options = {}) {
+    return request('/api/database/import-local', {
+      method: 'POST',
+      body: {
+        ...(snapshot || {}),
+        dryRun: options.dryRun !== false
+      }
+    });
+  }
+
   function listUsers() {
     return request('/api/users');
   }
@@ -173,6 +183,7 @@
     authLogout,
     currentUser,
     databaseStatus,
+    importLocalSnapshot,
     listUsers,
     createUser,
     updateUser,

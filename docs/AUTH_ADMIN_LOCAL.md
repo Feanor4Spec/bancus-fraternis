@@ -11,7 +11,7 @@ Esta camada implementa login, sessao local, papeis de acesso e painel administra
 - `js/auth.js`: servico central de usuarios, sessao, papeis e protecao de paginas.
 - `assets/js/services/backend-api.service.js`: ponte opcional para API local Node/SQLite.
 - `js/backend/db.js`: banco local SQLite com usuarios, sessoes, eventos e status tecnico.
-- `server.js`: endpoints `/api/database/status`, `/api/auth/*`, `/api/users` e `/api/events`.
+- `server.js`: endpoints `/api/database/status`, `/api/database/import-local`, `/api/auth/*`, `/api/users` e `/api/events`.
 - `pages/login.html`: tela de login com contas de demonstracao e barra de progresso.
 - `pages/dashboard-admin.html`: painel de administracao de usuarios.
 - `assets/js/login.js`: comportamento da tela de login.
@@ -41,6 +41,7 @@ As contas seed sao recriadas automaticamente quando faltarem no localStorage.
 - Em `localhost`, operacoes de usuario feitas pelo Admin sao espelhadas no SQLite com senha hasheada via `scrypt-sha256`.
 - Eventos de auth, jornada, handoff, funil e modelos podem ser persistidos em `/api/events` com payload sanitizado.
 - Admin pode consultar `/api/database/status` no painel para confirmar provider, tabelas, integridade e arquivos locais.
+- Admin pode previsualizar e executar a migracao guiada do `localStorage` para SQLite sem sobrescrever usuarios ou eventos existentes.
 
 ## Chaves locais
 
@@ -53,6 +54,7 @@ As contas seed sao recriadas automaticamente quando faltarem no localStorage.
 - Arquivo padrao: `.runtime/bancus-fraternis.sqlite`.
 - Tabelas: `users`, `sessions`, `events`.
 - Status tecnico: `GET /api/database/status` e `node tools/inspect-local-sql-environment.mjs`.
+- Migracao guiada: `POST /api/database/import-local`; novos usuarios recebem senha temporaria `Temp@123`.
 - `.runtime/` fica fora do Git.
 - Validador: `node tools/validate-local-database.mjs`.
 

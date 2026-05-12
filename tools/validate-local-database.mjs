@@ -99,10 +99,58 @@ try {
   assert(databaseStatus.sqlite && databaseStatus.sqlite.quickCheck === 'ok', 'PRAGMA quick_check do SQLite nao retornou ok.');
   assert(Array.isArray(databaseStatus.tables) && databaseStatus.tables.length >= 3, 'Status do banco deveria listar tabelas principais.');
 
+  const importSnapshot = {
+    source: 'validator-local-storage',
+    users: [
+      {
+        id: 'USR-LOCAL-IMPORT',
+        name: 'Usuario Local Importado',
+        email: 'local-import@example.com',
+        role: 'cliente',
+        status: 'active',
+        department: 'Validacao',
+        phone: '(00) 00000-0001'
+      }
+    ],
+    events: [
+      {
+        id: 'LS-VALIDATOR-EVENT',
+        type: 'calculator:capacidade-credito',
+        source: 'calculator-history',
+        ownerEmail: 'local-import@example.com',
+        actorEmail: 'admin@bankfratern.local',
+        entityType: 'calculator',
+        entityId: 'capacidade-credito',
+        createdAt: new Date().toISOString(),
+        payload: {
+          amount: 200,
+          password: 'nao-gravar',
+          phone: '(11) 90000-0000'
+        }
+      }
+    ]
+  };
+  const importPreview = localDb.importLocalSnapshot(importSnapshot, { dryRun: true, actorEmail: 'admin@bankfratern.local' });
+  assert(importPreview.dryRun && importPreview.users.importable === 1, 'Preview de importacao deveria encontrar usuario importavel.');
+  assert(importPreview.events.importable === 1, 'Preview de importacao deveria encontrar evento importavel.');
+  const importRun = localDb.importLocalSnapshot(importSnapshot, { dryRun: false, actorEmail: 'admin@bankfratern.local' });
+  assert(importRun.users.imported === 1, 'Importacao local deveria criar usuario no SQLite.');
+  assert(importRun.events.imported === 1, 'Importacao local deveria criar evento no SQLite.');
+  const importRepeat = localDb.importLocalSnapshot(importSnapshot, { dryRun: false, actorEmail: 'admin@bankfratern.local' });
+  assert(importRepeat.users.skippedExisting === 1, 'Importacao repetida deveria pular usuario existente.');
+  assert(importRepeat.events.skippedExisting === 1, 'Importacao repetida deveria pular evento existente.');
+  const importedLogin = localDb.login('local-import@example.com', 'Temp@123');
+  assert(importedLogin.ok, 'Usuario importado deveria autenticar com senha temporaria.');
+  const importedEvent = localDb.listEvents({ limit: 20 }).find((item) => item.id === 'LS-VALIDATOR-EVENT');
+  assert(importedEvent && importedEvent.payload.amount === 200, 'Evento importado deveria preservar payload seguro.');
+  assert(importedEvent && !Object.prototype.hasOwnProperty.call(importedEvent.payload, 'password'), 'Evento importado vazou password.');
+  assert(importedEvent && !Object.prototype.hasOwnProperty.call(importedEvent.payload, 'phone'), 'Evento importado vazou phone.');
+
   const server = await read('server.js');
   [
     '/api/health',
     '/api/database/status',
+    '/api/database/import-local',
     '/api/auth/login',
     '/api/auth/logout',
     '/api/auth/me',
@@ -117,6 +165,7 @@ try {
     'bf_backend_session_v1',
     'authLogin',
     'databaseStatus',
+    'importLocalSnapshot',
     'recordEvent',
     'listEvents',
     'createUser',
@@ -130,6 +179,11 @@ try {
     'data-admin-backend-event',
     'data-admin-backend-table',
     'data-admin-backend-database-provider',
+    'data-admin-local-import-panel',
+    'data-admin-local-import-preview',
+    'data-admin-local-import-run',
+    'data-admin-local-import-result',
+    'collectLocalImportSnapshot',
     'data-admin-backend-event-refresh',
     'databaseStatus',
     'listEvents(30)'
@@ -149,6 +203,8 @@ try {
     events: localDb.listEvents({ limit: 50 }).length,
     provider: databaseStatus.provider,
     tables: databaseStatus.tables.length,
+    importedUsers: importRun.users.imported,
+    importedEvents: importRun.events.imported,
     warnings,
     failures
   };
