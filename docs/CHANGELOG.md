@@ -4,6 +4,29 @@
 
 ---
 
+## [v8.79.0] - 2026-05-12
+
+### Banco local de usuarios e eventos
+
+#### Adicionado
+- Criada camada SQLite local em `js/backend/db.js` com tabelas `users`, `sessions` e `events`.
+- `server.js` ganhou endpoints ativos `/api/health`, `/api/auth/*`, `/api/users` e `/api/events`.
+- Criado `BFBackendApi` para espelhar login, usuarios e eventos quando a plataforma roda em `localhost`, mantendo fallback estatico.
+- Adicionado `tools/validate-local-database.mjs` e documentacao `docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md`.
+
+#### Modificado
+- `BFAuth` continua sincrono/local, mas agora tenta espelhar login, criacao, edicao, status, senha e exclusao de usuarios no SQLite local.
+- Eventos de jornada, contexto, handoff, acoes operacionais, funil comercial e modelos tentam gravar em `/api/events`.
+- Contratos publicos, mapa, plano, API Docs, README, protocolo de testes e CI foram atualizados.
+
+#### Validado
+- `node --check server.js`
+- `node --check js/backend/db.js`
+- `node --check assets/js/services/backend-api.service.js`
+- `node tools/validate-local-database.mjs`
+
+---
+
 ## [v8.78.0] - 2026-05-11
 
 ### Proxima acao dinamica nas calculadoras

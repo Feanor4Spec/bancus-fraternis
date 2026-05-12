@@ -1,6 +1,6 @@
 # Contratos Publicos - Bancus Fraternis
 
-Atualizado em 2026-05-11.
+Atualizado em 2026-05-12.
 
 Este documento e a matriz viva dos contratos que novas evolucoes devem preservar. O Bancus Fraternis e uma plataforma estatica/progressiva de decisao financeira; por isso, compatibilidade local importa tanto quanto visual e jornada.
 
@@ -19,6 +19,7 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | --- | --- | --- | --- |
 | `bf_auth_users_v1` | `BFAuth` | Usuarios locais, papeis e status. | Preservar shape de usuario e senha local apenas no prototipo. |
 | `bf_auth_session_v1` | `BFAuth` | Sessao local de 8 horas. | Manter leitura tolerante quando sessao expirar. |
+| `bf_backend_session_v1` | `BFBackendApi` | Token da API local Node/SQLite quando o site roda em `localhost`. | Fallback obrigatorio para paginas estaticas, `file://` e GitHub Pages. |
 | `consorciopro_settings` | `Settings` | Preferencias historicas do simulador. | Nome legado controlado; nao renomear sem migracao. |
 | `consorciopro_simulations` | `Storage` / `App` | Simulacoes salvas do simulador completo. | Manter leitura de simulacoes antigas. |
 | `bank_fratern_proposal_acceptances_v1` | `BFProposalAcceptance` | Revisoes, aceite local e status de proposta. | Preservar `proposalId`, `status`, `version` e `snapshot`. |
@@ -71,11 +72,29 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | `bank-fratern.admin-consultant-portfolio.v1` | `data-admin-consultant-portfolio-export` | Carteira por consultor sanitizada, sem e-mail, CPF ou telefone no JSON final. |
 | `bank-fratern.admin-commercial-pipeline.v1` | `data-admin-commercial-pipeline-export` | Funil/cadencia com leads anonimizados, totais por etapa, leads parados e movimentacoes recentes, sem expor `handoffId`, cliente, e-mail, CPF, telefone ou link interno. |
 
+## API Local Node/SQLite
+
+| Endpoint | Uso | Compatibilidade |
+| --- | --- | --- |
+| `GET /api/health` | Verifica API local, schema `bancus-fraternis.local-db.v1` e estatisticas agregadas. | Deve responder sem autenticacao. |
+| `POST /api/auth/login` | Autentica usuarios seed ou cadastrados no SQLite e cria sessao server-side. | Nao substitui `BFAuth.login`; apenas espelha quando houver servidor local. |
+| `POST /api/auth/logout` | Revoga token da sessao de API. | Deve limpar tambem `bf_backend_session_v1` no browser. |
+| `GET /api/auth/me` | Retorna usuario e sessao da API local. | Exige bearer token. |
+| `GET /api/users` | Lista usuarios publicos do banco local. | Exige papel `admin`; nunca retornar hash, salt ou senha. |
+| `POST /api/users` | Cria usuario com senha hasheada via `scrypt-sha256`. | Exige papel `admin`; aceitar `id` para espelhamento do `localStorage`. |
+| `PATCH /api/users/:id` | Atualiza nome, e-mail, papel, status, area e telefone. | Exige papel `admin`; senha e opcional. |
+| `POST /api/users/:id/password` | Redefine senha no banco local. | Exige papel `admin`; resposta nao deve ecoar senha. |
+| `POST /api/users/:id/status` | Ativa ou inativa usuario e revoga sessoes quando inativado. | Exige papel `admin`; nao permitir auto-inativacao. |
+| `DELETE /api/users/:id` | Remove usuario e sessoes vinculadas. | Exige papel `admin`; nao permitir auto-exclusao. |
+| `POST /api/events` | Grava evento sanitizado de jornada, handoff, proposta, modelos ou auth. | Pode receber evento anonimo, mas payload sensivel deve ser removido. |
+| `GET /api/events` | Lista ultimos eventos locais. | Exige papel `admin`. |
+
 ## Exports Globais
 
 | Export | Papel publico |
 | --- | --- |
 | `BFAuth` | Autenticacao, usuarios locais e guardas por papel. |
+| `BFBackendApi` | Ponte progressiva para API local Node/SQLite: sessao de backend, usuarios e eventos com fallback estatico. |
 | `Settings` | Preferencias historicas do simulador. |
 | `BFHome` | Home contextual e continuidade. |
 | `BFDecisionContext` | Perfil financeiro, historico e prefill de simulacao. |
@@ -121,6 +140,7 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | --- | --- |
 | `tools/validate-public-contracts.mjs` | Este documento, contratos publicos e DoD. |
 | `tools/validate-public-release-safety.mjs` | Exposicao publica, paths locais, dados pessoais de exemplo, aviso demo, fallback estatico e CI. |
+| `tools/validate-local-database.mjs` | Banco local SQLite, seeds, hash de senha, sessao, eventos sanitizados e contratos de API. |
 | `tools/validate-docs-modernization.mjs` | README ativo, docs historicos e contagem atual de 19 calculadoras. |
 | `tools/validate-auth-navigation.mjs` | Login local, seed users, redirect seguro e bloqueio por papel. |
 | `tools/validate-navigable-journey.mjs` | Roteiro ponta a ponta da lousa, links, marcadores e contratos de QA de jornada. |

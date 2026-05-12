@@ -83,6 +83,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
 
 [
   'bf_auth_users_v1',
+  'bf_backend_session_v1',
   'consorciopro_simulations',
   'bank_fratern_proposal_acceptances_v1',
   'bank_fratern_proposal_versions_v1',
@@ -167,6 +168,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
 
 [
   'BFAuth',
+  'BFBackendApi',
   'BFDecisionContext',
   'BFCalculadoras',
   'BFProposalBuilder',
@@ -202,6 +204,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
 [
   'tools/validate-public-contracts.mjs',
   'tools/validate-public-release-safety.mjs',
+  'tools/validate-local-database.mjs',
   'tools/validate-design-system.mjs',
   'tools/validate-calculadoras.mjs',
   'tools/validate-calculator-journey.mjs',
@@ -318,11 +321,11 @@ if (legacyHits.length) {
 const report = {
   ok: failures.length === 0,
   contracts: {
-    localStorageKeys: 17,
+    localStorageKeys: 18,
     dataMarkers: 56,
-    globals: 18,
+    globals: 19,
     deepLinks: 10,
-    validators: 19,
+    validators: 20,
     calculatorCount
   },
   warnings,

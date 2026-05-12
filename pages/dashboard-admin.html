@@ -156,8 +156,8 @@
         <div class="bf-admin-rules">
           <div><strong>Login</strong><span>Cria sessao local de 8 horas.</span></div>
           <div><strong>Papeis</strong><span>Admin acessa administracao; consultor e cliente ficam no dashboard.</span></div>
-          <div><strong>Seguranca</strong><span>Prototipo estatico; a fase de API deve trocar localStorage por backend seguro.</span></div>
-          <div><strong>Auditoria</strong><span>Ultimo acesso e atualizacao ficam salvos por usuario.</span></div>
+          <div><strong>Seguranca</strong><span>Prototipo estatico com espelho SQLite local quando roda em Node.</span></div>
+          <div><strong>Auditoria</strong><span>Ultimo acesso, atualizacao e eventos podem ser salvos por usuario.</span></div>
           <div><strong>Calculadoras</strong><span>Premissas e formulas agora possuem painel de governanca e golden tests.</span></div>
         </div>
       </article>
@@ -211,7 +211,7 @@
   </main>
 
   <div data-shell-footer></div>
-  <script src="../js/auth.js"></script>
+  <script src="../assets/js/services/backend-api.service.js"></script><script src="../js/auth.js"></script>
   <script src="../js/storage.js"></script>
   <script src="../js/shared-layout.js"></script>
   <script src="../assets/js/formatters.js"></script>

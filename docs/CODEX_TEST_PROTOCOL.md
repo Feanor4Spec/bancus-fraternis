@@ -1,6 +1,6 @@
 # Protocolo de testes preferencial - Codex
 
-Atualizado em 2026-05-11 para o projeto Bancus Fraternis.
+Atualizado em 2026-05-12 para o projeto Bancus Fraternis.
 
 ## Caminho base
 
@@ -1330,6 +1330,25 @@ Validacoes obrigatorias:
   - `docs/test-prints/auth-login-desktop.png`
   - `docs/test-prints/auth-admin-dashboard-desktop.png`
   - `docs/test-prints/auth-client-dashboard-desktop.png`
+
+## Banco local Node/SQLite
+
+Validacao automatica:
+
+```powershell
+& $node --check js\backend\db.js
+& $node --check assets\js\services\backend-api.service.js
+& $node tools\validate-local-database.mjs
+```
+
+Validacoes obrigatorias:
+
+- `GET /api/health` deve responder `schema='bancus-fraternis.local-db.v1'` quando `node server.js` estiver ativo.
+- Login seed em `/api/auth/login` deve retornar usuario publico e token, sem hash/salt/senha.
+- `GET /api/users` deve exigir sessao admin.
+- Criacao de usuario deve salvar senha com hash server-side e permitir login posterior.
+- `POST /api/events` deve remover senha, token, CPF, telefone, WhatsApp, hash e salt do payload.
+- GitHub Pages e `file://` devem continuar funcionando via fallback `localStorage`.
 
 ## Persistencia e retomada
 

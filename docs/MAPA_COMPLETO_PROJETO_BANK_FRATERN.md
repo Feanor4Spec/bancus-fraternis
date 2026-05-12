@@ -1,22 +1,22 @@
 # Mapa Completo do Projeto Bancus Fraternis
 
-Atualizado em 2026-05-11.
+Atualizado em 2026-05-12.
 
 Este mapa foi recriado a partir da leitura real do workspace. Ele documenta o Bancus Fraternis como plataforma de decisao financeira, nao apenas como simulador de consorcio. O objetivo e permitir que uma pessoa ou agente entenda a superficie atual do produto antes de evoluir Home, produtos, calculadoras, trilha assistida, comparador, simulador, proposta, handoff, dashboard cliente e dashboard admin.
 
 ## Sumario Executivo
 
-O projeto e uma aplicacao web estatica/progressiva em HTML, CSS e JavaScript puro. A plataforma usa dados locais em JSON, base real de grupos de consorcio em `data_base/`, persistencia por `localStorage`, services globais no browser e validadores Node em `tools/`.
+O projeto e uma aplicacao web estatica/progressiva em HTML, CSS e JavaScript puro, com primeira camada local Node/SQLite para usuarios, sessoes e eventos. A plataforma usa dados locais em JSON, base real de grupos de consorcio em `data_base/`, persistencia por `localStorage`, services globais no browser, API local opcional e validadores Node em `tools/`.
 
 Estado confirmado nesta leitura:
 
 - 52 paginas HTML em `pages/`.
 - 19 calculadoras no catalogo `assets/data/calculadoras.json`.
 - 6 produtos financeiros no catalogo `assets/data/produtos.json`.
-- 15 services em `assets/js/services/`.
+- 16 services em `assets/js/services/`.
 - 5 arquivos de formulas em `assets/js/formulas/`.
 - 5 componentes em `assets/js/components/`.
-- 39 scripts de validacao/evidencia em `tools/`.
+- 40 scripts de validacao/evidencia em `tools/`.
 - 52 aliases curtos confirmados em `server.js`, um para cada pagina HTML em `pages/`.
 
 O centro de produto e uma jornada continua:
@@ -58,7 +58,8 @@ Separado como runtime, evidencia, backup ou historico:
 | Arquivo | Papel atual |
 | --- | --- |
 | `index.html` | Redirect simples para `pages/index.html`. |
-| `server.js` | Servidor canonico local. Usa porta `8080` por padrao, serve `/` como `pages/index.html` e cria aliases curtos para todas as paginas HTML em `pages/`. |
+| `server.js` | Servidor canonico local. Usa porta `8080` por padrao, serve `/` como `pages/index.html`, cria aliases curtos para todas as paginas HTML em `pages/` e expõe API local `/api/*` para auth, usuarios e eventos. |
+| `js/backend/db.js` | Camada SQLite local: schema, seeds, hash `scrypt-sha256`, sessoes e eventos sanitizados. |
 | `js/server.js` | Servidor legado do simulador antigo. Mantido como historico tecnico, nao como entrada principal. |
 | `Sistema.gitignore` | Ignora editor, node, python, envs, chaves e temporarios. |
 
@@ -68,13 +69,15 @@ Contrato confirmado:
 - Todas as paginas continuam acessiveis por `/pages/<arquivo>.html`.
 - Todas as paginas tambem respondem por URL curta, como `/trilha-decisao.html`.
 - O contrato e coberto por `tools/validate-route-aliases.mjs`.
+- Quando roda via Node, `GET /api/health`, `/api/auth/*`, `/api/users` e `/api/events` usam SQLite local em `.runtime/`.
+- Quando publicado em GitHub Pages ou aberto por `file://`, as paginas seguem funcionando com fallback em `localStorage`.
 
 ## Estrutura de Diretorios
 
 | Diretorio | Tipo | Conteudo |
 | --- | --- | --- |
 | `pages/` | Ativo | Superficie navegavel principal da plataforma. |
-| `js/` | Ativo e legado | Simulador completo, auth, storage, settings, home, proposta, carteira e motores originais. |
+| `js/` | Ativo e legado | Simulador completo, auth, backend local, storage, settings, home, proposta, carteira e motores originais. |
 | `assets/js/` | Ativo | Plataforma modular nova, dashboards, calculadoras, modelos, trilha e handoff. |
 | `assets/js/services/` | Ativo | Services globais `window.BF*` para dados, calculadoras, decisao, produtos, comparador, handoff e admin. |
 | `assets/js/formulas/` | Ativo | Formulas financeiras reutilizadas por simuladores, calculadoras e comparador. |
@@ -318,6 +321,7 @@ Melhoria implementada em 2026-05-07:
 | `js/storage.js` | Simulacoes salvas e estatisticas de carteira. |
 | `js/settings.js` | Preferencias locais e defaults. |
 | `js/auth.js` | Usuarios locais, sessao, papeis e guardas. |
+| `js/backend/db.js` | Banco local SQLite para usuarios, sessoes e eventos. |
 | `js/shared-layout.js` | Shell comum, header/footer, contrato v8 e estado de conta. |
 | `js/home.js` | Home contextual, cockpit de continuidade e retomada de trilha ativa. |
 | `js/portfolio-live.js` | Carteira, oportunidades, agenda e insights. |
@@ -346,6 +350,7 @@ Melhoria implementada em 2026-05-07:
 
 | Service | Export | Responsabilidade |
 | --- | --- | --- |
+| `backend-api.service.js` | `BFBackendApi` | Ponte para API local Node/SQLite com fallback estatico. |
 | `dados.service.js` | `BFDadosService` | Le datasets locais. |
 | `calculadoras.service.js` | `BFCalculadoras` | Simula calculadoras, perfil, historico e recomendacoes. |
 | `decision-context.service.js` | `BFDecisionContext` | Perfil financeiro, historico, prefill e auditoria nao sensivel. |
@@ -517,6 +522,7 @@ Scripts confirmados em `tools/`:
 | `validate-admin-dashboard-source-funnel.mjs` | Cockpit Admin, origem, gargalos e proximas acoes. |
 | `validate-public-contracts.mjs` | Matriz de contratos publicos, DoD e governanca de compatibilidade. |
 | `validate-public-release-safety.mjs` | Publicacao segura: paths locais, dados pessoais de exemplo, selo demo, fallback estatico e CI. |
+| `validate-local-database.mjs` | SQLite local, seeds, login, sessoes, eventos sanitizados e contratos de API. |
 | `validate-docs-modernization.mjs` | README ativo, docs historicos marcados e catalogo atual de 19 calculadoras. |
 | `run-v8af-browser-evidence.mjs` | Evidencias visuais do fluxo proposta/handoff. |
 
@@ -530,6 +536,7 @@ Scripts confirmados em `tools/`:
 | `docs/PLANO_SALTO_PLATAFORMA_BANK_FRATERN.md` | Salto de simulador para plataforma. |
 | `docs/DESIGN_SYSTEM_V8_BANK_FRATERN.md` | Contrato visual v8. |
 | `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md` | Contratos publicos de localStorage, data markers, deep links, exports globais e DoD. |
+| `docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md` | Banco local SQLite, endpoints, tabelas, seeds, compatibilidade e validacao. |
 | `docs/CALCULADORAS_FUNCIONAIS_BANK_FRATERN.md` | Ecossistema de calculadoras. |
 | `docs/MAPA_FUNCOES_CALCULADORAS_BANK_FRATERN.md` | Mapa funcional das 19 calculadoras, inputs, motor, saidas e continuidade. |
 | `docs/TRILHA_ASSISTIDA_DECISAO.md` | Trilha assistida. |
@@ -552,13 +559,15 @@ Governanca documental: docs ativos passaram a usar Bancus Fraternis como platafo
 8. Tratar `versions/` como backup, nao como fonte ativa.
 9. Tratar GitHub Pages como superficie publica: toda mudanca online deve preservar selo demo, fallback estatico e auditoria de publicacao segura.
 10. Considerar performance ao tocar na base grande `data_base/Tab_Grupos_Consorcio.json`; regenerar e validar `data_base/Tab_Grupos_Consorcio.compact.json` quando a base canonica mudar.
+11. Tratar SQLite local como infraestrutura de desenvolvimento: `.runtime/` nao entra no Git e backend produtivo ainda exige hospedagem, LGPD, backup e permissao server-side completa.
 
 ## Proximos Vetores
 
 O vetor recomendado para o proximo ciclo continua sendo produto e jornada, agora com foco em reduzir risco tecnico sem quebrar contratos publicos:
 
 1. Continuar a modularizacao do simulador, extraindo calculo/orquestracao de resultado e integracoes de proposta sem quebrar `App.*`.
-2. Preparar plano de migracao futura para backend/API sem quebrar `localStorage`, deep links e services globais.
-3. Manter a lousa como porta de QA visual a cada nova entrega funcional.
+2. Evoluir o painel admin de eventos server-side, consumindo `/api/events` quando houver sessao de API local.
+3. Preparar migracao futura do SQLite local para backend/API produtivo sem quebrar `localStorage`, deep links e services globais.
+4. Manter a lousa como porta de QA visual a cada nova entrega funcional.
 
 O plano detalhado esta em `docs/PLANO_ACAO_EVOLUCAO_BANK_FRATERN.md`.

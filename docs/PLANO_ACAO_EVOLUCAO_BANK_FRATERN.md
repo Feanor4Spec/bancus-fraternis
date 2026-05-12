@@ -1,10 +1,10 @@
 # Plano de Acao de Evolucao Bancus Fraternis
 
-Atualizado em 2026-05-11.
+Atualizado em 2026-05-12.
 
 Prioridade definida: produto e jornada.
 
-Entrega deste documento: transformar o mapa completo do projeto em um roteiro implementavel para evoluir a experiencia Bancus Fraternis sem iniciar ainda a migracao para backend/API.
+Entrega deste documento: transformar o mapa completo do projeto em um roteiro implementavel para evoluir a experiencia Bancus Fraternis, preservando a publicacao estatica e iniciando a camada local de banco/API apenas como infraestrutura progressiva.
 
 ## Principios do Ciclo
 
@@ -62,6 +62,7 @@ Cada etapa deve responder quatro perguntas:
 | Publicacao segura em GitHub Pages | Concluido parcial | Selo demo/local, fallback `404.html`, CI em `.github/workflows/validate.yml` e `tools/validate-public-release-safety.mjs`. |
 | QA online da jornada publicada | Concluido | `tools/validate-online-journey-smoke.mjs` valida no GitHub Pages as 10 etapas da lousa, anchors, marcadores e fallback estatico; `docs/test-reports/online-journey-browser-report.json` registra a checagem renderizada. |
 | Performance do simulador online | Concluido parcial | Simulador passou a carregar `Tab_Grupos_Consorcio.compact.json` primeiro, preservando fallback para o JSON canonico e todos os 17.396 grupos validos. |
+| Banco local de usuarios e eventos | Concluido parcial | SQLite local em `.runtime/`, endpoints `/api/auth/*`, `/api/users`, `/api/events`, `BFBackendApi`, hash `scrypt-sha256`, sessoes server-side e fallback estatico preservado. |
 | Governanca permanente | Em andamento | Changelog, mapa, plano, validadores, contratos publicos e lousa navegavel atualizados por entrega. |
 
 ## Mapa de Implementacao Atualizado
@@ -88,6 +89,7 @@ Cada etapa deve responder quatro perguntas:
 | 18 | Validacao guiada das calculadoras | Concluido parcial | Campos ganharam ajuda, min/max, erro local e alerta consolidado; previa recalcula sem persistencia durante edicoes validas e submit invalido nao salva. | `data-calculator-field-error`, `data-calculator-form-alert`, `tools/validate-calculator-journey.mjs`. |
 | 19 | Coerencia de cenario nas calculadoras | Concluido parcial | Custos acima da renda, reserva insuficiente, folga baixa, lance acima do limite e compra que fragiliza caixa agora geram alerta nao bloqueante. | `data-calculator-coherence-alert`, `data-calculator-coherence`, `tools/validate-calculator-journey.mjs`. |
 | 20 | Proxima acao dinamica nas calculadoras | Concluido parcial | Ponte de decisao destaca o CTA principal conforme risco e slug da calculadora, preservando trilha, comparador, simulador e dashboard como alternativas. | `data-calculator-next-action`, `data-calculator-next-action-card`, `buildCalculatorNextAction`. |
+| 21 | Banco local de usuarios e eventos | Concluido parcial | API local Node/SQLite guarda usuarios, sessoes e eventos sanitizados, enquanto GitHub Pages e `file://` seguem com `localStorage`. | `js/backend/db.js`, `assets/js/services/backend-api.service.js`, `tools/validate-local-database.mjs`. |
 
 ## Proximos Passos Priorizados
 
@@ -103,8 +105,10 @@ Cada etapa deve responder quatro perguntas:
 | Concluido parcial | Erros cross-field das calculadoras | Adicionados alertas de coerencia entre campos, como custos muito acima da renda, reserva insuficiente para lance ou parcela acima da renda. | `assets/js/calculadoras-page.js`, `assets/css/platform.css`, `tools/validate-calculator-journey.mjs`. | Usuario recebe alerta de risco sem impedir cenarios reais de diagnostico. |
 | Concluido parcial | Prioridade visual da proxima acao | CTAs pos-calculo agora destacam o caminho certo conforme o alerta: reduzir custos, montar reserva, calcular capacidade, ir ao simulador ou comparar alternativas. | `assets/js/calculadoras-page.js`, `tools/validate-calculator-journey.mjs`. | O proximo passo muda conforme risco e origem do calculo. |
 | P0 | Mensagem de continuidade por perfil | Usar dados do perfil consolidado para ajustar texto do CTA e timeline: cliente sem renda, sem reserva, com capacidade pronta ou com lance sugerido. | `assets/js/calculadoras-page.js`, `assets/js/services/decision-context.service.js`. | Ponte de calculadora conversa com o estado real do perfil, nao apenas com o slug atual. |
+| P1 | Painel admin de eventos do banco local | Expor leitura de `/api/events` no Dashboard Admin quando houver sessao de API, mantendo vazio/fallback no estatico. | `pages/dashboard-admin.html`, `assets/js/admin-users.js`, `assets/js/services/backend-api.service.js`. | Admin ve ultimos eventos server-side sem expor senha, token, CPF ou telefone. |
+| P2 | Migracao guiada localStorage -> SQLite | Criar acao controlada para importar usuarios/eventos locais para o banco local, com previsualizacao e relatorio. | `js/auth.js`, `assets/js/admin-users.js`, `js/backend/db.js`, novo validador. | Admin consegue consolidar dados locais no SQLite sem duplicar registros. |
 | P3 | Proxima extracao do simulador | Separar calculo/orquestracao de resultado em modulo menor, mantendo `App.*` como fachada publica. | `js/app.js`, `js/engine.js`, novo service de resultado do simulador. | Reduzir `app.js` sem quebrar resultados, proposta, PDF e simulacoes salvas. |
-| P3 | Preparacao backend/API futura | Documentar fronteiras de migracao para usuarios, leads, simulacoes, propostas e handoffs, mantendo `localStorage` como fallback. | `docs/PLANO_IMPLEMENTACAO_EVOLUTIVO_BANK_FRATERN.md`, `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md`. | Plano tecnico define contratos de migracao sem iniciar backend produtivo. |
+| P3 | Backend/API produtivo futuro | Documentar fronteiras de migracao para usuarios, leads, simulacoes, propostas e handoffs, mantendo `localStorage` como fallback publico. | `docs/PLANO_IMPLEMENTACAO_EVOLUTIVO_BANK_FRATERN.md`, `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md`, `docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md`. | Plano tecnico define contratos de migracao do SQLite local para backend hospedado. |
 
 ## Fase 1 - Saneamento da Jornada Navegavel
 
@@ -453,6 +457,7 @@ Testes recomendados:
 | Concluido | Exportar funil/cadencia de forma sanitizada. | Resolvido em 2026-05-11 com `bank-fratern.admin-commercial-pipeline.v1`, leads anonimizados e teste browser contra e-mail, CPF e telefone. |
 | Concluido | Atualizar lousa de QA comercial. | Resolvido em 2026-05-11 com `data-lousa-commercial-qa`, seis checkpoints visuais e validador atualizado. |
 | Concluido parcial | Modularizar o simulador. | Cortes entregues em 2026-05-11 com `BFSimulatorJourney`, `BFSimulatorState`, `BFSimulatorShelf`, `BFSimulatorCart`, `BFProposalBuilder`, `BFProposalGovernance`, acoes de jornada, prateleira, carrinho/projeto e validadores dedicados. |
+| Concluido parcial | Criar banco local para usuarios, senhas e eventos. | Resolvido em 2026-05-12 com SQLite local, API `/api/*`, `BFBackendApi`, hash `scrypt-sha256` e validador dedicado. |
 | Concluido | Criar validador de aliases/rotas. | `tools/validate-route-aliases.mjs`. |
 | P3 | Continuar reduzindo responsabilidades de `js/app.js` e `assets/js/bf-platform.js`. | Proximo corte recomendado: calculo/orquestracao de resultado do simulador. |
 
@@ -469,11 +474,12 @@ Testes recomendados:
 - Carga real da prateleira: 17.418 registros brutos, 17.396 grupos validos e 22 registros sem `valorCartaRef` em `data_base/Tab_Grupos_Consorcio.json`.
 - Estrutura de proposta/aceite/handoff ja validada nos scripts v8AD, v8AE e v8AF.
 - Matriz publica: `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md`.
+- Banco local progressivo: `docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md`, `BFBackendApi`, `bf_backend_session_v1`, `/api/auth/*`, `/api/users` e `/api/events`.
 
 ## Fora de Escopo deste Plano
 
-- Migracao para backend/API produtiva.
-- Banco de dados real de usuarios, leads ou simulacoes.
+- Migracao para backend/API produtiva hospedada.
+- Banco produtivo de leads ou simulacoes.
 - Integracao Open Finance.
 - Refatoracao estrutural completa dos controladores grandes.
 - Mudancas nas formulas financeiras sem demanda especifica.
@@ -485,7 +491,8 @@ Testes recomendados:
 3. Fase 4: dashboards e funil. Admin avancou para fila guiada, produtividade, carteira, funil comercial movel, cadencia e exportacao sanitizada; essa leitura ja chegou ao consultor e ao Dashboard Cliente.
 4. Fase 2: continuidade da jornada. Em andamento; Home, Produtos, Calculadoras, Trilha contextual, cockpit do Dashboard Cliente, lousa de QA visual e primeiras acoes contextuais do simulador foram implementados.
 5. Fase 5: governanca permanente e reducao de divida documental. Em andamento; contratos publicos, changelog, evidencias browser, CI/Pages e roteiro de teste navegavel estao ativos.
-6. Fase futura: backend/API. Fora do ciclo atual, mas deve ser preparado por documentacao de migracao preservando compatibilidade com `localStorage`.
+6. Fase local de banco/API: iniciada para usuarios, sessoes e eventos, ainda com fallback estatico obrigatorio.
+7. Fase futura: backend/API produtivo. Migrar SQLite local para servico hospedado preservando compatibilidade com `localStorage`.
 
 Essa ordem reduz risco: primeiro tira friccao de acesso, depois melhora operacao comercial, depois aprofunda experiencia e governanca.
 
@@ -493,6 +500,6 @@ Essa ordem reduz risco: primeiro tira friccao de acesso, depois melhora operacao
 
 - O mapa completo permite entender o projeto sem abrir codigo.
 - Este plano permite iniciar a proxima implementacao sem decidir prioridade.
-- Produto e jornada aparecem como foco, com backend/API apenas como evolucao futura.
+- Produto e jornada aparecem como foco, com API local tratada como infraestrutura de apoio e backend produtivo como evolucao futura.
 - Lacunas reais aparecem como backlog acionavel.
 - Validadores recomendados estao associados a cada fase.

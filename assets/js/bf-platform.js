@@ -49,6 +49,12 @@
     }
   }
 
+  function publishBackendEvent(type, payload, meta = {}) {
+    const api = window.BFBackendApi;
+    if (!api || typeof api.recordEvent !== 'function') return;
+    api.recordEvent(type, payload, meta).catch(() => {});
+  }
+
   function scopedStorageKey(key) {
     const user = window.BFAuth && window.BFAuth.getCurrentUser ? window.BFAuth.getCurrentUser() : null;
     return `${key}:${user && user.email ? user.email : 'anon'}`;
@@ -91,6 +97,13 @@
     const next = [event].concat(loadJourneyAnalytics()).slice(0, MAX_JOURNEY_EVENTS);
     saveJourneyAnalytics(next);
     renderJourneyAnalyticsSections(next);
+    publishBackendEvent(event.type, event, {
+      source: 'journey-analytics',
+      ownerEmail: scopedStorageKey(JOURNEY_ANALYTICS_KEY).split(':').slice(1).join(':') || 'anon',
+      entityType: 'journey-event',
+      entityId: event.id,
+      createdAt: event.createdAt
+    });
     return event;
   }
 
@@ -1456,6 +1469,14 @@
       details: extra || {}
     };
     writeJson(comparatorAuditStorageKey(), [entry].concat(current).slice(0, MAX_COMPARATOR_AUDIT));
+    publishBackendEvent(`comparator-model:${action}`, entry, {
+      source: 'comparator-model-audit',
+      ownerEmail: entry.ownerEmail,
+      actorEmail: entry.actorEmail,
+      entityType: entry.entity,
+      entityId: entry.modelId,
+      createdAt: entry.createdAt
+    });
     return entry;
   }
 

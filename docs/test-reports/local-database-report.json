@@ -1,0 +1,8 @@
+{
+  "ok": true,
+  "schemaVersion": "bancus-fraternis.local-db.v1",
+  "seedUsers": 3,
+  "events": 1,
+  "warnings": [],
+  "failures": []
+}

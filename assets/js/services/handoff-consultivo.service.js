@@ -91,6 +91,12 @@
     };
   }
 
+  function publishBackendEvent(type, payload, meta = {}) {
+    const api = window.BFBackendApi;
+    if (!api || typeof api.recordEvent !== 'function') return;
+    api.recordEvent(type, payload, meta).catch(() => {});
+  }
+
   function list() {
     const parsed = readJson(HANDOFF_KEY, []);
     return Array.isArray(parsed) ? parsed : [];
@@ -120,6 +126,14 @@
       createdAt: nowIso()
     };
     writeJson(AUDIT_KEY, [event].concat(audit()).slice(0, MAX_AUDIT));
+    publishBackendEvent(`handoff:${action}`, event, {
+      source: 'handoff-consultivo',
+      ownerEmail: event.ownerEmail,
+      actorEmail: event.actorEmail,
+      entityType: 'handoff',
+      entityId: event.handoffId,
+      createdAt: event.createdAt
+    });
     return event;
   }
 
@@ -411,6 +425,14 @@
       createdAt: nowIso()
     };
     writeJson(ACTION_AUDIT_KEY, [event].concat(actionAudit()).slice(0, MAX_ACTION_AUDIT));
+    publishBackendEvent(`operational-action:${actionName}`, event, {
+      source: 'operational-action-audit',
+      ownerEmail: event.owner,
+      actorEmail: event.actorEmail,
+      entityType: 'operational-action',
+      entityId: event.actionKey,
+      createdAt: event.createdAt
+    });
     return event;
   }
 

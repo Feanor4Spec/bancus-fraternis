@@ -1,6 +1,6 @@
 {
   "ok": true,
-  "scannedFiles": 328,
+  "scannedFiles": 333,
   "checks": {
     "staticFallback": true,
     "githubWorkflow": true,

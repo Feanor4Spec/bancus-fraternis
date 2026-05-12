@@ -50,6 +50,21 @@
     }
   }
 
+  function currentActorEmail() {
+    try {
+      const user = window.BFAuth && window.BFAuth.getCurrentUser ? window.BFAuth.getCurrentUser() : null;
+      return user && user.email ? user.email : '';
+    } catch (error) {
+      return '';
+    }
+  }
+
+  function publishBackendEvent(type, payload, meta = {}) {
+    const api = window.BFBackendApi;
+    if (!api || typeof api.recordEvent !== 'function') return;
+    api.recordEvent(type, payload, meta).catch(() => {});
+  }
+
   function toNumber(value) {
     const numeric = Number(value);
     return Number.isFinite(numeric) ? numeric : 0;
@@ -116,6 +131,13 @@
       createdAt: timestamp()
     };
     writeJson(AUDIT_KEY, [event, ...list].slice(0, MAX_AUDIT));
+    publishBackendEvent(`decision-context:${type}`, event.payload, {
+      source: 'decision-context',
+      actorEmail: currentActorEmail(),
+      entityType: 'decision-context',
+      entityId: event.id,
+      createdAt: event.createdAt
+    });
     return event;
   }
 

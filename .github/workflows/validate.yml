@@ -35,11 +35,13 @@ jobs:
           node --check js/simulator-state.js
           node --check js/simulator-shelf.js
           node --check js/simulator-cart.js
+          node --check js/backend/db.js
           node --check js/app.js
 
       - name: Run static validators
         run: |
           node tools/validate-public-release-safety.mjs
+          node tools/validate-local-database.mjs
           node tools/validate-public-contracts.mjs
           node tools/validate-docs-modernization.mjs
           node tools/validate-calculadoras.mjs

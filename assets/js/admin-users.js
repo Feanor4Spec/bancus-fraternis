@@ -1853,6 +1853,12 @@
     }
   }
 
+  function publishBackendEvent(type, payload, meta = {}) {
+    const api = window.BFBackendApi;
+    if (!api || typeof api.recordEvent !== 'function') return;
+    api.recordEvent(type, payload, meta).catch(() => {});
+  }
+
   function recordAdminCommercialStageChange(handoff, fromStage, toStage) {
     const actor = currentAdminActor();
     const event = {
@@ -1868,6 +1874,13 @@
       createdAt: new Date().toISOString()
     };
     writeAdminJson(ADMIN_COMMERCIAL_STAGE_AUDIT_KEY, [event].concat(adminCommercialStageAudit()).slice(0, ADMIN_COMMERCIAL_STAGE_AUDIT_LIMIT));
+    publishBackendEvent('commercial-stage:changed', event, {
+      source: 'admin-commercial-stage',
+      actorEmail: event.actorEmail,
+      entityType: 'handoff',
+      entityId: event.handoffId,
+      createdAt: event.createdAt
+    });
     return event;
   }
 

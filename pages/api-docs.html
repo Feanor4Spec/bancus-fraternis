@@ -16,7 +16,7 @@
       <div class="bf-platform-hero__content">
         <span class="bf-badge bf-badge--navy">API propria - contrato inicial</span>
         <h1>Servicos que hoje rodam no browser e amanha viram API.</h1>
-        <p>Os endpoints abaixo documentam a transicao progressiva: JSON local, servicos JavaScript, API propria e banco de dados.</p>
+        <p>Os endpoints abaixo documentam a transicao progressiva: JSON local, servicos JavaScript, API local Node/SQLite e backend produtivo futuro.</p>
       </div>
       <aside class="bf-platform-hero__rail">
         <a href="dados-abertos.html">Datasets <span>DB</span></a>
@@ -24,7 +24,7 @@
       </aside>
     </section>
     <section class="bf-v8-stagebar bf-v8-stagebar--inside" aria-label="Atalhos da documentacao de API" data-v8-stagebar>
-      <div class="bf-v8-stagebar__intro"><span>API v8</span><strong>Browser hoje, servicos amanha, banco depois.</strong></div>
+      <div class="bf-v8-stagebar__intro"><span>API v8</span><strong>Browser, API local e banco em evolucao.</strong></div>
       <a class="bf-v8-stagebar__item" href="#decisao-api" data-step="1"><span>Contrato</span><strong>Evolucao</strong></a>
       <a class="bf-v8-stagebar__item" href="#contratos-publicos" data-step="2"><span>Publicos</span><strong>Contratos vivos</strong></a>
       <a class="bf-v8-stagebar__item" href="#api-endpoints" data-step="3"><span>Endpoints</span><strong>Rotas futuras</strong></a>
@@ -37,7 +37,7 @@
         <span class="bf-badge bf-badge--navy">Contrato progressivo</span>
         <div>
           <h2>A API futura nasce dos servicos que ja rodam no browser.</h2>
-          <p>Os endpoints documentam a transicao de HTML, JSON local e JavaScript puro para servicos server-side, banco de dados, auditoria e consentimento.</p>
+          <p>Os endpoints documentam a transicao de HTML, JSON local e JavaScript puro para API local, banco de dados, auditoria e consentimento.</p>
           <div class="bf-inline-actions">
             <a class="btn btn--primary btn--sm" href="#api-endpoints">Ver endpoints</a>
             <a class="btn btn--ghost btn--sm" href="dados-abertos.html">Ver dados</a>
@@ -46,8 +46,8 @@
         </div>
       </div>
       <div class="bf-v8-decision-strip__grid">
-        <article class="bf-v8-decision-card bf-v8-decision-card--info"><span>Fase atual</span><strong>Estatica/progressiva</strong><p>Servicos JS e JSON local mantem a plataforma testavel sem backend novo.</p><small>Browser first</small></article>
-        <article class="bf-v8-decision-card bf-v8-decision-card--stable"><span>Contrato</span><strong>Endpoints mapeados</strong><p>Produtos, simulacoes, comparador, calculadoras e premissas ja possuem rota-alvo.</p><small>API futura</small></article>
+        <article class="bf-v8-decision-card bf-v8-decision-card--info"><span>Fase atual</span><strong>API local progressiva</strong><p>Servicos JS seguem estaticos, enquanto usuarios, sessoes e eventos ja podem usar SQLite local.</p><small>Node/SQLite</small></article>
+        <article class="bf-v8-decision-card bf-v8-decision-card--stable"><span>Contrato</span><strong>Endpoints ativos</strong><p>Auth, usuarios e eventos tem endpoints locais; demais dominios continuam como rota-alvo.</p><small>API local</small></article>
         <article class="bf-v8-decision-card bf-v8-decision-card--warning"><span>Privacidade</span><strong>Perfil consentido</strong><p>Dados pessoais e Open Finance so entram com base legal, finalidade e prazo.</p><small>LGPD</small></article>
         <article class="bf-v8-decision-card bf-v8-decision-card--stable"><span>QA</span><strong>Golden tests</strong><p>Formulas e premissas devem passar por teste antes de publicacao.</p><small>Governanca</small></article>
       </div>
@@ -59,8 +59,8 @@
       </div>
       <div class="bf-client-timeline" data-trust-timeline>
         <a class="bf-client-timeline__item is-done" href="dados-abertos.html"><span>1</span><div><small>Dados</small><strong>JSON local</strong><p>Base curada e editavel sustenta a fase estatica.</p></div></a>
-        <a class="bf-client-timeline__item is-active" href="#api-endpoints"><span>2</span><div><small>Servicos</small><strong>Contratos</strong><p>Endpoints documentam o futuro backend.</p></div></a>
-        <a class="bf-client-timeline__item is-pending" href="dashboard-admin.html"><span>3</span><div><small>Banco</small><strong>Persistencia</strong><p>Usuarios, simulacoes e auditorias migram do localStorage.</p></div></a>
+        <a class="bf-client-timeline__item is-active" href="#api-endpoints"><span>2</span><div><small>Servicos</small><strong>Contratos</strong><p>Auth, usuarios e eventos ja possuem API local.</p></div></a>
+        <a class="bf-client-timeline__item is-done" href="dashboard-admin.html"><span>3</span><div><small>Banco</small><strong>Persistencia</strong><p>SQLite local armazena usuarios, sessoes e eventos sanitizados.</p></div></a>
         <a class="bf-client-timeline__item is-pending" href="calculadoras-governanca.html"><span>4</span><div><small>QA</small><strong>Publicacao</strong><p>Premissas passam por aprovacao e teste.</p></div></a>
         <a class="bf-client-timeline__item is-pending" href="compliance.html"><span>5</span><div><small>Consentimento</small><strong>Open Finance</strong><p>Integracoes sensiveis exigem governanca propria.</p></div></a>
       </div>
@@ -72,6 +72,7 @@
       </div>
       <div class="bf-api-list">
         <div class="bf-api-item"><code>localStorage</code><p>Chaves locais preservam usuarios, simulacoes, perfil, trilhas, proposta, handoff, pacotes e metas.</p></div>
+        <div class="bf-api-item"><code>SQLite local</code><p>Com <code>node server.js</code>, usuarios, sessoes e eventos usam <code>.runtime/bancus-fraternis.sqlite</code> sem entrar no Git.</p></div>
         <div class="bf-api-item"><code>data-*</code><p>Marcadores sustentam validadores, cockpit Admin, proposta, Dashboard Cliente e continuidade v8.</p></div>
         <div class="bf-api-item"><code>window.BF*</code><p>Services globais atuais sao os contratos de migracao progressiva para API propria.</p></div>
         <div class="bf-api-item"><code>Definition of Done</code><p>Cada entrega deve ter contrato revisado, validador, changelog e plano atualizado quando a fase mudar.</p></div>
@@ -79,6 +80,18 @@
     </section>
     <section class="bf-platform-panel" id="api-endpoints">
       <div class="bf-api-list">
+        <div class="bf-api-item"><code>GET /api/health</code><p>Endpoint ativo para status da API local, schema e estatisticas agregadas.</p></div>
+        <div class="bf-api-item"><code>POST /api/auth/login</code><p>Endpoint ativo para login com usuario seed ou cadastrado no SQLite local.</p></div>
+        <div class="bf-api-item"><code>POST /api/auth/logout</code><p>Endpoint ativo para revogar a sessao server-side.</p></div>
+        <div class="bf-api-item"><code>GET /api/auth/me</code><p>Endpoint ativo para ler usuario da sessao local via bearer token.</p></div>
+        <div class="bf-api-item"><code>GET /api/users</code><p>Endpoint ativo para listar usuarios publicos; exige admin.</p></div>
+        <div class="bf-api-item"><code>POST /api/users</code><p>Endpoint ativo para criar usuario com senha hasheada no SQLite; exige admin.</p></div>
+        <div class="bf-api-item"><code>PATCH /api/users/:id</code><p>Endpoint ativo para atualizar cadastro e papel; exige admin.</p></div>
+        <div class="bf-api-item"><code>POST /api/users/:id/password</code><p>Endpoint ativo para redefinir senha sem ecoar valor em resposta; exige admin.</p></div>
+        <div class="bf-api-item"><code>POST /api/users/:id/status</code><p>Endpoint ativo para ativar/inativar usuario e revogar sessoes quando necessario; exige admin.</p></div>
+        <div class="bf-api-item"><code>DELETE /api/users/:id</code><p>Endpoint ativo para remover usuario; exige admin.</p></div>
+        <div class="bf-api-item"><code>POST /api/events</code><p>Endpoint ativo para registrar eventos sanitizados de jornada, proposta, handoff, funil e auth.</p></div>
+        <div class="bf-api-item"><code>GET /api/events</code><p>Endpoint ativo para listar eventos recentes; exige admin.</p></div>
         <div class="bf-api-item"><code>GET /api/produtos</code><p>Lista produtos financeiros e criterios de comparacao.</p></div>
         <div class="bf-api-item"><code>POST /api/simulacoes/financiamento</code><p>Calcula Price/SAC, parcelas, juros e saldo.</p></div>
         <div class="bf-api-item"><code>POST /api/simulacoes/consorcio</code><p>Calcula carta, lance, reajuste, MOB Contemplacao e MOB Faturamento.</p></div>
@@ -93,9 +106,8 @@
     </section>
   </main>
   <div data-shell-footer></div>
-  <script src="../js/auth.js"></script><script src="../js/shared-layout.js"></script><script src="../assets/js/formatters.js"></script><script src="../assets/js/validators.js"></script><script src="../assets/js/services/dados.service.js"></script><script src="../assets/js/components/cards.js"></script><script src="../assets/js/components/tables.js"></script><script src="../assets/js/components/alerts.js"></script><script src="../assets/js/components/tooltips.js"></script><script src="../assets/js/components/charts.js"></script><script src="../assets/js/formulas/price.formulas.js"></script><script src="../assets/js/formulas/sac.formulas.js"></script><script src="../assets/js/formulas/consorcio.formulas.js"></script><script src="../assets/js/formulas/comparison.formulas.js"></script><script src="../assets/js/services/financiamento.service.js"></script><script src="../assets/js/services/cdc.service.js"></script><script src="../assets/js/services/consorcio.service.js"></script><script src="../assets/js/services/comparador.service.js"></script><script src="../assets/js/services/recomendacao.service.js"></script><script src="../assets/js/bf-platform.js"></script>
+  <script src="../assets/js/services/backend-api.service.js"></script><script src="../js/auth.js"></script><script src="../js/shared-layout.js"></script><script src="../assets/js/formatters.js"></script><script src="../assets/js/validators.js"></script><script src="../assets/js/services/dados.service.js"></script><script src="../assets/js/components/cards.js"></script><script src="../assets/js/components/tables.js"></script><script src="../assets/js/components/alerts.js"></script><script src="../assets/js/components/tooltips.js"></script><script src="../assets/js/components/charts.js"></script><script src="../assets/js/formulas/price.formulas.js"></script><script src="../assets/js/formulas/sac.formulas.js"></script><script src="../assets/js/formulas/consorcio.formulas.js"></script><script src="../assets/js/formulas/comparison.formulas.js"></script><script src="../assets/js/services/financiamento.service.js"></script><script src="../assets/js/services/cdc.service.js"></script><script src="../assets/js/services/consorcio.service.js"></script><script src="../assets/js/services/comparador.service.js"></script><script src="../assets/js/services/recomendacao.service.js"></script><script src="../assets/js/bf-platform.js"></script>
 </body>
 </html>
-
 
 

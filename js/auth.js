@@ -91,6 +91,76 @@
     return (hash >>> 0).toString(16).padStart(8, '0');
   }
 
+  function backendApi() {
+    return window.BFBackendApi && typeof window.BFBackendApi === 'object' ? window.BFBackendApi : null;
+  }
+
+  function mirrorBackend(promise) {
+    if (!promise || typeof promise.catch !== 'function') return;
+    promise.catch((error) => {
+      console.warn('BFAuth: espelhamento no backend local indisponivel', error);
+    });
+  }
+
+  function syncBackendLogin(email, password) {
+    const api = backendApi();
+    if (!api || typeof api.authLogin !== 'function') return;
+    mirrorBackend(api.authLogin(email, password));
+  }
+
+  function syncBackendLogout() {
+    const api = backendApi();
+    if (!api || typeof api.authLogout !== 'function') return;
+    mirrorBackend(api.authLogout());
+  }
+
+  function syncBackendCreateUser(user, password) {
+    const api = backendApi();
+    if (!api || typeof api.createUser !== 'function' || !user) return;
+    mirrorBackend(api.createUser({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      status: user.status,
+      department: user.department || '',
+      phone: user.phone || '',
+      password
+    }));
+  }
+
+  function syncBackendUpdateUser(user, password) {
+    const api = backendApi();
+    if (!api || typeof api.updateUser !== 'function' || !user) return;
+    mirrorBackend(api.updateUser(user.id, {
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      status: user.status,
+      department: user.department || '',
+      phone: user.phone || '',
+      ...(password ? { password } : {})
+    }));
+  }
+
+  function syncBackendDeleteUser(id) {
+    const api = backendApi();
+    if (!api || typeof api.deleteUser !== 'function') return;
+    mirrorBackend(api.deleteUser(id));
+  }
+
+  function syncBackendPassword(id, password) {
+    const api = backendApi();
+    if (!api || typeof api.resetPassword !== 'function') return;
+    mirrorBackend(api.resetPassword(id, password));
+  }
+
+  function syncBackendStatus(id, status) {
+    const api = backendApi();
+    if (!api || typeof api.toggleStatus !== 'function') return;
+    mirrorBackend(api.toggleStatus(id, status));
+  }
+
   function publicUser(user) {
     if (!user) return null;
     return {
@@ -252,10 +322,12 @@
     }
 
     writeSession(users[index] || user);
+    syncBackendLogin(email, password);
     return { ok: true, user: publicUser(users[index] || user) };
   }
 
   function logout() {
+    syncBackendLogout();
     const storage = getStorage();
     if (storage) storage.removeItem(SESSION_KEY);
   }
@@ -315,6 +387,7 @@
 
     users.push(user);
     saveUsers(users);
+    syncBackendCreateUser(user, data.password);
     return { ok: true, user: publicUser(user), message: 'Usuario criado com sucesso.' };
   }
 
@@ -344,6 +417,7 @@
     if (data.password) users[index].passwordHash = hashPassword(data.password);
 
     saveUsers(users);
+    syncBackendUpdateUser(users[index], data.password);
     return { ok: true, user: publicUser(users[index]), message: 'Usuario atualizado com sucesso.' };
   }
 
@@ -357,6 +431,7 @@
     const next = users.filter((user) => user.id !== id);
     if (next.length === users.length) return { ok: false, message: 'Usuario nao encontrado.' };
     saveUsers(next);
+    syncBackendDeleteUser(id);
     return { ok: true, message: 'Usuario removido.' };
   }
 
@@ -370,6 +445,7 @@
     users[index].passwordHash = hashPassword(nextPassword);
     users[index].updatedAt = nowIso();
     saveUsers(users);
+    syncBackendPassword(id, nextPassword);
     return { ok: true, message: `Senha temporaria definida: ${nextPassword}` };
   }
 
@@ -385,6 +461,7 @@
     users[index].status = users[index].status === 'active' ? 'inactive' : 'active';
     users[index].updatedAt = nowIso();
     saveUsers(users);
+    syncBackendStatus(id, users[index].status);
     return { ok: true, user: publicUser(users[index]), message: `Usuario ${STATUS_LABELS[users[index].status].toLowerCase()}.` };
   }
 

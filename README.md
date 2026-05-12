@@ -1,8 +1,8 @@
 # Bancus Fraternis
 
-Plataforma estatica de decisao financeira, simulacao, proposta com lousa consultiva de PDF, versionamento local, handoff consultivo e dashboards com alertas, fila guiada executavel, produtividade, carteira por consultor, funil comercial movel com cadencia por etapa e exportacao sanitizada.
+Plataforma estatica/progressiva de decisao financeira, simulacao, proposta com lousa consultiva de PDF, versionamento local, handoff consultivo, dashboards comerciais e primeira API local Node/SQLite para usuarios, sessoes e eventos.
 
-Ambiente publico de demonstracao: login, dashboards, propostas e dados operacionais rodam em `localStorage` no navegador. Nao use dados pessoais reais neste prototipo publicado.
+Ambiente publico de demonstracao: login, dashboards, propostas e dados operacionais continuam funcionando em `localStorage` no navegador. Quando rodar com `node server.js`, o projeto tambem cria um SQLite local em `.runtime/` para evolucao de usuarios, senhas e eventos. Nao use dados pessoais reais neste prototipo publicado.
 
 ## Online
 
@@ -35,8 +35,24 @@ Validacao do deploy:
 
 ```bash
 node tools/validate-public-release-safety.mjs
+node tools/validate-local-database.mjs
 node tools/validate-online-journey-smoke.mjs
 node tools/validate-simulator-performance.mjs
 node tools/validate-proposal-versioning.mjs
 node tools/validate-github-pages-deploy.mjs
 ```
+
+## Banco local
+
+```bash
+node server.js
+```
+
+Endpoints locais:
+
+- `GET /api/health`
+- `POST /api/auth/login`
+- `GET /api/users`
+- `POST /api/events`
+
+Documentacao: `docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md`.
