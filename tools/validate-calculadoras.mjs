@@ -86,6 +86,8 @@ if (!pageText.includes('data-calculator-coherence-alert')) fail('Formulario da c
 if (!pageText.includes('data-calculator-field-error')) fail('Formulario da calculadora deve expor erro por campo.');
 if (!pageText.includes('validateForm(form, meta)')) fail('Formulario da calculadora deve validar antes de simular.');
 if (!pageText.includes('coherenceAlerts(meta.slug, values)')) fail('Formulario da calculadora deve calcular alertas de coerencia.');
+if (!pageText.includes('buildCalculatorNextAction')) fail('Calculadora deve calcular proxima acao dinamica.');
+if (!pageText.includes('data-calculator-next-action')) fail('Calculadora deve expor CTA dinamico de proxima acao.');
 
 const formulaContext = { window: {}, console };
 vm.createContext(formulaContext);

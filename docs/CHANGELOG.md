@@ -4,6 +4,27 @@
 
 ---
 
+## [v8.78.0] - 2026-05-11
+
+### Proxima acao dinamica nas calculadoras
+
+#### Adicionado
+- Calculadoras agora expõem `data-calculator-next-action` e `data-calculator-next-action-card`.
+- CTA principal pos-calculo muda conforme risco/coerencia do cenario.
+- Custos Fixos, Reserva, Capacidade, Lance e Compra direcionam para reduzir custos, montar reserva, calcular capacidade, ajustar lance, comparar alternativas ou simular.
+
+#### Modificado
+- Ponte de decisao da calculadora passou a usar `buildCalculatorNextAction`.
+- Alertas de coerencia agora influenciam o CTA principal sem bloquear salvamento.
+- Validadores e contratos publicos foram reforcados para proteger a proxima acao dinamica.
+
+#### Validado
+- `node --check assets/js/calculadoras-page.js`
+- `node tools/validate-calculator-journey.mjs`
+- `node tools/validate-calculadoras.mjs`
+
+---
+
 ## [v8.77.0] - 2026-05-11
 
 ### Alertas de coerencia das calculadoras

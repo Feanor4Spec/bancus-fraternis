@@ -269,6 +269,8 @@ assert(contracts.includes('data-calculator-result-mode'), 'Contrato publico nao 
 assert(contracts.includes('data-calculator-form-alert'), 'Contrato publico nao documenta alerta de validacao das calculadoras.');
 assert(contracts.includes('data-calculator-coherence'), 'Contrato publico nao documenta status de coerencia das calculadoras.');
 assert(contracts.includes('data-calculator-coherence-alert'), 'Contrato publico nao documenta alerta de coerencia das calculadoras.');
+assert(contracts.includes('data-calculator-next-action'), 'Contrato publico nao documenta proxima acao dinamica das calculadoras.');
+assert(contracts.includes('data-calculator-next-action-card'), 'Contrato publico nao documenta card de proxima acao das calculadoras.');
 assert(contracts.includes('data-calculator-field-error'), 'Contrato publico nao documenta erro por campo das calculadoras.');
 assert(await exists('404.html'), 'Fallback 404.html ausente.');
 assert(await exists('.github/workflows/validate.yml'), 'Workflow de validacao publica ausente.');

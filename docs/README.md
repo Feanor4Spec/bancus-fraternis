@@ -7,7 +7,7 @@ O Bancus Fraternis e uma plataforma estatica/progressiva para apoiar decisao fin
 ## Estado Atual
 
 - 52 paginas navegaveis em `pages/`, com aliases curtos cobertos por `server.js`.
-- 19 calculadoras financeiras no catalogo ativo, com mapa funcional, validacao guiada, alertas de coerencia, previa sem persistencia e salvamento explicito por submit.
+- 19 calculadoras financeiras no catalogo ativo, com mapa funcional, validacao guiada, alertas de coerencia, proxima acao dinamica, previa sem persistencia e salvamento explicito por submit.
 - Simulador conectado a base real com 17.396 grupos validos.
 - Simulador iniciou modularizacao tecnica com `BFSimulatorJourney`, `BFSimulatorState`, `BFSimulatorShelf`, `BFSimulatorCart`, `BFProposalBuilder` e `BFProposalGovernance` para contexto, proximas acoes, snapshots, retomada, prateleira, carrinho/projeto, lousa de proposta/PDF e governanca visual de versionamento/aceite.
 - Fluxo principal: Home -> Produtos -> Calculadoras -> Trilha Assistida -> Comparador -> Simulador -> Proposta -> Handoff -> Dashboards.

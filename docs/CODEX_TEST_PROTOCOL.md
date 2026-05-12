@@ -576,6 +576,7 @@ Validacoes obrigatorias:
 - Campos invalidos devem expor `data-calculator-field-error`, alerta `data-calculator-form-alert` e bloquear o submit persistente.
 - Campos validos alterados pelo usuario devem atualizar a previa sem persistencia.
 - Alertas de coerencia devem expor `data-calculator-coherence-alert`, atualizar `data-calculator-coherence` e nao bloquear salvamento.
+- A ponte da calculadora deve expor `data-calculator-next-action` e `data-calculator-next-action-card` com CTA principal aderente ao risco.
 - O botao `Calcular e salvar cenario` deve trocar o modo para `saved`, gravar historico local e atualizar o perfil financeiro.
 - `pages/calculadora-capacidade-credito.html` deve gravar parcela segura, folga mensal, comprometimento projetado e perfil.
 - `pages/calculadora-lance-consorcio.html` deve gravar lance seguro, impacto na reserva e lance sugerido.

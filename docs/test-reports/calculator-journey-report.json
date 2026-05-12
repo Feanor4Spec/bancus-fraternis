@@ -13,6 +13,10 @@
       "data-calculator-field",
       "data-calculator-field-error"
     ],
+    "nextActionMarkers": [
+      "data-calculator-next-action",
+      "data-calculator-next-action-card"
+    ],
     "criticalSlugs": [
       "custos-fixos",
       "reserva-emergencia",
@@ -21,7 +25,7 @@
       "compra-vista-parcelado"
     ]
   },
-  "generatedAt": "2026-05-12T01:36:08.621Z",
+  "generatedAt": "2026-05-12T01:52:02.463Z",
   "previewReport": [
     {
       "slug": "juros-compostos",

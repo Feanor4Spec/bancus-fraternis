@@ -122,6 +122,10 @@ assert(pageJs.includes('data-calculator-field-error'), 'Formulario da calculador
 assert(pageJs.includes('validateForm(form, meta)'), 'Pagina de calculadora nao valida formulario antes de calcular.');
 assert(pageJs.includes('coherenceAlerts(meta.slug, values)'), 'Pagina de calculadora nao calcula alertas de coerencia.');
 assert(pageJs.includes('document.body.dataset.calculatorCoherence'), 'Pagina de calculadora nao expoe status de coerencia no body.');
+assert(pageJs.includes('buildCalculatorNextAction'), 'Pagina de calculadora nao calcula proxima acao dinamica.');
+assert(pageJs.includes('data-calculator-next-action'), 'Pagina de calculadora nao expoe proxima acao dinamica.');
+assert(pageJs.includes('data-calculator-next-action-card'), 'Pagina de calculadora nao expoe card de proxima acao.');
+assert(pageJs.includes('document.body.dataset.calculatorNextAction'), 'Pagina de calculadora nao expoe proxima acao no body.');
 assert(pageJs.includes('renderPreviewFromForm'), 'Pagina de calculadora nao atualiza previa sem persistencia apos edicao.');
 assert(platformCss.includes('.bf-calculator-field[data-calculator-field-state="invalid"]'), 'CSS nao estiliza estado invalido de campo da calculadora.');
 assert(platformCss.includes('.bf-calculator-coherence-alert'), 'CSS nao estiliza alerta de coerencia da calculadora.');
@@ -212,6 +216,7 @@ const report = {
   persistentSubmitChecked: ['capacidade-credito', 'lance-consorcio'],
   formValidation: {
     markers: ['data-calculator-form-alert', 'data-calculator-coherence-alert', 'data-calculator-field', 'data-calculator-field-error'],
+    nextActionMarkers: ['data-calculator-next-action', 'data-calculator-next-action-card'],
     criticalSlugs: ['custos-fixos', 'reserva-emergencia', 'capacidade-credito', 'lance-consorcio', 'compra-vista-parcelado']
   },
   generatedAt: new Date().toISOString(),
