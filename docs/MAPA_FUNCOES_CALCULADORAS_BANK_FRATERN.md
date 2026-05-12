@@ -15,6 +15,7 @@ Correcoes deste ciclo:
 - O resultado expõe `data-calculator-result-mode="preview|saved"` para QA e jornada.
 - Campos expõem `data-calculator-field`, `data-calculator-field-error` e alerta consolidado `data-calculator-form-alert`.
 - Custos Fixos, Reserva, Capacidade, Lance e Compra têm ajuda contextual e limites especificos.
+- Alertas nao bloqueantes de coerencia expõem `data-calculator-coherence-alert` e `data-calculator-coherence="ok|warn|blocked"`.
 - O validador `tools/validate-calculator-journey.mjs` executa as 19 calculadoras e garante que previa nao grava `localStorage`.
 
 ## Contratos funcionais
@@ -61,9 +62,10 @@ Correcoes deste ciclo:
 3. Resultado inicial aparece como `preview`, sem gravar historico, perfil ou auditoria.
 4. Usuario ajusta campos; valores validos atualizam a previa sem persistencia.
 5. Campos invalidos mostram erro local e bloqueiam o salvamento.
-6. Usuario clica `Calcular e salvar cenario`.
-7. Resultado passa para `saved`, grava `historyId`, atualiza perfil local e registra evento de decisao.
-8. Ponte contextual preserva `calculatorSlug`, `historyId`, `preset` e origem para Simulador, Trilha, Comparador e Dashboard Cliente.
+6. Campos coerentes geram `ok`; cenarios arriscados geram alerta nao bloqueante.
+7. Usuario clica `Calcular e salvar cenario`.
+8. Resultado passa para `saved`, grava `historyId`, atualiza perfil local e registra evento de decisao.
+9. Ponte contextual preserva `calculatorSlug`, `historyId`, `preset` e origem para Simulador, Trilha, Comparador e Dashboard Cliente.
 
 ## Debitos tratados neste ciclo
 
@@ -71,6 +73,7 @@ Correcoes deste ciclo:
 - Adicionado marcador de modo do resultado para QA automatizado.
 - Criado validador de jornada das 19 calculadoras com simulacao de previa e submit persistente.
 - Adicionada validacao guiada por campo antes de preview/salvamento.
+- Adicionados alertas de coerencia para cenarios de renda, reserva, credito, lance e compra.
 
 ## Proximas evolucoes recomendadas
 

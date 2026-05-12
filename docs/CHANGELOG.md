@@ -4,6 +4,27 @@
 
 ---
 
+## [v8.77.0] - 2026-05-11
+
+### Alertas de coerencia das calculadoras
+
+#### Adicionado
+- Formularios de calculadora agora expõem `data-calculator-coherence-alert` com alertas nao bloqueantes de coerencia do cenario.
+- Custos Fixos alerta custos acima da renda, comprometimento elevado e dividas pesadas.
+- Reserva, Capacidade, Lance e Compra alertam reserva insuficiente, folga baixa, lance acima do limite e parcela pesada demais.
+
+#### Modificado
+- Validacao de formulario passou a retornar `warnings` alem de erros bloqueantes.
+- Body da pagina expõe `data-calculator-coherence="ok|warn|blocked"` para QA de jornada.
+- Validadores e contratos publicos foram atualizados para proteger os alertas de coerencia.
+
+#### Validado
+- `node --check assets/js/calculadoras-page.js`
+- `node tools/validate-calculator-journey.mjs`
+- `node tools/validate-calculadoras.mjs`
+
+---
+
 ## [v8.76.0] - 2026-05-11
 
 ### Validacao guiada das calculadoras

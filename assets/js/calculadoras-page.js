@@ -507,6 +507,82 @@
     return Number(String(raw == null ? '' : raw).replace(',', '.'));
   }
 
+  function numberFromValues(values, key) {
+    const value = numericValue(values && values[key]);
+    return Number.isFinite(value) ? value : 0;
+  }
+
+  function coherenceAlerts(slug, values) {
+    const alerts = [];
+    if (slug === 'custos-fixos') {
+      const renda = numberFromValues(values, 'rendaLiquida');
+      const totalCustos = ['moradia', 'alimentacao', 'transporte', 'dividas', 'outros']
+        .reduce((sum, key) => sum + numberFromValues(values, key), 0);
+      const comprometimento = renda > 0 ? totalCustos / renda * 100 : 0;
+      if (comprometimento > 100) alerts.push(`Custos fixos superam a renda em ${limitLabel(comprometimento - 100, '%')}. Priorize renegociacao ou reducao antes de assumir nova parcela.`);
+      else if (comprometimento >= 80) alerts.push(`Comprometimento de ${limitLabel(comprometimento, '%')} deixa pouca margem para reserva, investimento ou credito.`);
+      const dividas = numberFromValues(values, 'dividas');
+      if (renda > 0 && dividas / renda * 100 >= 30) alerts.push(`Dividas consomem ${limitLabel(dividas / renda * 100, '%')} da renda; isso reduz capacidade de credito.`);
+    }
+
+    if (slug === 'reserva-emergencia') {
+      const gasto = numberFromValues(values, 'gastoMensal');
+      const meses = numberFromValues(values, 'mesesCobertura');
+      const reserva = numberFromValues(values, 'reservaAtual');
+      const ideal = gasto * meses;
+      if (ideal > 0 && reserva < ideal) alerts.push(`Reserva cobre ${limitLabel(gasto > 0 ? reserva / gasto : 0)} meses dos ${limitLabel(meses)} meses desejados.`);
+      if (meses < 3) alerts.push('Meta abaixo de 3 meses pode ser insuficiente para renda instavel ou credito novo.');
+    }
+
+    if (slug === 'capacidade-credito') {
+      const renda = numberFromValues(values, 'rendaMensal');
+      const gastos = numberFromValues(values, 'gastoMensal');
+      const dividas = numberFromValues(values, 'dividasMensais');
+      const reserva = numberFromValues(values, 'reservaAtual');
+      const mesesReserva = numberFromValues(values, 'mesesReservaMinima');
+      const rendaLivre = renda - gastos - dividas;
+      if (renda > 0 && rendaLivre <= 0) alerts.push('Gastos e dividas ja consomem toda a renda; nova parcela tende a pressionar caixa.');
+      else if (renda > 0 && rendaLivre / renda < 0.15) alerts.push(`Folga mensal abaixo de 15% da renda. Simule parcela conservadora ou reduza custos primeiro.`);
+      if (renda > 0 && dividas / renda * 100 >= 30) alerts.push(`Dividas atuais ja ocupam ${limitLabel(dividas / renda * 100, '%')} da renda.`);
+      if (reserva < gastos * mesesReserva) alerts.push(`Reserva atual nao cobre os ${limitLabel(mesesReserva)} meses minimos definidos para assumir credito.`);
+    }
+
+    if (slug === 'lance-consorcio') {
+      const carta = numberFromValues(values, 'valorCarta');
+      const reserva = numberFromValues(values, 'reservaAtual');
+      const gasto = numberFromValues(values, 'gastoMensal');
+      const capacidade = numberFromValues(values, 'capacidadePagamento');
+      const lancePct = numberFromValues(values, 'lanceDesejadoPct');
+      const limitePct = numberFromValues(values, 'limiteLancePct');
+      const mesesReserva = numberFromValues(values, 'mesesReservaMinima');
+      const lanceDesejado = carta * lancePct / 100;
+      const reservaDepois = reserva - lanceDesejado;
+      const reservaMinima = gasto * mesesReserva;
+      if (reservaDepois < reservaMinima) alerts.push(`Lance desejado deixaria reserva abaixo de ${limitLabel(mesesReserva)} meses de gastos.`);
+      if (limitePct > 0 && lancePct > limitePct) alerts.push(`Lance desejado de ${limitLabel(lancePct, '%')} supera o limite recomendado de ${limitLabel(limitePct, '%')}.`);
+      if (capacidade <= 0) alerts.push('Capacidade de pagamento zerada limita a sustentacao da parcela apos contemplacao.');
+    }
+
+    if (slug === 'compra-vista-parcelado') {
+      const preco = numberFromValues(values, 'precoCheio');
+      const desconto = numberFromValues(values, 'descontoVista');
+      const parcelas = numberFromValues(values, 'parcelas');
+      const valorParcela = numberFromValues(values, 'valorParcela');
+      const renda = numberFromValues(values, 'rendaMensal');
+      const gasto = numberFromValues(values, 'gastoMensal');
+      const reserva = numberFromValues(values, 'reservaAtual');
+      const precoVista = preco * (1 - desconto / 100);
+      const reservaDepoisVista = reserva - precoVista;
+      const parcelaPct = renda > 0 ? valorParcela / renda * 100 : 0;
+      const totalParcelado = parcelas * valorParcela;
+      if (parcelaPct >= 10) alerts.push(`Parcela representa ${limitLabel(parcelaPct, '%')} da renda; teste impacto em capacidade de credito.`);
+      if (gasto > 0 && reservaDepoisVista < gasto * 3) alerts.push('Pagamento a vista deixaria reserva abaixo de 3 meses de custos.');
+      if (totalParcelado > preco && totalParcelado - preco > preco * 0.15) alerts.push('Total parcelado supera o preco cheio em mais de 15%; revise taxa e desconto.');
+    }
+
+    return alerts;
+  }
+
   function validateField(slug, field, rawValue) {
     const rule = fieldRule(slug, field);
     const label = field.label || field.name;
@@ -572,15 +648,33 @@
     `;
   }
 
+  function renderCoherenceAlert(form, warnings) {
+    const target = form.querySelector('[data-calculator-coherence-alert]');
+    if (!target) return;
+    target.dataset.calculatorCoherenceCount = String(warnings.length);
+    if (warnings.length === 0) {
+      target.hidden = true;
+      target.innerHTML = '';
+      return;
+    }
+    target.hidden = false;
+    target.innerHTML = `
+      <strong>Atencao a coerencia do cenario</strong>
+      <ul>${warnings.slice(0, 3).map((warning) => `<li>${escapeHtml(warning)}</li>`).join('')}</ul>
+    `;
+  }
+
   function validateForm(form, meta) {
     const values = formValues(form);
     const issues = (meta.fields || []).map((field) => ({
       name: field.name,
       message: validateField(meta.slug, field, values[field.name])
     })).filter((issue) => issue.message);
-    const validation = { ok: issues.length === 0, issues, values };
+    const warnings = issues.length === 0 ? coherenceAlerts(meta.slug, values) : [];
+    const validation = { ok: issues.length === 0, issues, warnings, values };
     applyFieldValidation(form, issues);
     renderFormAlert(form, validation);
+    renderCoherenceAlert(form, warnings);
     return validation;
   }
 
@@ -681,6 +775,7 @@
     const form = qs('[data-calculator-form]');
     form.innerHTML = `
       <article class="bf-platform-alert bf-platform-alert--warn bf-calculator-form-alert" data-calculator-form-alert hidden></article>
+      <article class="bf-platform-alert bf-platform-alert--warn bf-calculator-coherence-alert" data-calculator-coherence-alert data-calculator-coherence-count="0" hidden></article>
       ${(meta.fields || []).map((field) => renderField(field, defaults[field.name], slug)).join('')}
       <button class="btn btn--primary" type="submit">Calcular e salvar cenario</button>
     `;
@@ -696,6 +791,7 @@
       const validation = validateForm(form, meta);
       if (!validation.ok) {
         document.body.dataset.calculatorValidation = 'invalid';
+        document.body.dataset.calculatorCoherence = 'blocked';
         document.body.dataset.calculatorReady = `${slug}:invalid`;
         return;
       }
@@ -704,6 +800,7 @@
       if (current !== renderSerial) return;
       renderResult(preview, { preview: true });
       document.body.dataset.calculatorValidation = 'valid';
+      document.body.dataset.calculatorCoherence = validation.warnings.length ? 'warn' : 'ok';
       document.body.dataset.calculatorReady = `${slug}:preview`;
     }
 
@@ -712,6 +809,7 @@
       const validation = validateForm(form, meta);
       if (!validation.ok) {
         document.body.dataset.calculatorValidation = 'invalid';
+        document.body.dataset.calculatorCoherence = 'blocked';
         document.body.dataset.calculatorReady = `${slug}:invalid`;
         return;
       }
@@ -720,6 +818,7 @@
       if (current !== renderSerial) return;
       renderResult(result, { persisted: true });
       document.body.dataset.calculatorValidation = 'valid';
+      document.body.dataset.calculatorCoherence = validation.warnings.length ? 'warn' : 'ok';
       document.body.dataset.calculatorReady = slug;
     });
 

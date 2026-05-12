@@ -9,6 +9,7 @@
   "formValidation": {
     "markers": [
       "data-calculator-form-alert",
+      "data-calculator-coherence-alert",
       "data-calculator-field",
       "data-calculator-field-error"
     ],
@@ -20,7 +21,7 @@
       "compra-vista-parcelado"
     ]
   },
-  "generatedAt": "2026-05-12T01:21:47.632Z",
+  "generatedAt": "2026-05-12T01:36:08.621Z",
   "previewReport": [
     {
       "slug": "juros-compostos",

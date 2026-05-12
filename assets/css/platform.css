@@ -2421,9 +2421,16 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.bf-calculator-form-alert {
+.bf-calculator-form-alert,
+.bf-calculator-coherence-alert {
   grid-column: 1 / -1;
   margin: 0;
+}
+
+.bf-calculator-coherence-alert ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  line-height: 1.5;
 }
 
 .bf-calculator-field {

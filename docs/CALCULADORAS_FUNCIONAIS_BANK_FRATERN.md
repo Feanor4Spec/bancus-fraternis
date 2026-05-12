@@ -6,7 +6,7 @@ Atualizado em 2026-05-11.
 
 O Bancus Fraternis recebeu o ecossistema estatico/progressivo de calculadoras financeiras em HTML, CSS e JavaScript puro. A implementacao cria uma entrada unica em `pages/calculadoras.html`, 19 paginas individuais, catalogo JSON, premissas locais, motor comum de formulas, servico de simulacao por slug, perfil financeiro consolidado em `localStorage`, historico unificado, contexto de decisao compartilhado e recomendacoes explicaveis.
 
-Atualizacao de jornada: paginas individuais agora abrem em modo de previa sem persistencia, recalculam a previa durante edicoes validas e so gravam perfil/historico quando o usuario aciona `Calcular e salvar cenario`.
+Atualizacao de jornada: paginas individuais agora abrem em modo de previa sem persistencia, recalculam a previa durante edicoes validas, exibem alertas de coerencia do cenario e so gravam perfil/historico quando o usuario aciona `Calcular e salvar cenario`.
 
 ## Rotas
 
@@ -104,6 +104,7 @@ Contrato atual das paginas individuais:
 - A previa nao grava `bf_financial_profile_v1`, `bf_calculator_history_v1` nem `bf_decision_context_audit_v1`.
 - Campos usam `data-calculator-field`, `data-calculator-field-error` e `data-calculator-form-alert` para validar entrada antes do calculo.
 - Custos Fixos, Reserva, Capacidade, Lance e Compra possuem ajuda contextual e limites especificos.
+- Cenarios arriscados mostram `data-calculator-coherence-alert`; estes alertas nao bloqueiam calculo ou salvamento.
 - Ao clicar `Calcular e salvar cenario`, o submit executa `BFCalculadoras.simulate(slug, input, { persist: true })`.
 - O resultado salvo recebe `data-calculator-result-mode="saved"`, `historyId` e atualiza perfil/historico local.
 

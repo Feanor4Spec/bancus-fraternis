@@ -116,11 +116,15 @@ assert(pageJs.includes('persist: false'), 'Previa inicial das calculadoras deve 
 assert(pageJs.includes('persist: true'), 'Submit das calculadoras deve declarar persist:true.');
 assert(!pageJs.includes("form.dispatchEvent(new Event('submit'"), 'Pagina individual ainda dispara submit automaticamente no carregamento.');
 assert(pageJs.includes('data-calculator-form-alert'), 'Formulario da calculadora nao expoe alerta de validacao.');
+assert(pageJs.includes('data-calculator-coherence-alert'), 'Formulario da calculadora nao expoe alerta de coerencia.');
 assert(pageJs.includes('data-calculator-field'), 'Formulario da calculadora nao expoe marcador de campo.');
 assert(pageJs.includes('data-calculator-field-error'), 'Formulario da calculadora nao expoe erro por campo.');
 assert(pageJs.includes('validateForm(form, meta)'), 'Pagina de calculadora nao valida formulario antes de calcular.');
+assert(pageJs.includes('coherenceAlerts(meta.slug, values)'), 'Pagina de calculadora nao calcula alertas de coerencia.');
+assert(pageJs.includes('document.body.dataset.calculatorCoherence'), 'Pagina de calculadora nao expoe status de coerencia no body.');
 assert(pageJs.includes('renderPreviewFromForm'), 'Pagina de calculadora nao atualiza previa sem persistencia apos edicao.');
 assert(platformCss.includes('.bf-calculator-field[data-calculator-field-state="invalid"]'), 'CSS nao estiliza estado invalido de campo da calculadora.');
+assert(platformCss.includes('.bf-calculator-coherence-alert'), 'CSS nao estiliza alerta de coerencia da calculadora.');
 assert(docsMap.includes('19 calculadoras'), 'Mapa completo nao registra o catalogo de 19 calculadoras.');
 assert(functionMap.includes('Mapa de funcoes das calculadoras'), 'Mapa funcional das calculadoras nao foi criado.');
 
@@ -207,7 +211,7 @@ const report = {
   previewDoesNotPersist: previewHistoryCount === 0 && previewProfileStored === null && previewAuditStored === null,
   persistentSubmitChecked: ['capacidade-credito', 'lance-consorcio'],
   formValidation: {
-    markers: ['data-calculator-form-alert', 'data-calculator-field', 'data-calculator-field-error'],
+    markers: ['data-calculator-form-alert', 'data-calculator-coherence-alert', 'data-calculator-field', 'data-calculator-field-error'],
     criticalSlugs: ['custos-fixos', 'reserva-emergencia', 'capacidade-credito', 'lance-consorcio', 'compra-vista-parcelado']
   },
   generatedAt: new Date().toISOString(),
