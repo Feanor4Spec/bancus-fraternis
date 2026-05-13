@@ -258,6 +258,14 @@ function publicJourneyEntity(row) {
   };
 }
 
+function publicMaterializedJourneyRow(row, kind) {
+  const entity = publicJourneyEntity({
+    ...row,
+    kind: row.kind || kind
+  });
+  return entity ? { ...entity, materializedTable: `journey_${kind}s` } : null;
+}
+
 function countBy(items, key) {
   return (items || []).reduce((acc, item) => {
     const value = String(item && item[key] ? item[key] : 'desconhecido');
@@ -462,6 +470,63 @@ function initializeSchema(db) {
       PRIMARY KEY (kind, id)
     );
 
+    CREATE TABLE IF NOT EXISTS journey_leads (
+      id TEXT PRIMARY KEY,
+      kind TEXT NOT NULL DEFAULT 'lead',
+      source_snapshot_id TEXT DEFAULT '',
+      snapshot_type TEXT DEFAULT '',
+      owner_email TEXT DEFAULT '',
+      actor_email TEXT DEFAULT '',
+      title TEXT DEFAULT '',
+      status TEXT DEFAULT '',
+      stage TEXT DEFAULT '',
+      priority TEXT DEFAULT '',
+      source TEXT DEFAULT '',
+      related_id TEXT DEFAULT '',
+      amount REAL DEFAULT 0,
+      payload_json TEXT NOT NULL DEFAULT '{}',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS journey_simulations (
+      id TEXT PRIMARY KEY,
+      kind TEXT NOT NULL DEFAULT 'simulation',
+      source_snapshot_id TEXT DEFAULT '',
+      snapshot_type TEXT DEFAULT '',
+      owner_email TEXT DEFAULT '',
+      actor_email TEXT DEFAULT '',
+      title TEXT DEFAULT '',
+      status TEXT DEFAULT '',
+      stage TEXT DEFAULT '',
+      priority TEXT DEFAULT '',
+      source TEXT DEFAULT '',
+      related_id TEXT DEFAULT '',
+      amount REAL DEFAULT 0,
+      payload_json TEXT NOT NULL DEFAULT '{}',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS journey_proposals (
+      id TEXT PRIMARY KEY,
+      kind TEXT NOT NULL DEFAULT 'proposal',
+      source_snapshot_id TEXT DEFAULT '',
+      snapshot_type TEXT DEFAULT '',
+      owner_email TEXT DEFAULT '',
+      actor_email TEXT DEFAULT '',
+      title TEXT DEFAULT '',
+      status TEXT DEFAULT '',
+      stage TEXT DEFAULT '',
+      priority TEXT DEFAULT '',
+      source TEXT DEFAULT '',
+      related_id TEXT DEFAULT '',
+      amount REAL DEFAULT 0,
+      payload_json TEXT NOT NULL DEFAULT '{}',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
     CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
     CREATE INDEX IF NOT EXISTS idx_sessions_token_hash ON sessions(token_hash);
     CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
@@ -475,6 +540,12 @@ function initializeSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_journey_entities_owner_email ON journey_entities(owner_email);
     CREATE INDEX IF NOT EXISTS idx_journey_entities_updated_at ON journey_entities(updated_at);
     CREATE INDEX IF NOT EXISTS idx_journey_entities_snapshot ON journey_entities(source_snapshot_id);
+    CREATE INDEX IF NOT EXISTS idx_journey_leads_owner_email ON journey_leads(owner_email);
+    CREATE INDEX IF NOT EXISTS idx_journey_leads_updated_at ON journey_leads(updated_at);
+    CREATE INDEX IF NOT EXISTS idx_journey_simulations_owner_email ON journey_simulations(owner_email);
+    CREATE INDEX IF NOT EXISTS idx_journey_simulations_updated_at ON journey_simulations(updated_at);
+    CREATE INDEX IF NOT EXISTS idx_journey_proposals_owner_email ON journey_proposals(owner_email);
+    CREATE INDEX IF NOT EXISTS idx_journey_proposals_updated_at ON journey_proposals(updated_at);
   `);
 }
 
@@ -878,7 +949,7 @@ class BancusDatabase {
       entity.createdAt,
       entity.updatedAt
     );
-    return publicJourneyEntity({
+    const publicRecord = publicJourneyEntity({
       id: entity.id,
       kind: entity.kind,
       source_snapshot_id: entity.sourceSnapshotId,
@@ -896,9 +967,67 @@ class BancusDatabase {
       created_at: entity.createdAt,
       updated_at: entity.updatedAt
     });
+    this.upsertMaterializedJourneyRow(publicRecord);
+    return publicRecord;
+  }
+
+  materializedTableFor(kind) {
+    if (kind === 'lead') return 'journey_leads';
+    if (kind === 'simulation') return 'journey_simulations';
+    if (kind === 'proposal') return 'journey_proposals';
+    return '';
+  }
+
+  upsertMaterializedJourneyRow(entity = {}) {
+    const table = this.materializedTableFor(entity.kind);
+    if (!table || !entity.id) return null;
+    this.db.prepare(`
+      INSERT INTO ${quoteIdentifier(table)} (
+        id, kind, source_snapshot_id, snapshot_type, owner_email, actor_email,
+        title, status, stage, priority, source, related_id, amount, payload_json, created_at, updated_at
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        source_snapshot_id = excluded.source_snapshot_id,
+        snapshot_type = excluded.snapshot_type,
+        owner_email = excluded.owner_email,
+        actor_email = excluded.actor_email,
+        title = excluded.title,
+        status = excluded.status,
+        stage = excluded.stage,
+        priority = excluded.priority,
+        source = excluded.source,
+        related_id = excluded.related_id,
+        amount = excluded.amount,
+        payload_json = excluded.payload_json,
+        updated_at = excluded.updated_at
+    `).run(
+      entity.id,
+      entity.kind,
+      entity.sourceSnapshotId,
+      entity.snapshotType,
+      entity.ownerEmail,
+      entity.actorEmail,
+      entity.title,
+      entity.status,
+      entity.stage,
+      entity.priority,
+      entity.source,
+      entity.relatedId,
+      entity.amount,
+      safeJson(entity.payload),
+      entity.createdAt,
+      entity.updatedAt
+    );
+    return entity;
   }
 
   rebuildJourneyEntities() {
+    this.db.exec(`
+      DELETE FROM journey_leads;
+      DELETE FROM journey_simulations;
+      DELETE FROM journey_proposals;
+    `);
     const rows = this.db.prepare('SELECT * FROM snapshots ORDER BY updated_at DESC').all().map(publicSnapshot);
     const indexed = [];
     rows.forEach((snapshot) => {
@@ -961,6 +1090,42 @@ class BancusDatabase {
       acc.total += Number(row.total || 0);
       return acc;
     }, { total: 0, lead: 0, simulation: 0, proposal: 0 });
+  }
+
+  listMaterializedJourneyRows(kind, options = {}) {
+    const table = this.materializedTableFor(kind);
+    if (!table) return [];
+    const limit = Math.max(1, Math.min(500, Number(options.limit || 100)));
+    const ownerEmail = normalizeEmail(options.ownerEmail);
+    const filters = [];
+    const params = [];
+    if (ownerEmail) {
+      filters.push('owner_email = ?');
+      params.push(ownerEmail);
+    }
+    const where = filters.length ? ` WHERE ${filters.join(' AND ')}` : '';
+    const rows = this.db.prepare(`SELECT * FROM ${quoteIdentifier(table)}${where} ORDER BY updated_at DESC LIMIT ?`).all(...params, limit);
+    return rows.map((row) => publicMaterializedJourneyRow(row, kind));
+  }
+
+  listLeads(options = {}) {
+    return this.listMaterializedJourneyRows('lead', options);
+  }
+
+  listSimulations(options = {}) {
+    return this.listMaterializedJourneyRows('simulation', options);
+  }
+
+  listProposals(options = {}) {
+    return this.listMaterializedJourneyRows('proposal', options);
+  }
+
+  materializedSummary(options = {}) {
+    return {
+      lead: this.listLeads(options).length,
+      simulation: this.listSimulations(options).length,
+      proposal: this.listProposals(options).length
+    };
   }
 
   importLocalSnapshot(input = {}, options = {}) {
@@ -1135,6 +1300,9 @@ class BancusDatabase {
     const events = this.db.prepare('SELECT COUNT(*) AS total FROM events').get();
     const snapshots = this.db.prepare('SELECT COUNT(*) AS total FROM snapshots').get();
     const journeyEntities = this.db.prepare('SELECT COUNT(*) AS total FROM journey_entities').get();
+    const journeyLeads = this.db.prepare('SELECT COUNT(*) AS total FROM journey_leads').get();
+    const journeySimulations = this.db.prepare('SELECT COUNT(*) AS total FROM journey_simulations').get();
+    const journeyProposals = this.db.prepare('SELECT COUNT(*) AS total FROM journey_proposals').get();
     const sessions = this.db.prepare("SELECT COUNT(*) AS total FROM sessions WHERE revoked_at = '' AND expires_at > ?").get(nowIso());
     return {
       schemaVersion: this.schemaVersion,
@@ -1142,6 +1310,9 @@ class BancusDatabase {
       events: Number(events.total || 0),
       snapshots: Number(snapshots.total || 0),
       journeyEntities: Number(journeyEntities.total || 0),
+      journeyLeads: Number(journeyLeads.total || 0),
+      journeySimulations: Number(journeySimulations.total || 0),
+      journeyProposals: Number(journeyProposals.total || 0),
       activeSessions: Number(sessions.total || 0)
     };
   }

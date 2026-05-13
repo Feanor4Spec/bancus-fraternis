@@ -322,6 +322,11 @@ if (!adminUsersJs.includes('listSnapshots(30)')) fail('admin-users.js sem leitur
 if (!adminUsersJs.includes('data-admin-backend-entities')) fail('admin-users.js sem lista de entidades relacionais server-side.');
 if (!adminUsersJs.includes('data-admin-backend-entity')) fail('admin-users.js sem item de entidade relacional server-side.');
 if (!adminUsersJs.includes('listJourneyEntities(50)')) fail('admin-users.js sem leitura de entidades relacionais da API local.');
+if (!adminUsersJs.includes('data-admin-backend-materialized')) fail('admin-users.js sem lista de tabelas dedicadas server-side.');
+if (!adminUsersJs.includes('data-admin-backend-materialized-item')) fail('admin-users.js sem item de tabela dedicada server-side.');
+if (!adminUsersJs.includes('listLeads(30)')) fail('admin-users.js sem leitura de leads materializados.');
+if (!adminUsersJs.includes('listSimulations(30)')) fail('admin-users.js sem leitura de simulacoes materializadas.');
+if (!adminUsersJs.includes('listProposals(30)')) fail('admin-users.js sem leitura de propostas materializadas.');
 if (!adminUsersJs.includes('databaseStatus')) fail('admin-users.js sem status tecnico do banco local.');
 if (!adminUsersJs.includes('data-admin-backend-table')) fail('admin-users.js sem lista de tabelas SQLite.');
 if (!adminUsersJs.includes('data-admin-local-import-panel')) fail('admin-users.js sem painel de migracao localStorage para SQLite.');
@@ -339,6 +344,11 @@ if (!clientDashboardJs.includes('backendSnapshotState')) fail('client-dashboard.
 if (!clientDashboardJs.includes('data-client-backend-entities')) fail('client-dashboard.js sem marcador de entidades relacionais server-side.');
 if (!clientDashboardJs.includes('listJourneyEntities(100)')) fail('client-dashboard.js sem leitura de entidades relacionais server-side.');
 if (!clientDashboardJs.includes('backendEntityState')) fail('client-dashboard.js sem estado de entidades relacionais server-side.');
+if (!clientDashboardJs.includes('data-client-backend-materialized')) fail('client-dashboard.js sem marcador de tabelas dedicadas server-side.');
+if (!clientDashboardJs.includes('backendMaterializedState')) fail('client-dashboard.js sem estado de tabelas dedicadas server-side.');
+if (!clientDashboardJs.includes('listLeads(30)')) fail('client-dashboard.js sem leitura de leads materializados.');
+if (!clientDashboardJs.includes('listSimulations(30)')) fail('client-dashboard.js sem leitura de simulacoes materializadas.');
+if (!clientDashboardJs.includes('listProposals(30)')) fail('client-dashboard.js sem leitura de propostas materializadas.');
 
 const simulatorHtml = await fs.readFile(path.join(root, 'pages/simulador.html'), 'utf8');
 const simulatorAppJs = await fs.readFile(path.join(root, 'js/app.js'), 'utf8');

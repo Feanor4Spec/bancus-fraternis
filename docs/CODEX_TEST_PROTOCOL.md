@@ -1355,9 +1355,12 @@ Validacoes obrigatorias:
 - `GET /api/snapshots` deve exigir bearer token, aceitar filtro opcional por tipo, retornar todos para admin e restringir consultor/cliente ao proprio `owner_email`.
 - `POST /api/snapshots` deve indexar entidades relacionais em `journey_entities` quando o tipo representar `lead`, `simulation` ou `proposal`.
 - `GET /api/journey-entities` deve exigir bearer token, aceitar filtro opcional por `kind`, retornar todos para admin e restringir consultor/cliente ao proprio `owner_email`.
+- `POST /api/snapshots` deve materializar registros em `journey_leads`, `journey_simulations` e `journey_proposals` quando aplicavel.
+- `GET /api/leads`, `/api/simulations` e `/api/proposals` devem exigir bearer token e preservar o mesmo escopo por sessao.
 - `dashboard-cliente.html` deve preferir snapshots server-side quando `BFBackendApi` estiver ativo e expor `data-client-backend-snapshots`; em `file://` deve seguir pelo fallback local.
 - `dashboard-cliente.html` deve expor `data-client-backend-entities` quando a camada relacional server-side estiver disponivel.
-- `dashboard-admin.html` deve listar eventos, snapshots e entidades server-side com `data-admin-backend-events`, `data-admin-backend-snapshots`, `data-admin-backend-snapshot`, `data-admin-backend-entities` e `data-admin-backend-entity`.
+- `dashboard-cliente.html` deve expor `data-client-backend-materialized` quando as tabelas dedicadas estiverem disponiveis.
+- `dashboard-admin.html` deve listar eventos, snapshots, entidades e tabelas dedicadas server-side com `data-admin-backend-events`, `data-admin-backend-snapshots`, `data-admin-backend-snapshot`, `data-admin-backend-entities`, `data-admin-backend-entity`, `data-admin-backend-materialized` e `data-admin-backend-materialized-item`.
 - Salvamentos reais de simulacao, proposta, lousa, perfil, trilha e handoff devem chamar `BFBackendApi.recordSnapshot` sem bloquear `localStorage`.
 - `pages/dashboard-admin.html` deve renderizar `data-admin-backend-events` com metricas e ultimos eventos quando houver sessao admin da API.
 - `pages/dashboard-admin.html` deve renderizar `data-admin-backend-table` e `data-admin-backend-database-provider` no painel de banco.

@@ -159,6 +159,8 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-admin-backend-snapshot',
   'data-admin-backend-entities',
   'data-admin-backend-entity',
+  'data-admin-backend-materialized',
+  'data-admin-backend-materialized-item',
   'data-admin-backend-table',
   'data-admin-backend-database-provider',
   'data-admin-backend-event-refresh',
@@ -179,6 +181,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-client-continuity-cockpit',
   'data-client-backend-snapshots',
   'data-client-backend-entities',
+  'data-client-backend-materialized',
   'data-client-next-action',
   'data-client-handoff-status',
   'data-client-proposal-status',
@@ -272,6 +275,8 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-admin-backend-snapshot',
   'data-admin-backend-entities',
   'data-admin-backend-entity',
+  'data-admin-backend-materialized',
+  'data-admin-backend-materialized-item',
   'data-admin-backend-table',
   'data-admin-backend-database-provider',
   'data-admin-backend-event-refresh',
@@ -290,14 +295,23 @@ assert(adminUsers.includes('data-admin-backend-snapshots'), 'Dashboard Admin sem
 assert(adminUsers.includes('data-admin-backend-snapshot'), 'Dashboard Admin sem item de snapshot server-side.');
 assert(adminUsers.includes('data-admin-backend-entities'), 'Dashboard Admin sem lista de entidades relacionais server-side.');
 assert(adminUsers.includes('data-admin-backend-entity'), 'Dashboard Admin sem item de entidade relacional server-side.');
+assert(adminUsers.includes('data-admin-backend-materialized'), 'Dashboard Admin sem lista de tabelas dedicadas server-side.');
+assert(adminUsers.includes('data-admin-backend-materialized-item'), 'Dashboard Admin sem item de tabela dedicada server-side.');
 assert(clientDashboard.includes('data-client-backend-snapshots'), 'Dashboard Cliente sem marcador de origem de snapshots server-side.');
 assert(clientDashboard.includes('data-client-backend-entities'), 'Dashboard Cliente sem marcador de origem de entidades relacionais server-side.');
+assert(clientDashboard.includes('data-client-backend-materialized'), 'Dashboard Cliente sem marcador de tabelas dedicadas server-side.');
 assert(clientDashboard.includes('listSnapshots(100)'), 'Dashboard Cliente sem leitura de snapshots server-side.');
 assert(clientDashboard.includes('listJourneyEntities(100)'), 'Dashboard Cliente sem leitura de entidades relacionais server-side.');
+assert(clientDashboard.includes('listLeads(30)'), 'Dashboard Cliente sem leitura de leads materializados.');
+assert(clientDashboard.includes('listSimulations(30)'), 'Dashboard Cliente sem leitura de simulacoes materializadas.');
+assert(clientDashboard.includes('listProposals(30)'), 'Dashboard Cliente sem leitura de propostas materializadas.');
 assert(backendApi.includes('listEvents'), 'BFBackendApi sem leitura de eventos server-side.');
 assert(backendApi.includes('recordSnapshot'), 'BFBackendApi sem gravacao de snapshots server-side.');
 assert(backendApi.includes('listSnapshots'), 'BFBackendApi sem leitura de snapshots server-side.');
 assert(backendApi.includes('listJourneyEntities'), 'BFBackendApi sem leitura de entidades relacionais server-side.');
+assert(backendApi.includes('listLeads'), 'BFBackendApi sem leitura de leads materializados.');
+assert(backendApi.includes('listSimulations'), 'BFBackendApi sem leitura de simulacoes materializadas.');
+assert(backendApi.includes('listProposals'), 'BFBackendApi sem leitura de propostas materializadas.');
 [
   [storageJs, 'simulation'],
   [proposalVersioning, 'proposal-version'],
@@ -315,10 +329,16 @@ assert(server.includes('/api/database/status'), 'server.js sem endpoint de statu
 assert(server.includes('/api/database/import-local'), 'server.js sem endpoint de importacao localStorage -> SQLite.');
 assert(server.includes('/api/snapshots'), 'server.js sem endpoint de snapshots server-side.');
 assert(server.includes('/api/journey-entities'), 'server.js sem endpoint de entidades relacionais server-side.');
+assert(server.includes('/api/leads'), 'server.js sem endpoint de leads materializados.');
+assert(server.includes('/api/simulations'), 'server.js sem endpoint de simulacoes materializadas.');
+assert(server.includes('/api/proposals'), 'server.js sem endpoint de propostas materializadas.');
 assert(apiDocs.includes('/api/database/status'), 'api-docs.html sem endpoint de status tecnico do banco.');
 assert(apiDocs.includes('/api/database/import-local'), 'api-docs.html sem endpoint de importacao localStorage -> SQLite.');
 assert(apiDocs.includes('/api/snapshots'), 'api-docs.html sem endpoint de snapshots server-side.');
 assert(apiDocs.includes('/api/journey-entities'), 'api-docs.html sem endpoint de entidades relacionais server-side.');
+assert(apiDocs.includes('/api/leads'), 'api-docs.html sem endpoint de leads materializados.');
+assert(apiDocs.includes('/api/simulations'), 'api-docs.html sem endpoint de simulacoes materializadas.');
+assert(apiDocs.includes('/api/proposals'), 'api-docs.html sem endpoint de propostas materializadas.');
 assert(simulator.includes('data-proposal-builder-board'), 'simulador.html sem lousa de proposta documentada.');
 assert(simulator.includes('data-proposal-version-panel'), 'simulador.html sem painel de versionamento da proposta.');
 assert(simulator.includes('js/proposal-builder.js'), 'simulador.html sem modulo proposal-builder.');
@@ -406,7 +426,7 @@ const report = {
   ok: failures.length === 0,
   contracts: {
     localStorageKeys: 18,
-    dataMarkers: 72,
+    dataMarkers: 75,
     globals: 19,
     deepLinks: 10,
     validators: 21,

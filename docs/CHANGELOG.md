@@ -4,6 +4,29 @@
 
 ---
 
+## [v8.87.0] - 2026-05-13
+
+### Tabelas dedicadas de jornada local
+
+#### Adicionado
+- SQLite local ganhou `journey_leads`, `journey_simulations` e `journey_proposals`, materializadas a partir de `journey_entities`.
+- API local ganhou `GET /api/leads`, `GET /api/simulations` e `GET /api/proposals`, todos com escopo por sessao.
+- `BFBackendApi` passou a expor `listLeads`, `listSimulations` e `listProposals`.
+- Dashboard Admin agora mostra registros materializados em `data-admin-backend-materialized` e `data-admin-backend-materialized-item`.
+- Dashboard Cliente agora sinaliza tabelas dedicadas em `data-client-backend-materialized`.
+
+#### Modificado
+- `POST /api/snapshots` continua indexando entidades relacionais e agora tambem alimenta as tabelas dedicadas correspondentes.
+- Validadores e docs foram atualizados para proteger os endpoints e marcadores das tabelas dedicadas.
+
+#### Validado
+- `node --check server.js js/backend/db.js assets/js/services/backend-api.service.js assets/js/client-dashboard.js assets/js/admin-users.js`
+- `node tools/validate-local-database.mjs`
+- `node tools/validate-public-contracts.mjs`
+- `node tools/validate-design-system.mjs`
+
+---
+
 ## [v8.86.0] - 2026-05-13
 
 ### Entidades relacionais locais de jornada

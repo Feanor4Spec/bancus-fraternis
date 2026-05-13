@@ -206,6 +206,21 @@
     return request(`/api/journey-entities?${query.toString()}`);
   }
 
+  function listLeads(limit = 50) {
+    const safeLimit = Math.max(1, Math.min(100, Number(limit || 50)));
+    return request(`/api/leads?limit=${encodeURIComponent(safeLimit)}`);
+  }
+
+  function listSimulations(limit = 50) {
+    const safeLimit = Math.max(1, Math.min(100, Number(limit || 50)));
+    return request(`/api/simulations?limit=${encodeURIComponent(safeLimit)}`);
+  }
+
+  function listProposals(limit = 50) {
+    const safeLimit = Math.max(1, Math.min(100, Number(limit || 50)));
+    return request(`/api/proposals?limit=${encodeURIComponent(safeLimit)}`);
+  }
+
   window.BFBackendApi = {
     SESSION_KEY,
     available: canUseApi,
@@ -228,6 +243,9 @@
     recordSnapshot,
     listEvents,
     listSnapshots,
-    listJourneyEntities
+    listJourneyEntities,
+    listLeads,
+    listSimulations,
+    listProposals
   };
 })();

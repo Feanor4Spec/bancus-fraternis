@@ -3269,11 +3269,17 @@
     `;
   }
 
-  function renderBackendEventsResult(target, health, events, databaseStatus, snapshots, entitiesResult) {
+  function renderBackendEventsResult(target, health, events, databaseStatus, snapshots, entitiesResult, materializedResult) {
     const list = Array.isArray(events) ? events : [];
     const serverSnapshots = Array.isArray(snapshots) ? snapshots : [];
     const serverEntities = entitiesResult && Array.isArray(entitiesResult.entities) ? entitiesResult.entities : [];
     const entitySummary = entitiesResult && entitiesResult.summary ? entitiesResult.summary : {};
+    const materialized = materializedResult || {};
+    const materializedRowsSource = [
+      ...(Array.isArray(materialized.leads) ? materialized.leads : []),
+      ...(Array.isArray(materialized.simulations) ? materialized.simulations : []),
+      ...(Array.isArray(materialized.proposals) ? materialized.proposals : [])
+    ];
     const snapshot = collectLocalImportSnapshot();
     const stats = health && health.stats ? health.stats : {};
     const dbStatus = databaseStatus && databaseStatus.ok ? databaseStatus : {};
@@ -3322,6 +3328,17 @@
         <small>${escapeHtml(item.status || 'ativo')} - prioridade ${escapeHtml(item.priority || 'media')}</small>
       </article>
     `).join('');
+    const materializedRows = materializedRowsSource
+      .sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')))
+      .slice(0, 8)
+      .map((item) => `
+        <article class="bf-history-item" data-admin-backend-materialized-item="${escapeHtml(`${item.kind || 'table'}:${item.id || ''}`)}">
+          <span>${escapeHtml(journeyEntityKindLabel(item.kind))} materializado</span>
+          <strong>${escapeHtml(item.title || item.id || 'Registro')}</strong>
+          <small>${escapeHtml(formatDate(item.updatedAt || item.createdAt))} - ${escapeHtml(item.materializedTable || 'tabela dedicada')}</small>
+          <small>${escapeHtml(item.status || 'ativo')} - ${escapeHtml(item.ownerEmail || 'sem dono')}</small>
+        </article>
+      `).join('');
 
     target.innerHTML = `
       <div class="bf-admin-panel-heading">
@@ -3339,6 +3356,7 @@
         <article class="bf-platform-metric"><small>Leads</small><strong>${Number(entitySummary.lead || 0)}</strong></article>
         <article class="bf-platform-metric"><small>Propostas</small><strong>${Number(entitySummary.proposal || 0)}</strong></article>
         <article class="bf-platform-metric"><small>Simulacoes</small><strong>${Number(entitySummary.simulation || 0)}</strong></article>
+        <article class="bf-platform-metric"><small>Tabelas dedicadas</small><strong>${materializedRowsSource.length}</strong></article>
         <article class="bf-platform-metric"><small>Snapshots recentes</small><strong>${serverSnapshots.length}</strong></article>
         <article class="bf-platform-metric"><small>Tipos snapshots</small><strong>${snapshotTypes.size}</strong></article>
         <article class="bf-platform-metric"><small>Sessoes ativas</small><strong>${Number(stats.activeSessions || 0)}</strong></article>
@@ -3353,6 +3371,7 @@
         <div class="bf-calculator-history">${rows || '<div class="bf-empty-state">Nenhum evento server-side registrado ainda.</div>'}</div>
         <div class="bf-calculator-history" data-admin-backend-snapshots>${snapshotRows || '<div class="bf-empty-state">Nenhum snapshot server-side registrado ainda.</div>'}</div>
         <div class="bf-calculator-history" data-admin-backend-entities>${entityRows || '<div class="bf-empty-state">Nenhuma entidade relacional indexada ainda.</div>'}</div>
+        <div class="bf-calculator-history" data-admin-backend-materialized>${materializedRows || '<div class="bf-empty-state">Nenhum registro materializado em tabela dedicada ainda.</div>'}</div>
       </div>
       ${renderLocalImportPanel(snapshot)}
     `;
@@ -3360,6 +3379,7 @@
     document.body.dataset.adminBackendEventCount = String(list.length);
     document.body.dataset.adminBackendSnapshotCount = String(serverSnapshots.length);
     document.body.dataset.adminBackendEntityCount = String(serverEntities.length);
+    document.body.dataset.adminBackendMaterializedCount = String(materializedRowsSource.length);
     document.body.dataset.adminBackendDatabaseProvider = dbStatus.provider || 'sqlite';
     target.dataset.adminBackendDatabaseProvider = dbStatus.provider || 'sqlite';
   }
@@ -3407,12 +3427,15 @@
     }
 
     renderBackendEventsLoading(target);
-    const [health, eventResult, databaseStatus, snapshotResult, entityResult] = await Promise.all([
+    const [health, eventResult, databaseStatus, snapshotResult, entityResult, leadResult, simulationResult, proposalResult] = await Promise.all([
       api.health(),
       api.listEvents(30),
       typeof api.databaseStatus === 'function' ? api.databaseStatus() : Promise.resolve(null),
       typeof api.listSnapshots === 'function' ? api.listSnapshots(30) : Promise.resolve({ ok: true, snapshots: [] }),
-      typeof api.listJourneyEntities === 'function' ? api.listJourneyEntities(50) : Promise.resolve({ ok: true, entities: [], summary: {} })
+      typeof api.listJourneyEntities === 'function' ? api.listJourneyEntities(50) : Promise.resolve({ ok: true, entities: [], summary: {} }),
+      typeof api.listLeads === 'function' ? api.listLeads(30) : Promise.resolve({ ok: true, leads: [] }),
+      typeof api.listSimulations === 'function' ? api.listSimulations(30) : Promise.resolve({ ok: true, simulations: [] }),
+      typeof api.listProposals === 'function' ? api.listProposals(30) : Promise.resolve({ ok: true, proposals: [] })
     ]);
 
     if (!eventResult || !eventResult.ok) {
@@ -3426,7 +3449,12 @@
       eventResult.events || [],
       databaseStatus && databaseStatus.ok ? databaseStatus : null,
       snapshotResult && snapshotResult.ok ? snapshotResult.snapshots || [] : [],
-      entityResult && entityResult.ok ? entityResult : { entities: [], summary: {} }
+      entityResult && entityResult.ok ? entityResult : { entities: [], summary: {} },
+      {
+        leads: leadResult && leadResult.ok ? leadResult.leads || [] : [],
+        simulations: simulationResult && simulationResult.ok ? simulationResult.simulations || [] : [],
+        proposals: proposalResult && proposalResult.ok ? proposalResult.proposals || [] : []
+      }
     );
   }
 

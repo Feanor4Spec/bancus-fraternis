@@ -392,6 +392,34 @@ async function handleApiRequest(req, res) {
     return true;
   }
 
+  const materializedRoutes = {
+    '/api/leads': { kind: 'lead', key: 'leads', list: 'listLeads' },
+    '/api/simulations': { kind: 'simulation', key: 'simulations', list: 'listSimulations' },
+    '/api/proposals': { kind: 'proposal', key: 'proposals', list: 'listProposals' }
+  };
+  if (materializedRoutes[pathname]) {
+    if (req.method !== 'GET') {
+      methodNotAllowed(res);
+      return true;
+    }
+    const context = requireAuth(req, res);
+    if (!context) return true;
+    const route = materializedRoutes[pathname];
+    const limit = Number(parsedUrl.searchParams.get('limit') || 100);
+    const isAdmin = context.user.role === 'admin';
+    const options = {
+      limit,
+      ownerEmail: isAdmin ? '' : context.user.email
+    };
+    sendJson(res, 200, {
+      ok: true,
+      scope: isAdmin ? 'all' : 'own',
+      kind: route.kind,
+      [route.key]: localDatabase[route.list](options)
+    });
+    return true;
+  }
+
   if (pathname === '/api/users') {
     const context = requireAuth(req, res, ['admin']);
     if (!context) return true;

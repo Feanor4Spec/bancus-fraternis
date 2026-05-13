@@ -84,6 +84,15 @@
     error: null
   };
 
+  let backendMaterializedState = {
+    loading: false,
+    loaded: false,
+    leads: [],
+    simulations: [],
+    proposals: [],
+    error: null
+  };
+
   function backendApi() {
     return window.BFBackendApi && typeof window.BFBackendApi === 'object' ? window.BFBackendApi : null;
   }
@@ -185,6 +194,21 @@
       scope: backendEntityState.scope || '',
       error: backendEntityState.error || null,
       source: backendEntityState.loaded ? 'sqlite' : 'localStorage'
+    };
+  }
+
+  function backendMaterializedView() {
+    const leadCount = backendMaterializedState.leads.length;
+    const simulationCount = backendMaterializedState.simulations.length;
+    const proposalCount = backendMaterializedState.proposals.length;
+    return {
+      loaded: backendMaterializedState.loaded,
+      count: leadCount + simulationCount + proposalCount,
+      leadCount,
+      simulationCount,
+      proposalCount,
+      error: backendMaterializedState.error || null,
+      source: backendMaterializedState.loaded ? 'sqlite' : 'localStorage'
     };
   }
 
@@ -326,6 +350,7 @@
   function dashboardSnapshot() {
     const backend = backendSnapshotView();
     const backendEntities = backendEntityView();
+    const backendMaterialized = backendMaterializedView();
     const profile = backend.profile || loadProfileSnapshot();
     const calculatorHistory = loadCalculatorHistory();
     const simulations = mergeRecords(backend.simulations, loadSimulations(), (item) => item.id);
@@ -368,7 +393,8 @@
         error: backend.error,
         source: backend.loaded ? 'sqlite' : 'localStorage'
       },
-      backendEntities
+      backendEntities,
+      backendMaterialized
     };
   }
 
@@ -640,6 +666,7 @@
             <span class="bf-badge bf-badge--gold">Cockpit de retomada</span>
             <span class="bf-badge bf-badge--navy" data-client-backend-snapshots="${escapeHtml(snapshot.backendSnapshots.source)}">${escapeHtml(snapshot.backendSnapshots.loaded ? 'Snapshots SQLite' : 'Fallback local')}</span>
             <span class="bf-badge bf-badge--ok" data-client-backend-entities="${escapeHtml(snapshot.backendEntities.source)}">${escapeHtml(snapshot.backendEntities.loaded ? `Entidades ${snapshot.backendEntities.count}` : 'Entidades locais')}</span>
+            <span class="bf-badge bf-badge--gold" data-client-backend-materialized="${escapeHtml(snapshot.backendMaterialized.source)}">${escapeHtml(snapshot.backendMaterialized.loaded ? `Tabelas ${snapshot.backendMaterialized.count}` : 'Tabelas locais')}</span>
             <h2>Onde voce esta e qual acao seguir agora</h2>
             <p>Consolida atendimento, proposta, simulacao e cadencia comercial para continuar a jornada sem perder contexto.</p>
           </div>
@@ -989,6 +1016,58 @@
     return true;
   }
 
+  async function loadBackendMaterializedTables() {
+    const api = backendApi();
+    const hasMethods = api &&
+      typeof api.available === 'function' &&
+      api.available() &&
+      typeof api.listLeads === 'function' &&
+      typeof api.listSimulations === 'function' &&
+      typeof api.listProposals === 'function';
+    if (!hasMethods) {
+      document.body.dataset.clientBackendMaterializedReady = 'fallback';
+      document.body.dataset.clientBackendMaterializedCount = '0';
+      return false;
+    }
+
+    backendMaterializedState = {
+      ...backendMaterializedState,
+      loading: true,
+      error: null
+    };
+
+    const [leadResult, simulationResult, proposalResult] = await Promise.all([
+      api.listLeads(30),
+      api.listSimulations(30),
+      api.listProposals(30)
+    ]);
+    if (!leadResult.ok || !simulationResult.ok || !proposalResult.ok) {
+      backendMaterializedState = {
+        loading: false,
+        loaded: false,
+        leads: [],
+        simulations: [],
+        proposals: [],
+        error: 'Nao foi possivel ler tabelas materializadas.'
+      };
+      document.body.dataset.clientBackendMaterializedReady = 'fallback';
+      document.body.dataset.clientBackendMaterializedCount = '0';
+      return false;
+    }
+
+    backendMaterializedState = {
+      loading: false,
+      loaded: true,
+      leads: Array.isArray(leadResult.leads) ? leadResult.leads : [],
+      simulations: Array.isArray(simulationResult.simulations) ? simulationResult.simulations : [],
+      proposals: Array.isArray(proposalResult.proposals) ? proposalResult.proposals : [],
+      error: null
+    };
+    document.body.dataset.clientBackendMaterializedReady = 'true';
+    document.body.dataset.clientBackendMaterializedCount = String(backendMaterializedView().count);
+    return true;
+  }
+
   function renderSnapshotAwareSections() {
     renderCalculatorProfile();
     renderDecisionJourney();
@@ -1188,7 +1267,7 @@
 
     renderSnapshotAwareSections();
     renderStandardModels();
-    Promise.all([loadBackendSnapshots(), loadBackendEntities()]).then((results) => {
+    Promise.all([loadBackendSnapshots(), loadBackendEntities(), loadBackendMaterializedTables()]).then((results) => {
       if (results.some(Boolean)) renderSnapshotAwareSections();
     });
 

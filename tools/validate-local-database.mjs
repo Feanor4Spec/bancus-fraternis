@@ -37,6 +37,9 @@ try {
   assert(initialStats.users === 3, `Banco local deveria criar 3 usuarios seed; criou ${initialStats.users}.`);
   assert(initialStats.snapshots === 0, 'Banco local novo nao deveria iniciar com snapshots.');
   assert(initialStats.journeyEntities === 0, 'Banco local novo nao deveria iniciar com entidades de jornada.');
+  assert(initialStats.journeyLeads === 0, 'Banco local novo nao deveria iniciar com leads materializados.');
+  assert(initialStats.journeySimulations === 0, 'Banco local novo nao deveria iniciar com simulacoes materializadas.');
+  assert(initialStats.journeyProposals === 0, 'Banco local novo nao deveria iniciar com propostas materializadas.');
 
   const adminLogin = localDb.login('admin@bankfratern.local', 'Admin@123');
   assert(adminLogin.ok, 'Login seed admin falhou no banco local.');
@@ -155,13 +158,17 @@ try {
   assert(scopedEntities.some((item) => item.kind === 'lead' && item.id === 'HND-VALIDATOR'), 'Entidades relacionais nao retornaram lead indexado.');
   const entitySummary = localDb.journeyEntitySummary({ ownerEmail: 'validator@example.com' });
   assert(entitySummary.simulation >= 1 && entitySummary.lead >= 1, 'Resumo relacional deveria contar simulacao e lead.');
+  const materializedSimulation = localDb.listSimulations({ limit: 10, ownerEmail: 'validator@example.com' });
+  const materializedLead = localDb.listLeads({ limit: 10, ownerEmail: 'validator@example.com' });
+  assert(materializedSimulation.some((item) => item.id === 'simulation-1'), 'Tabela dedicada de simulacoes nao retornou registro materializado.');
+  assert(materializedLead.some((item) => item.id === 'HND-VALIDATOR'), 'Tabela dedicada de leads nao retornou registro materializado.');
 
   const databaseStatus = localDb.databaseStatus();
   assert(databaseStatus.ok, 'Status tecnico do banco local deveria retornar ok.');
   assert(databaseStatus.provider === 'sqlite', 'Provider ativo deveria ser sqlite.');
   assert(databaseStatus.files && databaseStatus.files.main && databaseStatus.files.main.exists, 'Status do banco nao encontrou arquivo SQLite principal.');
   assert(databaseStatus.sqlite && databaseStatus.sqlite.quickCheck === 'ok', 'PRAGMA quick_check do SQLite nao retornou ok.');
-  assert(Array.isArray(databaseStatus.tables) && databaseStatus.tables.length >= 5, 'Status do banco deveria listar tabelas principais.');
+  assert(Array.isArray(databaseStatus.tables) && databaseStatus.tables.length >= 8, 'Status do banco deveria listar tabelas principais.');
 
   const importSnapshot = {
     source: 'validator-local-storage',
@@ -239,6 +246,8 @@ try {
   assert(importedSnapshot && !Object.prototype.hasOwnProperty.call(importedSnapshot.payload, 'phone'), 'Snapshot importado vazou phone.');
   const importedProposalEntity = localDb.listJourneyEntities({ limit: 20, kind: 'proposal' }).find((item) => item.id === 'PROP-LOCAL-1');
   assert(importedProposalEntity && importedProposalEntity.kind === 'proposal', 'Snapshot importado de proposta deveria gerar entidade relacional proposal.');
+  const importedProposal = localDb.listProposals({ limit: 20 }).find((item) => item.id === 'PROP-LOCAL-1');
+  assert(importedProposal && importedProposal.kind === 'proposal', 'Snapshot importado de proposta deveria gerar tabela dedicada proposal.');
 
   const server = await read('server.js');
   [
@@ -252,6 +261,9 @@ try {
     '/api/events',
     '/api/snapshots',
     '/api/journey-entities',
+    '/api/leads',
+    '/api/simulations',
+    '/api/proposals',
     'SCHEMA_VERSION'
   ].forEach((marker) => assert(server.includes(marker), `server.js sem contrato de API local: ${marker}.`));
 
@@ -267,6 +279,9 @@ try {
     'listEvents',
     'listSnapshots',
     'listJourneyEntities',
+    'listLeads',
+    'listSimulations',
+    'listProposals',
     'createUser',
     'toggleStatus'
   ].forEach((marker) => assert(backendApi.includes(marker), `backend-api.service.js sem contrato ${marker}.`));
@@ -288,6 +303,8 @@ try {
     'data-admin-backend-snapshot',
     'data-admin-backend-entities',
     'data-admin-backend-entity',
+    'data-admin-backend-materialized',
+    'data-admin-backend-materialized-item',
     'data-admin-backend-table',
     'data-admin-backend-database-provider',
     'data-admin-local-import-panel',
@@ -301,7 +318,10 @@ try {
     'databaseStatus',
     'listEvents(30)',
     'listSnapshots(30)',
-    'listJourneyEntities(50)'
+    'listJourneyEntities(50)',
+    'listLeads(30)',
+    'listSimulations(30)',
+    'listProposals(30)'
   ].forEach((marker) => {
     assert(adminDashboard.includes(marker) || adminUsers.includes(marker), `Painel admin de eventos sem contrato ${marker}.`);
   });
@@ -309,10 +329,15 @@ try {
   [
     'data-client-backend-snapshots',
     'data-client-backend-entities',
+    'data-client-backend-materialized',
     'backendSnapshotState',
     'backendEntityState',
+    'backendMaterializedState',
     'listSnapshots(100)',
-    'listJourneyEntities(100)'
+    'listJourneyEntities(100)',
+    'listLeads(30)',
+    'listSimulations(30)',
+    'listProposals(30)'
   ].forEach((marker) => {
     assert(clientDashboard.includes(marker), `Dashboard Cliente sem contrato de snapshot server-side: ${marker}.`);
   });
@@ -341,6 +366,9 @@ try {
     events: localDb.listEvents({ limit: 50 }).length,
     snapshots: localDb.listSnapshots({ limit: 50 }).length,
     journeyEntities: localDb.listJourneyEntities({ limit: 50 }).length,
+    journeyLeads: localDb.listLeads({ limit: 50 }).length,
+    journeySimulations: localDb.listSimulations({ limit: 50 }).length,
+    journeyProposals: localDb.listProposals({ limit: 50 }).length,
     provider: databaseStatus.provider,
     tables: databaseStatus.tables.length,
     importedUsers: importRun.users.imported,
