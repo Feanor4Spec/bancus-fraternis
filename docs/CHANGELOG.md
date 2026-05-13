@@ -4,6 +4,25 @@
 
 ---
 
+## [v8.88.0] - 2026-05-13
+
+### Escrita direta de jornada local
+
+#### Adicionado
+- API local ganhou `POST /api/leads`, `POST /api/simulations` e `POST /api/proposals` para criar registros diretamente nas tabelas dedicadas.
+- API local ganhou `GET /api/leads/:id`, `GET /api/simulations/:id`, `GET /api/proposals/:id` e `PATCH` equivalente para leitura/atualizacao pontual com escopo por sessao.
+- `BFBackendApi` passou a expor `saveLead`, `updateLead`, `saveSimulation`, `updateSimulation`, `saveProposal` e `updateProposal`, alem das leituras pontuais.
+
+#### Modificado
+- Escritas diretas mantem `journey_entities` sincronizado, sanitizam payload sensivel e registram eventos de auditoria `*-direct-created` ou `*-direct-updated`.
+- `tools/validate-local-database.mjs`, contratos publicos, API docs e protocolo de testes agora protegem o novo contrato de escrita direta.
+
+#### Validado
+- `node --check server.js js/backend/db.js assets/js/services/backend-api.service.js`
+- `node tools/validate-local-database.mjs`
+
+---
+
 ## [v8.87.0] - 2026-05-13
 
 ### Tabelas dedicadas de jornada local

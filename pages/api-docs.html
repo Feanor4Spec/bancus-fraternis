@@ -98,8 +98,17 @@
         <div class="bf-api-item"><code>GET /api/snapshots</code><p>Endpoint autenticado para listar snapshots recentes por limite e tipo; admin ve todos, cliente e consultor veem apenas os proprios.</p></div>
         <div class="bf-api-item"><code>GET /api/journey-entities</code><p>Endpoint autenticado para listar leads, simulacoes e propostas indexados a partir dos snapshots; aceita limite e filtro por kind.</p></div>
         <div class="bf-api-item"><code>GET /api/leads</code><p>Endpoint autenticado para listar leads materializados na tabela dedicada.</p></div>
+        <div class="bf-api-item"><code>POST /api/leads</code><p>Endpoint autenticado para criar lead direto, sanitizado e sincronizado com entidades de jornada.</p></div>
+        <div class="bf-api-item"><code>GET /api/leads/:id</code><p>Endpoint autenticado para ler lead pontual respeitando escopo por sessao.</p></div>
+        <div class="bf-api-item"><code>PATCH /api/leads/:id</code><p>Endpoint autenticado para atualizar lead pontual sem trocar dono indevidamente.</p></div>
         <div class="bf-api-item"><code>GET /api/simulations</code><p>Endpoint autenticado para listar simulacoes materializadas na tabela dedicada.</p></div>
+        <div class="bf-api-item"><code>POST /api/simulations</code><p>Endpoint autenticado para criar simulacao direta, sanitizada e sincronizada com entidades de jornada.</p></div>
+        <div class="bf-api-item"><code>GET /api/simulations/:id</code><p>Endpoint autenticado para ler simulacao pontual respeitando escopo por sessao.</p></div>
+        <div class="bf-api-item"><code>PATCH /api/simulations/:id</code><p>Endpoint autenticado para atualizar simulacao pontual sem trocar dono indevidamente.</p></div>
         <div class="bf-api-item"><code>GET /api/proposals</code><p>Endpoint autenticado para listar propostas materializadas na tabela dedicada.</p></div>
+        <div class="bf-api-item"><code>POST /api/proposals</code><p>Endpoint autenticado para criar proposta direta, sanitizada e sincronizada com entidades de jornada.</p></div>
+        <div class="bf-api-item"><code>GET /api/proposals/:id</code><p>Endpoint autenticado para ler proposta pontual respeitando escopo por sessao.</p></div>
+        <div class="bf-api-item"><code>PATCH /api/proposals/:id</code><p>Endpoint autenticado para atualizar proposta pontual sem trocar dono indevidamente.</p></div>
         <div class="bf-api-item"><code>GET /api/produtos</code><p>Lista produtos financeiros e criterios de comparacao.</p></div>
         <div class="bf-api-item"><code>POST /api/simulacoes/financiamento</code><p>Calcula Price/SAC, parcelas, juros e saldo.</p></div>
         <div class="bf-api-item"><code>POST /api/simulacoes/consorcio</code><p>Calcula carta, lance, reajuste, MOB Contemplacao e MOB Faturamento.</p></div>

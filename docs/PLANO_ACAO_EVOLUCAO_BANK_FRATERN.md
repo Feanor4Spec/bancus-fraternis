@@ -1,6 +1,6 @@
 # Plano de Acao de Evolucao Bancus Fraternis
 
-Atualizado em 2026-05-12.
+Atualizado em 2026-05-13.
 
 Prioridade definida: produto e jornada.
 
@@ -62,7 +62,7 @@ Cada etapa deve responder quatro perguntas:
 | Publicacao segura em GitHub Pages | Concluido parcial | Selo demo/local, fallback `404.html`, CI em `.github/workflows/validate.yml` e `tools/validate-public-release-safety.mjs`. |
 | QA online da jornada publicada | Concluido | `tools/validate-online-journey-smoke.mjs` valida no GitHub Pages as 10 etapas da lousa, anchors, marcadores e fallback estatico; `docs/test-reports/online-journey-browser-report.json` registra a checagem renderizada. |
 | Performance do simulador online | Concluido parcial | Simulador passou a carregar `Tab_Grupos_Consorcio.compact.json` primeiro, preservando fallback para o JSON canonico e todos os 17.396 grupos validos. |
-| Banco local de usuarios, eventos e snapshots | Concluido parcial | SQLite local em `.runtime/`, endpoints `/api/database/status`, `/api/auth/*`, `/api/users`, `/api/events`, `/api/snapshots`, `/api/journey-entities`, `/api/leads`, `/api/simulations`, `/api/proposals`, `BFBackendApi`, painel Admin de eventos/status/snapshots/entidades/tabelas dedicadas, Dashboard Cliente com leitura server-side de snapshots, entidades e tabelas, hash `scrypt-sha256`, sessoes server-side e fallback estatico preservado. |
+| Banco local de usuarios, eventos e snapshots | Concluido parcial | SQLite local em `.runtime/`, endpoints `/api/database/status`, `/api/auth/*`, `/api/users`, `/api/events`, `/api/snapshots`, `/api/journey-entities`, `/api/leads`, `/api/simulations`, `/api/proposals`, escrita direta de leads/simulacoes/propostas, `BFBackendApi`, painel Admin de eventos/status/snapshots/entidades/tabelas dedicadas, Dashboard Cliente com leitura server-side de snapshots, entidades e tabelas, hash `scrypt-sha256`, sessoes server-side e fallback estatico preservado. |
 | Governanca permanente | Em andamento | Changelog, mapa, plano, validadores, contratos publicos e lousa navegavel atualizados por entrega. |
 
 ## Mapa de Implementacao Atualizado
@@ -98,6 +98,7 @@ Cada etapa deve responder quatro perguntas:
 | 27 | Leitura server-side de snapshots | Concluido parcial | Dashboard Cliente usa snapshots SQLite como fonte preferida quando a API local esta ativa; Dashboard Admin lista snapshots recentes junto de eventos e status. | `data-client-backend-snapshots`, `data-admin-backend-snapshots`, `GET /api/snapshots` escopado por sessao. |
 | 28 | Entidades relacionais locais | Concluido parcial | Snapshots de handoff, simulacao e proposta agora alimentam `journey_entities`, permitindo consulta por `lead`, `simulation` e `proposal`. | `GET /api/journey-entities`, `data-admin-backend-entities`, `data-client-backend-entities`. |
 | 29 | Tabelas dedicadas locais | Concluido parcial | Entidades relacionais agora materializam `journey_leads`, `journey_simulations` e `journey_proposals`, com endpoints dedicados. | `GET /api/leads`, `GET /api/simulations`, `GET /api/proposals`, `data-admin-backend-materialized`, `data-client-backend-materialized`. |
+| 30 | Escrita direta de jornada local | Concluido parcial | Leads, simulacoes e propostas podem ser criados/atualizados diretamente nas tabelas dedicadas, mantendo `journey_entities`, sanitizacao e escopo por sessao. | `POST/PATCH /api/leads`, `POST/PATCH /api/simulations`, `POST/PATCH /api/proposals`, `BFBackendApi.saveProposal`. |
 
 ## Proximos Passos Priorizados
 
@@ -121,6 +122,8 @@ Cada etapa deve responder quatro perguntas:
 | Concluido parcial | Dashboards lendo snapshots SQLite | Usar `/api/snapshots` como fonte preferida no Dashboard Cliente e listar snapshots recentes no Dashboard Admin. | `server.js`, `js/backend/db.js`, `assets/js/client-dashboard.js`, `assets/js/admin-users.js`. | Cliente/consultor enxergam apenas seus snapshots, admin enxerga todos, e o fallback estatico segue funcionando. |
 | Concluido parcial | Entidades relacionais locais | Indexar snapshots como leads, simulacoes e propostas para preparar consultas comerciais reais sem abandonar o fallback local. | `js/backend/db.js`, `server.js`, `assets/js/services/backend-api.service.js`, `assets/js/admin-users.js`, `assets/js/client-dashboard.js`. | API lista entidades por escopo de sessao, Admin ve resumo por tipo e Cliente sinaliza camada relacional quando disponivel. |
 | Concluido parcial | Tabelas dedicadas locais | Materializar leads, simulacoes e propostas em tabelas separadas para preparar escrita direta e regras especificas. | `js/backend/db.js`, `server.js`, `assets/js/services/backend-api.service.js`, `assets/js/admin-users.js`, `assets/js/client-dashboard.js`. | Endpoints dedicados respeitam escopo por sessao e dashboards sinalizam as tabelas materializadas. |
+| Concluido parcial | Escrita direta de jornada local | Criar contratos diretos para leads, simulacoes e propostas sem depender exclusivamente de snapshots. | `js/backend/db.js`, `server.js`, `assets/js/services/backend-api.service.js`, `tools/validate-local-database.mjs`. | POST/PATCH criam e atualizam tabelas dedicadas, sincronizam `journey_entities`, sanitizam payload e respeitam o dono da sessao. |
+| P0 | Conectar telas reais aos endpoints diretos | Trocar os principais salvamentos de handoff, simulador e proposta para gravarem tambem via `saveLead`, `saveSimulation` e `saveProposal`, mantendo `recordSnapshot` como compatibilidade. | `assets/js/services/handoff-consultivo.service.js`, `js/storage.js`, `js/proposal-versioning.js`, `js/proposal-builder.js`. | Criar handoff/simulacao/proposta aparece imediatamente nas tabelas dedicadas sem esperar importacao ou reindexacao por snapshot. |
 | P3 | Proxima extracao do simulador | Separar calculo/orquestracao de resultado em modulo menor, mantendo `App.*` como fachada publica. | `js/app.js`, `js/engine.js`, novo service de resultado do simulador. | Reduzir `app.js` sem quebrar resultados, proposta, PDF e simulacoes salvas. |
 | P3 | Backend/API produtivo futuro | Documentar fronteiras de migracao para usuarios, leads, simulacoes, propostas e handoffs, mantendo `localStorage` como fallback publico. | `docs/PLANO_IMPLEMENTACAO_EVOLUTIVO_BANK_FRATERN.md`, `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md`, `docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md`. | Plano tecnico define contratos de migracao do SQLite local para backend hospedado. |
 

@@ -303,6 +303,7 @@ for (const file of requiredFiles) {
 
 const adminUsersJs = await fs.readFile(path.join(root, 'assets/js/admin-users.js'), 'utf8');
 const clientDashboardJs = await fs.readFile(path.join(root, 'assets/js/client-dashboard.js'), 'utf8');
+const backendApiJs = await fs.readFile(path.join(root, 'assets/js/services/backend-api.service.js'), 'utf8');
 if (!adminUsersJs.includes('data-admin-recovery-imported-items')) fail('admin-users.js sem painel operacional de itens importados.');
 if (!adminUsersJs.includes('data-admin-package-assign')) fail('admin-users.js sem acao de atribuicao de item importado.');
 if (!adminUsersJs.includes('data-admin-package-handoff')) fail('admin-users.js sem acao de handoff de item importado.');
@@ -349,6 +350,12 @@ if (!clientDashboardJs.includes('backendMaterializedState')) fail('client-dashbo
 if (!clientDashboardJs.includes('listLeads(30)')) fail('client-dashboard.js sem leitura de leads materializados.');
 if (!clientDashboardJs.includes('listSimulations(30)')) fail('client-dashboard.js sem leitura de simulacoes materializadas.');
 if (!clientDashboardJs.includes('listProposals(30)')) fail('client-dashboard.js sem leitura de propostas materializadas.');
+if (!backendApiJs.includes('saveLead')) fail('BFBackendApi sem escrita direta de lead.');
+if (!backendApiJs.includes('updateLead')) fail('BFBackendApi sem atualizacao direta de lead.');
+if (!backendApiJs.includes('saveSimulation')) fail('BFBackendApi sem escrita direta de simulacao.');
+if (!backendApiJs.includes('updateSimulation')) fail('BFBackendApi sem atualizacao direta de simulacao.');
+if (!backendApiJs.includes('saveProposal')) fail('BFBackendApi sem escrita direta de proposta.');
+if (!backendApiJs.includes('updateProposal')) fail('BFBackendApi sem atualizacao direta de proposta.');
 
 const simulatorHtml = await fs.readFile(path.join(root, 'pages/simulador.html'), 'utf8');
 const simulatorAppJs = await fs.readFile(path.join(root, 'js/app.js'), 'utf8');

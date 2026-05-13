@@ -1357,6 +1357,8 @@ Validacoes obrigatorias:
 - `GET /api/journey-entities` deve exigir bearer token, aceitar filtro opcional por `kind`, retornar todos para admin e restringir consultor/cliente ao proprio `owner_email`.
 - `POST /api/snapshots` deve materializar registros em `journey_leads`, `journey_simulations` e `journey_proposals` quando aplicavel.
 - `GET /api/leads`, `/api/simulations` e `/api/proposals` devem exigir bearer token e preservar o mesmo escopo por sessao.
+- `POST /api/leads`, `/api/simulations` e `/api/proposals` devem criar registros diretos sanitizados, sincronizar `journey_entities` e forcar `owner_email` da sessao para cliente/consultor.
+- `GET` e `PATCH` em `/api/leads/:id`, `/api/simulations/:id` e `/api/proposals/:id` devem respeitar escopo por sessao e nao permitir atualizacao de registro de outro usuario.
 - `dashboard-cliente.html` deve preferir snapshots server-side quando `BFBackendApi` estiver ativo e expor `data-client-backend-snapshots`; em `file://` deve seguir pelo fallback local.
 - `dashboard-cliente.html` deve expor `data-client-backend-entities` quando a camada relacional server-side estiver disponivel.
 - `dashboard-cliente.html` deve expor `data-client-backend-materialized` quando as tabelas dedicadas estiverem disponiveis.

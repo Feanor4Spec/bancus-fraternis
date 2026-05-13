@@ -393,30 +393,122 @@ async function handleApiRequest(req, res) {
   }
 
   const materializedRoutes = {
-    '/api/leads': { kind: 'lead', key: 'leads', list: 'listLeads' },
-    '/api/simulations': { kind: 'simulation', key: 'simulations', list: 'listSimulations' },
-    '/api/proposals': { kind: 'proposal', key: 'proposals', list: 'listProposals' }
+    '/api/leads': { kind: 'lead', key: 'leads', singular: 'lead', list: 'listLeads', segment: 'leads' },
+    '/api/simulations': { kind: 'simulation', key: 'simulations', singular: 'simulation', list: 'listSimulations', segment: 'simulations' },
+    '/api/proposals': { kind: 'proposal', key: 'proposals', singular: 'proposal', list: 'listProposals', segment: 'proposals' }
   };
   if (materializedRoutes[pathname]) {
-    if (req.method !== 'GET') {
-      methodNotAllowed(res);
+    const context = requireAuth(req, res);
+    if (!context) return true;
+    const route = materializedRoutes[pathname];
+    const isAdmin = context.user.role === 'admin';
+
+    if (req.method === 'GET') {
+      const limit = Number(parsedUrl.searchParams.get('limit') || 100);
+      const options = {
+        limit,
+        ownerEmail: isAdmin ? '' : context.user.email
+      };
+      sendJson(res, 200, {
+        ok: true,
+        scope: isAdmin ? 'all' : 'own',
+        kind: route.kind,
+        [route.key]: localDatabase[route.list](options)
+      });
+      return true;
+    }
+
+    if (req.method === 'POST') {
+      const body = await readJsonBody(req);
+      const ownerEmail = isAdmin
+        ? (body.ownerEmail || body.owner_email || context.user.email)
+        : context.user.email;
+      const result = localDatabase.upsertDirectJourneyRow(route.kind, {
+        ...body,
+        ownerEmail,
+        actorEmail: context.user.email,
+        source: body.source || 'direct-api'
+      });
+      const record = result[route.singular] || result.record;
+      if (result.ok && record) {
+        recordApiEvent(`${route.kind}-direct-${result.created ? 'created' : 'updated'}`, {
+          ownerEmail: record.ownerEmail,
+          entityType: route.kind,
+          entityId: record.id,
+          payload: {
+            status: record.status,
+            stage: record.stage,
+            priority: record.priority,
+            source: record.source
+          }
+        }, context);
+      }
+      sendJson(res, statusFromResult(result, result.created ? 201 : 200), result);
+      return true;
+    }
+
+    methodNotAllowed(res);
+    return true;
+  }
+
+  const materializedItemMatch = pathname.match(/^\/api\/(leads|simulations|proposals)\/([^/]+)$/);
+  if (materializedItemMatch) {
+    const route = Object.values(materializedRoutes).find((item) => item.segment === materializedItemMatch[1]);
+    if (!route) {
+      notFoundJson(res);
       return true;
     }
     const context = requireAuth(req, res);
     if (!context) return true;
-    const route = materializedRoutes[pathname];
-    const limit = Number(parsedUrl.searchParams.get('limit') || 100);
+    const id = decodeURIComponent(materializedItemMatch[2]);
     const isAdmin = context.user.role === 'admin';
-    const options = {
-      limit,
-      ownerEmail: isAdmin ? '' : context.user.email
-    };
-    sendJson(res, 200, {
-      ok: true,
-      scope: isAdmin ? 'all' : 'own',
-      kind: route.kind,
-      [route.key]: localDatabase[route.list](options)
-    });
+    const existing = localDatabase.findMaterializedJourneyRow(route.kind, id);
+    if (!existing || (!isAdmin && existing.ownerEmail !== context.user.email)) {
+      sendJson(res, 404, { ok: false, message: 'Registro de jornada nao encontrado.' });
+      return true;
+    }
+
+    if (req.method === 'GET') {
+      sendJson(res, 200, {
+        ok: true,
+        scope: isAdmin ? 'all' : 'own',
+        kind: route.kind,
+        [route.singular]: existing
+      });
+      return true;
+    }
+
+    if (req.method === 'PATCH') {
+      const body = await readJsonBody(req);
+      const ownerEmail = isAdmin
+        ? (body.ownerEmail || body.owner_email || existing.ownerEmail || context.user.email)
+        : context.user.email;
+      const result = localDatabase.upsertDirectJourneyRow(route.kind, {
+        ...body,
+        id,
+        ownerEmail,
+        actorEmail: context.user.email,
+        source: body.source || existing.source || 'direct-api'
+      });
+      const record = result[route.singular] || result.record;
+      if (result.ok && record) {
+        recordApiEvent(`${route.kind}-direct-updated`, {
+          ownerEmail: record.ownerEmail,
+          entityType: route.kind,
+          entityId: record.id,
+          payload: {
+            status: record.status,
+            stage: record.stage,
+            priority: record.priority,
+            source: record.source
+          }
+        }, context);
+      }
+      sendJson(res, statusFromResult(result), result);
+      return true;
+    }
+
+    methodNotAllowed(res);
     return true;
   }
 

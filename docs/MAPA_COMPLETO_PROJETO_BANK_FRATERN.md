@@ -1,12 +1,12 @@
 # Mapa Completo do Projeto Bancus Fraternis
 
-Atualizado em 2026-05-12.
+Atualizado em 2026-05-13.
 
 Este mapa foi recriado a partir da leitura real do workspace. Ele documenta o Bancus Fraternis como plataforma de decisao financeira, nao apenas como simulador de consorcio. O objetivo e permitir que uma pessoa ou agente entenda a superficie atual do produto antes de evoluir Home, produtos, calculadoras, trilha assistida, comparador, simulador, proposta, handoff, dashboard cliente e dashboard admin.
 
 ## Sumario Executivo
 
-O projeto e uma aplicacao web estatica/progressiva em HTML, CSS e JavaScript puro, com primeira camada local Node/SQLite para usuarios, sessoes, eventos e snapshots recuperaveis. A plataforma usa dados locais em JSON, base real de grupos de consorcio em `data_base/`, persistencia por `localStorage`, services globais no browser, API local opcional e validadores Node em `tools/`.
+O projeto e uma aplicacao web estatica/progressiva em HTML, CSS e JavaScript puro, com primeira camada local Node/SQLite para usuarios, sessoes, eventos, snapshots recuperaveis e escrita direta de entidades de jornada. A plataforma usa dados locais em JSON, base real de grupos de consorcio em `data_base/`, persistencia por `localStorage`, services globais no browser, API local opcional e validadores Node em `tools/`.
 
 Estado confirmado nesta leitura:
 
@@ -58,8 +58,8 @@ Separado como runtime, evidencia, backup ou historico:
 | Arquivo | Papel atual |
 | --- | --- |
 | `index.html` | Redirect simples para `pages/index.html`. |
-| `server.js` | Servidor canonico local. Usa porta `8080` por padrao, serve `/` como `pages/index.html`, cria aliases curtos para todas as paginas HTML em `pages/` e expoe API local `/api/*` para auth, usuarios, status do banco, eventos e snapshots. |
-| `js/backend/db.js` | Camada SQLite local: schema, seeds, hash `scrypt-sha256`, sessoes, eventos/snapshots sanitizados, entidades relacionais, tabelas dedicadas de leads/simulacoes/propostas e diagnostico tecnico do provider. |
+| `server.js` | Servidor canonico local. Usa porta `8080` por padrao, serve `/` como `pages/index.html`, cria aliases curtos para todas as paginas HTML em `pages/` e expoe API local `/api/*` para auth, usuarios, status do banco, eventos, snapshots e jornada direta. |
+| `js/backend/db.js` | Camada SQLite local: schema, seeds, hash `scrypt-sha256`, sessoes, eventos/snapshots sanitizados, entidades relacionais, escrita direta em tabelas dedicadas de leads/simulacoes/propostas e diagnostico tecnico do provider. |
 | `js/server.js` | Servidor legado do simulador antigo. Mantido como historico tecnico, nao como entrada principal. |
 | `Sistema.gitignore` | Ignora editor, node, python, envs, chaves e temporarios. |
 
@@ -73,6 +73,7 @@ Contrato confirmado:
 - `GET /api/snapshots` e escopado por sessao: admin lista todos; cliente/consultor recebem apenas snapshots do proprio `owner_email`.
 - `GET /api/journey-entities` indexa snapshots em `lead`, `simulation` e `proposal`, preservando o mesmo escopo por sessao.
 - `GET /api/leads`, `/api/simulations` e `/api/proposals` leem tabelas dedicadas materializadas a partir do mesmo pipeline.
+- `POST/PATCH /api/leads`, `/api/simulations` e `/api/proposals` criam e atualizam registros diretos, sincronizando `journey_entities`, sanitizando payload e preservando escopo por sessao.
 - Quando publicado em GitHub Pages ou aberto por `file://`, as paginas seguem funcionando com fallback em `localStorage`.
 
 ## Estrutura de Diretorios
@@ -324,7 +325,7 @@ Melhoria implementada em 2026-05-07:
 | `js/storage.js` | Simulacoes salvas, estatisticas de carteira e sincronizacao opcional de snapshot `simulation` no backend local. |
 | `js/settings.js` | Preferencias locais e defaults. |
 | `js/auth.js` | Usuarios locais, sessao, papeis e guardas. |
-| `js/backend/db.js` | Banco local SQLite para usuarios, sessoes, eventos, snapshots, status tecnico e importacao guiada. |
+| `js/backend/db.js` | Banco local SQLite para usuarios, sessoes, eventos, snapshots, entidades de jornada, tabelas dedicadas, escrita direta, status tecnico e importacao guiada. |
 | `js/shared-layout.js` | Shell comum, header/footer, contrato v8 e estado de conta. |
 | `js/home.js` | Home contextual, cockpit de continuidade e retomada de trilha ativa. |
 | `js/portfolio-live.js` | Carteira, oportunidades, agenda e insights. |
@@ -353,7 +354,7 @@ Melhoria implementada em 2026-05-07:
 
 | Service | Export | Responsabilidade |
 | --- | --- | --- |
-| `backend-api.service.js` | `BFBackendApi` | Ponte para API local Node/SQLite, status tecnico, eventos, snapshots, importacao guiada e fallback estatico. |
+| `backend-api.service.js` | `BFBackendApi` | Ponte para API local Node/SQLite, status tecnico, eventos, snapshots, entidades, leitura/escrita direta de leads/simulacoes/propostas, importacao guiada e fallback estatico. |
 | `dados.service.js` | `BFDadosService` | Le datasets locais. |
 | `calculadoras.service.js` | `BFCalculadoras` | Simula calculadoras, perfil, historico e recomendacoes. |
 | `decision-context.service.js` | `BFDecisionContext` | Perfil financeiro, historico, prefill e auditoria nao sensivel. |

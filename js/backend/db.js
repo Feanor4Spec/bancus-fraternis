@@ -978,6 +978,195 @@ class BancusDatabase {
     return '';
   }
 
+  materializedResponseKey(kind) {
+    if (kind === 'lead') return 'lead';
+    if (kind === 'simulation') return 'simulation';
+    if (kind === 'proposal') return 'proposal';
+    return 'record';
+  }
+
+  materializedDefaultsFor(kind) {
+    if (kind === 'lead') {
+      return {
+        prefix: 'LED',
+        title: 'Lead consultivo',
+        status: 'novo',
+        stage: 'contato'
+      };
+    }
+    if (kind === 'simulation') {
+      return {
+        prefix: 'SIM',
+        title: 'Simulacao',
+        status: 'saved',
+        stage: 'simulacao'
+      };
+    }
+    if (kind === 'proposal') {
+      return {
+        prefix: 'PRP',
+        title: 'Proposta',
+        status: 'draft',
+        stage: 'proposta'
+      };
+    }
+    return {
+      prefix: 'JRN',
+      title: 'Registro de jornada',
+      status: 'active',
+      stage: 'jornada'
+    };
+  }
+
+  findMaterializedJourneyRow(kind, id, options = {}) {
+    const table = this.materializedTableFor(kind);
+    const normalizedId = normalizeText(id);
+    if (!table || !normalizedId) return null;
+    const ownerEmail = normalizeEmail(options.ownerEmail);
+    const filters = ['id = ?'];
+    const params = [normalizedId];
+    if (ownerEmail) {
+      filters.push('owner_email = ?');
+      params.push(ownerEmail);
+    }
+    const row = this.db.prepare(`SELECT * FROM ${quoteIdentifier(table)} WHERE ${filters.join(' AND ')} LIMIT 1`).get(...params);
+    return row ? publicMaterializedJourneyRow(row, kind) : null;
+  }
+
+  upsertDirectJourneyRow(kind, input = {}) {
+    const normalizedKind = normalizeText(kind);
+    const table = this.materializedTableFor(normalizedKind);
+    if (!table) {
+      return { ok: false, status: 400, message: 'Tipo de jornada invalido.' };
+    }
+
+    const defaults = this.materializedDefaultsFor(normalizedKind);
+    const timestamp = nowIso();
+    const id = normalizeText(input.id) || makeId(defaults.prefix);
+    const existing = this.findMaterializedJourneyRow(normalizedKind, id);
+    const explicitPayload = input.payload !== undefined
+      ? input.payload
+      : (input.details !== undefined ? input.details : input.data);
+    const basePayload = existing && existing.payload && typeof existing.payload === 'object' && !Array.isArray(existing.payload)
+      ? existing.payload
+      : {};
+    const payloadSource = explicitPayload !== undefined
+      ? explicitPayload
+      : { ...basePayload, ...input };
+    const payload = sanitizeEventPayload(payloadSource);
+    const payloadObject = payload && typeof payload === 'object' && !Array.isArray(payload) ? payload : {};
+    const entity = {
+      id,
+      kind: normalizedKind,
+      sourceSnapshotId: firstText(input.sourceSnapshotId, input.source_snapshot_id, payloadObject.sourceSnapshotId, existing && existing.sourceSnapshotId),
+      snapshotType: firstText(input.snapshotType, input.snapshot_type, input.type, payloadObject.snapshotType, existing && existing.snapshotType, `direct-${normalizedKind}`),
+      ownerEmail: normalizeEmail(input.ownerEmail || input.owner_email || (existing && existing.ownerEmail)),
+      actorEmail: normalizeEmail(input.actorEmail || input.actor_email || (existing && existing.actorEmail)),
+      title: firstText(input.title, input.name, input.nome, payloadObject.title, payloadObject.name, payloadObject.nome, existing && existing.title, defaults.title),
+      status: firstText(input.status, payloadObject.status, existing && existing.status, defaults.status),
+      stage: firstText(input.stage, input.etapa, payloadObject.stage, payloadObject.etapa, existing && existing.stage, defaults.stage),
+      priority: firstText(input.priority, input.prioridade, payloadObject.priority, payloadObject.prioridade, existing && existing.priority, 'media'),
+      source: firstText(input.source, payloadObject.source, existing && existing.source, 'direct-api'),
+      relatedId: firstText(
+        input.relatedId,
+        input.related_id,
+        input.entityId,
+        payloadObject.relatedId,
+        payloadObject.related_id,
+        payloadObject.simulationId,
+        payloadObject.proposalId,
+        payloadObject.handoffId,
+        payloadObject.journeyId,
+        existing && existing.relatedId
+      ),
+      amount: firstNumber(
+        input.amount,
+        input.valorCarta,
+        input.valorCredito,
+        payloadObject.amount,
+        payloadObject.valorCarta,
+        payloadObject.valorCredito,
+        payloadObject.totalCredit,
+        payloadObject.proposalValue,
+        existing && existing.amount
+      ),
+      payload,
+      createdAt: firstText(input.createdAt, input.created_at, payloadObject.createdAt, existing && existing.createdAt, timestamp),
+      updatedAt: firstText(input.updatedAt, input.updated_at, payloadObject.updatedAt, timestamp)
+    };
+
+    this.db.prepare(`
+      INSERT INTO journey_entities (
+        id, kind, source_snapshot_id, snapshot_type, owner_email, actor_email,
+        title, status, stage, priority, source, related_id, amount, payload_json, created_at, updated_at
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(kind, id) DO UPDATE SET
+        source_snapshot_id = excluded.source_snapshot_id,
+        snapshot_type = excluded.snapshot_type,
+        owner_email = excluded.owner_email,
+        actor_email = excluded.actor_email,
+        title = excluded.title,
+        status = excluded.status,
+        stage = excluded.stage,
+        priority = excluded.priority,
+        source = excluded.source,
+        related_id = excluded.related_id,
+        amount = excluded.amount,
+        payload_json = excluded.payload_json,
+        updated_at = excluded.updated_at
+    `).run(
+      entity.id,
+      entity.kind,
+      entity.sourceSnapshotId,
+      entity.snapshotType,
+      entity.ownerEmail,
+      entity.actorEmail,
+      entity.title,
+      entity.status,
+      entity.stage,
+      entity.priority,
+      entity.source,
+      entity.relatedId,
+      entity.amount,
+      safeJson(entity.payload),
+      entity.createdAt,
+      entity.updatedAt
+    );
+
+    const publicRecord = publicJourneyEntity({
+      id: entity.id,
+      kind: entity.kind,
+      source_snapshot_id: entity.sourceSnapshotId,
+      snapshot_type: entity.snapshotType,
+      owner_email: entity.ownerEmail,
+      actor_email: entity.actorEmail,
+      title: entity.title,
+      status: entity.status,
+      stage: entity.stage,
+      priority: entity.priority,
+      source: entity.source,
+      related_id: entity.relatedId,
+      amount: entity.amount,
+      payload_json: safeJson(entity.payload),
+      created_at: entity.createdAt,
+      updated_at: entity.updatedAt
+    });
+    this.upsertMaterializedJourneyRow(publicRecord);
+    const record = this.findMaterializedJourneyRow(normalizedKind, entity.id) || {
+      ...publicRecord,
+      materializedTable: table
+    };
+    const responseKey = this.materializedResponseKey(normalizedKind);
+    return {
+      ok: true,
+      created: !existing,
+      kind: normalizedKind,
+      record,
+      [responseKey]: record
+    };
+  }
+
   upsertMaterializedJourneyRow(entity = {}) {
     const table = this.materializedTableFor(entity.kind);
     if (!table || !entity.id) return null;

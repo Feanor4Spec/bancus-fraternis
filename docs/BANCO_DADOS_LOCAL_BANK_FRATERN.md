@@ -15,7 +15,7 @@ Esta entrega cria a primeira camada server-side do Bancus Fraternis sem quebrar 
 | `assets/js/services/backend-api.service.js` | Ponte do navegador para a API local com fallback silencioso. |
 | `js/auth.js` | Continua sendo a fachada publica de auth e espelha login/usuarios no banco quando a API existe. |
 | `assets/js/admin-users.js` | Dashboard Admin le `/api/events`, `/api/snapshots`, `/api/journey-entities`, `/api/leads`, `/api/simulations`, `/api/proposals`, mostra status server-side e executa migracao guiada do `localStorage`. |
-| `tools/validate-local-database.mjs` | Validador de schema, seeds, login, sessao, eventos, snapshots e entidades relacionais sanitizadas. |
+| `tools/validate-local-database.mjs` | Validador de schema, seeds, login, sessao, eventos, snapshots, entidades relacionais e escrita direta sanitizada. |
 | `tools/inspect-local-sql-environment.mjs` | Diagnostico de CLIs, portas padrao e servicos SQL locais para proxima troca de provider. |
 
 ## Banco
@@ -79,8 +79,17 @@ As senhas seed continuam documentadas em `docs/AUTH_ADMIN_LOCAL.md` para demonst
 | `GET /api/snapshots` | Lista snapshots recentes por limite e tipo; admin ve todos, consultor/cliente veem apenas registros do proprio `owner_email`. |
 | `GET /api/journey-entities` | Lista entidades relacionais derivadas dos snapshots por limite e tipo (`kind`); admin ve todos, consultor/cliente veem apenas registros do proprio `owner_email`. |
 | `GET /api/leads` | Lista leads materializados por limite; admin ve todos, consultor/cliente veem apenas registros do proprio `owner_email`. |
+| `POST /api/leads` | Cria ou atualiza lead direto na tabela dedicada e em `journey_entities`; admin pode informar dono, demais papeis gravam no proprio `owner_email`. |
+| `GET /api/leads/:id` | Le lead pontual respeitando escopo por sessao. |
+| `PATCH /api/leads/:id` | Atualiza lead pontual mantendo payload sanitizado e dono protegido por sessao. |
 | `GET /api/simulations` | Lista simulacoes materializadas por limite; admin ve todos, consultor/cliente veem apenas registros do proprio `owner_email`. |
+| `POST /api/simulations` | Cria ou atualiza simulacao direta na tabela dedicada e em `journey_entities`. |
+| `GET /api/simulations/:id` | Le simulacao pontual respeitando escopo por sessao. |
+| `PATCH /api/simulations/:id` | Atualiza simulacao pontual mantendo payload sanitizado e dono protegido por sessao. |
 | `GET /api/proposals` | Lista propostas materializadas por limite; admin ve todos, consultor/cliente veem apenas registros do proprio `owner_email`. |
+| `POST /api/proposals` | Cria ou atualiza proposta direta na tabela dedicada e em `journey_entities`. |
+| `GET /api/proposals/:id` | Le proposta pontual respeitando escopo por sessao. |
+| `PATCH /api/proposals/:id` | Atualiza proposta pontual mantendo payload sanitizado e dono protegido por sessao. |
 
 ## Regras De Compatibilidade
 
@@ -93,6 +102,7 @@ As senhas seed continuam documentadas em `docs/AUTH_ADMIN_LOCAL.md` para demonst
 - Dashboard Cliente le `GET /api/snapshots?limit=100` quando houver API local, mescla com `localStorage` e sinaliza a fonte em `data-client-backend-snapshots`.
 - Dashboard Cliente le `GET /api/journey-entities?limit=100` quando houver API local e sinaliza a camada relacional em `data-client-backend-entities`.
 - Dashboard Cliente le `/api/leads`, `/api/simulations` e `/api/proposals` quando houver API local e sinaliza tabelas dedicadas em `data-client-backend-materialized`.
+- Escritas diretas em `/api/leads`, `/api/simulations` e `/api/proposals` nao substituem ainda os hooks de snapshot; elas preparam a migracao gradual para regras especificas por entidade mantendo compatibilidade com dados locais existentes.
 - Dashboard Admin exibe `data-admin-backend-events` com metricas do SQLite e ultimos eventos quando houver sessao admin da API.
 - O mesmo painel lista snapshots recentes server-side em `data-admin-backend-snapshots` e cada item em `data-admin-backend-snapshot`.
 - O mesmo painel lista entidades relacionais server-side em `data-admin-backend-entities` e cada item em `data-admin-backend-entity`.
@@ -124,6 +134,8 @@ Valida:
 - listagem de entidades relacionais por `owner_email` sem vazamento entre usuarios;
 - materializacao de `journey_leads`, `journey_simulations` e `journey_proposals`;
 - listagem dedicada por `owner_email` sem vazamento entre usuarios;
+- escrita direta de lead, simulacao e proposta com payload sanitizado;
+- sincronizacao de escrita direta com `journey_entities`;
 - hooks reais de `recordSnapshot` em simulacao, proposta, perfil, trilha e handoff;
 - preview e execucao idempotente da migracao `localStorage` -> SQLite, incluindo snapshots;
 - presenca dos contratos `/api/*` no servidor.

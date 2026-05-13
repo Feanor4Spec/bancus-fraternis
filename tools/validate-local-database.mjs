@@ -163,6 +163,65 @@ try {
   assert(materializedSimulation.some((item) => item.id === 'simulation-1'), 'Tabela dedicada de simulacoes nao retornou registro materializado.');
   assert(materializedLead.some((item) => item.id === 'HND-VALIDATOR'), 'Tabela dedicada de leads nao retornou registro materializado.');
 
+  const directLead = localDb.upsertDirectJourneyRow('lead', {
+    id: 'LED-DIRECT-VALIDATOR',
+    ownerEmail: 'validator@example.com',
+    actorEmail: 'admin@bankfratern.local',
+    title: 'Lead direto validador',
+    status: 'novo',
+    stage: 'contato',
+    priority: 'alta',
+    amount: 450,
+    payload: {
+      objectiveLabel: 'Lead direto',
+      phone: '(11) 98888-8888',
+      token: 'nao-gravar'
+    }
+  });
+  assert(directLead.ok && directLead.created && directLead.lead.id === 'LED-DIRECT-VALIDATOR', 'Escrita direta de lead deveria criar registro dedicado.');
+  assert(directLead.lead.kind === 'lead' && directLead.lead.materializedTable === 'journey_leads', 'Lead direto deveria informar tabela dedicada.');
+  assert(!Object.prototype.hasOwnProperty.call(directLead.lead.payload, 'phone'), 'Lead direto vazou phone no payload.');
+  assert(!Object.prototype.hasOwnProperty.call(directLead.lead.payload, 'token'), 'Lead direto vazou token no payload.');
+  const directLeadUpdate = localDb.upsertDirectJourneyRow('lead', {
+    id: 'LED-DIRECT-VALIDATOR',
+    ownerEmail: 'validator@example.com',
+    actorEmail: 'admin@bankfratern.local',
+    status: 'contatado',
+    stage: 'proposta'
+  });
+  assert(!directLeadUpdate.created && directLeadUpdate.lead.status === 'contatado', 'Atualizacao direta de lead deveria reaproveitar id existente.');
+  assert(directLeadUpdate.lead.stage === 'proposta', 'Atualizacao direta de lead deveria atualizar etapa.');
+
+  const directSimulation = localDb.upsertDirectJourneyRow('simulation', {
+    id: 'SIM-DIRECT-VALIDATOR',
+    ownerEmail: 'validator@example.com',
+    actorEmail: 'admin@bankfratern.local',
+    title: 'Simulacao direta',
+    status: 'saved',
+    amount: 550,
+    relatedId: 'LED-DIRECT-VALIDATOR',
+    payload: { valorCarta: 550, senha: 'nao-gravar' }
+  });
+  assert(directSimulation.ok && directSimulation.simulation.id === 'SIM-DIRECT-VALIDATOR', 'Escrita direta de simulacao deveria criar registro dedicado.');
+  assert(!Object.prototype.hasOwnProperty.call(directSimulation.simulation.payload, 'senha'), 'Simulacao direta vazou senha no payload.');
+
+  const directProposal = localDb.upsertDirectJourneyRow('proposal', {
+    id: 'PRP-DIRECT-VALIDATOR',
+    ownerEmail: 'validator@example.com',
+    actorEmail: 'admin@bankfratern.local',
+    title: 'Proposta direta',
+    status: 'draft',
+    amount: 650,
+    relatedId: 'SIM-DIRECT-VALIDATOR',
+    payload: { proposalValue: 650, cpf: '000.000.000-00' }
+  });
+  assert(directProposal.ok && directProposal.proposal.id === 'PRP-DIRECT-VALIDATOR', 'Escrita direta de proposta deveria criar registro dedicado.');
+  assert(!Object.prototype.hasOwnProperty.call(directProposal.proposal.payload, 'cpf'), 'Proposta direta vazou CPF no payload.');
+  const directProposalEntity = localDb.listJourneyEntities({ limit: 20, kind: 'proposal', ownerEmail: 'validator@example.com' })
+    .find((item) => item.id === 'PRP-DIRECT-VALIDATOR');
+  assert(directProposalEntity && directProposalEntity.relatedId === 'SIM-DIRECT-VALIDATOR', 'Escrita direta deveria manter journey_entities sincronizado.');
+  assert(!localDb.upsertDirectJourneyRow('unknown', {}).ok, 'Tipo direto invalido deveria ser recusado.');
+
   const databaseStatus = localDb.databaseStatus();
   assert(databaseStatus.ok, 'Status tecnico do banco local deveria retornar ok.');
   assert(databaseStatus.provider === 'sqlite', 'Provider ativo deveria ser sqlite.');
@@ -264,6 +323,9 @@ try {
     '/api/leads',
     '/api/simulations',
     '/api/proposals',
+    'upsertDirectJourneyRow',
+    'findMaterializedJourneyRow',
+    '-direct-',
     'SCHEMA_VERSION'
   ].forEach((marker) => assert(server.includes(marker), `server.js sem contrato de API local: ${marker}.`));
 
@@ -282,6 +344,15 @@ try {
     'listLeads',
     'listSimulations',
     'listProposals',
+    'saveLead',
+    'getLead',
+    'updateLead',
+    'saveSimulation',
+    'getSimulation',
+    'updateSimulation',
+    'saveProposal',
+    'getProposal',
+    'updateProposal',
     'createUser',
     'toggleStatus'
   ].forEach((marker) => assert(backendApi.includes(marker), `backend-api.service.js sem contrato ${marker}.`));

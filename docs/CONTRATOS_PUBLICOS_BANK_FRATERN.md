@@ -94,8 +94,17 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | `GET /api/snapshots` | Lista snapshots recentes, com filtro opcional por `type`. | Exige bearer token; `admin` ve todos e demais papeis recebem apenas snapshots do proprio `owner_email`. |
 | `GET /api/journey-entities` | Lista entidades relacionais derivadas dos snapshots (`lead`, `simulation`, `proposal`), com filtro opcional por `kind`. | Exige bearer token; `admin` ve tudo e demais papeis recebem apenas entidades do proprio `owner_email`. |
 | `GET /api/leads` | Lista leads materializados em tabela dedicada a partir de snapshots de handoff. | Exige bearer token; `admin` ve tudo e demais papeis recebem apenas leads do proprio `owner_email`. |
+| `POST /api/leads` | Cria ou atualiza lead diretamente em `journey_leads` e `journey_entities`. | Exige bearer token; admin pode informar dono, demais papeis gravam apenas no proprio `owner_email`; payload sensivel deve ser removido. |
+| `GET /api/leads/:id` | Retorna lead pontual da tabela dedicada. | Exige bearer token; admin ve qualquer lead, demais papeis apenas registros proprios. |
+| `PATCH /api/leads/:id` | Atualiza lead pontual sem trocar dono indevidamente. | Exige bearer token; cliente/consultor nao podem atualizar registro de outro `owner_email`. |
 | `GET /api/simulations` | Lista simulacoes materializadas em tabela dedicada a partir de snapshots de simulacao. | Exige bearer token; `admin` ve tudo e demais papeis recebem apenas simulacoes do proprio `owner_email`. |
+| `POST /api/simulations` | Cria ou atualiza simulacao diretamente em `journey_simulations` e `journey_entities`. | Exige bearer token; admin pode informar dono, demais papeis gravam apenas no proprio `owner_email`; payload sensivel deve ser removido. |
+| `GET /api/simulations/:id` | Retorna simulacao pontual da tabela dedicada. | Exige bearer token; admin ve qualquer simulacao, demais papeis apenas registros proprios. |
+| `PATCH /api/simulations/:id` | Atualiza simulacao pontual sem trocar dono indevidamente. | Exige bearer token; cliente/consultor nao podem atualizar registro de outro `owner_email`. |
 | `GET /api/proposals` | Lista propostas materializadas em tabela dedicada a partir de snapshots de proposta. | Exige bearer token; `admin` ve tudo e demais papeis recebem apenas propostas do proprio `owner_email`. |
+| `POST /api/proposals` | Cria ou atualiza proposta diretamente em `journey_proposals` e `journey_entities`. | Exige bearer token; admin pode informar dono, demais papeis gravam apenas no proprio `owner_email`; payload sensivel deve ser removido. |
+| `GET /api/proposals/:id` | Retorna proposta pontual da tabela dedicada. | Exige bearer token; admin ve qualquer proposta, demais papeis apenas registros proprios. |
+| `PATCH /api/proposals/:id` | Atualiza proposta pontual sem trocar dono indevidamente. | Exige bearer token; cliente/consultor nao podem atualizar registro de outro `owner_email`. |
 
 Hooks reais que tentam gravar snapshots quando `BFBackendApi` esta disponivel:
 
@@ -115,13 +124,14 @@ Leitura progressiva dos snapshots:
 - Dashboard Cliente tenta `GET /api/journey-entities?limit=100` e mostra `data-client-backend-entities="sqlite"` quando a camada relacional local esta ativa.
 - Dashboard Cliente tenta ler `/api/leads`, `/api/simulations` e `/api/proposals` e mostra `data-client-backend-materialized="sqlite"` quando tabelas dedicadas estao disponiveis.
 - Dashboard Admin tenta `GET /api/snapshots?limit=30`, `GET /api/journey-entities?limit=50`, `/api/leads`, `/api/simulations` e `/api/proposals` junto de eventos, status e tabelas; os marcadores `data-admin-backend-snapshots`, `data-admin-backend-entities` e `data-admin-backend-materialized` identificam os itens recentes.
+- `BFBackendApi.saveLead/saveSimulation/saveProposal` e `updateLead/updateSimulation/updateProposal` sao contratos progressivos para gravacao direta das tabelas dedicadas; a fase estatica continua usando `localStorage` e hooks de snapshot.
 
 ## Exports Globais
 
 | Export | Papel publico |
 | --- | --- |
 | `BFAuth` | Autenticacao, usuarios locais e guardas por papel. |
-| `BFBackendApi` | Ponte progressiva para API local Node/SQLite: sessao de backend, usuarios, status tecnico do banco, importacao guiada, gravacao/listagem de eventos, gravacao/listagem de snapshots, leitura de entidades relacionais, leitura de tabelas dedicadas e fallback estatico. |
+| `BFBackendApi` | Ponte progressiva para API local Node/SQLite: sessao de backend, usuarios, status tecnico do banco, importacao guiada, gravacao/listagem de eventos, gravacao/listagem de snapshots, leitura de entidades relacionais, leitura e escrita direta de tabelas dedicadas e fallback estatico. |
 | `Settings` | Preferencias historicas do simulador. |
 | `BFHome` | Home contextual e continuidade. |
 | `BFDecisionContext` | Perfil financeiro, historico e prefill de simulacao. |

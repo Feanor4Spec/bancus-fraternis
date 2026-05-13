@@ -221,6 +221,48 @@
     return request(`/api/proposals?limit=${encodeURIComponent(safeLimit)}`);
   }
 
+  function saveLead(payload) {
+    return request('/api/leads', { method: 'POST', body: payload || {} });
+  }
+
+  function getLead(id) {
+    if (!id) return Promise.resolve({ ok: false, message: 'Lead ausente.' });
+    return request(`/api/leads/${encodeURIComponent(id)}`);
+  }
+
+  function updateLead(id, payload) {
+    if (!id) return Promise.resolve({ ok: false, message: 'Lead ausente.' });
+    return request(`/api/leads/${encodeURIComponent(id)}`, { method: 'PATCH', body: payload || {} });
+  }
+
+  function saveSimulation(payload) {
+    return request('/api/simulations', { method: 'POST', body: payload || {} });
+  }
+
+  function getSimulation(id) {
+    if (!id) return Promise.resolve({ ok: false, message: 'Simulacao ausente.' });
+    return request(`/api/simulations/${encodeURIComponent(id)}`);
+  }
+
+  function updateSimulation(id, payload) {
+    if (!id) return Promise.resolve({ ok: false, message: 'Simulacao ausente.' });
+    return request(`/api/simulations/${encodeURIComponent(id)}`, { method: 'PATCH', body: payload || {} });
+  }
+
+  function saveProposal(payload) {
+    return request('/api/proposals', { method: 'POST', body: payload || {} });
+  }
+
+  function getProposal(id) {
+    if (!id) return Promise.resolve({ ok: false, message: 'Proposta ausente.' });
+    return request(`/api/proposals/${encodeURIComponent(id)}`);
+  }
+
+  function updateProposal(id, payload) {
+    if (!id) return Promise.resolve({ ok: false, message: 'Proposta ausente.' });
+    return request(`/api/proposals/${encodeURIComponent(id)}`, { method: 'PATCH', body: payload || {} });
+  }
+
   window.BFBackendApi = {
     SESSION_KEY,
     available: canUseApi,
@@ -246,6 +288,15 @@
     listJourneyEntities,
     listLeads,
     listSimulations,
-    listProposals
+    listProposals,
+    saveLead,
+    getLead,
+    updateLead,
+    saveSimulation,
+    getSimulation,
+    updateSimulation,
+    saveProposal,
+    getProposal,
+    updateProposal
   };
 })();

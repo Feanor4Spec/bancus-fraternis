@@ -313,6 +313,17 @@ assert(backendApi.includes('listLeads'), 'BFBackendApi sem leitura de leads mate
 assert(backendApi.includes('listSimulations'), 'BFBackendApi sem leitura de simulacoes materializadas.');
 assert(backendApi.includes('listProposals'), 'BFBackendApi sem leitura de propostas materializadas.');
 [
+  'saveLead',
+  'getLead',
+  'updateLead',
+  'saveSimulation',
+  'getSimulation',
+  'updateSimulation',
+  'saveProposal',
+  'getProposal',
+  'updateProposal'
+].forEach((method) => assert(backendApi.includes(method), `BFBackendApi sem escrita direta de jornada: ${method}.`));
+[
   [storageJs, 'simulation'],
   [proposalVersioning, 'proposal-version'],
   [proposalAcceptance, 'proposal-acceptance'],
@@ -332,6 +343,8 @@ assert(server.includes('/api/journey-entities'), 'server.js sem endpoint de enti
 assert(server.includes('/api/leads'), 'server.js sem endpoint de leads materializados.');
 assert(server.includes('/api/simulations'), 'server.js sem endpoint de simulacoes materializadas.');
 assert(server.includes('/api/proposals'), 'server.js sem endpoint de propostas materializadas.');
+assert(server.includes('upsertDirectJourneyRow'), 'server.js sem escrita direta de tabelas dedicadas.');
+assert(server.includes('findMaterializedJourneyRow'), 'server.js sem leitura pontual escopada de tabelas dedicadas.');
 assert(apiDocs.includes('/api/database/status'), 'api-docs.html sem endpoint de status tecnico do banco.');
 assert(apiDocs.includes('/api/database/import-local'), 'api-docs.html sem endpoint de importacao localStorage -> SQLite.');
 assert(apiDocs.includes('/api/snapshots'), 'api-docs.html sem endpoint de snapshots server-side.');
@@ -339,6 +352,17 @@ assert(apiDocs.includes('/api/journey-entities'), 'api-docs.html sem endpoint de
 assert(apiDocs.includes('/api/leads'), 'api-docs.html sem endpoint de leads materializados.');
 assert(apiDocs.includes('/api/simulations'), 'api-docs.html sem endpoint de simulacoes materializadas.');
 assert(apiDocs.includes('/api/proposals'), 'api-docs.html sem endpoint de propostas materializadas.');
+[
+  'POST /api/leads',
+  'PATCH /api/leads/:id',
+  'POST /api/simulations',
+  'PATCH /api/simulations/:id',
+  'POST /api/proposals',
+  'PATCH /api/proposals/:id'
+].forEach((endpoint) => {
+  assert(contracts.includes(endpoint), `Contratos publicos sem endpoint direto ${endpoint}.`);
+  assert(apiDocs.includes(endpoint), `api-docs.html sem endpoint direto ${endpoint}.`);
+});
 assert(simulator.includes('data-proposal-builder-board'), 'simulador.html sem lousa de proposta documentada.');
 assert(simulator.includes('data-proposal-version-panel'), 'simulador.html sem painel de versionamento da proposta.');
 assert(simulator.includes('js/proposal-builder.js'), 'simulador.html sem modulo proposal-builder.');
