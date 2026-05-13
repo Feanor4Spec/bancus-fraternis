@@ -314,11 +314,14 @@ async function handleApiRequest(req, res) {
       const context = requireAuth(req, res);
       if (!context) return true;
       const body = await readJsonBody(req);
+      const ownerEmail = context.user.role === 'admin'
+        ? body.ownerEmail
+        : context.user.email;
       const result = localDatabase.upsertSnapshot({
         id: body.id,
         type: body.type,
         source: body.source || 'browser',
-        ownerEmail: body.ownerEmail,
+        ownerEmail,
         actorEmail: context.user.email,
         entityId: body.entityId,
         title: body.title,
@@ -362,6 +365,30 @@ async function handleApiRequest(req, res) {
     }
 
     methodNotAllowed(res);
+    return true;
+  }
+
+  if (pathname === '/api/journey-entities') {
+    if (req.method !== 'GET') {
+      methodNotAllowed(res);
+      return true;
+    }
+    const context = requireAuth(req, res);
+    if (!context) return true;
+    const limit = Number(parsedUrl.searchParams.get('limit') || 100);
+    const kind = parsedUrl.searchParams.get('kind') || '';
+    const isAdmin = context.user.role === 'admin';
+    const options = {
+      limit,
+      kind,
+      ownerEmail: isAdmin ? '' : context.user.email
+    };
+    sendJson(res, 200, {
+      ok: true,
+      scope: isAdmin ? 'all' : 'own',
+      summary: localDatabase.journeyEntitySummary(options),
+      entities: localDatabase.listJourneyEntities(options)
+    });
     return true;
   }
 

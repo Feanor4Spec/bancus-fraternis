@@ -157,6 +157,8 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-admin-backend-event',
   'data-admin-backend-snapshots',
   'data-admin-backend-snapshot',
+  'data-admin-backend-entities',
+  'data-admin-backend-entity',
   'data-admin-backend-table',
   'data-admin-backend-database-provider',
   'data-admin-backend-event-refresh',
@@ -176,6 +178,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-public-demo-notice',
   'data-client-continuity-cockpit',
   'data-client-backend-snapshots',
+  'data-client-backend-entities',
   'data-client-next-action',
   'data-client-handoff-status',
   'data-client-proposal-status',
@@ -267,6 +270,8 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-admin-backend-events',
   'data-admin-backend-snapshots',
   'data-admin-backend-snapshot',
+  'data-admin-backend-entities',
+  'data-admin-backend-entity',
   'data-admin-backend-table',
   'data-admin-backend-database-provider',
   'data-admin-backend-event-refresh',
@@ -283,11 +288,16 @@ assert(adminDashboard.includes('href="#admin-proximos-passos"'), 'dashboard-admi
 assert(adminDashboard.includes('data-admin-backend-events'), 'dashboard-admin.html sem painel de eventos do banco local.');
 assert(adminUsers.includes('data-admin-backend-snapshots'), 'Dashboard Admin sem lista de snapshots server-side.');
 assert(adminUsers.includes('data-admin-backend-snapshot'), 'Dashboard Admin sem item de snapshot server-side.');
+assert(adminUsers.includes('data-admin-backend-entities'), 'Dashboard Admin sem lista de entidades relacionais server-side.');
+assert(adminUsers.includes('data-admin-backend-entity'), 'Dashboard Admin sem item de entidade relacional server-side.');
 assert(clientDashboard.includes('data-client-backend-snapshots'), 'Dashboard Cliente sem marcador de origem de snapshots server-side.');
+assert(clientDashboard.includes('data-client-backend-entities'), 'Dashboard Cliente sem marcador de origem de entidades relacionais server-side.');
 assert(clientDashboard.includes('listSnapshots(100)'), 'Dashboard Cliente sem leitura de snapshots server-side.');
+assert(clientDashboard.includes('listJourneyEntities(100)'), 'Dashboard Cliente sem leitura de entidades relacionais server-side.');
 assert(backendApi.includes('listEvents'), 'BFBackendApi sem leitura de eventos server-side.');
 assert(backendApi.includes('recordSnapshot'), 'BFBackendApi sem gravacao de snapshots server-side.');
 assert(backendApi.includes('listSnapshots'), 'BFBackendApi sem leitura de snapshots server-side.');
+assert(backendApi.includes('listJourneyEntities'), 'BFBackendApi sem leitura de entidades relacionais server-side.');
 [
   [storageJs, 'simulation'],
   [proposalVersioning, 'proposal-version'],
@@ -304,9 +314,11 @@ assert(backendApi.includes('importLocalSnapshot'), 'BFBackendApi sem importacao 
 assert(server.includes('/api/database/status'), 'server.js sem endpoint de status tecnico do banco.');
 assert(server.includes('/api/database/import-local'), 'server.js sem endpoint de importacao localStorage -> SQLite.');
 assert(server.includes('/api/snapshots'), 'server.js sem endpoint de snapshots server-side.');
+assert(server.includes('/api/journey-entities'), 'server.js sem endpoint de entidades relacionais server-side.');
 assert(apiDocs.includes('/api/database/status'), 'api-docs.html sem endpoint de status tecnico do banco.');
 assert(apiDocs.includes('/api/database/import-local'), 'api-docs.html sem endpoint de importacao localStorage -> SQLite.');
 assert(apiDocs.includes('/api/snapshots'), 'api-docs.html sem endpoint de snapshots server-side.');
+assert(apiDocs.includes('/api/journey-entities'), 'api-docs.html sem endpoint de entidades relacionais server-side.');
 assert(simulator.includes('data-proposal-builder-board'), 'simulador.html sem lousa de proposta documentada.');
 assert(simulator.includes('data-proposal-version-panel'), 'simulador.html sem painel de versionamento da proposta.');
 assert(simulator.includes('js/proposal-builder.js'), 'simulador.html sem modulo proposal-builder.');
@@ -394,7 +406,7 @@ const report = {
   ok: failures.length === 0,
   contracts: {
     localStorageKeys: 18,
-    dataMarkers: 69,
+    dataMarkers: 72,
     globals: 19,
     deepLinks: 10,
     validators: 21,

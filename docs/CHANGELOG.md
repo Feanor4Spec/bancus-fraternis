@@ -4,6 +4,29 @@
 
 ---
 
+## [v8.86.0] - 2026-05-13
+
+### Entidades relacionais locais de jornada
+
+#### Adicionado
+- SQLite local ganhou tabela `journey_entities` para indexar snapshots como `lead`, `simulation` e `proposal`.
+- API local ganhou `GET /api/journey-entities`, com escopo por sessao: admin ve todos; cliente e consultor veem apenas entidades do proprio `owner_email`.
+- `BFBackendApi` passou a expor `listJourneyEntities(limit, kind)`.
+- Dashboard Admin agora mostra entidades relacionais recentes em `data-admin-backend-entities` e `data-admin-backend-entity`.
+- Dashboard Cliente agora sinaliza a camada relacional em `data-client-backend-entities`.
+
+#### Modificado
+- `POST /api/snapshots` passou a indexar automaticamente entidades relacionais quando recebe snapshot de simulacao, proposta ou handoff.
+- Validadores e docs foram atualizados para proteger o novo contrato relacional local.
+
+#### Validado
+- `node --check server.js js/backend/db.js assets/js/services/backend-api.service.js assets/js/client-dashboard.js assets/js/admin-users.js`
+- `node tools/validate-local-database.mjs`
+- `node tools/validate-public-contracts.mjs`
+- `node tools/validate-design-system.mjs`
+
+---
+
 ## [v8.85.0] - 2026-05-13
 
 ### Snapshots server-side nos cockpits

@@ -72,7 +72,7 @@
       </div>
       <div class="bf-api-list">
         <div class="bf-api-item"><code>localStorage</code><p>Chaves locais preservam usuarios, simulacoes, perfil, trilhas, proposta, handoff, pacotes e metas.</p></div>
-        <div class="bf-api-item"><code>SQLite local</code><p>Com <code>node server.js</code>, usuarios, sessoes, eventos e snapshots usam <code>.runtime/bancus-fraternis.sqlite</code> sem entrar no Git.</p></div>
+        <div class="bf-api-item"><code>SQLite local</code><p>Com <code>node server.js</code>, usuarios, sessoes, eventos, snapshots e entidades relacionais usam <code>.runtime/bancus-fraternis.sqlite</code> sem entrar no Git.</p></div>
         <div class="bf-api-item"><code>data-*</code><p>Marcadores sustentam validadores, cockpit Admin, proposta, Dashboard Cliente e continuidade v8.</p></div>
         <div class="bf-api-item"><code>window.BF*</code><p>Services globais atuais sao os contratos de migracao progressiva para API propria.</p></div>
         <div class="bf-api-item"><code>Definition of Done</code><p>Cada entrega deve ter contrato revisado, validador, changelog e plano atualizado quando a fase mudar.</p></div>
@@ -96,6 +96,7 @@
         <div class="bf-api-item"><code>GET /api/events</code><p>Endpoint ativo para listar eventos recentes; exige admin.</p></div>
         <div class="bf-api-item"><code>POST /api/snapshots</code><p>Endpoint ativo para salvar estado recuperavel de simulacao, trilha, proposta, lousa, perfil, modelos ou handoff.</p></div>
         <div class="bf-api-item"><code>GET /api/snapshots</code><p>Endpoint autenticado para listar snapshots recentes por limite e tipo; admin ve todos, cliente e consultor veem apenas os proprios.</p></div>
+        <div class="bf-api-item"><code>GET /api/journey-entities</code><p>Endpoint autenticado para listar leads, simulacoes e propostas indexados a partir dos snapshots; aceita limite e filtro por kind.</p></div>
         <div class="bf-api-item"><code>GET /api/produtos</code><p>Lista produtos financeiros e criterios de comparacao.</p></div>
         <div class="bf-api-item"><code>POST /api/simulacoes/financiamento</code><p>Calcula Price/SAC, parcelas, juros e saldo.</p></div>
         <div class="bf-api-item"><code>POST /api/simulacoes/consorcio</code><p>Calcula carta, lance, reajuste, MOB Contemplacao e MOB Faturamento.</p></div>

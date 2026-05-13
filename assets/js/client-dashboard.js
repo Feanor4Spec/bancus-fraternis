@@ -75,6 +75,15 @@
     error: null
   };
 
+  let backendEntityState = {
+    loading: false,
+    loaded: false,
+    entities: [],
+    summary: {},
+    scope: '',
+    error: null
+  };
+
   function backendApi() {
     return window.BFBackendApi && typeof window.BFBackendApi === 'object' ? window.BFBackendApi : null;
   }
@@ -165,6 +174,17 @@
       count: backendSnapshotState.snapshots.length,
       scope: backendSnapshotState.scope || '',
       error: backendSnapshotState.error || null
+    };
+  }
+
+  function backendEntityView() {
+    return {
+      loaded: backendEntityState.loaded,
+      count: backendEntityState.entities.length,
+      summary: backendEntityState.summary || {},
+      scope: backendEntityState.scope || '',
+      error: backendEntityState.error || null,
+      source: backendEntityState.loaded ? 'sqlite' : 'localStorage'
     };
   }
 
@@ -305,6 +325,7 @@
 
   function dashboardSnapshot() {
     const backend = backendSnapshotView();
+    const backendEntities = backendEntityView();
     const profile = backend.profile || loadProfileSnapshot();
     const calculatorHistory = loadCalculatorHistory();
     const simulations = mergeRecords(backend.simulations, loadSimulations(), (item) => item.id);
@@ -346,7 +367,8 @@
         scope: backend.scope,
         error: backend.error,
         source: backend.loaded ? 'sqlite' : 'localStorage'
-      }
+      },
+      backendEntities
     };
   }
 
@@ -617,6 +639,7 @@
           <div>
             <span class="bf-badge bf-badge--gold">Cockpit de retomada</span>
             <span class="bf-badge bf-badge--navy" data-client-backend-snapshots="${escapeHtml(snapshot.backendSnapshots.source)}">${escapeHtml(snapshot.backendSnapshots.loaded ? 'Snapshots SQLite' : 'Fallback local')}</span>
+            <span class="bf-badge bf-badge--ok" data-client-backend-entities="${escapeHtml(snapshot.backendEntities.source)}">${escapeHtml(snapshot.backendEntities.loaded ? `Entidades ${snapshot.backendEntities.count}` : 'Entidades locais')}</span>
             <h2>Onde voce esta e qual acao seguir agora</h2>
             <p>Consolida atendimento, proposta, simulacao e cadencia comercial para continuar a jornada sem perder contexto.</p>
           </div>
@@ -924,6 +947,48 @@
     return true;
   }
 
+  async function loadBackendEntities() {
+    const api = backendApi();
+    if (!api || typeof api.available !== 'function' || !api.available() || typeof api.listJourneyEntities !== 'function') {
+      document.body.dataset.clientBackendEntitiesReady = 'fallback';
+      document.body.dataset.clientBackendEntityCount = '0';
+      return false;
+    }
+
+    backendEntityState = {
+      ...backendEntityState,
+      loading: true,
+      error: null
+    };
+
+    const result = await api.listJourneyEntities(100);
+    if (!result || !result.ok || !Array.isArray(result.entities)) {
+      backendEntityState = {
+        loading: false,
+        loaded: false,
+        entities: [],
+        summary: {},
+        scope: '',
+        error: result && result.message ? result.message : 'Nao foi possivel ler entidades server-side.'
+      };
+      document.body.dataset.clientBackendEntitiesReady = 'fallback';
+      document.body.dataset.clientBackendEntityCount = '0';
+      return false;
+    }
+
+    backendEntityState = {
+      loading: false,
+      loaded: true,
+      entities: result.entities,
+      summary: result.summary || {},
+      scope: result.scope || '',
+      error: null
+    };
+    document.body.dataset.clientBackendEntitiesReady = 'true';
+    document.body.dataset.clientBackendEntityCount = String(result.entities.length);
+    return true;
+  }
+
   function renderSnapshotAwareSections() {
     renderCalculatorProfile();
     renderDecisionJourney();
@@ -1123,8 +1188,8 @@
 
     renderSnapshotAwareSections();
     renderStandardModels();
-    loadBackendSnapshots().then((loaded) => {
-      if (loaded) renderSnapshotAwareSections();
+    Promise.all([loadBackendSnapshots(), loadBackendEntities()]).then((results) => {
+      if (results.some(Boolean)) renderSnapshotAwareSections();
     });
 
     document.addEventListener('click', (event) => {

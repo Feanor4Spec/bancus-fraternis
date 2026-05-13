@@ -319,6 +319,9 @@ if (!adminUsersJs.includes('listEvents(30)')) fail('admin-users.js sem leitura d
 if (!adminUsersJs.includes('data-admin-backend-snapshots')) fail('admin-users.js sem lista de snapshots server-side.');
 if (!adminUsersJs.includes('data-admin-backend-snapshot')) fail('admin-users.js sem item de snapshot server-side.');
 if (!adminUsersJs.includes('listSnapshots(30)')) fail('admin-users.js sem leitura de snapshots da API local.');
+if (!adminUsersJs.includes('data-admin-backend-entities')) fail('admin-users.js sem lista de entidades relacionais server-side.');
+if (!adminUsersJs.includes('data-admin-backend-entity')) fail('admin-users.js sem item de entidade relacional server-side.');
+if (!adminUsersJs.includes('listJourneyEntities(50)')) fail('admin-users.js sem leitura de entidades relacionais da API local.');
 if (!adminUsersJs.includes('databaseStatus')) fail('admin-users.js sem status tecnico do banco local.');
 if (!adminUsersJs.includes('data-admin-backend-table')) fail('admin-users.js sem lista de tabelas SQLite.');
 if (!adminUsersJs.includes('data-admin-local-import-panel')) fail('admin-users.js sem painel de migracao localStorage para SQLite.');
@@ -333,6 +336,9 @@ if (!adminUsersJs.includes('Handoff sem responsavel')) fail('admin-users.js sem 
 if (!clientDashboardJs.includes('data-client-backend-snapshots')) fail('client-dashboard.js sem marcador de origem dos snapshots server-side.');
 if (!clientDashboardJs.includes('listSnapshots(100)')) fail('client-dashboard.js sem leitura de snapshots server-side.');
 if (!clientDashboardJs.includes('backendSnapshotState')) fail('client-dashboard.js sem estado de snapshots server-side.');
+if (!clientDashboardJs.includes('data-client-backend-entities')) fail('client-dashboard.js sem marcador de entidades relacionais server-side.');
+if (!clientDashboardJs.includes('listJourneyEntities(100)')) fail('client-dashboard.js sem leitura de entidades relacionais server-side.');
+if (!clientDashboardJs.includes('backendEntityState')) fail('client-dashboard.js sem estado de entidades relacionais server-side.');
 
 const simulatorHtml = await fs.readFile(path.join(root, 'pages/simulador.html'), 'utf8');
 const simulatorAppJs = await fs.readFile(path.join(root, 'js/app.js'), 'utf8');

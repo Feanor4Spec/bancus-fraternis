@@ -1353,8 +1353,11 @@ Validacoes obrigatorias:
 - `POST /api/events` deve remover senha, token, CPF, telefone, WhatsApp, hash e salt do payload.
 - `POST /api/snapshots` deve remover senha, token, CPF, telefone, WhatsApp, hash e salt do payload.
 - `GET /api/snapshots` deve exigir bearer token, aceitar filtro opcional por tipo, retornar todos para admin e restringir consultor/cliente ao proprio `owner_email`.
+- `POST /api/snapshots` deve indexar entidades relacionais em `journey_entities` quando o tipo representar `lead`, `simulation` ou `proposal`.
+- `GET /api/journey-entities` deve exigir bearer token, aceitar filtro opcional por `kind`, retornar todos para admin e restringir consultor/cliente ao proprio `owner_email`.
 - `dashboard-cliente.html` deve preferir snapshots server-side quando `BFBackendApi` estiver ativo e expor `data-client-backend-snapshots`; em `file://` deve seguir pelo fallback local.
-- `dashboard-admin.html` deve listar eventos e snapshots server-side com `data-admin-backend-events`, `data-admin-backend-snapshots` e `data-admin-backend-snapshot`.
+- `dashboard-cliente.html` deve expor `data-client-backend-entities` quando a camada relacional server-side estiver disponivel.
+- `dashboard-admin.html` deve listar eventos, snapshots e entidades server-side com `data-admin-backend-events`, `data-admin-backend-snapshots`, `data-admin-backend-snapshot`, `data-admin-backend-entities` e `data-admin-backend-entity`.
 - Salvamentos reais de simulacao, proposta, lousa, perfil, trilha e handoff devem chamar `BFBackendApi.recordSnapshot` sem bloquear `localStorage`.
 - `pages/dashboard-admin.html` deve renderizar `data-admin-backend-events` com metricas e ultimos eventos quando houver sessao admin da API.
 - `pages/dashboard-admin.html` deve renderizar `data-admin-backend-table` e `data-admin-backend-database-provider` no painel de banco.

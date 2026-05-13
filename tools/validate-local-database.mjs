@@ -36,6 +36,7 @@ try {
   assert(initialStats.schemaVersion === SCHEMA_VERSION, 'Schema do banco local nao confere.');
   assert(initialStats.users === 3, `Banco local deveria criar 3 usuarios seed; criou ${initialStats.users}.`);
   assert(initialStats.snapshots === 0, 'Banco local novo nao deveria iniciar com snapshots.');
+  assert(initialStats.journeyEntities === 0, 'Banco local novo nao deveria iniciar com entidades de jornada.');
 
   const adminLogin = localDb.login('admin@bankfratern.local', 'Admin@123');
   assert(adminLogin.ok, 'Login seed admin falhou no banco local.');
@@ -125,19 +126,42 @@ try {
     payload: { amount: 175 }
   });
   assert(!snapshotUpdate.created && snapshotUpdate.snapshot.status === 'updated', 'Snapshot repetido deveria atualizar registro existente.');
+  assert(snapshotUpdate.entity && snapshotUpdate.entity.kind === 'simulation', 'Snapshot de simulacao deveria indexar entidade relacional simulation.');
+  const handoffSnapshot = localDb.upsertSnapshot({
+    id: 'SNP-HANDOFF-VALIDATOR',
+    type: 'handoff',
+    source: 'validator',
+    ownerEmail: 'validator@example.com',
+    entityId: 'HND-VALIDATOR',
+    title: 'Lead validador',
+    status: 'novo',
+    payload: {
+      id: 'HND-VALIDATOR',
+      objectiveLabel: 'Lead consultivo validador',
+      priority: 'alta',
+      status: 'novo',
+      commercialStage: { key: 'proposta' }
+    }
+  });
+  assert(handoffSnapshot.entity && handoffSnapshot.entity.kind === 'lead', 'Snapshot de handoff deveria indexar entidade relacional lead.');
   const snapshots = localDb.listSnapshots({ limit: 10, type: 'simulation' });
   assert(snapshots.some((item) => item.id === 'SNP-VALIDATOR'), 'Listagem de snapshots nao retornou snapshot criado.');
   const scopedSnapshots = localDb.listSnapshots({ limit: 10, ownerEmail: 'validator@example.com' });
   assert(scopedSnapshots.some((item) => item.id === 'SNP-VALIDATOR'), 'Listagem de snapshots por dono nao retornou snapshot criado.');
   const otherScopedSnapshots = localDb.listSnapshots({ limit: 10, ownerEmail: 'outro@example.com' });
   assert(!otherScopedSnapshots.some((item) => item.id === 'SNP-VALIDATOR'), 'Listagem de snapshots por dono vazou registro de outro usuario.');
+  const scopedEntities = localDb.listJourneyEntities({ limit: 10, ownerEmail: 'validator@example.com' });
+  assert(scopedEntities.some((item) => item.kind === 'simulation' && item.id === 'simulation-1'), 'Entidades relacionais nao retornaram simulacao indexada.');
+  assert(scopedEntities.some((item) => item.kind === 'lead' && item.id === 'HND-VALIDATOR'), 'Entidades relacionais nao retornaram lead indexado.');
+  const entitySummary = localDb.journeyEntitySummary({ ownerEmail: 'validator@example.com' });
+  assert(entitySummary.simulation >= 1 && entitySummary.lead >= 1, 'Resumo relacional deveria contar simulacao e lead.');
 
   const databaseStatus = localDb.databaseStatus();
   assert(databaseStatus.ok, 'Status tecnico do banco local deveria retornar ok.');
   assert(databaseStatus.provider === 'sqlite', 'Provider ativo deveria ser sqlite.');
   assert(databaseStatus.files && databaseStatus.files.main && databaseStatus.files.main.exists, 'Status do banco nao encontrou arquivo SQLite principal.');
   assert(databaseStatus.sqlite && databaseStatus.sqlite.quickCheck === 'ok', 'PRAGMA quick_check do SQLite nao retornou ok.');
-  assert(Array.isArray(databaseStatus.tables) && databaseStatus.tables.length >= 4, 'Status do banco deveria listar tabelas principais.');
+  assert(Array.isArray(databaseStatus.tables) && databaseStatus.tables.length >= 5, 'Status do banco deveria listar tabelas principais.');
 
   const importSnapshot = {
     source: 'validator-local-storage',
@@ -213,6 +237,8 @@ try {
   assert(importedSnapshot && importedSnapshot.payload.amount === 300, 'Snapshot importado deveria preservar payload seguro.');
   assert(importedSnapshot && !Object.prototype.hasOwnProperty.call(importedSnapshot.payload, 'password'), 'Snapshot importado vazou password.');
   assert(importedSnapshot && !Object.prototype.hasOwnProperty.call(importedSnapshot.payload, 'phone'), 'Snapshot importado vazou phone.');
+  const importedProposalEntity = localDb.listJourneyEntities({ limit: 20, kind: 'proposal' }).find((item) => item.id === 'PROP-LOCAL-1');
+  assert(importedProposalEntity && importedProposalEntity.kind === 'proposal', 'Snapshot importado de proposta deveria gerar entidade relacional proposal.');
 
   const server = await read('server.js');
   [
@@ -225,6 +251,7 @@ try {
     '/api/users',
     '/api/events',
     '/api/snapshots',
+    '/api/journey-entities',
     'SCHEMA_VERSION'
   ].forEach((marker) => assert(server.includes(marker), `server.js sem contrato de API local: ${marker}.`));
 
@@ -239,6 +266,7 @@ try {
     'recordSnapshot',
     'listEvents',
     'listSnapshots',
+    'listJourneyEntities',
     'createUser',
     'toggleStatus'
   ].forEach((marker) => assert(backendApi.includes(marker), `backend-api.service.js sem contrato ${marker}.`));
@@ -258,6 +286,8 @@ try {
     'data-admin-backend-event',
     'data-admin-backend-snapshots',
     'data-admin-backend-snapshot',
+    'data-admin-backend-entities',
+    'data-admin-backend-entity',
     'data-admin-backend-table',
     'data-admin-backend-database-provider',
     'data-admin-local-import-panel',
@@ -270,15 +300,19 @@ try {
     'data-admin-backend-event-refresh',
     'databaseStatus',
     'listEvents(30)',
-    'listSnapshots(30)'
+    'listSnapshots(30)',
+    'listJourneyEntities(50)'
   ].forEach((marker) => {
     assert(adminDashboard.includes(marker) || adminUsers.includes(marker), `Painel admin de eventos sem contrato ${marker}.`);
   });
 
   [
     'data-client-backend-snapshots',
+    'data-client-backend-entities',
     'backendSnapshotState',
-    'listSnapshots(100)'
+    'backendEntityState',
+    'listSnapshots(100)',
+    'listJourneyEntities(100)'
   ].forEach((marker) => {
     assert(clientDashboard.includes(marker), `Dashboard Cliente sem contrato de snapshot server-side: ${marker}.`);
   });
@@ -306,6 +340,7 @@ try {
     seedUsers: initialStats.users,
     events: localDb.listEvents({ limit: 50 }).length,
     snapshots: localDb.listSnapshots({ limit: 50 }).length,
+    journeyEntities: localDb.listJourneyEntities({ limit: 50 }).length,
     provider: databaseStatus.provider,
     tables: databaseStatus.tables.length,
     importedUsers: importRun.users.imported,

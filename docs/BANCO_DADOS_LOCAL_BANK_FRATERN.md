@@ -1,21 +1,21 @@
 # Banco De Dados Local - Bancus Fraternis
 
-Atualizado em 2026-05-12.
+Atualizado em 2026-05-13.
 
 ## Objetivo
 
-Esta entrega cria a primeira camada server-side do Bancus Fraternis sem quebrar a publicacao estatica. Quando o projeto roda por `node server.js`, o servidor abre um SQLite local em `.runtime/` para armazenar usuarios, sessoes, eventos e snapshots recuperaveis. Quando o site roda em GitHub Pages ou `file://`, a experiencia continua usando `localStorage`.
+Esta entrega cria a primeira camada server-side do Bancus Fraternis sem quebrar a publicacao estatica. Quando o projeto roda por `node server.js`, o servidor abre um SQLite local em `.runtime/` para armazenar usuarios, sessoes, eventos, snapshots recuperaveis e entidades relacionais de jornada. Quando o site roda em GitHub Pages ou `file://`, a experiencia continua usando `localStorage`.
 
 ## Arquivos
 
 | Arquivo | Papel |
 | --- | --- |
-| `js/backend/db.js` | Camada SQLite, schema, seeds, hash de senha, sessoes, eventos e snapshots. |
+| `js/backend/db.js` | Camada SQLite, schema, seeds, hash de senha, sessoes, eventos, snapshots e entidades relacionais. |
 | `server.js` | Servidor estatico + endpoints `/api/*`. |
 | `assets/js/services/backend-api.service.js` | Ponte do navegador para a API local com fallback silencioso. |
 | `js/auth.js` | Continua sendo a fachada publica de auth e espelha login/usuarios no banco quando a API existe. |
-| `assets/js/admin-users.js` | Dashboard Admin le `/api/events`, mostra eventos/status server-side e executa migracao guiada do `localStorage`. |
-| `tools/validate-local-database.mjs` | Validador de schema, seeds, login, sessao, eventos e snapshots sanitizados. |
+| `assets/js/admin-users.js` | Dashboard Admin le `/api/events`, `/api/snapshots`, `/api/journey-entities`, mostra status server-side e executa migracao guiada do `localStorage`. |
+| `tools/validate-local-database.mjs` | Validador de schema, seeds, login, sessao, eventos, snapshots e entidades relacionais sanitizadas. |
 | `tools/inspect-local-sql-environment.mjs` | Diagnostico de CLIs, portas padrao e servicos SQL locais para proxima troca de provider. |
 
 ## Banco
@@ -42,6 +42,7 @@ BANCUS_DB_PATH=.runtime/outro-banco.sqlite node server.js
 | `sessions` | Tokens de API hasheados, expiracao e revogacao. | Sessao dura 8 horas. |
 | `events` | Eventos sanitizados de jornada, auth, usuarios, modelos, handoff e funil. | Payload remove senha, token, hash, CPF, telefone, WhatsApp e e-mail. |
 | `snapshots` | Estados recuperaveis de simulacao, trilha, proposta, lousa, perfil, modelos e handoff. | Payload e sanitizado e pode ser atualizado pelo mesmo `id`. |
+| `journey_entities` | Indice relacional derivado dos snapshots para `lead`, `simulation` e `proposal`. | Mantem `owner_email`, status, etapa, prioridade, valor, relacionamento e payload sanitizado. |
 
 ## Seeds
 
@@ -71,8 +72,9 @@ As senhas seed continuam documentadas em `docs/AUTH_ADMIN_LOCAL.md` para demonst
 | `DELETE /api/users/:id` | Remove usuario. |
 | `POST /api/events` | Grava evento sanitizado. |
 | `GET /api/events` | Lista eventos recentes para admin. |
-| `POST /api/snapshots` | Cria ou atualiza snapshot server-side de jornada, simulacao, proposta, lousa, perfil, modelos ou handoff. |
+| `POST /api/snapshots` | Cria ou atualiza snapshot server-side de jornada, simulacao, proposta, lousa, perfil, modelos ou handoff; admin pode informar dono, demais papeis gravam no proprio `owner_email`. |
 | `GET /api/snapshots` | Lista snapshots recentes por limite e tipo; admin ve todos, consultor/cliente veem apenas registros do proprio `owner_email`. |
+| `GET /api/journey-entities` | Lista entidades relacionais derivadas dos snapshots por limite e tipo (`kind`); admin ve todos, consultor/cliente veem apenas registros do proprio `owner_email`. |
 
 ## Regras De Compatibilidade
 
@@ -83,8 +85,10 @@ As senhas seed continuam documentadas em `docs/AUTH_ADMIN_LOCAL.md` para demonst
 - Estados de simulacao, proposta, trilha, perfil, modelos e handoff podem ser consolidados em `/api/snapshots`, preservando `localStorage` como fonte de compatibilidade.
 - Salvamentos reais de simulacao, proposta, lousa, perfil, trilha e handoff ja tentam gravar snapshots server-side quando ha `BFBackendApi` e sessao local valida.
 - Dashboard Cliente le `GET /api/snapshots?limit=100` quando houver API local, mescla com `localStorage` e sinaliza a fonte em `data-client-backend-snapshots`.
+- Dashboard Cliente le `GET /api/journey-entities?limit=100` quando houver API local e sinaliza a camada relacional em `data-client-backend-entities`.
 - Dashboard Admin exibe `data-admin-backend-events` com metricas do SQLite e ultimos eventos quando houver sessao admin da API.
 - O mesmo painel lista snapshots recentes server-side em `data-admin-backend-snapshots` e cada item em `data-admin-backend-snapshot`.
+- O mesmo painel lista entidades relacionais server-side em `data-admin-backend-entities` e cada item em `data-admin-backend-entity`.
 - O mesmo painel exibe `data-admin-backend-table` e `data-admin-backend-database-provider` para confirmar provider, arquivo, PRAGMAs e tabelas ativas.
 - A migracao guiada usa `data-admin-local-import-panel`, `data-admin-local-import-preview`, `data-admin-local-import-run` e `data-admin-local-snapshot-count`; usuarios existentes sao pulados, snapshots repetidos sao atualizados e novos usuarios recebem senha temporaria `Temp@123`.
 - Produção futura deve trocar o SQLite local por backend hospedado, controle de permissao server-side completo, LGPD e politicas de backup.
@@ -108,6 +112,8 @@ Valida:
 - evento persistido sem senha, token ou telefone no payload;
 - snapshot persistido sem senha, token ou telefone no payload;
 - listagem de snapshots por `owner_email` sem vazamento entre usuarios;
+- indexacao relacional de snapshots em `lead`, `simulation` e `proposal`;
+- listagem de entidades relacionais por `owner_email` sem vazamento entre usuarios;
 - hooks reais de `recordSnapshot` em simulacao, proposta, perfil, trilha e handoff;
 - preview e execucao idempotente da migracao `localStorage` -> SQLite, incluindo snapshots;
 - presenca dos contratos `/api/*` no servidor.

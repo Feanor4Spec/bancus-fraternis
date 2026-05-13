@@ -3160,6 +3160,15 @@
     return labels[type] || String(type || 'Snapshot');
   }
 
+  function journeyEntityKindLabel(kind) {
+    const labels = {
+      lead: 'Lead',
+      simulation: 'Simulacao',
+      proposal: 'Proposta'
+    };
+    return labels[kind] || String(kind || 'Entidade');
+  }
+
   function renderBackendEventsUnavailable(target, message, detail) {
     target.innerHTML = `
       <div class="bf-admin-panel-heading">
@@ -3260,9 +3269,11 @@
     `;
   }
 
-  function renderBackendEventsResult(target, health, events, databaseStatus, snapshots) {
+  function renderBackendEventsResult(target, health, events, databaseStatus, snapshots, entitiesResult) {
     const list = Array.isArray(events) ? events : [];
     const serverSnapshots = Array.isArray(snapshots) ? snapshots : [];
+    const serverEntities = entitiesResult && Array.isArray(entitiesResult.entities) ? entitiesResult.entities : [];
+    const entitySummary = entitiesResult && entitiesResult.summary ? entitiesResult.summary : {};
     const snapshot = collectLocalImportSnapshot();
     const stats = health && health.stats ? health.stats : {};
     const dbStatus = databaseStatus && databaseStatus.ok ? databaseStatus : {};
@@ -3303,6 +3314,14 @@
         <small>${escapeHtml(eventPayloadSummary(item))}</small>
       </article>
     `).join('');
+    const entityRows = serverEntities.slice(0, 8).map((item) => `
+      <article class="bf-history-item" data-admin-backend-entity="${escapeHtml(`${item.kind || 'entity'}:${item.id || ''}`)}">
+        <span>${escapeHtml(journeyEntityKindLabel(item.kind))} - ${escapeHtml(item.stage || item.snapshotType || 'jornada')}</span>
+        <strong>${escapeHtml(item.title || item.id || 'Entidade')}</strong>
+        <small>${escapeHtml(formatDate(item.updatedAt || item.createdAt))} - ${escapeHtml(item.ownerEmail || 'sem dono')}</small>
+        <small>${escapeHtml(item.status || 'ativo')} - prioridade ${escapeHtml(item.priority || 'media')}</small>
+      </article>
+    `).join('');
 
     target.innerHTML = `
       <div class="bf-admin-panel-heading">
@@ -3316,6 +3335,10 @@
         <article class="bf-platform-metric is-strong"><small>Eventos no banco</small><strong>${Number(stats.events || list.length || 0)}</strong></article>
         <article class="bf-platform-metric"><small>Usuarios SQLite</small><strong>${Number(stats.users || 0)}</strong></article>
         <article class="bf-platform-metric"><small>Snapshots SQLite</small><strong>${Number(stats.snapshots || 0)}</strong></article>
+        <article class="bf-platform-metric"><small>Entidades SQLite</small><strong>${Number(stats.journeyEntities || entitySummary.total || 0)}</strong></article>
+        <article class="bf-platform-metric"><small>Leads</small><strong>${Number(entitySummary.lead || 0)}</strong></article>
+        <article class="bf-platform-metric"><small>Propostas</small><strong>${Number(entitySummary.proposal || 0)}</strong></article>
+        <article class="bf-platform-metric"><small>Simulacoes</small><strong>${Number(entitySummary.simulation || 0)}</strong></article>
         <article class="bf-platform-metric"><small>Snapshots recentes</small><strong>${serverSnapshots.length}</strong></article>
         <article class="bf-platform-metric"><small>Tipos snapshots</small><strong>${snapshotTypes.size}</strong></article>
         <article class="bf-platform-metric"><small>Sessoes ativas</small><strong>${Number(stats.activeSessions || 0)}</strong></article>
@@ -3329,12 +3352,14 @@
         <div class="bf-calculator-history">${tableRows || '<div class="bf-empty-state">Tabelas ainda nao lidas pela API local.</div>'}</div>
         <div class="bf-calculator-history">${rows || '<div class="bf-empty-state">Nenhum evento server-side registrado ainda.</div>'}</div>
         <div class="bf-calculator-history" data-admin-backend-snapshots>${snapshotRows || '<div class="bf-empty-state">Nenhum snapshot server-side registrado ainda.</div>'}</div>
+        <div class="bf-calculator-history" data-admin-backend-entities>${entityRows || '<div class="bf-empty-state">Nenhuma entidade relacional indexada ainda.</div>'}</div>
       </div>
       ${renderLocalImportPanel(snapshot)}
     `;
     document.body.dataset.adminBackendEventsReady = 'true';
     document.body.dataset.adminBackendEventCount = String(list.length);
     document.body.dataset.adminBackendSnapshotCount = String(serverSnapshots.length);
+    document.body.dataset.adminBackendEntityCount = String(serverEntities.length);
     document.body.dataset.adminBackendDatabaseProvider = dbStatus.provider || 'sqlite';
     target.dataset.adminBackendDatabaseProvider = dbStatus.provider || 'sqlite';
   }
@@ -3382,11 +3407,12 @@
     }
 
     renderBackendEventsLoading(target);
-    const [health, eventResult, databaseStatus, snapshotResult] = await Promise.all([
+    const [health, eventResult, databaseStatus, snapshotResult, entityResult] = await Promise.all([
       api.health(),
       api.listEvents(30),
       typeof api.databaseStatus === 'function' ? api.databaseStatus() : Promise.resolve(null),
-      typeof api.listSnapshots === 'function' ? api.listSnapshots(30) : Promise.resolve({ ok: true, snapshots: [] })
+      typeof api.listSnapshots === 'function' ? api.listSnapshots(30) : Promise.resolve({ ok: true, snapshots: [] }),
+      typeof api.listJourneyEntities === 'function' ? api.listJourneyEntities(50) : Promise.resolve({ ok: true, entities: [], summary: {} })
     ]);
 
     if (!eventResult || !eventResult.ok) {
@@ -3399,7 +3425,8 @@
       health && health.ok ? health : null,
       eventResult.events || [],
       databaseStatus && databaseStatus.ok ? databaseStatus : null,
-      snapshotResult && snapshotResult.ok ? snapshotResult.snapshots || [] : []
+      snapshotResult && snapshotResult.ok ? snapshotResult.snapshots || [] : [],
+      entityResult && entityResult.ok ? entityResult : { entities: [], summary: {} }
     );
   }
 

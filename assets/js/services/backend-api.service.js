@@ -199,6 +199,13 @@
     return request(`/api/snapshots?${query.toString()}`);
   }
 
+  function listJourneyEntities(limit = 50, kind = '') {
+    const safeLimit = Math.max(1, Math.min(100, Number(limit || 50)));
+    const query = new URLSearchParams({ limit: String(safeLimit) });
+    if (kind) query.set('kind', kind);
+    return request(`/api/journey-entities?${query.toString()}`);
+  }
+
   window.BFBackendApi = {
     SESSION_KEY,
     available: canUseApi,
@@ -220,6 +227,7 @@
     recordEvent,
     recordSnapshot,
     listEvents,
-    listSnapshots
+    listSnapshots,
+    listJourneyEntities
   };
 })();

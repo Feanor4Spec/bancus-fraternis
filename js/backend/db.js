@@ -230,12 +230,124 @@ function publicSnapshot(row) {
   };
 }
 
+function publicJourneyEntity(row) {
+  if (!row) return null;
+  let payload = {};
+  try {
+    payload = JSON.parse(row.payload_json || '{}');
+  } catch (error) {
+    payload = {};
+  }
+  return {
+    id: row.id,
+    kind: row.kind,
+    sourceSnapshotId: row.source_snapshot_id || '',
+    snapshotType: row.snapshot_type || '',
+    ownerEmail: row.owner_email || '',
+    actorEmail: row.actor_email || '',
+    title: row.title || '',
+    status: row.status || '',
+    stage: row.stage || '',
+    priority: row.priority || '',
+    source: row.source || '',
+    relatedId: row.related_id || '',
+    amount: Number(row.amount || 0),
+    payload,
+    createdAt: row.created_at || '',
+    updatedAt: row.updated_at || ''
+  };
+}
+
 function countBy(items, key) {
   return (items || []).reduce((acc, item) => {
     const value = String(item && item[key] ? item[key] : 'desconhecido');
     acc[value] = Number(acc[value] || 0) + 1;
     return acc;
   }, {});
+}
+
+function firstText(...values) {
+  for (const value of values) {
+    const text = normalizeText(value);
+    if (text) return text;
+  }
+  return '';
+}
+
+function firstNumber(...values) {
+  for (const value of values) {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed) && parsed > 0) return parsed;
+  }
+  return 0;
+}
+
+function snapshotPayload(input) {
+  return input && input.payload && typeof input.payload === 'object' ? input.payload : {};
+}
+
+function buildJourneyEntity(snapshot = {}) {
+  const type = normalizeText(snapshot.type);
+  const payload = snapshotPayload(snapshot);
+  const common = {
+    sourceSnapshotId: normalizeText(snapshot.id),
+    snapshotType: type,
+    ownerEmail: normalizeEmail(snapshot.ownerEmail),
+    actorEmail: normalizeEmail(snapshot.actorEmail),
+    source: firstText(snapshot.source, payload.source, 'snapshot'),
+    createdAt: firstText(payload.createdAt, payload.criadoEm, snapshot.createdAt, nowIso()),
+    updatedAt: firstText(payload.updatedAt, payload.atualizadoEm, snapshot.updatedAt, snapshot.createdAt, nowIso())
+  };
+
+  if (type === 'simulation') {
+    return {
+      ...common,
+      kind: 'simulation',
+      id: firstText(payload.id, payload.simulationId, snapshot.entityId, snapshot.id),
+      title: firstText(payload.nome, payload.name, payload.title, snapshot.title, 'Simulacao salva'),
+      status: firstText(payload.status, payload.statusProposta, snapshot.status, 'saved'),
+      stage: firstText(payload.stage, payload.etapa, 'simulacao'),
+      priority: firstText(payload.priority, payload.prioridade, payload.decisionContext && payload.decisionContext.priority, 'media'),
+      relatedId: firstText(payload.journeyId, payload.decisionJourneyId, payload.decisionContext && payload.decisionContext.journeyId, payload.proposalId),
+      amount: firstNumber(payload.valorCarta, payload.valorCredito, payload.valorCartaRef, payload.creditValue, payload.amount),
+      payload
+    };
+  }
+
+  if (['proposal-version', 'proposal-acceptance', 'proposal-builder'].includes(type)) {
+    return {
+      ...common,
+      kind: 'proposal',
+      id: firstText(payload.proposalId, payload.id, snapshot.entityId, snapshot.id),
+      title: firstText(payload.title, payload.proposalTitle, snapshot.title, 'Proposta'),
+      status: firstText(payload.status, snapshot.status, type === 'proposal-builder' ? 'draft' : 'versioned'),
+      stage: firstText(payload.stage, type === 'proposal-builder' ? 'lousa' : 'proposta'),
+      priority: firstText(payload.priority, payload.status === 'expired' ? 'alta' : '', 'media'),
+      relatedId: firstText(payload.simulationId, payload.handoffId, payload.journeyId, payload.sourceSimulationId),
+      amount: firstNumber(payload.amount, payload.valorCarta, payload.valorCredito, payload.totalCredit, payload.proposalValue),
+      payload
+    };
+  }
+
+  if (type === 'handoff') {
+    const commercialStage = payload.commercialStage && typeof payload.commercialStage === 'object'
+      ? payload.commercialStage
+      : {};
+    return {
+      ...common,
+      kind: 'lead',
+      id: firstText(payload.id, payload.handoffId, snapshot.entityId, snapshot.id),
+      title: firstText(payload.title, payload.objectiveLabel, payload.clientName, snapshot.title, 'Lead consultivo'),
+      status: firstText(payload.status, snapshot.status, 'novo'),
+      stage: firstText(commercialStage.key, payload.stage, payload.commercialStageKey, 'contato'),
+      priority: firstText(payload.priority, payload.prioridade, 'media'),
+      relatedId: firstText(payload.sourceProposalId, payload.proposalId, payload.journeyId, payload.sourceJourneyId),
+      amount: firstNumber(payload.amount, payload.valorCarta, payload.valorCredito, payload.ticket),
+      payload
+    };
+  }
+
+  return null;
 }
 
 function validateUserPayload(payload, options = {}) {
@@ -330,6 +442,26 @@ function initializeSchema(db) {
       updated_at TEXT NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS journey_entities (
+      id TEXT NOT NULL,
+      kind TEXT NOT NULL,
+      source_snapshot_id TEXT DEFAULT '',
+      snapshot_type TEXT DEFAULT '',
+      owner_email TEXT DEFAULT '',
+      actor_email TEXT DEFAULT '',
+      title TEXT DEFAULT '',
+      status TEXT DEFAULT '',
+      stage TEXT DEFAULT '',
+      priority TEXT DEFAULT '',
+      source TEXT DEFAULT '',
+      related_id TEXT DEFAULT '',
+      amount REAL DEFAULT 0,
+      payload_json TEXT NOT NULL DEFAULT '{}',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      PRIMARY KEY (kind, id)
+    );
+
     CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
     CREATE INDEX IF NOT EXISTS idx_sessions_token_hash ON sessions(token_hash);
     CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
@@ -339,6 +471,10 @@ function initializeSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_snapshots_type ON snapshots(type);
     CREATE INDEX IF NOT EXISTS idx_snapshots_owner_email ON snapshots(owner_email);
     CREATE INDEX IF NOT EXISTS idx_snapshots_updated_at ON snapshots(updated_at);
+    CREATE INDEX IF NOT EXISTS idx_journey_entities_kind ON journey_entities(kind);
+    CREATE INDEX IF NOT EXISTS idx_journey_entities_owner_email ON journey_entities(owner_email);
+    CREATE INDEX IF NOT EXISTS idx_journey_entities_updated_at ON journey_entities(updated_at);
+    CREATE INDEX IF NOT EXISTS idx_journey_entities_snapshot ON journey_entities(source_snapshot_id);
   `);
 }
 
@@ -348,6 +484,7 @@ class BancusDatabase {
     this.dbPath = dbPath;
     this.schemaVersion = SCHEMA_VERSION;
     this.seedUsers();
+    this.rebuildJourneyEntities();
   }
 
   close() {
@@ -679,22 +816,100 @@ class BancusDatabase {
       snapshot.createdAt,
       snapshot.updatedAt
     );
+    const publicRecord = publicSnapshot({
+      id: snapshot.id,
+      type: snapshot.type,
+      source: snapshot.source,
+      owner_email: snapshot.ownerEmail,
+      actor_email: snapshot.actorEmail,
+      entity_id: snapshot.entityId,
+      title: snapshot.title,
+      status: snapshot.status,
+      storage_key: snapshot.storageKey,
+      payload_json: safeJson(snapshot.payload),
+      created_at: snapshot.createdAt,
+      updated_at: snapshot.updatedAt
+    });
     return {
       created: !exists,
-      snapshot: publicSnapshot({
-        id: snapshot.id,
-        type: snapshot.type,
-        source: snapshot.source,
-        owner_email: snapshot.ownerEmail,
-        actor_email: snapshot.actorEmail,
-        entity_id: snapshot.entityId,
-        title: snapshot.title,
-        status: snapshot.status,
-        storage_key: snapshot.storageKey,
-        payload_json: safeJson(snapshot.payload),
-        created_at: snapshot.createdAt,
-        updated_at: snapshot.updatedAt
-      })
+      snapshot: publicRecord,
+      entity: this.upsertJourneyEntityFromSnapshot(publicRecord)
+    };
+  }
+
+  upsertJourneyEntityFromSnapshot(snapshot = {}) {
+    const entity = buildJourneyEntity(snapshot);
+    if (!entity || !entity.id || !entity.kind) return null;
+    this.db.prepare(`
+      INSERT INTO journey_entities (
+        id, kind, source_snapshot_id, snapshot_type, owner_email, actor_email,
+        title, status, stage, priority, source, related_id, amount, payload_json, created_at, updated_at
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(kind, id) DO UPDATE SET
+        source_snapshot_id = excluded.source_snapshot_id,
+        snapshot_type = excluded.snapshot_type,
+        owner_email = excluded.owner_email,
+        actor_email = excluded.actor_email,
+        title = excluded.title,
+        status = excluded.status,
+        stage = excluded.stage,
+        priority = excluded.priority,
+        source = excluded.source,
+        related_id = excluded.related_id,
+        amount = excluded.amount,
+        payload_json = excluded.payload_json,
+        updated_at = excluded.updated_at
+    `).run(
+      entity.id,
+      entity.kind,
+      entity.sourceSnapshotId,
+      entity.snapshotType,
+      entity.ownerEmail,
+      entity.actorEmail,
+      entity.title,
+      entity.status,
+      entity.stage,
+      entity.priority,
+      entity.source,
+      entity.relatedId,
+      entity.amount,
+      safeJson(entity.payload),
+      entity.createdAt,
+      entity.updatedAt
+    );
+    return publicJourneyEntity({
+      id: entity.id,
+      kind: entity.kind,
+      source_snapshot_id: entity.sourceSnapshotId,
+      snapshot_type: entity.snapshotType,
+      owner_email: entity.ownerEmail,
+      actor_email: entity.actorEmail,
+      title: entity.title,
+      status: entity.status,
+      stage: entity.stage,
+      priority: entity.priority,
+      source: entity.source,
+      related_id: entity.relatedId,
+      amount: entity.amount,
+      payload_json: safeJson(entity.payload),
+      created_at: entity.createdAt,
+      updated_at: entity.updatedAt
+    });
+  }
+
+  rebuildJourneyEntities() {
+    const rows = this.db.prepare('SELECT * FROM snapshots ORDER BY updated_at DESC').all().map(publicSnapshot);
+    const indexed = [];
+    rows.forEach((snapshot) => {
+      const entity = this.upsertJourneyEntityFromSnapshot(snapshot);
+      if (entity) indexed.push(entity);
+    });
+    return {
+      ok: true,
+      totalSnapshots: rows.length,
+      indexed: indexed.length,
+      byKind: countBy(indexed, 'kind')
     };
   }
 
@@ -715,6 +930,37 @@ class BancusDatabase {
     const where = filters.length ? ` WHERE ${filters.join(' AND ')}` : '';
     const rows = this.db.prepare(`SELECT * FROM snapshots${where} ORDER BY updated_at DESC LIMIT ?`).all(...params, limit);
     return rows.map(publicSnapshot);
+  }
+
+  listJourneyEntities(options = {}) {
+    const limit = Math.max(1, Math.min(500, Number(options.limit || 100)));
+    const kind = normalizeText(options.kind);
+    const ownerEmail = normalizeEmail(options.ownerEmail);
+    const filters = [];
+    const params = [];
+    if (kind) {
+      filters.push('kind = ?');
+      params.push(kind);
+    }
+    if (ownerEmail) {
+      filters.push('owner_email = ?');
+      params.push(ownerEmail);
+    }
+    const where = filters.length ? ` WHERE ${filters.join(' AND ')}` : '';
+    const rows = this.db.prepare(`SELECT * FROM journey_entities${where} ORDER BY updated_at DESC LIMIT ?`).all(...params, limit);
+    return rows.map(publicJourneyEntity);
+  }
+
+  journeyEntitySummary(options = {}) {
+    const ownerEmail = normalizeEmail(options.ownerEmail);
+    const rows = ownerEmail
+      ? this.db.prepare('SELECT kind, COUNT(*) AS total FROM journey_entities WHERE owner_email = ? GROUP BY kind').all(ownerEmail)
+      : this.db.prepare('SELECT kind, COUNT(*) AS total FROM journey_entities GROUP BY kind').all();
+    return rows.reduce((acc, row) => {
+      acc[row.kind] = Number(row.total || 0);
+      acc.total += Number(row.total || 0);
+      return acc;
+    }, { total: 0, lead: 0, simulation: 0, proposal: 0 });
   }
 
   importLocalSnapshot(input = {}, options = {}) {
@@ -888,12 +1134,14 @@ class BancusDatabase {
     const users = this.db.prepare('SELECT COUNT(*) AS total FROM users').get();
     const events = this.db.prepare('SELECT COUNT(*) AS total FROM events').get();
     const snapshots = this.db.prepare('SELECT COUNT(*) AS total FROM snapshots').get();
+    const journeyEntities = this.db.prepare('SELECT COUNT(*) AS total FROM journey_entities').get();
     const sessions = this.db.prepare("SELECT COUNT(*) AS total FROM sessions WHERE revoked_at = '' AND expires_at > ?").get(nowIso());
     return {
       schemaVersion: this.schemaVersion,
       users: Number(users.total || 0),
       events: Number(events.total || 0),
       snapshots: Number(snapshots.total || 0),
+      journeyEntities: Number(journeyEntities.total || 0),
       activeSessions: Number(sessions.total || 0)
     };
   }

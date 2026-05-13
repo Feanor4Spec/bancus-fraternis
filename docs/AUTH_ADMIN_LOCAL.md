@@ -1,17 +1,17 @@
 # Autenticacao Local e Administracao - Bancus Fraternis
 
-Atualizado em 2026-05-12.
+Atualizado em 2026-05-13.
 
 ## Objetivo
 
-Esta camada implementa login, sessao local, papeis de acesso e painel administrativo em HTML/CSS/JS puro. A partir de 2026-05-12, quando o projeto roda via `node server.js`, ela tambem espelha login, criacao de usuarios, senha, status, eventos e snapshots para o SQLite local documentado em `docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md`.
+Esta camada implementa login, sessao local, papeis de acesso e painel administrativo em HTML/CSS/JS puro. A partir de 2026-05-13, quando o projeto roda via `node server.js`, ela tambem espelha login, criacao de usuarios, senha, status, eventos, snapshots e entidades relacionais de jornada para o SQLite local documentado em `docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md`.
 
 ## Arquivos principais
 
 - `js/auth.js`: servico central de usuarios, sessao, papeis e protecao de paginas.
 - `assets/js/services/backend-api.service.js`: ponte opcional para API local Node/SQLite.
-- `js/backend/db.js`: banco local SQLite com usuarios, sessoes, eventos, snapshots e status tecnico.
-- `server.js`: endpoints `/api/database/status`, `/api/database/import-local`, `/api/auth/*`, `/api/users`, `/api/events` e `/api/snapshots`.
+- `js/backend/db.js`: banco local SQLite com usuarios, sessoes, eventos, snapshots, entidades relacionais e status tecnico.
+- `server.js`: endpoints `/api/database/status`, `/api/database/import-local`, `/api/auth/*`, `/api/users`, `/api/events`, `/api/snapshots` e `/api/journey-entities`.
 - `pages/login.html`: tela de login com contas de demonstracao e barra de progresso.
 - `pages/dashboard-admin.html`: painel de administracao de usuarios.
 - `assets/js/login.js`: comportamento da tela de login.
@@ -43,6 +43,7 @@ As contas seed sao recriadas automaticamente quando faltarem no localStorage.
 - Snapshots de simulacao, trilha, proposta, lousa, perfil, modelos e handoff podem ser persistidos em `/api/snapshots`.
 - Salvamentos reais dessas areas tentam sincronizar snapshots com o SQLite local quando a sessao `bf_backend_session_v1` existe; em modo estatico tudo continua no `localStorage`.
 - `GET /api/snapshots` exige bearer token: admin lista todos os snapshots; consultor e cliente recebem apenas snapshots do proprio `owner_email`.
+- `GET /api/journey-entities` exige bearer token: admin lista todos os leads/simulacoes/propostas indexados; consultor e cliente recebem apenas entidades do proprio `owner_email`.
 - Dashboard Cliente usa snapshots server-side como fonte preferida quando a API local esta ativa e volta para `localStorage` sem bloquear a jornada.
 - Admin pode consultar `/api/database/status` no painel para confirmar provider, tabelas, integridade e arquivos locais.
 - Admin pode previsualizar e executar a migracao guiada do `localStorage` para SQLite sem sobrescrever usuarios/eventos existentes e atualizando snapshots pelo mesmo `id`.
@@ -56,7 +57,7 @@ As contas seed sao recriadas automaticamente quando faltarem no localStorage.
 ## Banco local
 
 - Arquivo padrao: `.runtime/bancus-fraternis.sqlite`.
-- Tabelas: `users`, `sessions`, `events`, `snapshots`.
+- Tabelas: `users`, `sessions`, `events`, `snapshots`, `journey_entities`.
 - Status tecnico: `GET /api/database/status` e `node tools/inspect-local-sql-environment.mjs`.
 - Migracao guiada: `POST /api/database/import-local`; novos usuarios recebem senha temporaria `Temp@123` e snapshots repetidos sao atualizados.
 - `.runtime/` fica fora do Git.
