@@ -2417,6 +2417,36 @@
   color: var(--bf-gold-700);
 }
 
+.bf-admin-materialized-controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  gap: 8px;
+  align-items: end;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--bf-line);
+}
+
+.bf-admin-materialized-controls label {
+  min-width: 0;
+  color: var(--bf-muted);
+  font-size: 10px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.bf-admin-materialized-controls select {
+  width: 100%;
+  min-height: 34px;
+  margin-top: 4px;
+  border: 1px solid var(--bf-line);
+  border-radius: 8px;
+  background: var(--bf-white);
+  color: var(--bf-navy-900);
+  font-size: 12px;
+  font-weight: 850;
+}
+
 .bf-calculator-group {
   margin-top: 28px;
 }
@@ -3788,6 +3818,7 @@
   .bf-admin-commercial-lead__actions,
   .bf-admin-commercial-insights__grid,
   .bf-admin-mini-grid,
+  .bf-admin-materialized-controls,
   .bf-admin-actions,
   .bf-handoff-action-plan,
   .bf-admin-source-grid,

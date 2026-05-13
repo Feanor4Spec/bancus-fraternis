@@ -4,6 +4,21 @@
 
 ---
 
+## [v8.90.0] - 2026-05-13
+
+### Operacao Admin das tabelas dedicadas
+
+#### Adicionado
+- Dashboard Admin ganhou controles inline em `data-admin-backend-materialized-control` para editar status, etapa e prioridade de leads, simulacoes e propostas materializadas.
+- Cada registro materializado agora expoe `data-admin-backend-materialized-field` e `data-admin-backend-materialized-save` para acionar `PATCH` via `BFBackendApi`.
+- `assets/css/platform.css` ganhou layout responsivo para os controles de operacao dedicada.
+
+#### Modificado
+- O painel de banco local passou a chamar `updateLead`, `updateSimulation` ou `updateProposal` conforme o tipo do registro.
+- Validadores de banco local, contratos publicos e design system agora protegem a edicao operacional das tabelas dedicadas.
+
+---
+
 ## [v8.89.0] - 2026-05-13
 
 ### Hooks reais para escrita direta

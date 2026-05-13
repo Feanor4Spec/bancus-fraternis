@@ -3169,6 +3169,98 @@
     return labels[kind] || String(kind || 'Entidade');
   }
 
+  function materializedStatusOptions(kind) {
+    const options = {
+      lead: [
+        ['novo', 'Novo'],
+        ['em_atendimento', 'Em atendimento'],
+        ['aguardando_cliente', 'Aguardando cliente'],
+        ['qualificado', 'Qualificado'],
+        ['descartado', 'Descartado']
+      ],
+      simulation: [
+        ['saved', 'Salva'],
+        ['em_analise', 'Em analise'],
+        ['proposta', 'Virou proposta'],
+        ['retomada', 'Retomada'],
+        ['arquivada', 'Arquivada']
+      ],
+      proposal: [
+        ['draft', 'Rascunho'],
+        ['pending', 'Em revisao'],
+        ['reviewed', 'Revisada'],
+        ['sent', 'Enviada'],
+        ['expired', 'Vencida']
+      ]
+    };
+    return options[kind] || [['active', 'Ativo'], ['archived', 'Arquivado']];
+  }
+
+  function materializedStageOptions(kind) {
+    const options = {
+      lead: [
+        ['contato', 'Contato'],
+        ['proposta', 'Proposta'],
+        ['followup', 'Follow-up'],
+        ['negociacao', 'Negociacao'],
+        ['fechamento', 'Fechamento']
+      ],
+      simulation: [
+        ['simulacao', 'Simulacao'],
+        ['comparacao', 'Comparacao'],
+        ['proposta', 'Proposta'],
+        ['retomada', 'Retomada'],
+        ['handoff', 'Handoff']
+      ],
+      proposal: [
+        ['lousa', 'Lousa'],
+        ['versionamento', 'Versionamento'],
+        ['aceite', 'Aceite'],
+        ['proposta', 'Proposta'],
+        ['handoff', 'Handoff']
+      ]
+    };
+    return options[kind] || [['jornada', 'Jornada'], ['retomada', 'Retomada']];
+  }
+
+  function renderMaterializedOptions(options, current) {
+    const normalized = String(current || '');
+    const hasCurrent = !normalized || options.some(([value]) => String(value) === normalized);
+    const rows = hasCurrent ? options : [[normalized, normalized]].concat(options);
+    return rows.map(([value, label]) => `<option value="${escapeHtml(value)}"${selectedAttr(normalized, value)}>${escapeHtml(label)}</option>`).join('');
+  }
+
+  function materializedUpdateMethod(kind) {
+    if (kind === 'lead') return 'updateLead';
+    if (kind === 'simulation') return 'updateSimulation';
+    if (kind === 'proposal') return 'updateProposal';
+    return '';
+  }
+
+  function renderMaterializedControls(item) {
+    const kind = String(item && item.kind ? item.kind : '');
+    return `
+      <div class="bf-admin-materialized-controls" data-admin-backend-materialized-control>
+        <label>Status
+          <select data-admin-backend-materialized-field="status" aria-label="Status de ${escapeHtml(item.title || item.id || 'registro')}">
+            ${renderMaterializedOptions(materializedStatusOptions(kind), item.status || '')}
+          </select>
+        </label>
+        <label>Etapa
+          <select data-admin-backend-materialized-field="stage" aria-label="Etapa de ${escapeHtml(item.title || item.id || 'registro')}">
+            ${renderMaterializedOptions(materializedStageOptions(kind), item.stage || '')}
+          </select>
+        </label>
+        <label>Prioridade
+          <select data-admin-backend-materialized-field="priority" aria-label="Prioridade de ${escapeHtml(item.title || item.id || 'registro')}">
+            ${renderMaterializedOptions([['alta', 'Alta'], ['media', 'Media'], ['baixa', 'Baixa']], item.priority || 'media')}
+          </select>
+        </label>
+        <button class="btn btn--primary btn--sm" type="button" data-admin-backend-materialized-save>Salvar</button>
+      </div>
+    `;
+  }
+
   function renderBackendEventsUnavailable(target, message, detail) {
     target.innerHTML = `
       <div class="bf-admin-panel-heading">
@@ -3332,11 +3424,12 @@
       .sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')))
       .slice(0, 8)
       .map((item) => `
-        <article class="bf-history-item" data-admin-backend-materialized-item="${escapeHtml(`${item.kind || 'table'}:${item.id || ''}`)}">
+        <article class="bf-history-item" data-admin-backend-materialized-item="${escapeHtml(`${item.kind || 'table'}:${item.id || ''}`)}" data-admin-backend-materialized-kind="${escapeHtml(item.kind || '')}" data-admin-backend-materialized-id="${escapeHtml(item.id || '')}">
           <span>${escapeHtml(journeyEntityKindLabel(item.kind))} materializado</span>
           <strong>${escapeHtml(item.title || item.id || 'Registro')}</strong>
           <small>${escapeHtml(formatDate(item.updatedAt || item.createdAt))} - ${escapeHtml(item.materializedTable || 'tabela dedicada')}</small>
-          <small>${escapeHtml(item.status || 'ativo')} - ${escapeHtml(item.ownerEmail || 'sem dono')}</small>
+          <small>${escapeHtml(item.status || 'ativo')} - ${escapeHtml(item.stage || 'sem etapa')} - ${escapeHtml(item.ownerEmail || 'sem dono')}</small>
+          ${renderMaterializedControls(item)}
         </article>
       `).join('');
 
@@ -3380,6 +3473,7 @@
     document.body.dataset.adminBackendSnapshotCount = String(serverSnapshots.length);
     document.body.dataset.adminBackendEntityCount = String(serverEntities.length);
     document.body.dataset.adminBackendMaterializedCount = String(materializedRowsSource.length);
+    document.body.dataset.adminBackendMaterializedEditable = 'true';
     document.body.dataset.adminBackendDatabaseProvider = dbStatus.provider || 'sqlite';
     target.dataset.adminBackendDatabaseProvider = dbStatus.provider || 'sqlite';
   }
@@ -3582,6 +3676,39 @@
     renderBackendEvents();
   }
 
+  async function handleMaterializedUpdate(button) {
+    const row = button && button.closest ? button.closest('[data-admin-backend-materialized-item]') : null;
+    if (!row) return;
+    const kind = row.dataset.adminBackendMaterializedKind || '';
+    const id = row.dataset.adminBackendMaterializedId || '';
+    const method = materializedUpdateMethod(kind);
+    const api = backendApi();
+    if (!id || !method || !api || typeof api[method] !== 'function') {
+      setMessage('Edicao direta indisponivel para este registro.', 'error');
+      return;
+    }
+    const payload = {};
+    row.querySelectorAll('[data-admin-backend-materialized-field]').forEach((field) => {
+      payload[field.dataset.adminBackendMaterializedField] = field.value;
+    });
+    button.disabled = true;
+    button.textContent = 'Salvando...';
+    try {
+      const result = await api[method](id, payload);
+      if (!result || !result.ok) {
+        setMessage(result && result.message ? result.message : 'Nao foi possivel atualizar a tabela dedicada.', 'error');
+        return;
+      }
+      setMessage(`${journeyEntityKindLabel(kind)} ${id} atualizado no SQLite.`, 'success');
+      renderBackendEvents();
+    } catch (error) {
+      setMessage('Falha ao atualizar registro dedicado no backend local.', 'error');
+    } finally {
+      button.disabled = false;
+      button.textContent = 'Salvar';
+    }
+  }
+
   function renderAll() {
     renderCurrentUser();
     renderOperationalStrip();
@@ -3695,6 +3822,11 @@
       if (refreshButton) {
         setMessage('Atualizando eventos do banco local.', 'success');
         renderBackendEvents();
+        return;
+      }
+      const materializedSave = event.target.closest('[data-admin-backend-materialized-save]');
+      if (materializedSave) {
+        handleMaterializedUpdate(materializedSave);
         return;
       }
       const previewButton = event.target.closest('[data-admin-local-import-preview]');

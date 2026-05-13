@@ -161,6 +161,9 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-admin-backend-entity',
   'data-admin-backend-materialized',
   'data-admin-backend-materialized-item',
+  'data-admin-backend-materialized-control',
+  'data-admin-backend-materialized-field',
+  'data-admin-backend-materialized-save',
   'data-admin-backend-table',
   'data-admin-backend-database-provider',
   'data-admin-backend-event-refresh',
@@ -277,6 +280,9 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-admin-backend-entity',
   'data-admin-backend-materialized',
   'data-admin-backend-materialized-item',
+  'data-admin-backend-materialized-control',
+  'data-admin-backend-materialized-field',
+  'data-admin-backend-materialized-save',
   'data-admin-backend-table',
   'data-admin-backend-database-provider',
   'data-admin-backend-event-refresh',
@@ -297,6 +303,10 @@ assert(adminUsers.includes('data-admin-backend-entities'), 'Dashboard Admin sem 
 assert(adminUsers.includes('data-admin-backend-entity'), 'Dashboard Admin sem item de entidade relacional server-side.');
 assert(adminUsers.includes('data-admin-backend-materialized'), 'Dashboard Admin sem lista de tabelas dedicadas server-side.');
 assert(adminUsers.includes('data-admin-backend-materialized-item'), 'Dashboard Admin sem item de tabela dedicada server-side.');
+assert(adminUsers.includes('data-admin-backend-materialized-control'), 'Dashboard Admin sem controles de tabela dedicada.');
+assert(adminUsers.includes('data-admin-backend-materialized-save'), 'Dashboard Admin sem acao PATCH de tabela dedicada.');
+assert(adminUsers.includes('handleMaterializedUpdate'), 'Dashboard Admin sem handler de atualizacao dedicada.');
+assert(adminUsers.includes('materializedUpdateMethod'), 'Dashboard Admin sem roteamento de updateLead/updateSimulation/updateProposal.');
 assert(clientDashboard.includes('data-client-backend-snapshots'), 'Dashboard Cliente sem marcador de origem de snapshots server-side.');
 assert(clientDashboard.includes('data-client-backend-entities'), 'Dashboard Cliente sem marcador de origem de entidades relacionais server-side.');
 assert(clientDashboard.includes('data-client-backend-materialized'), 'Dashboard Cliente sem marcador de tabelas dedicadas server-side.');
@@ -459,7 +469,7 @@ const report = {
   ok: failures.length === 0,
   contracts: {
     localStorageKeys: 18,
-    dataMarkers: 75,
+    dataMarkers: 78,
     globals: 19,
     deepLinks: 10,
     validators: 21,

@@ -75,6 +75,7 @@ Contrato confirmado:
 - `GET /api/leads`, `/api/simulations` e `/api/proposals` leem tabelas dedicadas materializadas a partir do mesmo pipeline.
 - `POST/PATCH /api/leads`, `/api/simulations` e `/api/proposals` criam e atualizam registros diretos, sincronizando `journey_entities`, sanitizando payload e preservando escopo por sessao.
 - Os fluxos reais de simulador, versionamento/aceite/lousa de proposta e handoff ja chamam `saveSimulation`, `saveProposal` e `saveLead` em modo progressivo.
+- O Dashboard Admin ja usa `PATCH` para alterar status, etapa e prioridade de registros dedicados, sem editar snapshots manualmente.
 - Quando publicado em GitHub Pages ou aberto por `file://`, as paginas seguem funcionando com fallback em `localStorage`.
 
 ## Estrutura de Diretorios
@@ -122,7 +123,7 @@ Contrato confirmado:
 | `pages/login.html` | Ativa | Login local com perfis demo. |
 | `pages/configuracoes.html` | Ativa | Preferencias locais do simulador e plataforma. |
 | `pages/dashboard-cliente.html` | Ativa | Historico, perfil, modelos, trilha, sinais e handoff do usuario, lendo snapshots, entidades relacionais e tabelas dedicadas server-side quando a API local esta ativa e preservando fallback em `localStorage`. |
-| `pages/dashboard-admin.html` | Ativa | Usuarios, recuperacao, pacotes, SLA, roteamento, metas, auditoria, funil, fila guiada executavel, produtividade, carteira por consultor, funil comercial movel, cadencia por etapa, eventos, snapshots, entidades e tabelas dedicadas SQLite. |
+| `pages/dashboard-admin.html` | Ativa | Usuarios, recuperacao, pacotes, SLA, roteamento, metas, auditoria, funil, fila guiada executavel, produtividade, carteira por consultor, funil comercial movel, cadencia por etapa, eventos, snapshots, entidades e operacao inline das tabelas dedicadas SQLite. |
 
 ### Produto, Decisao e Modelos
 

@@ -1364,6 +1364,7 @@ Validacoes obrigatorias:
 - `dashboard-cliente.html` deve expor `data-client-backend-entities` quando a camada relacional server-side estiver disponivel.
 - `dashboard-cliente.html` deve expor `data-client-backend-materialized` quando as tabelas dedicadas estiverem disponiveis.
 - `dashboard-admin.html` deve listar eventos, snapshots, entidades e tabelas dedicadas server-side com `data-admin-backend-events`, `data-admin-backend-snapshots`, `data-admin-backend-snapshot`, `data-admin-backend-entities`, `data-admin-backend-entity`, `data-admin-backend-materialized` e `data-admin-backend-materialized-item`.
+- `dashboard-admin.html` deve permitir alterar status, etapa e prioridade de tabelas dedicadas com `data-admin-backend-materialized-control`, `data-admin-backend-materialized-field` e `data-admin-backend-materialized-save`.
 - Salvamentos reais de simulacao, proposta, lousa, perfil, trilha e handoff devem chamar `BFBackendApi.recordSnapshot` sem bloquear `localStorage`.
 - `pages/dashboard-admin.html` deve renderizar `data-admin-backend-events` com metricas e ultimos eventos quando houver sessao admin da API.
 - `pages/dashboard-admin.html` deve renderizar `data-admin-backend-table` e `data-admin-backend-database-provider` no painel de banco.

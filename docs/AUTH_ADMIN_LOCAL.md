@@ -47,6 +47,7 @@ As contas seed sao recriadas automaticamente quando faltarem no localStorage.
 - `GET /api/leads`, `/api/simulations` e `/api/proposals` exigem bearer token e preservam o mesmo escopo por sessao.
 - `POST/PATCH /api/leads`, `/api/simulations` e `/api/proposals` criam ou atualizam registros diretos, mantendo `journey_entities`, sanitizacao e dono da sessao.
 - Simulador, proposta/lousa e handoff ja tentam usar `saveSimulation`, `saveProposal` e `saveLead` quando a sessao `bf_backend_session_v1` existe.
+- Dashboard Admin permite alterar status, etapa e prioridade de registros dedicados usando `PATCH` e auditoria server-side.
 - Dashboard Cliente usa snapshots server-side como fonte preferida quando a API local esta ativa e volta para `localStorage` sem bloquear a jornada.
 - Admin pode consultar `/api/database/status` no painel para confirmar provider, tabelas, integridade e arquivos locais.
 - Admin pode previsualizar e executar a migracao guiada do `localStorage` para SQLite sem sobrescrever usuarios/eventos existentes e atualizando snapshots pelo mesmo `id`.

@@ -309,6 +309,7 @@ const proposalVersioningJs = await fs.readFile(path.join(root, 'js/proposal-vers
 const proposalAcceptanceJs = await fs.readFile(path.join(root, 'js/proposal-acceptance.js'), 'utf8');
 const proposalBuilderJs = await fs.readFile(path.join(root, 'js/proposal-builder.js'), 'utf8');
 const handoffServiceJs = await fs.readFile(path.join(root, 'assets/js/services/handoff-consultivo.service.js'), 'utf8');
+const platformCss = await fs.readFile(path.join(root, 'assets/css/platform.css'), 'utf8');
 if (!adminUsersJs.includes('data-admin-recovery-imported-items')) fail('admin-users.js sem painel operacional de itens importados.');
 if (!adminUsersJs.includes('data-admin-package-assign')) fail('admin-users.js sem acao de atribuicao de item importado.');
 if (!adminUsersJs.includes('data-admin-package-handoff')) fail('admin-users.js sem acao de handoff de item importado.');
@@ -330,6 +331,12 @@ if (!adminUsersJs.includes('data-admin-backend-entity')) fail('admin-users.js se
 if (!adminUsersJs.includes('listJourneyEntities(50)')) fail('admin-users.js sem leitura de entidades relacionais da API local.');
 if (!adminUsersJs.includes('data-admin-backend-materialized')) fail('admin-users.js sem lista de tabelas dedicadas server-side.');
 if (!adminUsersJs.includes('data-admin-backend-materialized-item')) fail('admin-users.js sem item de tabela dedicada server-side.');
+if (!adminUsersJs.includes('data-admin-backend-materialized-control')) fail('admin-users.js sem controles operacionais de tabela dedicada.');
+if (!adminUsersJs.includes('data-admin-backend-materialized-field')) fail('admin-users.js sem campos editaveis de tabela dedicada.');
+if (!adminUsersJs.includes('data-admin-backend-materialized-save')) fail('admin-users.js sem botao de salvar tabela dedicada.');
+if (!adminUsersJs.includes('handleMaterializedUpdate')) fail('admin-users.js sem handler de PATCH para tabela dedicada.');
+if (!adminUsersJs.includes('materializedUpdateMethod')) fail('admin-users.js sem roteamento updateLead/updateSimulation/updateProposal.');
+if (!platformCss.includes('.bf-admin-materialized-controls')) fail('platform.css sem layout dos controles de tabela dedicada.');
 if (!adminUsersJs.includes('listLeads(30)')) fail('admin-users.js sem leitura de leads materializados.');
 if (!adminUsersJs.includes('listSimulations(30)')) fail('admin-users.js sem leitura de simulacoes materializadas.');
 if (!adminUsersJs.includes('listProposals(30)')) fail('admin-users.js sem leitura de propostas materializadas.');

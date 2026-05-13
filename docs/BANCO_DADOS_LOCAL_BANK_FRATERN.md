@@ -14,7 +14,7 @@ Esta entrega cria a primeira camada server-side do Bancus Fraternis sem quebrar 
 | `server.js` | Servidor estatico + endpoints `/api/*`. |
 | `assets/js/services/backend-api.service.js` | Ponte do navegador para a API local com fallback silencioso. |
 | `js/auth.js` | Continua sendo a fachada publica de auth e espelha login/usuarios no banco quando a API existe. |
-| `assets/js/admin-users.js` | Dashboard Admin le `/api/events`, `/api/snapshots`, `/api/journey-entities`, `/api/leads`, `/api/simulations`, `/api/proposals`, mostra status server-side e executa migracao guiada do `localStorage`. |
+| `assets/js/admin-users.js` | Dashboard Admin le `/api/events`, `/api/snapshots`, `/api/journey-entities`, `/api/leads`, `/api/simulations`, `/api/proposals`, edita registros dedicados via `PATCH`, mostra status server-side e executa migracao guiada do `localStorage`. |
 | `tools/validate-local-database.mjs` | Validador de schema, seeds, login, sessao, eventos, snapshots, entidades relacionais e escrita direta sanitizada. |
 | `tools/inspect-local-sql-environment.mjs` | Diagnostico de CLIs, portas padrao e servicos SQL locais para proxima troca de provider. |
 
@@ -107,7 +107,8 @@ As senhas seed continuam documentadas em `docs/AUTH_ADMIN_LOCAL.md` para demonst
 - Dashboard Admin exibe `data-admin-backend-events` com metricas do SQLite e ultimos eventos quando houver sessao admin da API.
 - O mesmo painel lista snapshots recentes server-side em `data-admin-backend-snapshots` e cada item em `data-admin-backend-snapshot`.
 - O mesmo painel lista entidades relacionais server-side em `data-admin-backend-entities` e cada item em `data-admin-backend-entity`.
-- O mesmo painel lista tabelas dedicadas server-side em `data-admin-backend-materialized` e cada item em `data-admin-backend-materialized-item`.
+- O mesmo painel lista tabelas dedicadas server-side em `data-admin-backend-materialized`, cada item em `data-admin-backend-materialized-item` e controles operacionais em `data-admin-backend-materialized-control`.
+- Os controles `data-admin-backend-materialized-field` e `data-admin-backend-materialized-save` permitem ao Admin alterar status, etapa e prioridade via `PATCH`, gerando auditoria server-side.
 - O mesmo painel exibe `data-admin-backend-table` e `data-admin-backend-database-provider` para confirmar provider, arquivo, PRAGMAs e tabelas ativas.
 - A migracao guiada usa `data-admin-local-import-panel`, `data-admin-local-import-preview`, `data-admin-local-import-run` e `data-admin-local-snapshot-count`; usuarios existentes sao pulados, snapshots repetidos sao atualizados e novos usuarios recebem senha temporaria `Temp@123`.
 - Produção futura deve trocar o SQLite local por backend hospedado, controle de permissao server-side completo, LGPD e politicas de backup.
@@ -138,6 +139,7 @@ Valida:
 - escrita direta de lead, simulacao e proposta com payload sanitizado;
 - sincronizacao de escrita direta com `journey_entities`;
 - hooks reais de escrita direta em simulador, proposta, lousa e handoff;
+- edicao operacional de tabelas dedicadas no Dashboard Admin;
 - hooks reais de `recordSnapshot` em simulacao, proposta, perfil, trilha e handoff;
 - preview e execucao idempotente da migracao `localStorage` -> SQLite, incluindo snapshots;
 - presenca dos contratos `/api/*` no servidor.
