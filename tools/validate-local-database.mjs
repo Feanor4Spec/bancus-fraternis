@@ -127,6 +127,10 @@ try {
   assert(!snapshotUpdate.created && snapshotUpdate.snapshot.status === 'updated', 'Snapshot repetido deveria atualizar registro existente.');
   const snapshots = localDb.listSnapshots({ limit: 10, type: 'simulation' });
   assert(snapshots.some((item) => item.id === 'SNP-VALIDATOR'), 'Listagem de snapshots nao retornou snapshot criado.');
+  const scopedSnapshots = localDb.listSnapshots({ limit: 10, ownerEmail: 'validator@example.com' });
+  assert(scopedSnapshots.some((item) => item.id === 'SNP-VALIDATOR'), 'Listagem de snapshots por dono nao retornou snapshot criado.');
+  const otherScopedSnapshots = localDb.listSnapshots({ limit: 10, ownerEmail: 'outro@example.com' });
+  assert(!otherScopedSnapshots.some((item) => item.id === 'SNP-VALIDATOR'), 'Listagem de snapshots por dono vazou registro de outro usuario.');
 
   const databaseStatus = localDb.databaseStatus();
   assert(databaseStatus.ok, 'Status tecnico do banco local deveria retornar ok.');
@@ -241,6 +245,7 @@ try {
 
   const adminDashboard = await read('pages/dashboard-admin.html');
   const adminUsers = await read('assets/js/admin-users.js');
+  const clientDashboard = await read('assets/js/client-dashboard.js');
   const storageJs = await read('js/storage.js');
   const proposalVersioning = await read('js/proposal-versioning.js');
   const proposalAcceptance = await read('js/proposal-acceptance.js');
@@ -251,6 +256,8 @@ try {
   [
     'data-admin-backend-events',
     'data-admin-backend-event',
+    'data-admin-backend-snapshots',
+    'data-admin-backend-snapshot',
     'data-admin-backend-table',
     'data-admin-backend-database-provider',
     'data-admin-local-import-panel',
@@ -262,9 +269,18 @@ try {
     'collectLocalImportSnapshot',
     'data-admin-backend-event-refresh',
     'databaseStatus',
-    'listEvents(30)'
+    'listEvents(30)',
+    'listSnapshots(30)'
   ].forEach((marker) => {
     assert(adminDashboard.includes(marker) || adminUsers.includes(marker), `Painel admin de eventos sem contrato ${marker}.`);
+  });
+
+  [
+    'data-client-backend-snapshots',
+    'backendSnapshotState',
+    'listSnapshots(100)'
+  ].forEach((marker) => {
+    assert(clientDashboard.includes(marker), `Dashboard Cliente sem contrato de snapshot server-side: ${marker}.`);
   });
 
   [

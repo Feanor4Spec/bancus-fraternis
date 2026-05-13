@@ -40,6 +40,7 @@ const [
   lousa,
   adminDashboard,
   adminUsers,
+  clientDashboard,
   backendApi,
   server,
   simulator,
@@ -66,6 +67,7 @@ const [
   read('pages/lousa-navegacao.html'),
   read('pages/dashboard-admin.html'),
   read('assets/js/admin-users.js'),
+  read('assets/js/client-dashboard.js'),
   read('assets/js/services/backend-api.service.js'),
   read('server.js'),
   read('pages/simulador.html'),
@@ -153,6 +155,8 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-admin-bottleneck-board',
   'data-admin-backend-events',
   'data-admin-backend-event',
+  'data-admin-backend-snapshots',
+  'data-admin-backend-snapshot',
   'data-admin-backend-table',
   'data-admin-backend-database-provider',
   'data-admin-backend-event-refresh',
@@ -171,6 +175,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-login-form',
   'data-public-demo-notice',
   'data-client-continuity-cockpit',
+  'data-client-backend-snapshots',
   'data-client-next-action',
   'data-client-handoff-status',
   'data-client-proposal-status',
@@ -260,6 +265,8 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-admin-source-funnel',
   'data-admin-bottleneck-board',
   'data-admin-backend-events',
+  'data-admin-backend-snapshots',
+  'data-admin-backend-snapshot',
   'data-admin-backend-table',
   'data-admin-backend-database-provider',
   'data-admin-backend-event-refresh',
@@ -274,6 +281,10 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
 
 assert(adminDashboard.includes('href="#admin-proximos-passos"'), 'dashboard-admin.html sem atalho para proximos passos.');
 assert(adminDashboard.includes('data-admin-backend-events'), 'dashboard-admin.html sem painel de eventos do banco local.');
+assert(adminUsers.includes('data-admin-backend-snapshots'), 'Dashboard Admin sem lista de snapshots server-side.');
+assert(adminUsers.includes('data-admin-backend-snapshot'), 'Dashboard Admin sem item de snapshot server-side.');
+assert(clientDashboard.includes('data-client-backend-snapshots'), 'Dashboard Cliente sem marcador de origem de snapshots server-side.');
+assert(clientDashboard.includes('listSnapshots(100)'), 'Dashboard Cliente sem leitura de snapshots server-side.');
 assert(backendApi.includes('listEvents'), 'BFBackendApi sem leitura de eventos server-side.');
 assert(backendApi.includes('recordSnapshot'), 'BFBackendApi sem gravacao de snapshots server-side.');
 assert(backendApi.includes('listSnapshots'), 'BFBackendApi sem leitura de snapshots server-side.');
@@ -383,7 +394,7 @@ const report = {
   ok: failures.length === 0,
   contracts: {
     localStorageKeys: 18,
-    dataMarkers: 66,
+    dataMarkers: 69,
     globals: 19,
     deepLinks: 10,
     validators: 21,

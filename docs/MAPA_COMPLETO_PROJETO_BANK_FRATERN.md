@@ -58,7 +58,7 @@ Separado como runtime, evidencia, backup ou historico:
 | Arquivo | Papel atual |
 | --- | --- |
 | `index.html` | Redirect simples para `pages/index.html`. |
-| `server.js` | Servidor canonico local. Usa porta `8080` por padrao, serve `/` como `pages/index.html`, cria aliases curtos para todas as paginas HTML em `pages/` e expoe API local `/api/*` para auth, usuarios, status do banco e eventos. |
+| `server.js` | Servidor canonico local. Usa porta `8080` por padrao, serve `/` como `pages/index.html`, cria aliases curtos para todas as paginas HTML em `pages/` e expoe API local `/api/*` para auth, usuarios, status do banco, eventos e snapshots. |
 | `js/backend/db.js` | Camada SQLite local: schema, seeds, hash `scrypt-sha256`, sessoes, eventos/snapshots sanitizados e diagnostico tecnico do provider. |
 | `js/server.js` | Servidor legado do simulador antigo. Mantido como historico tecnico, nao como entrada principal. |
 | `Sistema.gitignore` | Ignora editor, node, python, envs, chaves e temporarios. |
@@ -70,6 +70,7 @@ Contrato confirmado:
 - Todas as paginas tambem respondem por URL curta, como `/trilha-decisao.html`.
 - O contrato e coberto por `tools/validate-route-aliases.mjs`.
 - Quando roda via Node, `GET /api/health`, `/api/database/status`, `POST /api/database/import-local`, `/api/auth/*`, `/api/users`, `/api/events` e `/api/snapshots` usam SQLite local em `.runtime/`.
+- `GET /api/snapshots` e escopado por sessao: admin lista todos; cliente/consultor recebem apenas snapshots do proprio `owner_email`.
 - Quando publicado em GitHub Pages ou aberto por `file://`, as paginas seguem funcionando com fallback em `localStorage`.
 
 ## Estrutura de Diretorios
@@ -116,8 +117,8 @@ Contrato confirmado:
 | --- | --- | --- |
 | `pages/login.html` | Ativa | Login local com perfis demo. |
 | `pages/configuracoes.html` | Ativa | Preferencias locais do simulador e plataforma. |
-| `pages/dashboard-cliente.html` | Ativa | Historico, perfil, modelos, trilha, sinais e handoff do usuario. |
-| `pages/dashboard-admin.html` | Ativa | Usuarios, recuperacao, pacotes, SLA, roteamento, metas, auditoria, funil, fila guiada executavel, produtividade, carteira por consultor, funil comercial movel e cadencia por etapa. |
+| `pages/dashboard-cliente.html` | Ativa | Historico, perfil, modelos, trilha, sinais e handoff do usuario, lendo snapshots server-side quando a API local esta ativa e preservando fallback em `localStorage`. |
+| `pages/dashboard-admin.html` | Ativa | Usuarios, recuperacao, pacotes, SLA, roteamento, metas, auditoria, funil, fila guiada executavel, produtividade, carteira por consultor, funil comercial movel, cadencia por etapa, eventos e snapshots SQLite. |
 
 ### Produto, Decisao e Modelos
 

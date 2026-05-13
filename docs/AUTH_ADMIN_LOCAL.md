@@ -42,6 +42,8 @@ As contas seed sao recriadas automaticamente quando faltarem no localStorage.
 - Eventos de auth, jornada, handoff, funil e modelos podem ser persistidos em `/api/events` com payload sanitizado.
 - Snapshots de simulacao, trilha, proposta, lousa, perfil, modelos e handoff podem ser persistidos em `/api/snapshots`.
 - Salvamentos reais dessas areas tentam sincronizar snapshots com o SQLite local quando a sessao `bf_backend_session_v1` existe; em modo estatico tudo continua no `localStorage`.
+- `GET /api/snapshots` exige bearer token: admin lista todos os snapshots; consultor e cliente recebem apenas snapshots do proprio `owner_email`.
+- Dashboard Cliente usa snapshots server-side como fonte preferida quando a API local esta ativa e volta para `localStorage` sem bloquear a jornada.
 - Admin pode consultar `/api/database/status` no painel para confirmar provider, tabelas, integridade e arquivos locais.
 - Admin pode previsualizar e executar a migracao guiada do `localStorage` para SQLite sem sobrescrever usuarios/eventos existentes e atualizando snapshots pelo mesmo `id`.
 
@@ -54,7 +56,7 @@ As contas seed sao recriadas automaticamente quando faltarem no localStorage.
 ## Banco local
 
 - Arquivo padrao: `.runtime/bancus-fraternis.sqlite`.
-- Tabelas: `users`, `sessions`, `events`.
+- Tabelas: `users`, `sessions`, `events`, `snapshots`.
 - Status tecnico: `GET /api/database/status` e `node tools/inspect-local-sql-environment.mjs`.
 - Migracao guiada: `POST /api/database/import-local`; novos usuarios recebem senha temporaria `Temp@123` e snapshots repetidos sao atualizados.
 - `.runtime/` fica fora do Git.

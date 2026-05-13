@@ -4,6 +4,27 @@
 
 ---
 
+## [v8.85.0] - 2026-05-13
+
+### Snapshots server-side nos cockpits
+
+#### Adicionado
+- Dashboard Cliente agora tenta ler `GET /api/snapshots?limit=100`, mescla perfil, simulacoes, trilha, propostas e handoffs com fallback local e sinaliza a fonte em `data-client-backend-snapshots`.
+- Dashboard Admin agora lista snapshots recentes do SQLite em `data-admin-backend-snapshots` e cada item em `data-admin-backend-snapshot`.
+- `GET /api/snapshots` passou a ter escopo por sessao: admin ve todos; cliente e consultor veem apenas snapshots do proprio `owner_email`.
+
+#### Modificado
+- Validadores de banco local, contratos publicos e design system agora protegem a leitura server-side de snapshots nos dashboards.
+- Docs de API, banco local, auth e protocolo de testes foram atualizadas para o novo contrato de escopo.
+
+#### Validado
+- `node --check server.js js/backend/db.js assets/js/client-dashboard.js assets/js/admin-users.js`
+- `node tools/validate-local-database.mjs`
+- `node tools/validate-public-contracts.mjs`
+- `node tools/validate-design-system.mjs`
+
+---
+
 ## [v8.84.0] - 2026-05-12
 
 ### Snapshots reais da jornada conectados ao backend local

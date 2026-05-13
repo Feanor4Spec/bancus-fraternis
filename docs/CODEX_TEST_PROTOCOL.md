@@ -1352,7 +1352,9 @@ Validacoes obrigatorias:
 - Criacao de usuario deve salvar senha com hash server-side e permitir login posterior.
 - `POST /api/events` deve remover senha, token, CPF, telefone, WhatsApp, hash e salt do payload.
 - `POST /api/snapshots` deve remover senha, token, CPF, telefone, WhatsApp, hash e salt do payload.
-- `GET /api/snapshots` deve exigir admin e aceitar filtro opcional por tipo.
+- `GET /api/snapshots` deve exigir bearer token, aceitar filtro opcional por tipo, retornar todos para admin e restringir consultor/cliente ao proprio `owner_email`.
+- `dashboard-cliente.html` deve preferir snapshots server-side quando `BFBackendApi` estiver ativo e expor `data-client-backend-snapshots`; em `file://` deve seguir pelo fallback local.
+- `dashboard-admin.html` deve listar eventos e snapshots server-side com `data-admin-backend-events`, `data-admin-backend-snapshots` e `data-admin-backend-snapshot`.
 - Salvamentos reais de simulacao, proposta, lousa, perfil, trilha e handoff devem chamar `BFBackendApi.recordSnapshot` sem bloquear `localStorage`.
 - `pages/dashboard-admin.html` deve renderizar `data-admin-backend-events` com metricas e ultimos eventos quando houver sessao admin da API.
 - `pages/dashboard-admin.html` deve renderizar `data-admin-backend-table` e `data-admin-backend-database-provider` no painel de banco.

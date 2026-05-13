@@ -3146,6 +3146,20 @@
     return `Campos: ${keys.slice(0, 6).join(', ')}${keys.length > 6 ? '...' : ''}.`;
   }
 
+  function snapshotTypeLabel(type) {
+    const labels = {
+      simulation: 'Simulacao',
+      'financial-profile': 'Perfil financeiro',
+      'decision-journey': 'Trilha',
+      'proposal-version': 'Versao proposta',
+      'proposal-acceptance': 'Aceite proposta',
+      'proposal-builder': 'Lousa proposta',
+      handoff: 'Handoff',
+      'comparator-models': 'Modelos comparador'
+    };
+    return labels[type] || String(type || 'Snapshot');
+  }
+
   function renderBackendEventsUnavailable(target, message, detail) {
     target.innerHTML = `
       <div class="bf-admin-panel-heading">
@@ -3246,8 +3260,9 @@
     `;
   }
 
-  function renderBackendEventsResult(target, health, events, databaseStatus) {
+  function renderBackendEventsResult(target, health, events, databaseStatus, snapshots) {
     const list = Array.isArray(events) ? events : [];
+    const serverSnapshots = Array.isArray(snapshots) ? snapshots : [];
     const snapshot = collectLocalImportSnapshot();
     const stats = health && health.stats ? health.stats : {};
     const dbStatus = databaseStatus && databaseStatus.ok ? databaseStatus : {};
@@ -3257,6 +3272,10 @@
     const tables = Array.isArray(dbStatus.tables) ? dbStatus.tables : [];
     const sources = list.reduce((set, event) => {
       if (event && event.source) set.add(event.source);
+      return set;
+    }, new Set());
+    const snapshotTypes = serverSnapshots.reduce((set, item) => {
+      if (item && item.type) set.add(item.type);
       return set;
     }, new Set());
     const tableRows = tables.map((table) => `
@@ -3275,6 +3294,15 @@
         <small>${escapeHtml(eventPayloadSummary(event))}</small>
       </article>
     `).join('');
+    const snapshotRows = serverSnapshots.slice(0, 8).map((item) => `
+      <article class="bf-history-item" data-admin-backend-snapshot="${escapeHtml(item.id || '')}">
+        <span>${escapeHtml(snapshotTypeLabel(item.type))}</span>
+        <strong>${escapeHtml(item.title || item.entityId || item.id || 'Snapshot')}</strong>
+        <small>${escapeHtml(formatDate(item.updatedAt || item.createdAt))} - ${escapeHtml(item.ownerEmail || 'sem dono')}</small>
+        <small>${escapeHtml(item.status || item.source || 'server-side')}</small>
+        <small>${escapeHtml(eventPayloadSummary(item))}</small>
+      </article>
+    `).join('');
 
     target.innerHTML = `
       <div class="bf-admin-panel-heading">
@@ -3288,6 +3316,8 @@
         <article class="bf-platform-metric is-strong"><small>Eventos no banco</small><strong>${Number(stats.events || list.length || 0)}</strong></article>
         <article class="bf-platform-metric"><small>Usuarios SQLite</small><strong>${Number(stats.users || 0)}</strong></article>
         <article class="bf-platform-metric"><small>Snapshots SQLite</small><strong>${Number(stats.snapshots || 0)}</strong></article>
+        <article class="bf-platform-metric"><small>Snapshots recentes</small><strong>${serverSnapshots.length}</strong></article>
+        <article class="bf-platform-metric"><small>Tipos snapshots</small><strong>${snapshotTypes.size}</strong></article>
         <article class="bf-platform-metric"><small>Sessoes ativas</small><strong>${Number(stats.activeSessions || 0)}</strong></article>
         <article class="bf-platform-metric"><small>Fontes recentes</small><strong>${sources.size}</strong></article>
         <article class="bf-platform-metric"><small>Provider</small><strong>${escapeHtml(dbStatus.provider || 'sqlite')}</strong></article>
@@ -3298,11 +3328,13 @@
       <div class="bf-admin-mini-grid">
         <div class="bf-calculator-history">${tableRows || '<div class="bf-empty-state">Tabelas ainda nao lidas pela API local.</div>'}</div>
         <div class="bf-calculator-history">${rows || '<div class="bf-empty-state">Nenhum evento server-side registrado ainda.</div>'}</div>
+        <div class="bf-calculator-history" data-admin-backend-snapshots>${snapshotRows || '<div class="bf-empty-state">Nenhum snapshot server-side registrado ainda.</div>'}</div>
       </div>
       ${renderLocalImportPanel(snapshot)}
     `;
     document.body.dataset.adminBackendEventsReady = 'true';
     document.body.dataset.adminBackendEventCount = String(list.length);
+    document.body.dataset.adminBackendSnapshotCount = String(serverSnapshots.length);
     document.body.dataset.adminBackendDatabaseProvider = dbStatus.provider || 'sqlite';
     target.dataset.adminBackendDatabaseProvider = dbStatus.provider || 'sqlite';
   }
@@ -3350,10 +3382,11 @@
     }
 
     renderBackendEventsLoading(target);
-    const [health, eventResult, databaseStatus] = await Promise.all([
+    const [health, eventResult, databaseStatus, snapshotResult] = await Promise.all([
       api.health(),
       api.listEvents(30),
-      typeof api.databaseStatus === 'function' ? api.databaseStatus() : Promise.resolve(null)
+      typeof api.databaseStatus === 'function' ? api.databaseStatus() : Promise.resolve(null),
+      typeof api.listSnapshots === 'function' ? api.listSnapshots(30) : Promise.resolve({ ok: true, snapshots: [] })
     ]);
 
     if (!eventResult || !eventResult.ok) {
@@ -3365,7 +3398,8 @@
       target,
       health && health.ok ? health : null,
       eventResult.events || [],
-      databaseStatus && databaseStatus.ok ? databaseStatus : null
+      databaseStatus && databaseStatus.ok ? databaseStatus : null,
+      snapshotResult && snapshotResult.ok ? snapshotResult.snapshots || [] : []
     );
   }
 

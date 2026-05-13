@@ -72,7 +72,7 @@ As senhas seed continuam documentadas em `docs/AUTH_ADMIN_LOCAL.md` para demonst
 | `POST /api/events` | Grava evento sanitizado. |
 | `GET /api/events` | Lista eventos recentes para admin. |
 | `POST /api/snapshots` | Cria ou atualiza snapshot server-side de jornada, simulacao, proposta, lousa, perfil, modelos ou handoff. |
-| `GET /api/snapshots` | Lista snapshots recentes para admin, com filtro opcional por tipo. |
+| `GET /api/snapshots` | Lista snapshots recentes por limite e tipo; admin ve todos, consultor/cliente veem apenas registros do proprio `owner_email`. |
 
 ## Regras De Compatibilidade
 
@@ -82,7 +82,9 @@ As senhas seed continuam documentadas em `docs/AUTH_ADMIN_LOCAL.md` para demonst
 - Eventos de jornada, contexto financeiro, modelos, handoff, acoes operacionais e funil comercial tentam gravar em `/api/events`.
 - Estados de simulacao, proposta, trilha, perfil, modelos e handoff podem ser consolidados em `/api/snapshots`, preservando `localStorage` como fonte de compatibilidade.
 - Salvamentos reais de simulacao, proposta, lousa, perfil, trilha e handoff ja tentam gravar snapshots server-side quando ha `BFBackendApi` e sessao local valida.
+- Dashboard Cliente le `GET /api/snapshots?limit=100` quando houver API local, mescla com `localStorage` e sinaliza a fonte em `data-client-backend-snapshots`.
 - Dashboard Admin exibe `data-admin-backend-events` com metricas do SQLite e ultimos eventos quando houver sessao admin da API.
+- O mesmo painel lista snapshots recentes server-side em `data-admin-backend-snapshots` e cada item em `data-admin-backend-snapshot`.
 - O mesmo painel exibe `data-admin-backend-table` e `data-admin-backend-database-provider` para confirmar provider, arquivo, PRAGMAs e tabelas ativas.
 - A migracao guiada usa `data-admin-local-import-panel`, `data-admin-local-import-preview`, `data-admin-local-import-run` e `data-admin-local-snapshot-count`; usuarios existentes sao pulados, snapshots repetidos sao atualizados e novos usuarios recebem senha temporaria `Temp@123`.
 - Produção futura deve trocar o SQLite local por backend hospedado, controle de permissao server-side completo, LGPD e politicas de backup.
@@ -105,6 +107,7 @@ Valida:
 - criacao de novo usuario com senha hasheada;
 - evento persistido sem senha, token ou telefone no payload;
 - snapshot persistido sem senha, token ou telefone no payload;
+- listagem de snapshots por `owner_email` sem vazamento entre usuarios;
 - hooks reais de `recordSnapshot` em simulacao, proposta, perfil, trilha e handoff;
 - preview e execucao idempotente da migracao `localStorage` -> SQLite, incluindo snapshots;
 - presenca dos contratos `/api/*` no servidor.

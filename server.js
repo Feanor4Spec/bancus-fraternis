@@ -343,11 +343,21 @@ async function handleApiRequest(req, res) {
     }
 
     if (req.method === 'GET') {
-      const context = requireAuth(req, res, ['admin']);
+      const context = requireAuth(req, res);
       if (!context) return true;
       const limit = Number(parsedUrl.searchParams.get('limit') || 100);
       const type = parsedUrl.searchParams.get('type') || '';
-      sendJson(res, 200, { ok: true, snapshots: localDatabase.listSnapshots({ limit, type }) });
+      const isAdmin = context.user.role === 'admin';
+      const options = {
+        limit,
+        type,
+        ownerEmail: isAdmin ? '' : context.user.email
+      };
+      sendJson(res, 200, {
+        ok: true,
+        scope: isAdmin ? 'all' : 'own',
+        snapshots: localDatabase.listSnapshots(options)
+      });
       return true;
     }
 

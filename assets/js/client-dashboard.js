@@ -66,6 +66,19 @@
     expired: 'Revisao vencida'
   };
 
+  let backendSnapshotState = {
+    loading: false,
+    loaded: false,
+    snapshots: [],
+    byType: {},
+    scope: '',
+    error: null
+  };
+
+  function backendApi() {
+    return window.BFBackendApi && typeof window.BFBackendApi === 'object' ? window.BFBackendApi : null;
+  }
+
   function readJson(key, fallback) {
     try {
       const raw = localStorage.getItem(key);
@@ -85,6 +98,74 @@
       String(b.updatedAt || b.createdAt || b.criadoEm || b.atualizadoEm || '')
         .localeCompare(String(a.updatedAt || a.createdAt || a.criadoEm || a.atualizadoEm || ''))
     ));
+  }
+
+  function snapshotPayload(item) {
+    return item && item.payload && typeof item.payload === 'object' ? item.payload : {};
+  }
+
+  function snapshotTimestamp(item, payload) {
+    return payload.updatedAt || payload.atualizadoEm || payload.createdAt || payload.criadoEm || item.updatedAt || item.createdAt || '';
+  }
+
+  function normalizeServerSnapshot(item) {
+    const payload = snapshotPayload(item);
+    const timestamp = snapshotTimestamp(item, payload);
+    return {
+      ...payload,
+      id: payload.id || payload.proposalId || payload.handoffId || item.entityId || item.id,
+      title: payload.title || payload.nome || payload.name || item.title || '',
+      nome: payload.nome || payload.name || item.title || '',
+      createdAt: payload.createdAt || payload.criadoEm || item.createdAt || '',
+      updatedAt: timestamp,
+      criadoEm: payload.criadoEm || payload.createdAt || item.createdAt || '',
+      atualizadoEm: payload.atualizadoEm || payload.updatedAt || item.updatedAt || timestamp,
+      _backendSnapshotId: item.id || '',
+      _backendSnapshotType: item.type || '',
+      _backendSnapshotSource: item.source || 'sqlite'
+    };
+  }
+
+  function backendRecords(type) {
+    return (backendSnapshotState.byType[type] || []).map(normalizeServerSnapshot);
+  }
+
+  function mergeRecords(primary, fallback, identity) {
+    const records = [];
+    const seen = new Set();
+    [...(primary || []), ...(fallback || [])].forEach((item) => {
+      if (!item) return;
+      const key = String(
+        (identity ? identity(item) : '') ||
+        item.id ||
+        item.proposalId ||
+        item.handoffId ||
+        item.entityId ||
+        item._backendSnapshotId ||
+        JSON.stringify(item).slice(0, 80)
+      );
+      if (seen.has(key)) return;
+      seen.add(key);
+      records.push(item);
+    });
+    return sortByRecent(records);
+  }
+
+  function backendSnapshotView() {
+    const journeys = backendRecords('decision-journey');
+    return {
+      profile: backendRecords('financial-profile')[0] || null,
+      simulations: backendRecords('simulation'),
+      comparatorModels: backendRecords('comparator-models'),
+      journey: journeys[0] || null,
+      proposalAcceptances: backendRecords('proposal-acceptance'),
+      proposalVersions: backendRecords('proposal-version'),
+      handoffs: backendRecords('handoff'),
+      loaded: backendSnapshotState.loaded,
+      count: backendSnapshotState.snapshots.length,
+      scope: backendSnapshotState.scope || '',
+      error: backendSnapshotState.error || null
+    };
   }
 
   function compactText(value, fallback = '-') {
@@ -223,19 +304,23 @@
   }
 
   function dashboardSnapshot() {
-    const profile = loadProfileSnapshot();
+    const backend = backendSnapshotView();
+    const profile = backend.profile || loadProfileSnapshot();
     const calculatorHistory = loadCalculatorHistory();
-    const simulations = loadSimulations();
-    const comparatorModels = loadComparatorModels();
-    const journey = loadJourneySnapshot();
-    const handoff = loadHandoffForJourney(journey.active);
+    const simulations = mergeRecords(backend.simulations, loadSimulations(), (item) => item.id);
+    const comparatorModels = mergeRecords(backend.comparatorModels, loadComparatorModels(), (item) => item.id || item.modelId);
+    const localJourney = loadJourneySnapshot();
+    const activeJourney = backend.journey || localJourney.active;
+    const journeyHistory = mergeRecords(backend.journey ? [backend.journey] : [], localJourney.history, (item) => item.id);
+    const journeyHandoff = loadHandoffForJourney(activeJourney);
     const readiness = window.BFDecisionContext && typeof window.BFDecisionContext.readiness === 'function'
       ? window.BFDecisionContext.readiness(profile)
       : { score: profile.readinessScore || 0, complete: false, missing: [] };
     const rawHandoffs = window.BFHandoffConsultivoService && window.BFHandoffConsultivoService.list
       ? window.BFHandoffConsultivoService.list().filter((item) => !item.ownerEmail || item.ownerEmail === currentUserEmail())
       : [];
-    const handoffs = decorateHandoffs(rawHandoffs);
+    const handoffs = decorateHandoffs(mergeRecords(backend.handoffs, rawHandoffs, (item) => item.id || item.handoffId));
+    const handoff = journeyHandoff || handoffs[0] || null;
 
     return {
       profile,
@@ -244,13 +329,24 @@
       calculatorHistory,
       simulations,
       comparatorModels,
-      journey: journey.active,
-      journeyHistory: journey.history,
+      journey: activeJourney,
+      journeyHistory,
       handoff,
       handoffs,
-      proposalAcceptances: loadProposalAcceptances(),
-      proposalVersions: loadProposalVersions(),
-      recoverySignals: loadRecoverySignals()
+      proposalAcceptances: mergeRecords(backend.proposalAcceptances, loadProposalAcceptances(), (item) => item.id || item.proposalId),
+      proposalVersions: mergeRecords(
+        backend.proposalVersions,
+        loadProposalVersions(),
+        (item) => item.versionId || `${item.proposalId || item.id || ''}:${item.version || item.versionLabel || item.createdAt || item.updatedAt || ''}`
+      ),
+      recoverySignals: loadRecoverySignals(),
+      backendSnapshots: {
+        loaded: backend.loaded,
+        count: backend.count,
+        scope: backend.scope,
+        error: backend.error,
+        source: backend.loaded ? 'sqlite' : 'localStorage'
+      }
     };
   }
 
@@ -428,6 +524,9 @@
       ? window.BFJourneyRecoveryService.summary(snapshot.recoverySignals)
       : { total: 0, open: 0, high: 0, top: null };
     const topSignal = recoverySummary.open ? recoverySummary.top : null;
+    const snapshotSourceLabel = snapshot.backendSnapshots.loaded
+      ? `SQLite local (${snapshot.backendSnapshots.count} snapshot${snapshot.backendSnapshots.count === 1 ? '' : 's'})`
+      : 'localStorage';
 
     const cards = [
       {
@@ -475,7 +574,7 @@
         <span class="bf-badge bf-badge--gold">Central de continuidade</span>
         <div>
           <h2>Seu proximo melhor passo.</h2>
-          <p>O dashboard consolida perfil, historico, modelos, trilha e handoff para evitar recomecar a jornada do zero.</p>
+          <p>O dashboard consolida perfil, historico, modelos, trilha e handoff para evitar recomecar a jornada do zero. Fonte atual: ${escapeHtml(snapshotSourceLabel)}.</p>
         </div>
       </div>
       <div class="bf-v8-decision-strip__grid">
@@ -517,6 +616,7 @@
         <div class="bf-admin-panel-heading">
           <div>
             <span class="bf-badge bf-badge--gold">Cockpit de retomada</span>
+            <span class="bf-badge bf-badge--navy" data-client-backend-snapshots="${escapeHtml(snapshot.backendSnapshots.source)}">${escapeHtml(snapshot.backendSnapshots.loaded ? 'Snapshots SQLite' : 'Fallback local')}</span>
             <h2>Onde voce esta e qual acao seguir agora</h2>
             <p>Consolida atendimento, proposta, simulacao e cadencia comercial para continuar a jornada sem perder contexto.</p>
           </div>
@@ -688,6 +788,18 @@
       date: item.updatedAt || item.createdAt,
       href: dashboardHref('handoff-consultivo.html#fila-handoff', snapshot, { handoffId: item.id || '' })
     }));
+    snapshot.proposalVersions.forEach((item) => events.push({
+      type: 'Proposta',
+      title: item.title || item.proposalTitle || `Versao ${item.version || item.versionLabel || 'salva'}`,
+      date: item.updatedAt || item.createdAt,
+      href: dashboardHref('simulador.html#proposta', snapshot, { proposalId: item.proposalId || item.id || '' })
+    }));
+    snapshot.proposalAcceptances.forEach((item) => events.push({
+      type: 'Aceite de proposta',
+      title: proposalStatusLabels[item.status] || item.status || item.title || 'Revisao registrada',
+      date: item.updatedAt || item.createdAt,
+      href: dashboardHref('simulador.html#proposta', snapshot, { proposalId: item.proposalId || item.id || '' })
+    }));
     snapshot.recoverySignals.forEach((signal) => events.push({
       type: 'Retomada recomendada',
       title: `${signal.title} - ${signal.age || 'sinal local'}`,
@@ -763,6 +875,62 @@
     renderClientActivity();
   }
 
+  async function loadBackendSnapshots() {
+    const api = backendApi();
+    if (!api || typeof api.available !== 'function' || !api.available() || typeof api.listSnapshots !== 'function') {
+      document.body.dataset.clientBackendSnapshotsReady = 'fallback';
+      document.body.dataset.clientBackendSnapshotCount = '0';
+      return false;
+    }
+
+    backendSnapshotState = {
+      ...backendSnapshotState,
+      loading: true,
+      error: null
+    };
+
+    const result = await api.listSnapshots(100);
+    if (!result || !result.ok || !Array.isArray(result.snapshots)) {
+      backendSnapshotState = {
+        loading: false,
+        loaded: false,
+        snapshots: [],
+        byType: {},
+        scope: '',
+        error: result && result.message ? result.message : 'Nao foi possivel ler snapshots server-side.'
+      };
+      document.body.dataset.clientBackendSnapshotsReady = 'fallback';
+      document.body.dataset.clientBackendSnapshotCount = '0';
+      return false;
+    }
+
+    const byType = result.snapshots.reduce((acc, item) => {
+      const type = item && item.type ? item.type : 'snapshot';
+      if (!acc[type]) acc[type] = [];
+      acc[type].push(item);
+      return acc;
+    }, {});
+
+    backendSnapshotState = {
+      loading: false,
+      loaded: true,
+      snapshots: result.snapshots,
+      byType,
+      scope: result.scope || '',
+      error: null
+    };
+    document.body.dataset.clientBackendSnapshotsReady = 'true';
+    document.body.dataset.clientBackendSnapshotCount = String(result.snapshots.length);
+    return true;
+  }
+
+  function renderSnapshotAwareSections() {
+    renderCalculatorProfile();
+    renderDecisionJourney();
+    renderComparatorModels();
+    renderContinuityCenter();
+  }
+
   async function renderStandardModels() {
     const target = document.querySelector('[data-client-standard-models]');
     if (!target) return;
@@ -796,9 +964,8 @@
   function renderComparatorModels() {
     const target = document.querySelector('[data-client-comparator-models]');
     if (!target) return;
-    const models = window.BFComparatorModels && window.BFComparatorModels.list
-      ? window.BFComparatorModels.list().slice(0, 8)
-      : [];
+    const snapshot = dashboardSnapshot();
+    const models = snapshot.comparatorModels.slice(0, 8);
 
     if (models.length === 0) {
       target.innerHTML = '<div class="bf-empty-state">Nenhum modelo de comparacao salvo ainda. Abra o comparador, ajuste a matriz e salve um modelo nomeado.</div>';
@@ -810,28 +977,26 @@
         <span>${escapeHtml(String(model.source || '').startsWith('standard:') ? 'Modelo da biblioteca' : 'Modelo de comparacao')}</span>
         <strong>${escapeHtml(model.name)}</strong>
         <small>${escapeHtml(presetLabels[model.preset] || (model.preset || 'manual').replace(/_/g, ' '))} - atualizado em ${escapeHtml(formatDate(model.updatedAt))}</small>
-        <a href="${window.BFComparatorModels.route(model.id)}">Abrir modelo</a>
+        <a href="${window.BFComparatorModels && window.BFComparatorModels.route ? window.BFComparatorModels.route(model.id) : dashboardHref('comparador.html', snapshot, { modelId: model.id || '' })}">Abrir modelo</a>
       </article>
     `).join('');
   }
 
   function renderCalculatorProfile() {
-    if (!window.BFCalculadoras) return;
-
     const profileTarget = document.querySelector('[data-client-financial-profile]');
     const historyTarget = document.querySelector('[data-client-calculator-history]');
-    const profile = window.BFCalculadoras.loadProfile();
-    const history = window.BFCalculadoras.loadHistory().slice(0, 8);
-    const readiness = window.BFDecisionContext && typeof window.BFDecisionContext.readiness === 'function'
-      ? window.BFDecisionContext.readiness(profile)
-      : { score: profile.readinessScore || 0, complete: false };
+    const snapshot = dashboardSnapshot();
+    const profile = snapshot.profile || {};
+    const history = snapshot.calculatorHistory.slice(0, 8);
+    const readiness = snapshot.readiness || { score: profile.readinessScore || 0, complete: false };
     const hasProfile = Object.keys(profile).length > 0;
+    const sourceLabel = snapshot.backendSnapshots.loaded ? 'SQLite local' : 'localStorage';
 
     if (profileTarget) {
       profileTarget.innerHTML = `
         <div class="bf-calculator-profile">
           <div>
-            <span class="bf-badge bf-badge--ok">Perfil financeiro consolidado</span>
+            <span class="bf-badge bf-badge--ok" data-client-backend-snapshots="${escapeHtml(snapshot.backendSnapshots.source)}">${escapeHtml(sourceLabel)}</span>
             <h2>${hasProfile ? 'Dados reutilizaveis entre calculadoras' : 'Crie o primeiro diagnostico'}</h2>
             <p>${hasProfile ? 'Renda, custos, reserva, patrimonio e capacidade de aporte foram consolidados localmente para personalizar novas simulacoes.' : 'Abra Custos Fixos ou Reserva de Emergencia para iniciar o perfil financeiro local.'}</p>
             <div class="bf-inline-actions">
@@ -871,8 +1036,8 @@
     const target = document.querySelector('[data-client-decision-journey]');
     if (!target) return;
 
-    const service = window.BFTrilhaDecisaoService;
-    const journey = service && service.load ? service.load() : null;
+    const snapshot = dashboardSnapshot();
+    const journey = snapshot.journey;
     if (!journey) {
       target.innerHTML = `
         <div class="bf-journey-dashboard">
@@ -899,10 +1064,7 @@
     const next = journey.nextAction || {};
     const metrics = journey.metrics || {};
     const handoffService = window.BFHandoffConsultivoService;
-    const handoff = handoffService && handoffService.findByJourney
-      ? handoffService.findByJourney(journey.id, journey.owner)
-      : null;
-    const snapshot = { journey };
+    const handoff = activeHandoff(snapshot);
     const nextHref = dashboardHref(next.href || 'trilha-decisao.html', snapshot, {
       productId: product.id || '',
       journeyId: journey.id || ''
@@ -919,7 +1081,7 @@
         <div>
           <span class="bf-badge bf-badge--ok">Trilha assistida ativa</span>
           <h2>${escapeHtml(journey.objectiveLabel || 'Jornada de decisao')}</h2>
-          <p>${escapeHtml(handoff ? `Handoff local ${handoff.id} em status ${handoffService.statusLabels[handoff.status] || handoff.status}.` : (next.title || 'Proxima acao definida para este usuario.'))}</p>
+          <p>${escapeHtml(handoff ? `Handoff ${handoff.id} em status ${(handoffService && handoffService.statusLabels && handoffService.statusLabels[handoff.status]) || handoff.status}.` : (next.title || 'Proxima acao definida para este usuario.'))}</p>
           <div class="bf-inline-actions">
             <a class="btn btn--primary btn--sm" href="${escapeHtml(nextHref)}">${escapeHtml(next.label || 'Abrir proximo passo')}</a>
             <a class="btn btn--ghost btn--sm" href="${escapeHtml(reviewHref)}">Revisar trilha</a>
@@ -959,11 +1121,11 @@
       </div>
     `;
 
-    renderCalculatorProfile();
-    renderDecisionJourney();
+    renderSnapshotAwareSections();
     renderStandardModels();
-    renderComparatorModels();
-    renderContinuityCenter();
+    loadBackendSnapshots().then((loaded) => {
+      if (loaded) renderSnapshotAwareSections();
+    });
 
     document.addEventListener('click', (event) => {
       const button = event.target.closest('[data-client-create-handoff]');

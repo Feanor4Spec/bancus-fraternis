@@ -95,7 +95,7 @@
         <div class="bf-api-item"><code>POST /api/events</code><p>Endpoint ativo para registrar eventos sanitizados de jornada, proposta, handoff, funil e auth.</p></div>
         <div class="bf-api-item"><code>GET /api/events</code><p>Endpoint ativo para listar eventos recentes; exige admin.</p></div>
         <div class="bf-api-item"><code>POST /api/snapshots</code><p>Endpoint ativo para salvar estado recuperavel de simulacao, trilha, proposta, lousa, perfil, modelos ou handoff.</p></div>
-        <div class="bf-api-item"><code>GET /api/snapshots</code><p>Endpoint admin para listar snapshots recentes por limite e tipo.</p></div>
+        <div class="bf-api-item"><code>GET /api/snapshots</code><p>Endpoint autenticado para listar snapshots recentes por limite e tipo; admin ve todos, cliente e consultor veem apenas os proprios.</p></div>
         <div class="bf-api-item"><code>GET /api/produtos</code><p>Lista produtos financeiros e criterios de comparacao.</p></div>
         <div class="bf-api-item"><code>POST /api/simulacoes/financiamento</code><p>Calcula Price/SAC, parcelas, juros e saldo.</p></div>
         <div class="bf-api-item"><code>POST /api/simulacoes/consorcio</code><p>Calcula carta, lance, reajuste, MOB Contemplacao e MOB Faturamento.</p></div>

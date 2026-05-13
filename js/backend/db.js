@@ -701,9 +701,19 @@ class BancusDatabase {
   listSnapshots(options = {}) {
     const limit = Math.max(1, Math.min(500, Number(options.limit || 100)));
     const type = normalizeText(options.type);
-    const rows = type
-      ? this.db.prepare('SELECT * FROM snapshots WHERE type = ? ORDER BY updated_at DESC LIMIT ?').all(type, limit)
-      : this.db.prepare('SELECT * FROM snapshots ORDER BY updated_at DESC LIMIT ?').all(limit);
+    const ownerEmail = normalizeEmail(options.ownerEmail);
+    const filters = [];
+    const params = [];
+    if (type) {
+      filters.push('type = ?');
+      params.push(type);
+    }
+    if (ownerEmail) {
+      filters.push('owner_email = ?');
+      params.push(ownerEmail);
+    }
+    const where = filters.length ? ` WHERE ${filters.join(' AND ')}` : '';
+    const rows = this.db.prepare(`SELECT * FROM snapshots${where} ORDER BY updated_at DESC LIMIT ?`).all(...params, limit);
     return rows.map(publicSnapshot);
   }
 
