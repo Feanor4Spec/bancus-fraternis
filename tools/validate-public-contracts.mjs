@@ -334,6 +334,15 @@ assert(backendApi.includes('listProposals'), 'BFBackendApi sem leitura de propos
 ].forEach(([text, marker]) => {
   assert(text.includes('recordSnapshot') && text.includes(marker), `Hook server-side de snapshot ausente para ${marker}.`);
 });
+[
+  [storageJs, 'api.saveSimulation', 'Storage sem escrita direta de simulacao server-side.'],
+  [proposalVersioning, 'api.saveProposal', 'Versionamento sem escrita direta de proposta server-side.'],
+  [proposalAcceptance, 'api.saveProposal', 'Aceite sem escrita direta de proposta server-side.'],
+  [proposalBuilder, 'api.saveProposal', 'Lousa sem escrita direta de proposta server-side.'],
+  [handoffService, 'api.saveLead', 'Handoff sem escrita direta de lead server-side.']
+].forEach(([text, marker, message]) => {
+  assert(text.includes(marker), message);
+});
 assert(backendApi.includes('databaseStatus'), 'BFBackendApi sem status tecnico do banco local.');
 assert(backendApi.includes('importLocalSnapshot'), 'BFBackendApi sem importacao guiada localStorage -> SQLite.');
 assert(server.includes('/api/database/status'), 'server.js sem endpoint de status tecnico do banco.');

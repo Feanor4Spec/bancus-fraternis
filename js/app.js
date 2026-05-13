@@ -1198,6 +1198,7 @@ const App = (() => {
     panel.dataset.proposalAcceptanceStatus = rendered ? rendered.status : (current.status || 'pending');
     panel.dataset.proposalAcceptanceReady = rendered && rendered.ready ? 'true' : (current.status === 'reviewed' ? 'true' : 'false');
     panel.dataset.proposalHandoffReady = rendered && rendered.handoffReady ? 'true' : (handoff ? 'true' : 'false');
+    panel.setAttribute('data-proposal-handoff-bridge', 'host');
     panel.innerHTML = rendered ? rendered.html : '';
   }
 

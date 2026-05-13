@@ -125,6 +125,7 @@ Leitura progressiva dos snapshots:
 - Dashboard Cliente tenta ler `/api/leads`, `/api/simulations` e `/api/proposals` e mostra `data-client-backend-materialized="sqlite"` quando tabelas dedicadas estao disponiveis.
 - Dashboard Admin tenta `GET /api/snapshots?limit=30`, `GET /api/journey-entities?limit=50`, `/api/leads`, `/api/simulations` e `/api/proposals` junto de eventos, status e tabelas; os marcadores `data-admin-backend-snapshots`, `data-admin-backend-entities` e `data-admin-backend-materialized` identificam os itens recentes.
 - `BFBackendApi.saveLead/saveSimulation/saveProposal` e `updateLead/updateSimulation/updateProposal` sao contratos progressivos para gravacao direta das tabelas dedicadas; a fase estatica continua usando `localStorage` e hooks de snapshot.
+- `Storage.saveSimulation`, `BFProposalVersions.save`, `BFProposalAcceptance.saveReview`, `BFProposalBuilder.saveConfig` e `BFHandoffConsultivoService` ja tentam gravar nas tabelas dedicadas quando `BFBackendApi` esta disponivel.
 
 ## Exports Globais
 

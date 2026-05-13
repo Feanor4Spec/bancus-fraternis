@@ -8,6 +8,13 @@
   "journeyLeads": 2,
   "journeySimulations": 2,
   "journeyProposals": 2,
+  "directHooks": {
+    "simulation": true,
+    "proposalVersioning": true,
+    "proposalAcceptance": true,
+    "proposalBuilder": true,
+    "handoff": true
+  },
   "provider": "sqlite",
   "tables": 8,
   "importedUsers": 1,

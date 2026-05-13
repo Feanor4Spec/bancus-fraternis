@@ -4,6 +4,24 @@
 
 ---
 
+## [v8.89.0] - 2026-05-13
+
+### Hooks reais para escrita direta
+
+#### Adicionado
+- `Storage.saveSimulation` agora chama `BFBackendApi.saveSimulation` alem de manter snapshot e `localStorage`.
+- `BFProposalVersions`, `BFProposalAcceptance` e `BFProposalBuilder` agora chamam `BFBackendApi.saveProposal` para materializar proposta/versionamento/aceite/lousa nas tabelas dedicadas.
+- `BFHandoffConsultivoService` agora chama `BFBackendApi.saveLead` em criacao, refresh e atualizacao de handoff.
+
+#### Modificado
+- Snapshots seguem ativos como compatibilidade e auditoria, enquanto as tabelas dedicadas passam a receber dados imediatamente dos fluxos reais.
+- Validadores de banco local, contratos publicos e design system agora protegem os hooks diretos em simulador, proposta e handoff.
+
+#### Validado
+- `node --check js/storage.js js/proposal-versioning.js js/proposal-acceptance.js js/proposal-builder.js assets/js/services/handoff-consultivo.service.js`
+
+---
+
 ## [v8.88.0] - 2026-05-13
 
 ### Escrita direta de jornada local

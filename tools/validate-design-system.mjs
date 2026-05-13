@@ -304,6 +304,11 @@ for (const file of requiredFiles) {
 const adminUsersJs = await fs.readFile(path.join(root, 'assets/js/admin-users.js'), 'utf8');
 const clientDashboardJs = await fs.readFile(path.join(root, 'assets/js/client-dashboard.js'), 'utf8');
 const backendApiJs = await fs.readFile(path.join(root, 'assets/js/services/backend-api.service.js'), 'utf8');
+const storageJs = await fs.readFile(path.join(root, 'js/storage.js'), 'utf8');
+const proposalVersioningJs = await fs.readFile(path.join(root, 'js/proposal-versioning.js'), 'utf8');
+const proposalAcceptanceJs = await fs.readFile(path.join(root, 'js/proposal-acceptance.js'), 'utf8');
+const proposalBuilderJs = await fs.readFile(path.join(root, 'js/proposal-builder.js'), 'utf8');
+const handoffServiceJs = await fs.readFile(path.join(root, 'assets/js/services/handoff-consultivo.service.js'), 'utf8');
 if (!adminUsersJs.includes('data-admin-recovery-imported-items')) fail('admin-users.js sem painel operacional de itens importados.');
 if (!adminUsersJs.includes('data-admin-package-assign')) fail('admin-users.js sem acao de atribuicao de item importado.');
 if (!adminUsersJs.includes('data-admin-package-handoff')) fail('admin-users.js sem acao de handoff de item importado.');
@@ -356,6 +361,11 @@ if (!backendApiJs.includes('saveSimulation')) fail('BFBackendApi sem escrita dir
 if (!backendApiJs.includes('updateSimulation')) fail('BFBackendApi sem atualizacao direta de simulacao.');
 if (!backendApiJs.includes('saveProposal')) fail('BFBackendApi sem escrita direta de proposta.');
 if (!backendApiJs.includes('updateProposal')) fail('BFBackendApi sem atualizacao direta de proposta.');
+if (!storageJs.includes('api.saveSimulation')) fail('storage.js sem hook real de escrita direta de simulacao.');
+if (!proposalVersioningJs.includes('api.saveProposal')) fail('proposal-versioning.js sem hook real de escrita direta de proposta.');
+if (!proposalAcceptanceJs.includes('api.saveProposal')) fail('proposal-acceptance.js sem hook real de escrita direta de proposta.');
+if (!proposalBuilderJs.includes('api.saveProposal')) fail('proposal-builder.js sem hook real de escrita direta da lousa.');
+if (!handoffServiceJs.includes('api.saveLead')) fail('handoff-consultivo.service.js sem hook real de escrita direta de lead.');
 
 const simulatorHtml = await fs.readFile(path.join(root, 'pages/simulador.html'), 'utf8');
 const simulatorAppJs = await fs.readFile(path.join(root, 'js/app.js'), 'utf8');

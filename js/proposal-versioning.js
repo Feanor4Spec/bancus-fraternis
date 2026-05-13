@@ -61,6 +61,31 @@ const BFProposalVersions = (() => {
     }
   }
 
+  function publishDirectProposal(record) {
+    if (!record || !record.proposalId) return;
+    try {
+      const api = window.BFBackendApi;
+      if (!api || typeof api.saveProposal !== 'function') return;
+      api.saveProposal({
+        id: record.proposalId,
+        ownerEmail: currentActorEmail(),
+        actorEmail: currentActorEmail(),
+        title: record.label || `Proposta ${record.proposalId}`,
+        status: record.status || 'draft',
+        stage: 'versionamento',
+        priority: record.status === 'expired' ? 'alta' : 'media',
+        source: 'proposal-versioning',
+        relatedId: record.simulationId || '',
+        amount: record.metrics ? Number(record.metrics.creditoTotal || record.metrics.cartaLiquida || 0) : 0,
+        payload: record,
+        createdAt: record.createdAt || '',
+        updatedAt: record.updatedAt || record.createdAt || ''
+      }).catch(() => {});
+    } catch (e) {
+      // Escrita direta e progressiva; versionamento local e snapshot seguem como fonte de compatibilidade.
+    }
+  }
+
   function publishProposalVersionSnapshot(record) {
     if (!record || !record.id) return;
     publishBackendSnapshot('proposal-version', record, {
@@ -268,6 +293,7 @@ const BFProposalVersions = (() => {
     const list = [record].concat(loadAll()).slice(0, MAX_ITEMS);
     if (!saveAll(list)) return null;
     publishProposalVersionSnapshot(record);
+    publishDirectProposal(record);
     return record;
   }
 

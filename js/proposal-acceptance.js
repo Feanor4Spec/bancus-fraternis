@@ -61,6 +61,31 @@ const BFProposalAcceptance = (() => {
     }
   }
 
+  function publishDirectProposal(record) {
+    if (!record || !record.proposalId) return;
+    try {
+      const api = window.BFBackendApi;
+      if (!api || typeof api.saveProposal !== 'function') return;
+      api.saveProposal({
+        id: record.proposalId,
+        ownerEmail: currentActorEmail() || record.reviewer || '',
+        actorEmail: currentActorEmail() || record.reviewer || '',
+        title: record.statusLabel || `Proposta ${record.proposalId}`,
+        status: record.status || 'pending',
+        stage: 'aceite',
+        priority: record.status === 'expired' ? 'alta' : 'media',
+        source: 'proposal-acceptance',
+        relatedId: record.proposalId,
+        amount: record.snapshot ? Number(record.snapshot.creditoTotal || 0) : 0,
+        payload: record,
+        createdAt: record.createdAt || '',
+        updatedAt: record.updatedAt || record.createdAt || ''
+      }).catch(() => {});
+    } catch (e) {
+      // Aceite local continua sendo a fonte de compatibilidade em ambientes estaticos.
+    }
+  }
+
   function publishAcceptanceSnapshot(record) {
     if (!record || !record.id) return;
     publishBackendSnapshot('proposal-acceptance', record, {
@@ -203,6 +228,7 @@ const BFProposalAcceptance = (() => {
     if (list.length > MAX_ITEMS) list.splice(MAX_ITEMS);
     if (!saveAll(list)) return null;
     publishAcceptanceSnapshot(record);
+    publishDirectProposal(record);
     return record;
   }
 

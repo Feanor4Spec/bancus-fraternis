@@ -64,6 +64,33 @@ const Storage = (() => {
     }
   }
 
+  function _publishDirectSimulation(entry) {
+    if (!entry || !entry.id) return;
+    try {
+      const root = typeof window !== 'undefined' ? window : globalThis;
+      const api = root.BFBackendApi;
+      if (!api || typeof api.saveSimulation !== 'function') return;
+      const decisionContext = entry.decisionContext || {};
+      api.saveSimulation({
+        id: entry.id,
+        ownerEmail: entry.clienteEmail || entry.consultorEmail || '',
+        actorEmail: _currentActorEmail() || entry.consultorEmail || '',
+        title: entry.nome || entry.id,
+        status: entry.status || 'saved',
+        stage: 'simulacao',
+        priority: decisionContext.priority || decisionContext.prioridade || 'media',
+        source: 'simulator-storage',
+        relatedId: decisionContext.journeyId || decisionContext.decisionJourneyId || entry.proposalId || '',
+        amount: entry.totalCarta || (entry.resumo && entry.resumo.creditoTotal) || 0,
+        payload: entry,
+        createdAt: entry.criadoEm || '',
+        updatedAt: entry.atualizadoEm || ''
+      }).catch(() => {});
+    } catch (e) {
+      // Escrita direta e progressiva; o snapshot e o localStorage continuam preservados.
+    }
+  }
+
   function _publishSimulationSnapshot(entry) {
     if (!entry || !entry.id) return;
     _publishBackendSnapshot('simulation', entry, {
@@ -172,6 +199,7 @@ const Storage = (() => {
 
     if (!_saveAll(list)) return null;
     _publishSimulationSnapshot(entry);
+    _publishDirectSimulation(entry);
     return entry;
   }
 

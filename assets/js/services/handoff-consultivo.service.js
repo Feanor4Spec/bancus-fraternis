@@ -103,6 +103,32 @@
     api.recordSnapshot(type, payload, meta).catch(() => {});
   }
 
+  function publishDirectLead(handoff, action) {
+    if (!handoff || !handoff.id) return;
+    const api = window.BFBackendApi;
+    if (!api || typeof api.saveLead !== 'function') return;
+    const actor = currentActor();
+    const summary = handoff.summary || {};
+    const commercialStage = handoff.commercialStage && handoff.commercialStage.key
+      ? handoff.commercialStage.key
+      : '';
+    api.saveLead({
+      id: handoff.id,
+      ownerEmail: handoff.ownerEmail || '',
+      actorEmail: actor.email,
+      title: handoff.objectiveLabel || handoff.objective || handoff.id,
+      status: handoff.status || 'novo',
+      stage: commercialStage || handoff.sourceType || 'contato',
+      priority: handoff.priority || summary.prioridade || 'media',
+      source: 'handoff-consultivo',
+      relatedId: handoff.sourceProposalId || handoff.sourceJourneyId || handoff.sourceSignalId || '',
+      amount: Number(summary.valorCredito || summary.ticket || summary.capacidadePagamento || 0),
+      payload: { ...handoff, directAction: action || 'save' },
+      createdAt: handoff.createdAt || '',
+      updatedAt: handoff.updatedAt || handoff.createdAt || ''
+    }).catch(() => {});
+  }
+
   function publishHandoffSnapshot(handoff, action) {
     if (!handoff || !handoff.id) return;
     publishBackendSnapshot('handoff', { ...handoff, snapshotAction: action || 'save' }, {
@@ -117,6 +143,7 @@
       createdAt: handoff.createdAt || '',
       updatedAt: handoff.updatedAt || handoff.createdAt || ''
     });
+    publishDirectLead(handoff, action || 'save');
   }
 
   function list() {

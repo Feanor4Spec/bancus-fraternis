@@ -424,6 +424,15 @@ try {
   ].forEach(([text, marker, message]) => {
     assert(text.includes('recordSnapshot') && text.includes(marker), message);
   });
+  [
+    [storageJs, 'api.saveSimulation', 'Storage.saveSimulation sem escrita direta de simulacao.'],
+    [proposalVersioning, 'api.saveProposal', 'BFProposalVersions sem escrita direta de proposta.'],
+    [proposalAcceptance, 'api.saveProposal', 'BFProposalAcceptance sem escrita direta de proposta.'],
+    [proposalBuilder, 'api.saveProposal', 'BFProposalBuilder sem escrita direta de proposta/lousa.'],
+    [handoffService, 'api.saveLead', 'BFHandoffConsultivoService sem escrita direta de lead.']
+  ].forEach(([text, marker, message]) => {
+    assert(text.includes(marker), message);
+  });
 
   const inspector = await read('tools/inspect-local-sql-environment.mjs');
   ['postgresql', 'mysql', 'mssql', 'local-sql-environment-report.json'].forEach((marker) => {
@@ -440,6 +449,13 @@ try {
     journeyLeads: localDb.listLeads({ limit: 50 }).length,
     journeySimulations: localDb.listSimulations({ limit: 50 }).length,
     journeyProposals: localDb.listProposals({ limit: 50 }).length,
+    directHooks: {
+      simulation: storageJs.includes('api.saveSimulation'),
+      proposalVersioning: proposalVersioning.includes('api.saveProposal'),
+      proposalAcceptance: proposalAcceptance.includes('api.saveProposal'),
+      proposalBuilder: proposalBuilder.includes('api.saveProposal'),
+      handoff: handoffService.includes('api.saveLead')
+    },
     provider: databaseStatus.provider,
     tables: databaseStatus.tables.length,
     importedUsers: importRun.users.imported,

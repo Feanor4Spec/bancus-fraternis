@@ -99,6 +99,7 @@ As senhas seed continuam documentadas em `docs/AUTH_ADMIN_LOCAL.md` para demonst
 - Eventos de jornada, contexto financeiro, modelos, handoff, acoes operacionais e funil comercial tentam gravar em `/api/events`.
 - Estados de simulacao, proposta, trilha, perfil, modelos e handoff podem ser consolidados em `/api/snapshots`, preservando `localStorage` como fonte de compatibilidade.
 - Salvamentos reais de simulacao, proposta, lousa, perfil, trilha e handoff ja tentam gravar snapshots server-side quando ha `BFBackendApi` e sessao local valida.
+- Salvamentos reais de simulacao, versionamento de proposta, aceite, lousa de proposta e handoff agora tambem tentam gravar diretamente nas tabelas dedicadas via `saveSimulation`, `saveProposal` e `saveLead`.
 - Dashboard Cliente le `GET /api/snapshots?limit=100` quando houver API local, mescla com `localStorage` e sinaliza a fonte em `data-client-backend-snapshots`.
 - Dashboard Cliente le `GET /api/journey-entities?limit=100` quando houver API local e sinaliza a camada relacional em `data-client-backend-entities`.
 - Dashboard Cliente le `/api/leads`, `/api/simulations` e `/api/proposals` quando houver API local e sinaliza tabelas dedicadas em `data-client-backend-materialized`.
@@ -136,6 +137,7 @@ Valida:
 - listagem dedicada por `owner_email` sem vazamento entre usuarios;
 - escrita direta de lead, simulacao e proposta com payload sanitizado;
 - sincronizacao de escrita direta com `journey_entities`;
+- hooks reais de escrita direta em simulador, proposta, lousa e handoff;
 - hooks reais de `recordSnapshot` em simulacao, proposta, perfil, trilha e handoff;
 - preview e execucao idempotente da migracao `localStorage` -> SQLite, incluindo snapshots;
 - presenca dos contratos `/api/*` no servidor.

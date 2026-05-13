@@ -74,6 +74,7 @@ Contrato confirmado:
 - `GET /api/journey-entities` indexa snapshots em `lead`, `simulation` e `proposal`, preservando o mesmo escopo por sessao.
 - `GET /api/leads`, `/api/simulations` e `/api/proposals` leem tabelas dedicadas materializadas a partir do mesmo pipeline.
 - `POST/PATCH /api/leads`, `/api/simulations` e `/api/proposals` criam e atualizam registros diretos, sincronizando `journey_entities`, sanitizando payload e preservando escopo por sessao.
+- Os fluxos reais de simulador, versionamento/aceite/lousa de proposta e handoff ja chamam `saveSimulation`, `saveProposal` e `saveLead` em modo progressivo.
 - Quando publicado em GitHub Pages ou aberto por `file://`, as paginas seguem funcionando com fallback em `localStorage`.
 
 ## Estrutura de Diretorios
