@@ -267,6 +267,7 @@ const requiredFiles = [
   'tools/validate-simulator-refactor.mjs',
   'tools/validate-simulator-shelf.mjs',
   'tools/validate-simulator-cart.mjs',
+  'tools/validate-simulator-result-decision.mjs',
   'tools/validate-proposal-governance.mjs',
   'tools/validate-dashboard-continuity-flow.mjs',
   'tools/validate-decision-flow.mjs',
@@ -395,11 +396,13 @@ if (!simulatorAppJs.includes('applySimulatorObjectiveGuide')) fail('app.js sem a
 if (!simulatorShelfJs.includes('data-shelf-recommendation')) fail('simulator-shelf.js sem recomendacao explicavel na prateleira.');
 if (!stylesCss.includes('.sim-objective-guide')) fail('styles.css sem layout do guia de objetivo.');
 if (!stylesCss.includes('.shelf-recommendation')) fail('styles.css sem layout de recomendacao da prateleira.');
+if (!stylesCss.includes('.ps-section--decision')) fail('styles.css sem layout da decisao final do resultado.');
 if (!simulatorAppJs.includes('salvarRevisaoProposta')) fail('app.js sem acao de salvar revisao da proposta.');
 if (!simulatorAppJs.includes('salvarVersaoProposta')) fail('app.js sem acao de salvar versao da proposta.');
 if (!simulatorAppJs.includes('criarHandoffProposta')) fail('app.js sem acao de criar handoff da proposta.');
 if (!proposalGovernanceJs.includes('data-proposal-handoff-bridge')) fail('proposal-governance.js sem ponte visual proposta -> handoff.');
 if (!proposalSummaryJs.includes('ps-section--acceptance')) fail('proposal-summary.js sem bloco de aceite no PDF.');
+if (!proposalSummaryJs.includes('data-simulator-result-decision')) fail('proposal-summary.js sem bloco de decisao final no PDF.');
 
 const asciiCssFiles = [
   'css/home.css',

@@ -261,7 +261,7 @@ Simulador completo
   -> handoff consultivo de proposta
 ```
 
-Contratos principais: `data-simulator-readiness`, `data-simulator-objective-guide`, `data-shelf-recommendation`, `data-proposal-acceptance-panel`, `data-proposal-version-panel`, `data-proposal-handoff-bridge`, `App`, `ConsorcioEngine`, `ProposalSummary`, `BFSimulatorShelf`, `BFSimulatorCart`, `BFProposalBuilder`, `BFProposalGovernance`, `BFProposalAcceptance`, `BFProposalVersions`, `BFHandoffConsultivoService`.
+Contratos principais: `data-simulator-readiness`, `data-simulator-objective-guide`, `data-shelf-recommendation`, `data-simulator-result-decision`, `data-proposal-acceptance-panel`, `data-proposal-version-panel`, `data-proposal-handoff-bridge`, `App`, `ConsorcioEngine`, `ProposalSummary`, `BFSimulatorShelf`, `BFSimulatorCart`, `BFProposalBuilder`, `BFProposalGovernance`, `BFProposalAcceptance`, `BFProposalVersions`, `BFHandoffConsultivoService`.
 
 ### Jornada de operacao
 
@@ -308,7 +308,7 @@ Melhoria implementada em 2026-05-07:
 | Arquivo | Responsabilidade |
 | --- | --- |
 | `js/app.js` | Fachada/controlador principal do simulador completo. Ainda concentra wizard, calculo e acoes publicas, mas ja delega jornada, snapshots, prateleira, carrinho/projeto, lousa e governanca visual da proposta para modulos dedicados. |
-| `js/proposal-builder.js` | Service da lousa de proposta/PDF: storage, presets, opcoes, dependencias, foco, prontidao e estimativa de paginas. |
+| `js/proposal-builder.js` | Service da lousa de proposta/PDF: storage, presets, opcoes, dependencias, foco, decisao final, prontidao e estimativa de paginas. |
 | `js/proposal-governance.js` | Service visual da governanca da proposta: paineis de versionamento, aceite local, historicos, leitura do formulario e ponte de handoff. |
 | `js/simulator-journey.js` | Service do simulador para contexto de origem, prefill e proximas acoes da jornada. |
 | `js/simulator-state.js` | Service do simulador para snapshots de formulario, carrinho salvo, payload de simulacao e retomada. |
@@ -445,7 +445,7 @@ Os marcadores mais importantes por area:
 | Calculadoras | `data-calculator-form`, `data-calculator-form-alert`, `data-calculator-coherence`, `data-calculator-coherence-alert`, `data-calculator-field`, `data-calculator-field-error`, `data-calculator-next-action`, `data-calculator-next-action-card`, `data-calculator-result`, `data-calculator-result-mode`, `data-calculator-history`, `data-calculators-hub`. |
 | Trilha | `data-decision-journey-form`, `data-decision-journey-state`, `data-decision-journey-steps`, `data-decision-journey-actions`. |
 | Comparador | `data-comparator-form`, `data-comparator-result`, `data-comparator-preset-summary`, `data-comparator-model-recommendation`. |
-| Simulador | `data-simulator-readiness`, `data-simulator-decision-strip`, `data-simulator-journey-actions`, `data-simulator-objective-guide`, `data-simulator-objective-card`, `data-simulator-objective-apply`, `data-shelf-col`, `data-shelf-recommendation`, `data-shelf-recommendation-reason`. |
+| Simulador | `data-simulator-readiness`, `data-simulator-decision-strip`, `data-simulator-journey-actions`, `data-simulator-objective-guide`, `data-simulator-objective-card`, `data-simulator-objective-apply`, `data-simulator-result-decision`, `data-simulator-result-cta`, `data-simulator-result-premise`, `data-simulator-result-risk`, `data-simulator-result-comparison`, `data-shelf-col`, `data-shelf-recommendation`, `data-shelf-recommendation-reason`. |
 | Proposta | `data-proposal-acceptance-panel`, `data-proposal-handoff-bridge`, `data-proposal-builder-board`, `data-proposal-builder-readiness`, `data-proposal-builder-option`, `data-proposal-version-panel`, `data-proposal-version-history`, `data-proposal-version-comparison`. |
 | Handoff | `data-handoff-list`, `data-handoff-detail`, `data-handoff-metrics`, `data-handoff-recovery-signals`, `data-handoff-action-plan`, `data-handoff-action-execution`, `data-handoff-proposal-version`, `data-handoff-commercial-stage`, `data-handoff-commercial-stage-panel`, `data-handoff-commercial-stage-history`. |
 | Cliente | `data-client-continuity-strip`, `data-client-continuity-cockpit`, `data-client-next-action`, `data-client-handoff-status`, `data-client-proposal-status`, `data-client-simulation-context`, `data-client-commercial-stage`, `data-client-decision-journey`, `data-client-recovery-signals`. |
@@ -508,6 +508,7 @@ Scripts confirmados em `tools/`:
 | `validate-simulator-refactor.mjs` | Modulos extraidos do simulador, ordem de scripts, payload salvo e proximas acoes da jornada. |
 | `validate-simulator-shelf.mjs` | Prateleira do simulador, ordem de scripts, filtros, ordenacao, paginacao, tabela e detalhe do grupo. |
 | `validate-simulator-cart.mjs` | Carrinho/projeto estruturado do simulador, ordem de scripts, totais, edicao e render do passo 4/5. |
+| `validate-simulator-result-decision.mjs` | Resultado como decisao final, recomendacao, riscos, premissas, comparacoes e CTA para proposta. |
 | `validate-handoff-origins.mjs` | Origem dos handoffs por proposta, trilha, sinal e pacote importado. |
 | `validate-calculadoras.mjs` | Catalogo, paginas, premissas, formulas e contrato de previa sem submit automatico. |
 | `validate-calculator-journey.mjs` | Execucao das 19 calculadoras, previa sem persistencia, validacao de formulario, alertas de coerencia, proxima acao dinamica, submit persistente e mapa funcional. |

@@ -60,6 +60,7 @@ Validacoes obrigatorias:
 - `data-simulator-journey-actions` deve aparecer no painel de decisao do simulador quando a jornada for renderizada.
 - `data-simulator-objective-guide` deve aparecer na etapa de filtros e `data-simulator-objective-apply` deve aplicar filtros sugeridos por objetivo antes da prateleira.
 - `data-shelf-recommendation` e `data-shelf-recommendation-reason` devem explicar por que cada grupo apareceu, preservando `App.selecionarGrupo`.
+- `data-simulator-result-decision` deve aparecer no resumo/proposta com recomendacao, riscos, premissas, comparacao e CTA para a proposta final.
 - `pages/carteira.html`, `pages/assembleias.html`, `pages/duvidas.html`, `pages/sobre-nos.html` e `pages/configuracoes.html` devem estar marcadas como paginas ativas no contrato v8.
 - `pages/index_2.html`, `pages/index_v4_paginas.html` e `pages/consorcio_user_journey_map_v2.html` devem permanecer como legados controlados.
 - `tools/validate-design-system.mjs` deve retornar `ok: true`.
@@ -83,6 +84,7 @@ $node='<node-runtime>'
 & $node tools\validate-simulator-refactor.mjs
 & $node tools\validate-simulator-shelf.mjs
 & $node tools\validate-simulator-cart.mjs
+& $node tools\validate-simulator-result-decision.mjs
 & $node tools\validate-navigable-journey.mjs
 & $node tools\validate-github-pages-deploy.mjs
 & $node tools\validate-calculadoras.mjs

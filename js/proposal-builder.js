@@ -11,6 +11,7 @@
     sections: {
       header: true,
       executive: true,
+      decision: true,
       kpis: true,
       journey: true,
       project: true,
@@ -67,6 +68,7 @@
       options: [
         { key: 'header', label: 'Capa e identificacao', help: 'Cliente, grupo, cota, status e acao de exportacao.' },
         { key: 'executive', label: 'Mapa executivo', help: 'Blocos que conectam decisao, caixa, lance e risco.' },
+        { key: 'decision', label: 'Decisao final', help: 'Recomendacao, riscos, premissas, comparacao e CTA para proposta.' },
         { key: 'kpis', label: 'Numeros estrategicos', help: 'Credito, parcela, prazo, saldo, total e percentual percorrido.' },
         { key: 'journey', label: 'Jornada do cliente', help: 'Adesao, assembleias, lance, contemplacao e uso do credito.' },
         { key: 'project', label: 'Composicao do projeto', help: 'Grupos, cotas, administradoras, cartas, taxas e papeis.' },
@@ -142,6 +144,7 @@
   const sectionWeights = {
     header: 0.6,
     executive: 0.8,
+    decision: 0.9,
     kpis: 0.8,
     journey: 0.8,
     project: 1.1,
@@ -326,7 +329,7 @@
 
     if (preset === 'tecnica') {
       setAll('sections', false);
-      ['header', 'kpis', 'project', 'productPhases', 'financialComposition', 'contributionOverview', 'projection', 'schedule', 'formulas', 'nextSteps', 'acceptance', 'disclaimer'].forEach((key) => { config.sections[key] = true; });
+      ['header', 'decision', 'kpis', 'project', 'productPhases', 'financialComposition', 'contributionOverview', 'projection', 'schedule', 'formulas', 'nextSteps', 'acceptance', 'disclaimer'].forEach((key) => { config.sections[key] = true; });
       setAll('concepts', false);
       config.charts.bid = false;
       config.sections.concepts = false;
@@ -338,7 +341,7 @@
       setAll('charts', false);
       setAll('concepts', false);
       setAll('formulas', false);
-      ['header', 'kpis', 'financialComposition', 'bidStrategy', 'projection', 'nextSteps', 'disclaimer'].forEach((key) => { config.sections[key] = true; });
+      ['header', 'decision', 'kpis', 'financialComposition', 'bidStrategy', 'projection', 'nextSteps', 'disclaimer'].forEach((key) => { config.sections[key] = true; });
       ['composition', 'bid', 'debt'].forEach((key) => { config.charts[key] = true; });
       return config;
     }
@@ -362,6 +365,7 @@
     const current = normalizeConfig(config);
     const issues = [];
     if (!current.sections.header) issues.push('Capa desativada.');
+    if (!current.sections.decision) issues.push('Decisao final desativada.');
     if (!current.sections.kpis) issues.push('Numeros estrategicos desativados.');
     if (!current.sections.nextSteps) issues.push('Proximos passos desativados.');
     if (!current.sections.disclaimer) issues.push('Premissas finais desativadas.');

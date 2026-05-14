@@ -785,6 +785,7 @@ const App = (() => {
         resultado,
         cenarios,
         project: projetoEstruturado,
+        decisionContext: getDecisionContextSnapshot(),
         acceptance: getCurrentProposalAcceptance()
       }, {
         rootId: 'proposal-summary-print-root',
@@ -1079,6 +1080,7 @@ const App = (() => {
         resultado,
         cenarios,
         project: projetoEstruturado,
+        decisionContext: getDecisionContextSnapshot(),
         acceptance,
         builder
       }, {
@@ -1100,7 +1102,9 @@ const App = (() => {
     return ProposalSummary.mapSimulationToProposal({
       params: currentParams,
       resultado,
-      project: projetoEstruturado
+      cenarios,
+      project: projetoEstruturado,
+      decisionContext: getDecisionContextSnapshot()
     });
   }
 

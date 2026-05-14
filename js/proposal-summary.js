@@ -77,6 +77,7 @@ const ProposalSummary = (() => {
     sections: {
       header: true,
       executive: true,
+      decision: true,
       kpis: true,
       journey: true,
       project: true,
@@ -308,6 +309,129 @@ const ProposalSummary = (() => {
     };
   }
 
+  function asNumber(value, fallback = 0) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : fallback;
+  }
+
+  function nonEmptyList(list, fallback) {
+    const values = Array.isArray(list) ? list.filter(Boolean) : [];
+    return values.length ? values : fallback;
+  }
+
+  function scenarioResumo(cenarios, key) {
+    return cenarios && cenarios[key] && cenarios[key].resumo ? cenarios[key].resumo : null;
+  }
+
+  function buildResultDecision(input = {}) {
+    const params = input.params || {};
+    const metrics = input.metrics || {};
+    const lances = input.lances || {};
+    const projectItems = Array.isArray(input.projectItems) ? input.projectItems : [];
+    const projectSummary = input.projectSummary || {};
+    const context = input.decisionContext || {};
+    const prefill = context.prefill || {};
+    const profile = context.profileSnapshot || {};
+    const cenarios = input.cenarios || {};
+    const creditoTotal = asNumber(metrics.creditoTotal);
+    const caixaLiquida = asNumber(metrics.caixaLiquida || creditoTotal);
+    const parcelaAtual = asNumber(metrics.parcelaAtual);
+    const lanceTotal = asNumber(lances.lanceTotal);
+    const lanceEmbutido = asNumber(lances.lanceEmbutido);
+    const prazoTotal = asNumber(input.contributions && input.contributions.parcelasTotais, asNumber(params.prazoTotal));
+    const taxaMedia = asNumber(projectSummary.taxaAdmMedia, asNumber(params.taxaAdm));
+    const readiness = asNumber(context.readinessScore || (context.readiness && context.readiness.score));
+    const capacidade = asNumber(prefill.capacidadePagamento || profile.capacidadePagamento || profile.capacidadeAporte);
+    const renda = asNumber(profile.rendaMensal || profile.renda || profile.receitaMensal);
+    const parcelaSobreCapacidade = capacidade > 0 && parcelaAtual > 0 ? (parcelaAtual / capacidade) * 100 : 0;
+    const parcelaSobreRenda = renda > 0 && parcelaAtual > 0 ? (parcelaAtual / renda) * 100 : 0;
+    const liquidezPct = creditoTotal > 0 ? (caixaLiquida / creditoTotal) * 100 : 0;
+    const lanceEmbutidoPct = creditoTotal > 0 ? (lanceEmbutido / creditoTotal) * 100 : 0;
+    const riscos = [];
+    const premissas = [
+      `Carta e credito liquido: ${money(creditoTotal)} contratados, ${money(caixaLiquida)} estimados para uso apos lance embutido.`,
+      `Parcela de referencia: ${money(parcelaAtual)} com prazo de ${number(prazoTotal)} meses.`,
+      `Lance total: ${money(lanceTotal)} combinando recursos proprios, embutidos, FGTS ou fixo conforme configuracao.`,
+      `Taxa media informada: ${percent(taxaMedia)} com fundo de reserva e seguro conforme regras do grupo.`
+    ];
+
+    if (!projectItems.length) riscos.push('Nenhum grupo real foi vinculado a proposta. Valide a prateleira antes de enviar ao cliente.');
+    if (readiness > 0 && readiness < 70) riscos.push(`Perfil financeiro com prontidao ${number(readiness)}/100. Reforce renda, reserva e capacidade antes do aceite.`);
+    if (capacidade > 0 && parcelaSobreCapacidade > 100) riscos.push(`Parcela usa ${percent(parcelaSobreCapacidade)} da capacidade declarada. Ajuste carta, prazo ou lance.`);
+    if (!capacidade && renda > 0 && parcelaSobreRenda > 30) riscos.push(`Parcela representa ${percent(parcelaSobreRenda)} da renda informada. Confirmar folga mensal com o cliente.`);
+    if (lanceEmbutidoPct > 30) riscos.push(`Lance embutido de ${percent(lanceEmbutidoPct)} reduz o credito liquido. Explicar impacto no uso do bem.`);
+    if (liquidezPct > 0 && liquidezPct < 70) riscos.push(`Credito liquido fica em ${percent(liquidezPct)} da carta. Avaliar se cobre o objetivo declarado.`);
+    if (prazoTotal >= 180) riscos.push('Prazo longo aumenta exposicao a reajustes e exige acompanhamento recorrente.');
+    if (taxaMedia > 20) riscos.push(`Taxa media de ${percent(taxaMedia)} pede comparacao com alternativas de grupo.`);
+
+    const semContemplacao = scenarioResumo(cenarios, 'semContemplacao');
+    const parcelaCheia = scenarioResumo(cenarios, 'parcelaCheia');
+    const comparacao = [
+      {
+        label: 'Credito liquido',
+        atual: money(caixaLiquida),
+        referencia: money(creditoTotal),
+        leitura: liquidezPct > 0 ? `${percent(liquidezPct)} da carta permanece disponivel para uso.` : 'Comparacao depende da carta informada.'
+      },
+      semContemplacao ? {
+        label: 'Com lance vs sem lance',
+        atual: money(lanceTotal),
+        referencia: money(asNumber(semContemplacao.lanceTotal)),
+        leitura: 'O cenario atual antecipa estrategia de contemplacao; o alternativo preserva caixa, mas posterga acesso ao credito.'
+      } : null,
+      parcelaCheia ? {
+        label: 'Parcela reduzida',
+        atual: money(parcelaAtual),
+        referencia: money(asNumber(parcelaCheia.parcelaTotalAtual)),
+        leitura: asNumber(parcelaCheia.parcelaTotalAtual) > parcelaAtual
+          ? 'A reducao melhora caixa antes da contemplacao e precisa ser explicada como etapa temporaria.'
+          : 'A parcela cheia nao altera significativamente o compromisso inicial.'
+      } : null
+    ].filter(Boolean);
+
+    const status = riscos.some((item) => item.includes('capacidade') || item.includes('Nenhum grupo') || item.includes('Credito liquido'))
+      ? 'revisar'
+      : riscos.length
+        ? 'atencao'
+        : 'pronto';
+    const tone = status === 'pronto' ? 'stable' : status === 'atencao' ? 'warning' : 'critical';
+    const headline = status === 'pronto'
+      ? 'Seguir para proposta final'
+      : status === 'atencao'
+        ? 'Seguir com ressalvas explicadas'
+        : 'Revisar premissas antes da proposta';
+    const recommendation = status === 'pronto'
+      ? 'A simulacao esta coerente para virar proposta: credito, parcela, lance e prazo conversam com a jornada atual.'
+      : status === 'atencao'
+        ? 'A proposta pode avancar, mas o consultor deve explicar os alertas antes de pedir aceite do cliente.'
+        : 'A proposta ainda precisa de ajuste ou confirmacao objetiva para nao levar uma decisao fragil ao cliente.';
+    const reasons = [
+      creditoTotal > 0 ? `Credito contratado de ${money(creditoTotal)} com caixa liquida de ${money(caixaLiquida)}.` : '',
+      parcelaAtual > 0 ? `Parcela atual projetada em ${money(parcelaAtual)}.` : '',
+      projectItems.length ? `${number(projectItems.length)} grupo${projectItems.length !== 1 ? 's' : ''} sustentam a composicao da proposta.` : '',
+      lanceTotal > 0 ? `Lance total de ${money(lanceTotal)} foi considerado no cronograma.` : ''
+    ];
+
+    return {
+      status,
+      tone,
+      headline,
+      recommendation,
+      actionLabel: status === 'revisar' ? 'Revisar premissas' : 'Ir para proposta final',
+      reasons: nonEmptyList(reasons, ['Calcule a simulacao e selecione grupos para gerar uma recomendacao final.']),
+      risks: nonEmptyList(riscos, ['Sem alerta critico nos parametros atuais. Manter validacao formal do grupo antes do envio.']),
+      premises: premissas,
+      comparison: comparacao,
+      metrics: {
+        readiness,
+        parcelaSobreCapacidade,
+        parcelaSobreRenda,
+        liquidezPct,
+        lanceEmbutidoPct
+      }
+    };
+  }
+
   function safeDate(value) {
     if (!value) return new Date();
     if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
@@ -518,7 +642,7 @@ const ProposalSummary = (() => {
  * @property {Array<string>} disclaimers
    */
 
-  function mapSimulationToProposal({ params, resultado, project }) {
+  function mapSimulationToProposal({ params, resultado, project, cenarios, decisionContext }) {
     const resumo = resultado && resultado.resumo ? resultado.resumo : {};
     const cronograma = resultado && Array.isArray(resultado.cronograma) ? resultado.cronograma : [];
     const descriptor = getProjectDescriptor(project);
@@ -538,6 +662,55 @@ const ProposalSummary = (() => {
     const custoTotal = Number(resumo.custoTotal) || 0;
     const ganhoTotal = Math.max(0, creditoTotal - custoTotal);
     const proposalSeq = Math.max(1, Math.round(creditoTotal / 1000)) % 10000;
+    const projectSummary = {
+      totalGrupos: descriptor.totalGrupos || projectItems.length,
+      totalCotas: descriptor.totalCotas || projectItems.reduce((sum, item) => sum + item.quantidadeCotas, 0),
+      valorCartaTotal: projectItems.reduce((sum, item) => sum + item.valorCartaTotal, 0) || creditoTotal,
+      prazoMedio: weightedAverage(projectItems, 'prazoMeses') || parcelasTotais,
+      taxaAdmMedia: weightedAverage(projectItems, 'taxaAdmPct'),
+      fundoReservaMedio: weightedAverage(projectItems, 'fundoReservaPct')
+    };
+    const metrics = {
+      creditoTotal,
+      totalPlano,
+      ganhoTotal,
+      fundoReserva: Number(resumo.fundoReservaTotal) || 0,
+      seguroTotal: Number(resumo.seguroTotal) || 0,
+      prazoRestante: Number(resumo.prazoRestante) || parcelasRestantes,
+      parcelaAtual: Number(resumo.parcelaTotalAtual) || 0,
+      totalPago: Number(resumo.totalPago) || 0,
+      caixaLiquida: Number(resumo.cartaLiquida) || creditoTotal,
+      saldoDevedor,
+      percentualPago
+    };
+    const contributions = {
+      parcelasPagas,
+      parcelasTotais,
+      parcelasRestantes,
+      proximaParcelaValor: Number(resumo.parcelaTotalAtual) || 0,
+      proximaParcelaData: proximaParcelaData.toISOString(),
+      totalContribuido: Number(resumo.totalPagoAteContemplacao) || 0
+    };
+    const lances = {
+      lanceProprio: Number(resumo.lanceProprio) || 0,
+      lanceEmbutido: Number(resumo.lanceEmbutido) || 0,
+      lanceTotal: Number(resumo.lanceTotal) || 0,
+      impactoCreditoLiquido: Number(resumo.lanceEmbutido) || 0,
+      impactoSaldoDevedor: Math.max(0, (Number(resumo.saldoInicial) || 0) - (Number(resumo.lanceTotal) || 0)),
+      estrategiaResumo: 'A proposta combina credito liquido, lance e prazo para buscar contemplacao planejada sem perder rastreabilidade dos custos.'
+    };
+    const decision = buildResultDecision({
+      params,
+      resumo,
+      cronograma,
+      projectItems,
+      projectSummary,
+      metrics,
+      contributions,
+      lances,
+      cenarios,
+      decisionContext
+    });
 
     const proposal = {
       id: `PROP-${adesao.getFullYear()}-${String(proposalSeq).padStart(4, '0')}`,
@@ -551,45 +724,13 @@ const ProposalSummary = (() => {
       administradora: descriptor.administradora,
       segmento: descriptor.segmento,
       generatedAt: new Date(),
-      projectSummary: {
-        totalGrupos: descriptor.totalGrupos || projectItems.length,
-        totalCotas: descriptor.totalCotas || projectItems.reduce((sum, item) => sum + item.quantidadeCotas, 0),
-        valorCartaTotal: projectItems.reduce((sum, item) => sum + item.valorCartaTotal, 0) || creditoTotal,
-        prazoMedio: weightedAverage(projectItems, 'prazoMeses') || parcelasTotais,
-        taxaAdmMedia: weightedAverage(projectItems, 'taxaAdmPct'),
-        fundoReservaMedio: weightedAverage(projectItems, 'fundoReservaPct')
-      },
+      projectSummary,
       projectItems,
       productPhases: buildProductPhases({ adesao, proximaParcelaData, contemplData, mesContemplacao, parcelasRestantes }),
-      metrics: {
-        creditoTotal,
-        totalPlano,
-        ganhoTotal,
-        fundoReserva: Number(resumo.fundoReservaTotal) || 0,
-        seguroTotal: Number(resumo.seguroTotal) || 0,
-        prazoRestante: Number(resumo.prazoRestante) || parcelasRestantes,
-        parcelaAtual: Number(resumo.parcelaTotalAtual) || 0,
-        totalPago: Number(resumo.totalPago) || 0,
-        caixaLiquida: Number(resumo.cartaLiquida) || creditoTotal,
-        saldoDevedor,
-        percentualPago
-      },
-      contributions: {
-        parcelasPagas,
-        parcelasTotais,
-        parcelasRestantes,
-        proximaParcelaValor: Number(resumo.parcelaTotalAtual) || 0,
-        proximaParcelaData: proximaParcelaData.toISOString(),
-        totalContribuido: Number(resumo.totalPagoAteContemplacao) || 0
-      },
-      lances: {
-        lanceProprio: Number(resumo.lanceProprio) || 0,
-        lanceEmbutido: Number(resumo.lanceEmbutido) || 0,
-        lanceTotal: Number(resumo.lanceTotal) || 0,
-        impactoCreditoLiquido: Number(resumo.lanceEmbutido) || 0,
-        impactoSaldoDevedor: Math.max(0, (Number(resumo.saldoInicial) || 0) - (Number(resumo.lanceTotal) || 0)),
-        estrategiaResumo: 'A proposta combina credito liquido, lance e prazo para buscar contemplacao planejada sem perder rastreabilidade dos custos.'
-      },
+      metrics,
+      contributions,
+      lances,
+      decision,
       journey: [
         { id: 'adesao', label: 'Adesao', status: 'done', date: formatDate(adesao), value: money(creditoTotal), description: 'Entrada no grupo e formalizacao da estrategia.' },
         { id: 'grupo', label: 'Formacao / grupo', status: 'done', value: descriptor.grupo, description: `${descriptor.administradora} | ${descriptor.segmento}` },
@@ -738,6 +879,52 @@ const ProposalSummary = (() => {
               <em>${escapeHTML(card.metric)}</em>
               <p>${escapeHTML(card.body)}</p>
               <small>${escapeHTML(card.link)}</small>
+            </article>
+          `).join('')}
+        </div>
+      </section>
+    `;
+  }
+
+  function renderResultDecision(data) {
+    const decision = data.decision || buildResultDecision(data);
+    const risks = Array.isArray(decision.risks) ? decision.risks : [];
+    const premises = Array.isArray(decision.premises) ? decision.premises : [];
+    const comparisons = Array.isArray(decision.comparison) ? decision.comparison : [];
+    return `
+      <section class="ps-section ps-section--decision ps-section--decision-${escapeHTML(decision.tone)} ps-print-page" data-simulator-result-decision data-simulator-result-tone="${escapeHTML(decision.tone)}">
+        <div class="ps-section__head">
+          <span>DEC</span>
+          <div><h3>Resultado como decisao</h3><p>Traduz a simulacao em recomendacao, riscos, premissas e proximo passo comercial.</p></div>
+        </div>
+        <div class="ps-decision-grid">
+          <article class="ps-decision-hero">
+            <span>${escapeHTML(decision.status)}</span>
+            <h3>${escapeHTML(decision.headline)}</h3>
+            <p>${escapeHTML(decision.recommendation)}</p>
+            <div class="ps-decision-facts">
+              ${(decision.reasons || []).slice(0, 4).map((item) => `<small>${escapeHTML(item)}</small>`).join('')}
+            </div>
+            <button class="btn btn--primary ps-no-print" type="button" data-simulator-result-cta onclick="window.App && App.goToStep ? App.goToStep(9, { skipValidation: true, skipAutoCalculate: true }) : window.location.hash = 'step-9'">${escapeHTML(decision.actionLabel)}</button>
+          </article>
+          <div class="ps-decision-panels">
+            <article class="ps-decision-panel" data-simulator-result-premise>
+              <strong>Premissas que sustentam</strong>
+              <ul>${premises.slice(0, 4).map((item) => `<li>${escapeHTML(item)}</li>`).join('')}</ul>
+            </article>
+            <article class="ps-decision-panel ps-decision-panel--risk" data-simulator-result-risk>
+              <strong>Riscos para explicar</strong>
+              <ul>${risks.slice(0, 5).map((item) => `<li>${escapeHTML(item)}</li>`).join('')}</ul>
+            </article>
+          </div>
+        </div>
+        <div class="ps-decision-comparison" data-simulator-result-comparison>
+          ${comparisons.map((item) => `
+            <article>
+              <span>${escapeHTML(item.label)}</span>
+              <strong>${escapeHTML(item.atual)}</strong>
+              <small>Referencia: ${escapeHTML(item.referencia)}</small>
+              <p>${escapeHTML(item.leitura)}</p>
             </article>
           `).join('')}
         </div>
@@ -1150,6 +1337,7 @@ const ProposalSummary = (() => {
     const planItems = [
       ['header', 'Capa da proposta'],
       ['executive', 'Resumo executivo'],
+      ['decision', 'Decisao final'],
       ['journey', 'Jornada da operacao'],
       ['project', 'Composicao do projeto'],
       ['productPhases', 'Fases do produto'],
@@ -1363,6 +1551,7 @@ const ProposalSummary = (() => {
     const blocks = [
       ['header', renderHeader],
       ['executive', renderExecutiveConversation],
+      ['decision', renderResultDecision],
       ['kpis', renderKPISection],
       ['journey', renderJourney],
       ['project', renderProjectComposition],
@@ -1424,6 +1613,7 @@ const ProposalSummary = (() => {
     print,
     exportPDF,
     mapSimulationToProposal,
+    buildResultDecision,
     createMockData,
     normalizeProposalBuilder,
     proposalBuilderDefaults

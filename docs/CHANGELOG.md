@@ -4,6 +4,22 @@
 
 ---
 
+## [v8.92.0] - 2026-05-14
+
+### Resultado como decisao
+
+#### Adicionado
+- Etapa 7 e preview/PDF da proposta ganharam `data-simulator-result-decision` para transformar o resultado financeiro em recomendacao final.
+- `ProposalSummary.buildResultDecision` passou a montar status, motivos, riscos, premissas, comparacoes e CTA para proposta.
+- Lousa de exportacao ganhou o bloco `Decisao final`, permitindo incluir ou ocultar a recomendacao no PDF.
+- Criado `tools/validate-simulator-result-decision.mjs` com relatorio em `docs/test-reports/simulator-result-decision-report.json`.
+
+#### Modificado
+- `App.renderResultados`, `App.renderProposta` e `getCurrentProposalData` passaram contexto financeiro e cenarios comparativos ao `ProposalSummary`.
+- Contratos publicos, mapa, plano e protocolo de testes passaram a proteger os marcadores `data-simulator-result-*`.
+
+---
+
 ## [v8.91.0] - 2026-05-13
 
 ### Simulador guiado por objetivo

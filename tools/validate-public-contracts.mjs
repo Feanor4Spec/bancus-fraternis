@@ -197,6 +197,11 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-simulator-objective-guide',
   'data-simulator-objective-card',
   'data-simulator-objective-apply',
+  'data-simulator-result-decision',
+  'data-simulator-result-cta',
+  'data-simulator-result-premise',
+  'data-simulator-result-risk',
+  'data-simulator-result-comparison',
   'data-v8-stagebar',
   'data-shelf-recommendation',
   'data-shelf-recommendation-reason',
@@ -263,6 +268,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'tools/validate-simulator-refactor.mjs',
   'tools/validate-simulator-shelf.mjs',
   'tools/validate-simulator-cart.mjs',
+  'tools/validate-simulator-result-decision.mjs',
   'tools/validate-docs-modernization.mjs',
   'tools/validate-handoff-consultant-operations.mjs',
   'tools/validate-auth-navigation.mjs',
@@ -413,11 +419,14 @@ assert(simulatorCart.includes('renderStep5CartHtml'), 'simulator-cart.js sem ren
 assert(simulatorCart.includes('normalizeEditValue'), 'simulator-cart.js sem normalizacao publica de edicao.');
 assert(proposalBuilder.includes('bank_fratern_proposal_builder_v1'), 'proposal-builder.js sem chave da lousa de proposta.');
 assert(proposalBuilder.includes('BFProposalBuilder'), 'proposal-builder.js sem export global da lousa de proposta.');
+assert(proposalBuilder.includes("key: 'decision'"), 'proposal-builder.js sem opcao de decisao final na lousa.');
 assert(proposalGovernance.includes('BFProposalGovernance'), 'proposal-governance.js sem export global da governanca de proposta.');
 assert(proposalGovernance.includes('data-proposal-version-comparison'), 'proposal-governance.js sem comparacao de versoes.');
 assert(proposalGovernance.includes('data-proposal-handoff-bridge'), 'proposal-governance.js sem ponte de handoff.');
 assert(app.includes('salvarVersaoProposta'), 'app.js sem acao publica de salvar versao da proposta.');
 assert(proposalSummary.includes('proposalBuilderDefaults'), 'proposal-summary.js sem defaults publicos da lousa.');
+assert(proposalSummary.includes('data-simulator-result-decision'), 'proposal-summary.js sem decisao final do resultado.');
+assert(proposalSummary.includes('buildResultDecision'), 'proposal-summary.js sem contrato buildResultDecision.');
 assert(contracts.includes('data-handoff-assignee-filter'), 'Contrato publico nao documenta filtro de responsavel do handoff.');
 assert(contracts.includes('data-handoff-aging-filter'), 'Contrato publico nao documenta filtro de aging do handoff.');
 assert(contracts.includes('data-client-continuity-cockpit'), 'Contrato publico nao documenta cockpit de continuidade do cliente.');
@@ -479,10 +488,10 @@ const report = {
   ok: failures.length === 0,
   contracts: {
     localStorageKeys: 18,
-    dataMarkers: 83,
+    dataMarkers: 88,
     globals: 19,
     deepLinks: 10,
-    validators: 21,
+    validators: 22,
     calculatorCount
   },
   warnings,

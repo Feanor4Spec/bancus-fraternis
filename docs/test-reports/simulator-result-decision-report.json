@@ -1,0 +1,18 @@
+{
+  "ok": true,
+  "decision": {
+    "status": "pronto",
+    "tone": "stable",
+    "risks": 1,
+    "premises": 4,
+    "comparisons": 3
+  },
+  "contracts": {
+    "htmlSummary": true,
+    "appContext": true,
+    "proposalDecision": true,
+    "builderOption": true,
+    "css": true
+  },
+  "failures": []
+}

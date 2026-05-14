@@ -44,14 +44,18 @@ assert(app.includes('builder') && app.includes("rootId: 'proposal-export-root'")
 
 assert(proposalSummary.includes('proposalBuilderDefaults'), 'proposal-summary.js sem defaults da lousa.');
 assert(proposalSummary.includes('normalizeProposalBuilder'), 'proposal-summary.js sem normalizador da lousa.');
+assert(proposalSummary.includes('buildResultDecision'), 'proposal-summary.js sem decisao final do resultado.');
+assert(proposalSummary.includes('data-simulator-result-decision'), 'proposal-summary.js sem marcador da decisao final.');
 assert(proposalSummary.includes('renderConceptsSection'), 'proposal-summary.js sem secao de conceitos.');
 assert(proposalSummary.includes('renderFormulaExplanations'), 'proposal-summary.js sem secao de formulas.');
 assert(proposalSummary.includes('isChartEnabled'), 'proposal-summary.js sem controle seletivo de graficos.');
 assert(proposalSummary.includes('renderDisabledChart'), 'proposal-summary.js sem fallback visual para grafico removido.');
 assert(proposalSummary.includes('data-proposal-selection-summary'), 'proposal-summary.js sem resumo de selecao da lousa no PDF.');
 assert(proposalSummary.includes("return '';"), 'proposal-summary.js deve omitir grafico desmarcado da proposta final.');
+assert(proposalBuilder.includes("key: 'decision'"), 'proposal-builder.js sem opcao de decisao final.');
 
 assert(css.includes('.proposal-builder-board'), 'styles.css sem estilos da lousa.');
+assert(css.includes('.ps-section--decision'), 'styles.css sem estilos da decisao final.');
 assert(css.includes('.proposal-builder-option'), 'styles.css sem opcoes da lousa.');
 assert(css.includes('.proposal-builder-readiness'), 'styles.css sem estilos da prontidao da lousa.');
 assert(css.includes('.proposal-builder-group__actions'), 'styles.css sem acoes por grupo da lousa.');
@@ -99,6 +103,7 @@ const normalized = summary.normalizeProposalBuilder({
 
 assert(normalized.sections.schedule === false, 'Normalizador nao preserva secao schedule=false.');
 assert(normalized.sections.header === true, 'Normalizador nao preserva default header=true.');
+assert(normalized.sections.decision === true, 'Normalizador nao preserva default decision=true.');
 assert(normalized.charts.bid === false, 'Normalizador nao preserva grafico bid=false.');
 assert(normalized.charts.composition === true, 'Normalizador nao preserva default composition=true.');
 assert(normalized.concepts.seguro === false, 'Normalizador nao preserva conceito seguro=false.');
@@ -111,6 +116,7 @@ assert(consultiva.sections.schedule === false, 'Preset consultiva deveria oculta
 assert(consultiva.concepts.consorcio === true && consultiva.concepts.seguro === false, 'Preset consultiva nao seleciona conceitos esperados.');
 assert(tecnica.sections.formulas === true && tecnica.sections.concepts === false, 'Preset tecnica nao prioriza memoria de calculo.');
 assert(compacta.sections.header === true && compacta.sections.schedule === false, 'Preset compacta nao reduz blocos corretamente.');
+assert(compacta.sections.decision === true, 'Preset compacta deve manter decisao final.');
 assert(builder.focusLabel(consultiva) === 'Consultiva', 'focusLabel nao reconhece preset consultiva.');
 assert(builder.pageEstimate(tecnica) >= 1, 'pageEstimate deve retornar ao menos 1 pagina.');
 assert(builder.readinessIssues(builder.presetConfig('completa')).length === 0, 'Preset completo nao deveria ter pendencias.');
