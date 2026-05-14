@@ -381,6 +381,8 @@ if (!calculatorsPageJs.includes('data-calculator-profile-continuity')) fail('cal
 if (!calculatorsPageJs.includes('data-calculators-profile-continuity')) fail('calculadoras-page.js sem marcador do hub para continuidade por perfil.');
 if (!calculatorsPageJs.includes('data-calculator-field-source')) fail('calculadoras-page.js sem selo de origem dos campos reaproveitados.');
 if (!platformCss.includes('.bf-calculator-field-source')) fail('platform.css sem layout do selo de origem dos campos.');
+if (!calculatorsPageJs.includes('data-calculator-saved-comparison')) fail('calculadoras-page.js sem comparacao com ultimo salvo.');
+if (!platformCss.includes('.bf-calculator-saved-comparison')) fail('platform.css sem layout da comparacao com ultimo salvo.');
 
 const simulatorHtml = await fs.readFile(path.join(root, 'pages/simulador.html'), 'utf8');
 const simulatorAppJs = await fs.readFile(path.join(root, 'js/app.js'), 'utf8');

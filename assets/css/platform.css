@@ -2544,6 +2544,62 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.bf-calculator-saved-comparison {
+  display: grid;
+  grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
+  gap: 14px;
+  align-items: start;
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid var(--bf-line);
+  border-radius: 16px;
+  background: linear-gradient(180deg, var(--bf-white), #f8fbff);
+}
+
+.bf-calculator-saved-comparison h3 {
+  margin: 8px 0 6px;
+  color: var(--bf-navy-900);
+}
+
+.bf-calculator-saved-comparison p {
+  margin: 0;
+  color: var(--bf-muted);
+  line-height: 1.5;
+}
+
+.bf-calculator-comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.bf-calculator-comparison-item {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--bf-line);
+  border-radius: 12px;
+  background: var(--bf-white);
+}
+
+.bf-calculator-comparison-item span,
+.bf-calculator-comparison-item small {
+  color: var(--bf-muted);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.bf-calculator-comparison-item strong {
+  color: var(--bf-navy-900);
+  font-size: 18px;
+}
+
+.bf-calculator-comparison-empty {
+  grid-column: 1 / -1;
+}
+
 .bf-platform-metric.is-warn {
   border-color: var(--bf-warning-bd);
   background: var(--bf-warning-bg);
@@ -3853,6 +3909,8 @@
   .bf-calculator-profile,
   .bf-calculator-profile__metrics,
   .bf-calculator-history,
+  .bf-calculator-saved-comparison,
+  .bf-calculator-comparison-grid,
   .bf-calculator-explain,
   .bf-auth-shell,
   .bf-admin-grid,

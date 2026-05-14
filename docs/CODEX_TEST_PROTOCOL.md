@@ -580,6 +580,7 @@ Validacoes obrigatorias:
 - Campos invalidos devem expor `data-calculator-field-error`, alerta `data-calculator-form-alert` e bloquear o submit persistente.
 - Campos preenchidos pelo perfil devem expor `data-calculator-field-origin="profile"` e `data-calculator-field-source`.
 - Campos validos alterados pelo usuario devem atualizar a previa sem persistencia.
+- Quando houver historico da mesma calculadora, a previa deve expor `data-calculator-saved-comparison` e itens `data-calculator-saved-comparison-item`.
 - Alertas de coerencia devem expor `data-calculator-coherence-alert`, atualizar `data-calculator-coherence` e nao bloquear salvamento.
 - A ponte da calculadora deve expor `data-calculator-next-action` e `data-calculator-next-action-card` com CTA principal aderente ao risco.
 - A continuidade por perfil deve expor `data-calculator-profile-continuity` e `data-calculators-profile-continuity`, diferenciando previa sem salvar, falta de renda, falta de reserva, capacidade pronta e lance sugerido.

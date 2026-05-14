@@ -198,6 +198,8 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-calculator-field-origin',
   'data-calculator-field-source',
   'data-calculator-field-source-key',
+  'data-calculator-saved-comparison',
+  'data-calculator-saved-comparison-item',
   'data-calculator-profile-continuity',
   'data-calculators-profile-continuity',
   'data-simulator-journey-actions',
@@ -448,6 +450,8 @@ assert(contracts.includes('data-calculator-coherence-alert'), 'Contrato publico 
 assert(contracts.includes('data-calculator-field-origin'), 'Contrato publico nao documenta origem default/profile dos campos das calculadoras.');
 assert(contracts.includes('data-calculator-field-source'), 'Contrato publico nao documenta selo de origem dos campos das calculadoras.');
 assert(contracts.includes('data-calculator-field-source-key'), 'Contrato publico nao documenta chave de origem dos campos das calculadoras.');
+assert(contracts.includes('data-calculator-saved-comparison'), 'Contrato publico nao documenta comparacao com ultimo salvo das calculadoras.');
+assert(contracts.includes('data-calculator-saved-comparison-item'), 'Contrato publico nao documenta itens de comparacao com ultimo salvo.');
 assert(contracts.includes('data-calculator-next-action'), 'Contrato publico nao documenta proxima acao dinamica das calculadoras.');
 assert(contracts.includes('data-calculator-next-action-card'), 'Contrato publico nao documenta card de proxima acao das calculadoras.');
 assert(contracts.includes('data-calculator-profile-continuity'), 'Contrato publico nao documenta continuidade por perfil nas calculadoras.');
@@ -456,6 +460,8 @@ assert(contracts.includes('data-calculator-field-error'), 'Contrato publico nao 
 assert(calculatorsPage.includes('buildCalculatorProfileContinuity'), 'calculadoras-page.js sem regra de continuidade por perfil.');
 assert(calculatorsPage.includes('FIELD_PROFILE_SOURCES'), 'calculadoras-page.js sem mapa de origem de campos reaproveitados.');
 assert(calculatorsPage.includes('fieldSource: profileSourceForField'), 'BFCalculatorJourney sem fieldSource publico.');
+assert(calculatorsPage.includes('buildSavedComparison'), 'calculadoras-page.js sem comparacao entre previa e ultimo salvo.');
+assert(calculatorsPage.includes('savedComparison: buildSavedComparison'), 'BFCalculatorJourney sem savedComparison publico.');
 assert(calculatorsPage.includes('profile-preview-not-saved'), 'calculadoras-page.js sem estado de previa sem salvar para continuidade.');
 assert(calculatorsPage.includes('profile-ready-bid'), 'calculadoras-page.js sem estado de lance pronto para continuidade.');
 assert(await exists('404.html'), 'Fallback 404.html ausente.');
@@ -505,7 +511,7 @@ const report = {
   ok: failures.length === 0,
   contracts: {
     localStorageKeys: 18,
-    dataMarkers: 93,
+    dataMarkers: 95,
     globals: 19,
     deepLinks: 10,
     validators: 22,

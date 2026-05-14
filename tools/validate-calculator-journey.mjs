@@ -123,6 +123,9 @@ assert(pageJs.includes('FIELD_PROFILE_SOURCES'), 'Pagina de calculadora nao mape
 assert(pageJs.includes('data-calculator-field-origin'), 'Formulario da calculadora nao expoe origem default/profile do campo.');
 assert(pageJs.includes('data-calculator-field-source'), 'Formulario da calculadora nao expoe selo de origem do perfil.');
 assert(pageJs.includes('fieldSource: profileSourceForField'), 'BFCalculatorJourney nao expoe fieldSource para QA.');
+assert(pageJs.includes('buildSavedComparison'), 'Pagina de calculadora nao compara previa atual com ultimo salvo.');
+assert(pageJs.includes('data-calculator-saved-comparison'), 'Pagina de calculadora nao expoe comparacao com ultimo salvo.');
+assert(pageJs.includes('savedComparison: buildSavedComparison'), 'BFCalculatorJourney nao expoe savedComparison para QA.');
 assert(pageJs.includes('validateForm(form, meta)'), 'Pagina de calculadora nao valida formulario antes de calcular.');
 assert(pageJs.includes('coherenceAlerts(meta.slug, values)'), 'Pagina de calculadora nao calcula alertas de coerencia.');
 assert(pageJs.includes('document.body.dataset.calculatorCoherence'), 'Pagina de calculadora nao expoe status de coerencia no body.');
@@ -143,6 +146,7 @@ assert(pageJs.includes('profile-ready-bid'), 'Continuidade nao reconhece lance s
 assert(platformCss.includes('.bf-calculator-field[data-calculator-field-state="invalid"]'), 'CSS nao estiliza estado invalido de campo da calculadora.');
 assert(platformCss.includes('.bf-calculator-coherence-alert'), 'CSS nao estiliza alerta de coerencia da calculadora.');
 assert(platformCss.includes('.bf-calculator-field-source'), 'CSS nao estiliza origem de campo reaproveitado do perfil.');
+assert(platformCss.includes('.bf-calculator-saved-comparison'), 'CSS nao estiliza comparacao com ultimo salvo.');
 assert(docsMap.includes('19 calculadoras'), 'Mapa completo nao registra o catalogo de 19 calculadoras.');
 assert(functionMap.includes('Mapa de funcoes das calculadoras'), 'Mapa funcional das calculadoras nao foi criado.');
 
@@ -247,6 +251,7 @@ const report = {
   formValidation: {
     markers: ['data-calculator-form-alert', 'data-calculator-coherence-alert', 'data-calculator-field', 'data-calculator-field-error'],
     sourceMarkers: ['data-calculator-field-origin', 'data-calculator-field-source'],
+    savedComparisonMarkers: ['data-calculator-saved-comparison', 'data-calculator-saved-comparison-item'],
     nextActionMarkers: ['data-calculator-next-action', 'data-calculator-next-action-card'],
     continuityMarkers: ['data-calculator-profile-continuity', 'data-calculators-profile-continuity'],
     continuityStates: ['profile-preview-not-saved', 'profile-missing-renda', 'profile-missing-reserva', 'profile-ready-capacity', 'profile-ready-bid'],

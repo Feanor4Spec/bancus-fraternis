@@ -230,7 +230,7 @@ Hub de calculadoras
   -> simulador, comparador ou dashboard cliente
 ```
 
-Contratos principais: `data-calculator-form`, `data-calculator-form-alert`, `data-calculator-coherence`, `data-calculator-coherence-alert`, `data-calculator-field`, `data-calculator-field-error`, `data-calculator-field-origin`, `data-calculator-field-source`, `data-calculator-field-source-key`, `data-calculator-next-action`, `data-calculator-next-action-card`, `data-calculator-profile-continuity`, `data-calculators-profile-continuity`, `data-calculator-result`, `data-calculator-result-mode`, `BFCalculadoras`, `BFFinancialFormulas`, `BFDecisionContext`, `BFCalculatorJourney`, deep links com `from=calculator|calculators`, `calculatorSlug`, `historyId` e `preset`.
+Contratos principais: `data-calculator-form`, `data-calculator-form-alert`, `data-calculator-coherence`, `data-calculator-coherence-alert`, `data-calculator-field`, `data-calculator-field-error`, `data-calculator-field-origin`, `data-calculator-field-source`, `data-calculator-field-source-key`, `data-calculator-saved-comparison`, `data-calculator-saved-comparison-item`, `data-calculator-next-action`, `data-calculator-next-action-card`, `data-calculator-profile-continuity`, `data-calculators-profile-continuity`, `data-calculator-result`, `data-calculator-result-mode`, `BFCalculadoras`, `BFFinancialFormulas`, `BFDecisionContext`, `BFCalculatorJourney`, deep links com `from=calculator|calculators`, `calculatorSlug`, `historyId` e `preset`.
 
 ### Jornada de trilha assistida
 
@@ -281,6 +281,7 @@ Melhoria implementada em 2026-05-07:
 - Calculadoras passaram a expor `BFCalculatorJourney` e a levar para Trilha, Comparador, Simulador ou reabertura mantendo `calculatorSlug`, `historyId` e `preset`.
 - A ponte das calculadoras agora usa o perfil consolidado para diferenciar previa sem salvar, ausencia de renda, ausencia de reserva, capacidade pronta e lance sugerido antes do CTA final.
 - Campos reaproveitados do perfil consolidado agora mostram origem visual para o usuario, com `data-calculator-field-source`.
+- Resultados das calculadoras com historico agora comparam a previa atual com o ultimo salvo da mesma calculadora, via `data-calculator-saved-comparison`.
 - A Trilha Assistida passou a expor `BFDecisionJourneyContext`, reconhecer contexto vindo de Produtos/Calculadoras e sair com `from=journey` preservando a origem anterior em `sourceFrom`.
 - Dashboard Cliente passou a usar `from=dashboard` na continuidade, com linha do tempo Diagnostico -> Calculadora -> Trilha -> Comparador -> Simulacao -> Proposta -> Handoff.
 - Dashboard Cliente agora tem cockpit de retomada com proxima acao, status do handoff, proposta, simulacao e etapa comercial quando existir.
@@ -444,7 +445,7 @@ Os marcadores mais importantes por area:
 | --- | --- |
 | Home | `data-home-hero-contextual`, `data-home-continuity-cockpit`, `data-home-next-actions`. |
 | Produtos | `data-products-grid`, `data-products-filter`, `data-products-selection-panel`, `data-products-compare-link`. |
-| Calculadoras | `data-calculator-form`, `data-calculator-form-alert`, `data-calculator-coherence`, `data-calculator-coherence-alert`, `data-calculator-field`, `data-calculator-field-error`, `data-calculator-field-origin`, `data-calculator-field-source`, `data-calculator-field-source-key`, `data-calculator-next-action`, `data-calculator-next-action-card`, `data-calculator-profile-continuity`, `data-calculators-profile-continuity`, `data-calculator-result`, `data-calculator-result-mode`, `data-calculator-history`, `data-calculators-hub`. |
+| Calculadoras | `data-calculator-form`, `data-calculator-form-alert`, `data-calculator-coherence`, `data-calculator-coherence-alert`, `data-calculator-field`, `data-calculator-field-error`, `data-calculator-field-origin`, `data-calculator-field-source`, `data-calculator-field-source-key`, `data-calculator-saved-comparison`, `data-calculator-saved-comparison-item`, `data-calculator-next-action`, `data-calculator-next-action-card`, `data-calculator-profile-continuity`, `data-calculators-profile-continuity`, `data-calculator-result`, `data-calculator-result-mode`, `data-calculator-history`, `data-calculators-hub`. |
 | Trilha | `data-decision-journey-form`, `data-decision-journey-state`, `data-decision-journey-steps`, `data-decision-journey-actions`. |
 | Comparador | `data-comparator-form`, `data-comparator-result`, `data-comparator-preset-summary`, `data-comparator-model-recommendation`. |
 | Simulador | `data-simulator-readiness`, `data-simulator-decision-strip`, `data-simulator-journey-actions`, `data-simulator-objective-guide`, `data-simulator-objective-card`, `data-simulator-objective-apply`, `data-simulator-result-decision`, `data-simulator-result-cta`, `data-simulator-result-premise`, `data-simulator-result-risk`, `data-simulator-result-comparison`, `data-shelf-col`, `data-shelf-recommendation`, `data-shelf-recommendation-reason`. |
@@ -513,7 +514,7 @@ Scripts confirmados em `tools/`:
 | `validate-simulator-result-decision.mjs` | Resultado como decisao final, recomendacao, riscos, premissas, comparacoes e CTA para proposta. |
 | `validate-handoff-origins.mjs` | Origem dos handoffs por proposta, trilha, sinal e pacote importado. |
 | `validate-calculadoras.mjs` | Catalogo, paginas, premissas, formulas e contrato de previa sem submit automatico. |
-| `validate-calculator-journey.mjs` | Execucao das 19 calculadoras, previa sem persistencia, validacao de formulario, alertas de coerencia, origem dos campos, proxima acao dinamica, continuidade por perfil, submit persistente e mapa funcional. |
+| `validate-calculator-journey.mjs` | Execucao das 19 calculadoras, previa sem persistencia, validacao de formulario, alertas de coerencia, origem dos campos, comparacao com ultimo salvo, proxima acao dinamica, continuidade por perfil, submit persistente e mapa funcional. |
 | `validate-dashboard-continuity-flow.mjs` | Timeline e deep links do Dashboard Cliente. |
 | `validate-decision-flow.mjs` | Fluxo calculadora -> simulador -> historico. |
 | `validate-decision-journey-context.mjs` | Contexto de entrada e saida da Trilha Assistida. |

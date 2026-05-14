@@ -4,6 +4,20 @@
 
 ---
 
+## [v8.95.0] - 2026-05-14
+
+### Comparacao com ultimo salvo nas calculadoras
+
+#### Adicionado
+- Resultado das calculadoras ganhou `data-calculator-saved-comparison` para comparar a previa atual com o ultimo cenario salvo da mesma calculadora.
+- Cada variacao numerica aparece em `data-calculator-saved-comparison-item`, mostrando valor atual, valor salvo e diferenca.
+- `BFCalculatorJourney.savedComparison` passou a expor a regra de comparacao para QA e futuras jornadas consultivas.
+
+#### Modificado
+- Validador das calculadoras, contratos publicos, mapa funcional, mapa completo e protocolo de testes passaram a proteger a comparacao lateral.
+
+---
+
 ## [v8.94.0] - 2026-05-14
 
 ### Origem dos campos nas calculadoras

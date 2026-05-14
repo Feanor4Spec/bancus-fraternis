@@ -1071,6 +1071,90 @@
     `;
   }
 
+  function metricNumber(value) {
+    const text = String(value == null ? '' : value)
+      .replace(/\u00a0/g, ' ')
+      .replace(/[^\d,.-]/g, '')
+      .trim();
+    if (!text) return null;
+    const normalized = text.includes(',')
+      ? text.replace(/\./g, '').replace(',', '.')
+      : text;
+    const numeric = Number(normalized);
+    return Number.isFinite(numeric) ? numeric : null;
+  }
+
+  function formatMetricDelta(label, delta) {
+    const abs = Math.abs(delta);
+    if (/percent|comprometimento|taxa|renda|pct|dy/i.test(label)) return `${delta >= 0 ? '+' : '-'}${limitLabel(abs, '%')}`;
+    if (/mes|prazo|periodo|idade|score/i.test(label)) return `${delta >= 0 ? '+' : '-'}${limitLabel(abs)}`;
+    return `${delta >= 0 ? '+' : '-'}${money(abs)}`;
+  }
+
+  function buildSavedComparison(result) {
+    if (!result || !Array.isArray(result.metrics)) return null;
+    const history = window.BFCalculadoras.loadHistory();
+    const previous = history.find((item) => item.calculatorSlug === result.slug && item.id !== result.historyId && Array.isArray(item.metrics));
+    if (!previous) {
+      return {
+        status: 'empty',
+        title: 'Sem comparacao salva',
+        message: 'Salve um primeiro cenario desta calculadora para comparar evolucoes futuras.',
+        items: []
+      };
+    }
+    const previousByLabel = new Map(previous.metrics.map((item) => [item.label, item]));
+    const items = result.metrics.map((current) => {
+      const old = previousByLabel.get(current.label);
+      const currentNumber = metricNumber(current.value);
+      const oldNumber = old ? metricNumber(old.value) : null;
+      if (!old || currentNumber === null || oldNumber === null) return null;
+      const delta = currentNumber - oldNumber;
+      return {
+        label: current.label,
+        current: current.value,
+        previous: old.value,
+        delta,
+        deltaLabel: formatMetricDelta(current.label, delta),
+        tone: delta === 0 ? 'neutral' : delta > 0 ? 'up' : 'down'
+      };
+    }).filter(Boolean).slice(0, 4);
+    return {
+      status: items.length ? 'available' : 'not-comparable',
+      title: items.length ? 'Comparacao com ultimo salvo' : 'Ultimo salvo sem metricas comparaveis',
+      message: items.length
+        ? `Referencia: ${previous.calculatorName || result.nome}, salvo em ${new Date(previous.createdAt).toLocaleString('pt-BR')}.`
+        : 'O ultimo salvo existe, mas as metricas principais sao qualitativas ou nao numericas.',
+      items
+    };
+  }
+
+  function renderSavedComparison(result) {
+    const comparison = buildSavedComparison(result);
+    if (!comparison) return '';
+    const itemHtml = comparison.items.length
+      ? comparison.items.map((item) => `
+          <article class="bf-calculator-comparison-item" data-calculator-saved-comparison-item="${escapeHtml(item.tone)}">
+            <span>${escapeHtml(item.label)}</span>
+            <strong>${escapeHtml(item.deltaLabel)}</strong>
+            <small>Atual: ${escapeHtml(item.current)} | Salvo: ${escapeHtml(item.previous)}</small>
+          </article>
+        `).join('')
+      : '<p class="bf-calculator-comparison-empty">Depois do primeiro salvamento, as proximas previas mostram a variacao das metricas principais.</p>';
+    return `
+      <section class="bf-calculator-saved-comparison" data-calculator-saved-comparison="${escapeHtml(comparison.status)}">
+        <div>
+          <span class="bf-badge bf-badge--gold">Iteracao</span>
+          <h3>${escapeHtml(comparison.title)}</h3>
+          <p>${escapeHtml(comparison.message)}</p>
+        </div>
+        <div class="bf-calculator-comparison-grid">
+          ${itemHtml}
+        </div>
+      </section>
+    `;
+  }
+
   function renderResult(result, options = {}) {
     const target = qs('[data-calculator-result]');
     if (!target) return;
@@ -1088,6 +1172,7 @@
       <div class="bf-platform-metrics bf-calculator-metrics">
         ${result.metrics.map(renderMetric).join('')}
       </div>
+      ${renderSavedComparison(result)}
       <div class="bf-calculator-explain">
         <article class="bf-platform-alert bf-platform-alert--${alertTone(result.recommendation.tone)}">
           <strong>${escapeHtml(result.recommendation.title)}</strong><br>
@@ -1219,6 +1304,7 @@
     preset: calculatorPreset,
     profileContinuity: buildCalculatorProfileContinuity,
     fieldSource: profileSourceForField,
+    savedComparison: buildSavedComparison,
     nextAction: buildCalculatorNextAction
   };
 

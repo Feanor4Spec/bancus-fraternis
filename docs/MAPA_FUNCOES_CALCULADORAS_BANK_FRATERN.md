@@ -10,6 +10,7 @@ As calculadoras formam a camada de diagnostico financeiro da plataforma. Cada pa
 Correcoes deste ciclo:
 
 - Campos reaproveitados do perfil consolidado expoem `data-calculator-field-source` e `data-calculator-field-origin="profile"` para mostrar a origem do dado ao usuario.
+- A previa atual pode ser comparada com o ultimo salvo da mesma calculadora por `data-calculator-saved-comparison`.
 
 - A previa inicial deixou de usar `submit` automatico.
 - A previa inicial chama `window.BFCalculadoras.simulate(slug, input, { persist: false })`.
@@ -69,9 +70,10 @@ Correcoes deste ciclo:
 6. Campos coerentes geram `ok`; cenarios arriscados geram alerta nao bloqueante.
 7. CTA principal muda conforme risco: revisar custos, montar reserva, calcular capacidade, ajustar lance, comparar ou simular.
 8. Ponte de continuidade consulta o perfil consolidado para decidir entre salvar a previa, completar renda, checar reserva, calcular capacidade ou simular com lance.
-9. Usuario clica `Calcular e salvar cenario`.
-10. Resultado passa para `saved`, grava `historyId`, atualiza perfil local e registra evento de decisao.
-11. Ponte contextual preserva `calculatorSlug`, `historyId`, `preset` e origem para Simulador, Trilha, Comparador e Dashboard Cliente.
+9. Quando existe historico da mesma calculadora, a previa mostra variacao contra o ultimo salvo.
+10. Usuario clica `Calcular e salvar cenario`.
+11. Resultado passa para `saved`, grava `historyId`, atualiza perfil local e registra evento de decisao.
+12. Ponte contextual preserva `calculatorSlug`, `historyId`, `preset` e origem para Simulador, Trilha, Comparador e Dashboard Cliente.
 
 ## Debitos tratados neste ciclo
 
@@ -90,5 +92,5 @@ Correcoes deste ciclo:
 | P0 | Revisar textos e labels das 19 calculadoras em linguagem de decisao | Reduzir friccao e deixar claro o proximo passo |
 | P0 | Criar estado visual de erro por campo e validacao de intervalo | Evitar cenarios irreais antes do submit |
 | Concluido parcial | Mostrar origem do dado reaproveitado no campo preenchido pelo perfil | Campos preenchidos pelo perfil exibem selo de origem e marcador publico |
-| P1 | Criar comparacao lateral entre ultimo salvo e previa atual | Facilitar iteracao consultiva |
+| Concluido parcial | Criar comparacao lateral entre ultimo salvo e previa atual | Resultado mostra diferencas numericas entre previa e ultimo salvo da mesma calculadora |
 | P2 | Versionar schemas de input/output por calculadora | Preparar backend/API futura sem quebrar dados locais |
