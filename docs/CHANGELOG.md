@@ -4,6 +4,21 @@
 
 ---
 
+## [v8.93.0] - 2026-05-14
+
+### Continuidade por perfil nas calculadoras
+
+#### Adicionado
+- Ponte das calculadoras ganhou `data-calculator-profile-continuity` para ajustar CTA e timeline pelo perfil consolidado.
+- Hub das calculadoras ganhou `data-calculators-profile-continuity`, diferenciando cliente sem renda, sem reserva, com capacidade pronta ou com lance sugerido.
+- `BFCalculatorJourney` passou a expor `profileContinuity` e `nextAction` para QA e futuras integrações.
+
+#### Modificado
+- `buildCalculatorNextAction` agora considera `BFDecisionContext.readiness()` antes de enviar o usuario para simulador, trilha ou comparador.
+- `tools/validate-calculator-journey.mjs`, contratos publicos, mapa e protocolo passaram a proteger os novos estados de continuidade.
+
+---
+
 ## [v8.92.0] - 2026-05-14
 
 ### Resultado como decisao

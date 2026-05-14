@@ -17,6 +17,7 @@ Correcoes deste ciclo:
 - Custos Fixos, Reserva, Capacidade, Lance e Compra têm ajuda contextual e limites especificos.
 - Alertas nao bloqueantes de coerencia expõem `data-calculator-coherence-alert` e `data-calculator-coherence="ok|warn|blocked"`.
 - A ponte de decisao expõe `data-calculator-next-action` e `data-calculator-next-action-card`.
+- A continuidade por perfil expoe `data-calculator-profile-continuity` e `data-calculators-profile-continuity`, separando previa sem salvar, falta de renda, falta de reserva, capacidade pronta e lance sugerido.
 - O validador `tools/validate-calculator-journey.mjs` executa as 19 calculadoras e garante que previa nao grava `localStorage`.
 
 ## Contratos funcionais
@@ -65,9 +66,10 @@ Correcoes deste ciclo:
 5. Campos invalidos mostram erro local e bloqueiam o salvamento.
 6. Campos coerentes geram `ok`; cenarios arriscados geram alerta nao bloqueante.
 7. CTA principal muda conforme risco: revisar custos, montar reserva, calcular capacidade, ajustar lance, comparar ou simular.
-8. Usuario clica `Calcular e salvar cenario`.
-9. Resultado passa para `saved`, grava `historyId`, atualiza perfil local e registra evento de decisao.
-10. Ponte contextual preserva `calculatorSlug`, `historyId`, `preset` e origem para Simulador, Trilha, Comparador e Dashboard Cliente.
+8. Ponte de continuidade consulta o perfil consolidado para decidir entre salvar a previa, completar renda, checar reserva, calcular capacidade ou simular com lance.
+9. Usuario clica `Calcular e salvar cenario`.
+10. Resultado passa para `saved`, grava `historyId`, atualiza perfil local e registra evento de decisao.
+11. Ponte contextual preserva `calculatorSlug`, `historyId`, `preset` e origem para Simulador, Trilha, Comparador e Dashboard Cliente.
 
 ## Debitos tratados neste ciclo
 
@@ -77,6 +79,7 @@ Correcoes deste ciclo:
 - Adicionada validacao guiada por campo antes de preview/salvamento.
 - Adicionados alertas de coerencia para cenarios de renda, reserva, credito, lance e compra.
 - Adicionada proxima acao dinamica para destacar o CTA correto por risco.
+- Adicionada continuidade por perfil para ajustar CTA e timeline conforme perfil real salvo.
 
 ## Proximas evolucoes recomendadas
 

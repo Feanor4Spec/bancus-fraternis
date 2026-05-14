@@ -310,6 +310,7 @@ const proposalVersioningJs = await fs.readFile(path.join(root, 'js/proposal-vers
 const proposalAcceptanceJs = await fs.readFile(path.join(root, 'js/proposal-acceptance.js'), 'utf8');
 const proposalBuilderJs = await fs.readFile(path.join(root, 'js/proposal-builder.js'), 'utf8');
 const handoffServiceJs = await fs.readFile(path.join(root, 'assets/js/services/handoff-consultivo.service.js'), 'utf8');
+const calculatorsPageJs = await fs.readFile(path.join(root, 'assets/js/calculadoras-page.js'), 'utf8');
 const platformCss = await fs.readFile(path.join(root, 'assets/css/platform.css'), 'utf8');
 const stylesCss = await fs.readFile(path.join(root, 'css/styles.css'), 'utf8');
 if (!adminUsersJs.includes('data-admin-recovery-imported-items')) fail('admin-users.js sem painel operacional de itens importados.');
@@ -375,6 +376,9 @@ if (!proposalVersioningJs.includes('api.saveProposal')) fail('proposal-versionin
 if (!proposalAcceptanceJs.includes('api.saveProposal')) fail('proposal-acceptance.js sem hook real de escrita direta de proposta.');
 if (!proposalBuilderJs.includes('api.saveProposal')) fail('proposal-builder.js sem hook real de escrita direta da lousa.');
 if (!handoffServiceJs.includes('api.saveLead')) fail('handoff-consultivo.service.js sem hook real de escrita direta de lead.');
+if (!calculatorsPageJs.includes('buildCalculatorProfileContinuity')) fail('calculadoras-page.js sem continuidade por perfil consolidado.');
+if (!calculatorsPageJs.includes('data-calculator-profile-continuity')) fail('calculadoras-page.js sem marcador visual de continuidade por perfil.');
+if (!calculatorsPageJs.includes('data-calculators-profile-continuity')) fail('calculadoras-page.js sem marcador do hub para continuidade por perfil.');
 
 const simulatorHtml = await fs.readFile(path.join(root, 'pages/simulador.html'), 'utf8');
 const simulatorAppJs = await fs.readFile(path.join(root, 'js/app.js'), 'utf8');

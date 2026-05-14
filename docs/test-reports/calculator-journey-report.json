@@ -17,6 +17,17 @@
       "data-calculator-next-action",
       "data-calculator-next-action-card"
     ],
+    "continuityMarkers": [
+      "data-calculator-profile-continuity",
+      "data-calculators-profile-continuity"
+    ],
+    "continuityStates": [
+      "profile-preview-not-saved",
+      "profile-missing-renda",
+      "profile-missing-reserva",
+      "profile-ready-capacity",
+      "profile-ready-bid"
+    ],
     "criticalSlugs": [
       "custos-fixos",
       "reserva-emergencia",
@@ -25,7 +36,7 @@
       "compra-vista-parcelado"
     ]
   },
-  "generatedAt": "2026-05-12T01:52:02.463Z",
+  "generatedAt": "2026-05-14T02:13:04.644Z",
   "previewReport": [
     {
       "slug": "juros-compostos",

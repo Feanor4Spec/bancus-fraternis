@@ -37,6 +37,7 @@ jobs:
           node --check js/simulator-shelf.js
           node --check js/simulator-cart.js
           node --check js/backend/db.js
+          node --check assets/js/calculadoras-page.js
           node --check js/app.js
 
       - name: Run static validators

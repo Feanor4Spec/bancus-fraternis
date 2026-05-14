@@ -123,10 +123,19 @@ assert(pageJs.includes('validateForm(form, meta)'), 'Pagina de calculadora nao v
 assert(pageJs.includes('coherenceAlerts(meta.slug, values)'), 'Pagina de calculadora nao calcula alertas de coerencia.');
 assert(pageJs.includes('document.body.dataset.calculatorCoherence'), 'Pagina de calculadora nao expoe status de coerencia no body.');
 assert(pageJs.includes('buildCalculatorNextAction'), 'Pagina de calculadora nao calcula proxima acao dinamica.');
+assert(pageJs.includes('buildCalculatorProfileContinuity'), 'Pagina de calculadora nao calcula continuidade por perfil consolidado.');
 assert(pageJs.includes('data-calculator-next-action'), 'Pagina de calculadora nao expoe proxima acao dinamica.');
 assert(pageJs.includes('data-calculator-next-action-card'), 'Pagina de calculadora nao expoe card de proxima acao.');
+assert(pageJs.includes('data-calculator-profile-continuity'), 'Pagina de calculadora nao expoe continuidade por perfil.');
+assert(pageJs.includes('data-calculators-profile-continuity'), 'Hub de calculadoras nao expoe continuidade por perfil.');
 assert(pageJs.includes('document.body.dataset.calculatorNextAction'), 'Pagina de calculadora nao expoe proxima acao no body.');
+assert(pageJs.includes('document.body.dataset.calculatorProfileContinuity'), 'Pagina de calculadora nao expoe continuidade do perfil no body.');
 assert(pageJs.includes('renderPreviewFromForm'), 'Pagina de calculadora nao atualiza previa sem persistencia apos edicao.');
+assert(pageJs.includes('profile-preview-not-saved'), 'Continuidade nao diferencia previa sem salvar.');
+assert(pageJs.includes('profile-missing-renda'), 'Continuidade nao orienta cliente sem renda.');
+assert(pageJs.includes('profile-missing-reserva'), 'Continuidade nao orienta cliente sem reserva.');
+assert(pageJs.includes('profile-ready-capacity'), 'Continuidade nao reconhece capacidade pronta.');
+assert(pageJs.includes('profile-ready-bid'), 'Continuidade nao reconhece lance sugerido pronto.');
 assert(platformCss.includes('.bf-calculator-field[data-calculator-field-state="invalid"]'), 'CSS nao estiliza estado invalido de campo da calculadora.');
 assert(platformCss.includes('.bf-calculator-coherence-alert'), 'CSS nao estiliza alerta de coerencia da calculadora.');
 assert(docsMap.includes('19 calculadoras'), 'Mapa completo nao registra o catalogo de 19 calculadoras.');
@@ -140,6 +149,22 @@ const context = await createContext();
 const storage = context.localStorage;
 const serviceCatalog = await context.BFCalculadoras.catalog();
 assert(serviceCatalog.length === catalog.length, 'Servico BFCalculadoras nao carrega o catalogo completo.');
+
+const emptyProfileStatus = context.BFDecisionContext.readiness({});
+assert(emptyProfileStatus.missing.some((item) => item.key === 'renda'), 'Contexto consolidado nao identifica cliente sem renda.');
+const noReserveStatus = context.BFDecisionContext.readiness({
+  rendaMensal: 10000,
+  gastoMensal: 5000,
+  capacidadePagamento: 1800
+});
+assert(noReserveStatus.missing.some((item) => item.key === 'reserva'), 'Contexto consolidado nao identifica cliente sem reserva.');
+const readyProfileStatus = context.BFDecisionContext.readiness({
+  rendaMensal: 10000,
+  gastoMensal: 5000,
+  reservaAtual: 40000,
+  capacidadePagamento: 1800
+});
+assert(readyProfileStatus.complete, 'Contexto consolidado nao reconhece perfil com capacidade pronta.');
 
 const previewReport = [];
 for (const calc of serviceCatalog) {
@@ -217,6 +242,8 @@ const report = {
   formValidation: {
     markers: ['data-calculator-form-alert', 'data-calculator-coherence-alert', 'data-calculator-field', 'data-calculator-field-error'],
     nextActionMarkers: ['data-calculator-next-action', 'data-calculator-next-action-card'],
+    continuityMarkers: ['data-calculator-profile-continuity', 'data-calculators-profile-continuity'],
+    continuityStates: ['profile-preview-not-saved', 'profile-missing-renda', 'profile-missing-reserva', 'profile-ready-capacity', 'profile-ready-bid'],
     criticalSlugs: ['custos-fixos', 'reserva-emergencia', 'capacidade-credito', 'lance-consorcio', 'compra-vista-parcelado']
   },
   generatedAt: new Date().toISOString(),

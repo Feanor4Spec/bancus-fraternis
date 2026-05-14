@@ -185,6 +185,156 @@
     return typeof resultOrSlug === 'string' ? resultOrSlug : resultOrSlug && resultOrSlug.slug;
   }
 
+  function numberValue(value) {
+    const numeric = Number(value);
+    return Number.isFinite(numeric) ? numeric : 0;
+  }
+
+  function profileSnapshotForResult(result) {
+    const profile = window.BFCalculadoras && typeof window.BFCalculadoras.loadProfile === 'function'
+      ? window.BFCalculadoras.loadProfile()
+      : {};
+    const patch = result && result.historyId && result.profilePatch ? result.profilePatch : {};
+    return {
+      ...profile,
+      ...patch
+    };
+  }
+
+  function readinessForProfile(profile) {
+    const context = decisionContext();
+    if (context && typeof context.readiness === 'function') return context.readiness(profile);
+    const missing = [];
+    if (!numberValue(profile.rendaMensal)) missing.push({ key: 'renda', label: 'Renda mensal', calculatorSlug: 'custos-fixos' });
+    if (!numberValue(profile.gastoMensal || profile.custosMensais)) missing.push({ key: 'custos', label: 'Custos fixos', calculatorSlug: 'custos-fixos' });
+    if (!numberValue(profile.reservaAtual)) missing.push({ key: 'reserva', label: 'Reserva atual', calculatorSlug: 'reserva-emergencia' });
+    if (!numberValue(profile.capacidadePagamento || profile.capacidadeAporte)) missing.push({ key: 'capacidade', label: 'Capacidade segura', calculatorSlug: 'capacidade-credito' });
+    return {
+      score: Math.max(0, Math.min(100, Number(profile.readinessScore || 0))),
+      complete: missing.length === 0,
+      missing,
+      message: missing.length ? `Complete ${missing[0].label.toLowerCase()} antes de comparar cenarios.` : 'Perfil financeiro suficiente para simular.'
+    };
+  }
+
+  function buildCalculatorProfileContinuity(result) {
+    const slug = slugOf(result) || document.body.dataset.calculatorSlug || 'custos-fixos';
+    const profile = profileSnapshotForResult(result);
+    const status = readinessForProfile(profile);
+    const patchKeys = Object.keys((result && result.profilePatch) || {});
+    const score = Number(status.score || 0);
+
+    if (result && !result.historyId && patchKeys.length > 0) {
+      return {
+        kind: 'profile-preview-not-saved',
+        urgency: 'save',
+        title: 'Salvar para atualizar perfil',
+        message: 'Este calculo ainda e uma previa. Salve o cenario para a continuidade considerar renda, reserva, capacidade ou lance reais.',
+        href: '#calculadora-entrada',
+        primaryLabel: 'Salvar cenario',
+        tone: 'bf-v8-decision-card--warning',
+        state: 'is-active',
+        score,
+        detail: 'previa sem historico',
+        status
+      };
+    }
+
+    const firstMissing = Array.isArray(status.missing) ? status.missing[0] : null;
+    if (firstMissing) {
+      const missingMap = {
+        renda: {
+          kind: 'profile-missing-renda',
+          title: 'Informar renda e custos',
+          message: 'O perfil consolidado ainda nao tem renda mensal. Comece pelo orcamento para evitar uma simulacao generica.',
+          primaryLabel: 'Informar renda',
+          calculatorSlug: 'custos-fixos'
+        },
+        custos: {
+          kind: 'profile-missing-custos',
+          title: 'Mapear custos fixos',
+          message: 'A renda existe, mas os custos ainda nao sustentam uma leitura confiavel de capacidade.',
+          primaryLabel: 'Mapear custos',
+          calculatorSlug: 'custos-fixos'
+        },
+        reserva: {
+          kind: 'profile-missing-reserva',
+          title: 'Checar reserva antes de avancar',
+          message: 'Falta reserva atual no perfil. Sem liquidez, a recomendacao de parcela, compra ou lance fica fraca.',
+          primaryLabel: 'Checar reserva',
+          calculatorSlug: 'reserva-emergencia'
+        },
+        capacidade: {
+          kind: 'profile-missing-capacidade',
+          title: 'Calcular capacidade segura',
+          message: 'O perfil ja tem parte do diagnostico, mas ainda falta capacidade de pagamento para simular com seguranca.',
+          primaryLabel: 'Calcular capacidade',
+          calculatorSlug: 'capacidade-credito'
+        }
+      };
+      const mapped = missingMap[firstMissing.key] || missingMap.renda;
+      return {
+        ...mapped,
+        urgency: 'complete-profile',
+        href: calculatorActionHref(mapped.calculatorSlug, slug, result),
+        tone: 'bf-v8-decision-card--warning',
+        state: mapped.calculatorSlug === slug ? 'is-active' : 'is-pending',
+        score,
+        detail: `${(status.missing || []).length} pendencia${(status.missing || []).length === 1 ? '' : 's'} no perfil`,
+        status
+      };
+    }
+
+    const valorCarta = numberValue(profile.valorCarta || profile.valorCredito);
+    const lanceSugerido = numberValue(profile.lanceProprioSugerido);
+    const capacidade = numberValue(profile.capacidadePagamento || profile.capacidadeAporte);
+    if (valorCarta > 0 && lanceSugerido > 0) {
+      return {
+        kind: 'profile-ready-bid',
+        urgency: 'ready-simulator',
+        title: 'Lance sugerido pronto',
+        message: `O perfil ja tem carta de ${money(valorCarta)} e lance proprio sugerido de ${money(lanceSugerido)} para levar ao simulador.`,
+        href: calculatorActionHref('simulator', slug, result),
+        primaryLabel: 'Simular com lance',
+        tone: 'bf-v8-decision-card--stable',
+        state: 'is-done',
+        score,
+        detail: 'carta e lance salvos',
+        status
+      };
+    }
+
+    if (capacidade > 0) {
+      return {
+        kind: 'profile-ready-capacity',
+        urgency: 'ready-simulator',
+        title: 'Capacidade pronta',
+        message: `O perfil ja tem capacidade segura de ${money(capacidade)}. A proxima decisao pode ir ao simulador orientado.`,
+        href: calculatorActionHref('simulator', slug, result),
+        primaryLabel: 'Simular com capacidade',
+        tone: 'bf-v8-decision-card--stable',
+        state: 'is-done',
+        score,
+        detail: 'capacidade salva no perfil',
+        status
+      };
+    }
+
+    return {
+      kind: 'profile-ready-basic',
+      urgency: 'ready-simulator',
+      title: 'Perfil pronto para avancar',
+      message: status.message || 'Renda, custos e reserva estao prontos para alimentar a proxima jornada.',
+      href: calculatorActionHref('simulator', slug, result),
+      primaryLabel: 'Abrir simulador',
+      tone: 'bf-v8-decision-card--stable',
+      state: 'is-done',
+      score,
+      detail: 'perfil consolidado',
+      status
+    };
+  }
+
   function calculatorActionHref(kind, slug, result) {
     if (kind === 'current') return '#calculadora-entrada';
     if (kind === 'hub') return 'calculadoras.html';
@@ -195,7 +345,7 @@
     return calculatorContextHref('calculator', kind, { from: 'calculator', previousCalculatorSlug: slug || '' });
   }
 
-  function buildCalculatorNextAction(result, recommendation) {
+  function buildCalculatorNextAction(result, recommendation, continuity) {
     const slug = slugOf(result) || document.body.dataset.calculatorSlug || 'custos-fixos';
     const warnings = result && Array.isArray(result.coherenceWarnings) ? result.coherenceWarnings : [];
     const hasRisk = warnings.length > 0 || (recommendation && recommendation.tone === 'warn');
@@ -285,7 +435,17 @@
         tone: 'bf-v8-decision-card--stable'
       }
     };
-    const selected = hasRisk ? (riskActions[slug] || { ...defaultAction, kind: 'review-scenario', title: 'Revisar cenario', message: 'Ha sinal de risco; ajuste campos ou passe pela trilha assistida antes de simular.', href: calculatorActionHref('journey', slug, result), primaryLabel: 'Montar trilha', tone: 'bf-v8-decision-card--warning' }) : (successActions[slug] || defaultAction);
+    let selected = hasRisk ? (riskActions[slug] || { ...defaultAction, kind: 'review-scenario', title: 'Revisar cenario', message: 'Ha sinal de risco; ajuste campos ou passe pela trilha assistida antes de simular.', href: calculatorActionHref('journey', slug, result), primaryLabel: 'Montar trilha', tone: 'bf-v8-decision-card--warning' }) : (successActions[slug] || defaultAction);
+    if (continuity && (continuity.urgency === 'save' || continuity.urgency === 'complete-profile' || (!hasRisk && continuity.urgency === 'ready-simulator'))) {
+      selected = {
+        kind: continuity.kind,
+        title: continuity.title,
+        message: continuity.message,
+        href: continuity.href,
+        primaryLabel: continuity.primaryLabel,
+        tone: continuity.tone
+      };
+    }
     const secondary = [
       { label: 'Ajustar campos', href: calculatorActionHref('current', slug, result) },
       { label: 'Montar trilha', href: calculatorActionHref('journey', slug, result) },
@@ -379,8 +539,9 @@
       ? context.recommendedCalculators(profile)
       : [Object.keys(profile || {}).length > 0 ? 'reserva-emergencia' : 'custos-fixos'];
     const recommendedSlug = recommendedSlugs[0] || 'custos-fixos';
+    const continuity = buildCalculatorProfileContinuity(null);
     const hasProfile = Object.keys(profile || {}).length > 0;
-    const recommendedStart = calculatorContextHref('calculator', recommendedSlug, { from: 'calculators' });
+    const recommendedStart = continuity.href || calculatorContextHref('calculator', recommendedSlug, { from: 'calculators' });
     const recommendedLabel = (bySlug.get(recommendedSlug) && bySlug.get(recommendedSlug).nome) || 'Custos Fixos';
     const trail = ['custos-fixos', 'reserva-emergencia', 'compra-vista-parcelado', 'comparador'];
     const trailHtml = trail.map((slug, index) => {
@@ -398,7 +559,7 @@
             <h2>${count} calculadoras conectadas ao perfil financeiro</h2>
             <p>O hub agora prepara a simulacao: diagnostico, reserva, decisao de compra e comparador viram contexto compartilhado.</p>
             <div class="bf-inline-actions">
-              <a class="btn btn--primary btn--sm" href="${recommendedStart}">Comecar por ${recommendedLabel}</a>
+              <a class="btn btn--primary btn--sm" href="${recommendedStart}">${escapeHtml(continuity.primaryLabel || `Comecar por ${recommendedLabel}`)}</a>
               <a class="btn btn--ghost btn--sm" href="${simulatorHref(recommendedSlug)}">Abrir simulador orientado</a>
               <a class="btn btn--ghost btn--sm" href="${calculatorContextHref('journey', recommendedSlug, { from: 'calculators' })}">Montar trilha</a>
               <a class="btn btn--ghost btn--sm" href="${calculatorContextHref('comparator', recommendedSlug, { from: 'calculators' })}">Comparar credito</a>
@@ -431,6 +592,12 @@
             <p>Use a recomendacao para completar renda, custos, reserva ou capacidade antes da simulacao.</p>
             <small>${(status.missing || []).length ? `${status.missing.length} pendencia${status.missing.length === 1 ? '' : 's'}` : 'perfil completo'}</small>
           </article>
+          <article class="bf-v8-decision-card ${escapeHtml(continuity.tone)}" data-calculators-profile-continuity="${escapeHtml(continuity.kind)}">
+            <span>Continuidade</span>
+            <strong>${escapeHtml(continuity.title)}</strong>
+            <p>${escapeHtml(continuity.message)}</p>
+            <small>${escapeHtml(continuity.detail || `${Number(continuity.score || 0)}/100 prontidao`)}</small>
+          </article>
         </div>
         <div class="bf-client-timeline bf-platform-section">${trailHtml}</div>
       `;
@@ -438,6 +605,7 @@
 
     renderTimeline(timelineTarget, [
       { label: 'Diagnostico', title: status.complete ? 'Pronto para simular' : 'Completar perfil', text: status.message || 'Renda, custos e reserva reduzem recomendacoes genericas.', href: recommendedStart, state: status.complete ? 'is-done' : 'is-active' },
+      { label: 'Perfil', title: continuity.title, text: continuity.message, href: continuity.href, state: continuity.state || 'is-active' },
       { label: 'Historico', title: `${history.length} eventos`, text: 'Simulacoes recentes ficam disponiveis para retomada.', href: '#calculadoras-historico', state: history.length ? 'is-done' : 'is-pending' },
       { label: 'Hub', title: `${count} calculadoras`, text: 'Escolha o modulo pelo tipo de decisao financeira.', href: '#calculadoras-hub-grid', state: 'is-active' },
       { label: 'Trilha', title: 'Jornada assistida', text: 'A proxima etapa usa o diagnostico financeiro como entrada.', href: calculatorContextHref('journey', recommendedSlug, { from: 'calculators' }), state: hasProfile ? 'is-active' : 'is-pending' },
@@ -446,6 +614,7 @@
     ]);
 
     document.body.dataset.calculatorsBridgeReady = 'true';
+    document.body.dataset.calculatorsProfileContinuity = continuity.kind;
   }
 
   function renderCalculatorDecisionBridge(result) {
@@ -467,7 +636,8 @@
     const journeyLink = calculatorContextHref('journey', result || document.body.dataset.calculatorSlug || '');
     const comparatorLink = calculatorContextHref('comparator', result || document.body.dataset.calculatorSlug || '');
     const readinessScore = result && result.readinessScore !== undefined ? result.readinessScore : (window.BFCalculadoras.loadProfile().readinessScore || 0);
-    const nextAction = buildCalculatorNextAction(result, recommendation);
+    const continuity = buildCalculatorProfileContinuity(result);
+    const nextAction = buildCalculatorNextAction(result, recommendation, continuity);
     const nextActionActions = [
       { label: nextAction.primaryLabel, href: nextAction.href, primary: true },
       ...(nextAction.secondary || [])
@@ -504,11 +674,11 @@
             <p>A explicacao registra formula, premissas e riscos do calculo.</p>
             <small>Recomendacao explicavel</small>
           </article>
-          <article class="bf-v8-decision-card bf-v8-decision-card--stable">
-            <span>Prontidao</span>
-            <strong>${readinessScore}/100</strong>
-            <p>O resultado pode preencher objetivo, valor alvo, reserva e capacidade no simulador.</p>
-            <small>${escapeHtml(result && result.historyId ? result.historyId : 'contexto local')}</small>
+          <article class="bf-v8-decision-card ${escapeHtml(continuity.tone)}" data-calculator-profile-continuity="${escapeHtml(continuity.kind)}">
+            <span>Continuidade</span>
+            <strong>${escapeHtml(continuity.title)}</strong>
+            <p>${escapeHtml(continuity.message)}</p>
+            <small>${escapeHtml(continuity.detail || `${readinessScore}/100 prontidao`)}</small>
           </article>
           <article class="bf-v8-decision-card ${nextAction.tone}" data-calculator-next-action-card="${escapeHtml(nextAction.kind)}">
             <span>Proxima acao</span>
@@ -523,6 +693,7 @@
     renderTimeline(timelineTarget, [
       { label: 'Entrada', title: 'Campos do cenario', text: 'Premissas editaveis para recalcular sem sair da pagina.', href: '#calculadora-entrada', state: 'is-done' },
       { label: 'Resultado', title: primary.value, text: recommendation.message, href: '#resultado-calculadora', state: result ? 'is-active' : 'is-pending' },
+      { label: 'Perfil', title: continuity.title, text: continuity.message, href: continuity.href, state: continuity.state || (result ? 'is-active' : 'is-pending') },
       { label: 'Memoria', title: `${memoryCount} linhas`, text: 'Formula e risco permanecem auditaveis.', href: '#resultado-calculadora', state: result ? 'is-done' : 'is-pending' },
       { label: 'Proxima acao', title: nextAction.title, text: nextAction.message, href: nextAction.href, state: result ? 'is-active' : 'is-pending' },
       { label: 'Trilha', title: 'Jornada assistida', text: 'Converta resultado em objetivo, produto e proxima acao.', href: journeyLink, state: result ? 'is-active' : 'is-pending' },
@@ -533,6 +704,8 @@
 
     document.body.dataset.calculatorBridgeReady = result ? result.slug : 'pending';
     document.body.dataset.calculatorNextAction = nextAction.kind;
+    document.body.dataset.calculatorProfileContinuity = continuity.kind;
+    document.body.dataset.calculatorProfileReadiness = String(continuity.score !== undefined ? continuity.score : (readinessScore || 0));
   }
 
   function renderHub(list) {
@@ -982,7 +1155,9 @@
     href: calculatorContextHref,
     params: calculatorContextParams,
     simulatorHref,
-    preset: calculatorPreset
+    preset: calculatorPreset,
+    profileContinuity: buildCalculatorProfileContinuity,
+    nextAction: buildCalculatorNextAction
   };
 
   document.addEventListener('DOMContentLoaded', init);
