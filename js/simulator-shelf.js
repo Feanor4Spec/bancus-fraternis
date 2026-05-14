@@ -248,6 +248,90 @@
     return `${iconMap[key] || '--'} ${escapeText(s || '-')}`;
   }
 
+  function normalizeText(value) {
+    return String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+  }
+
+  function addUnique(list, value) {
+    if (!value || list.includes(value)) return;
+    list.push(value);
+  }
+
+  function explainGroupRecommendation(group, options = {}) {
+    const filters = options.filters || {};
+    const score = Number(group && group.scoreShelf || 0);
+    const letter = String((group && ((group._classificacao && group._classificacao.letra) || group.classificacaoExecutiva)) || '').charAt(0);
+    const taxa = Number(group && group.taxaAdmPct || 0);
+    const prazo = Number(group && group.prazoMeses || 0);
+    const carta = Number(group && group.valorCartaRef || 0);
+    const reasons = [];
+    const risks = [];
+
+    if (score >= 70) addUnique(reasons, `Score ${score}/100 indica boa aderencia inicial.`);
+    else if (score >= 40) addUnique(reasons, `Score ${score}/100 pede comparacao com alternativas.`);
+    else addUnique(risks, `Score ${score}/100 exige revisao antes da proposta.`);
+
+    if (letter === 'A') addUnique(reasons, 'Classificacao A prioriza expansao e saude comercial.');
+    if (letter === 'C' || letter === 'D') addUnique(risks, `Classificacao ${letter} pede justificativa consultiva.`);
+
+    if (filters.taxaMax && taxa <= Number(filters.taxaMax)) addUnique(reasons, `Taxa dentro do teto de ${filters.taxaMax}%.`);
+    else if (taxa > 22) addUnique(risks, `Taxa de ${taxa.toFixed(2)}% merece comparacao de custo.`);
+
+    if (filters.prazoMax && prazo <= Number(filters.prazoMax)) addUnique(reasons, `Prazo dentro do limite de ${filters.prazoMax} meses.`);
+    if (filters.cartaMin && carta >= Number(filters.cartaMin)) addUnique(reasons, 'Carta acima do minimo definido.');
+    if (filters.cartaMax && carta <= Number(filters.cartaMax)) addUnique(reasons, 'Carta dentro do teto definido.');
+
+    if (filters.fgts && group && group.fgtsPermitido) addUnique(reasons, 'Permite FGTS para compor a estrategia.');
+    if (filters.fgts && group && !group.fgtsPermitido) addUnique(risks, 'Filtro pede FGTS, mas o grupo nao sinaliza permissao.');
+    if (group && group.parcelaReduzidaDisponivel) addUnique(reasons, 'Parcela reduzida disponivel como alavanca de entrada.');
+
+    const saude = normalizeText(group && (group.saudeCarteira || (group._heuristica && group._heuristica.classificacoes && group._heuristica.classificacoes.saude && group._heuristica.classificacoes.saude.classe)));
+    if (saude.includes('controlada') || saude.includes('baixa')) addUnique(reasons, 'Saude da carteira favorece conversa com o cliente.');
+    if (saude.includes('critica') || saude.includes('atencao')) addUnique(risks, 'Saude da carteira precisa ser explicada.');
+
+    if (group && group._papel && group._papel.tag) addUnique(reasons, `Papel sugerido: ${group._papel.tag}.`);
+
+    const tone = risks.length && score < 70 ? 'warning' : score >= 70 ? 'stable' : 'info';
+    return {
+      tone,
+      label: score >= 70 ? 'Recomendado' : score >= 40 ? 'Comparar' : 'Revisar',
+      reasons: reasons.slice(0, 4),
+      risks: risks.slice(0, 3)
+    };
+  }
+
+  function renderRecommendation(group, options = {}) {
+    const insight = explainGroupRecommendation(group, options);
+    const primary = insight.reasons[0] || insight.risks[0] || 'Compare premissas antes da proposta.';
+    return `
+      <small class="shelf-recommendation shelf-recommendation--${escapeText(insight.tone)}" data-shelf-recommendation="${escapeText(insight.label)}">
+        <strong>${escapeText(insight.label)}</strong>
+        <span data-shelf-recommendation-reason>${escapeText(primary)}</span>
+      </small>
+    `;
+  }
+
+  function renderRecommendationDetail(group, options = {}) {
+    const insight = explainGroupRecommendation(group, options);
+    const reasons = insight.reasons.length
+      ? insight.reasons.map((item) => `<li data-shelf-recommendation-reason>${escapeText(item)}</li>`).join('')
+      : '<li data-shelf-recommendation-reason>Compare a composicao do grupo com outros cenarios.</li>';
+    const risks = insight.risks.length
+      ? `<ul>${insight.risks.map((item) => `<li data-shelf-risk-note>${escapeText(item)}</li>`).join('')}</ul>`
+      : '<p>Nenhum alerta forte identificado pelos filtros atuais.</p>';
+    return `
+      <div class="shelf-detail-section shelf-detail-section--recommendation" data-shelf-recommendation="${escapeText(insight.label)}">
+        <h4>Por que este grupo apareceu</h4>
+        <ul>${reasons}</ul>
+        <strong>Pontos de atencao</strong>
+        ${risks}
+      </div>
+    `;
+  }
+
   function renderTable(groups, pag, options = {}) {
     const list = Array.isArray(groups) ? groups : [];
     const total = pag ? pag.totalGroups : list.length;
@@ -280,7 +364,7 @@
           <td data-shelf-col="classificacao">${classBadge(group)}</td>
           <td data-shelf-col="papel">${roleBadge(group)}</td>
           <td data-shelf-col="admin" class="shelf-admin-cell">${escapeText(group.nomeAdministradora || '-')}</td>
-          <td data-shelf-col="grupo"><strong>${escapeText(group.codigoGrupo)}</strong></td>
+          <td data-shelf-col="grupo"><strong>${escapeText(group.codigoGrupo)}</strong>${renderRecommendation(group, options)}</td>
           <td data-shelf-col="segmento"><span class="shelf-segment-badge">${escapeText(group.iconSegmento)} ${escapeText(group.nomeSegmento)}</span></td>
           <td data-shelf-col="carta">${money(group.valorCartaRef, options)}</td>
           <td data-shelf-col="prazo">${escapeText(group.prazoMeses)}m</td>
@@ -343,6 +427,7 @@
     const getLimit = options.getEffectiveLanceEmbutidoMax || (() => 0);
     return `
         <div class="shelf-detail-grid">
+          ${renderRecommendationDetail(group, options)}
           <div class="shelf-detail-section">
             <h4>Administradora</h4>
             <p><strong>${escapeText(group.nomeAdministradora || '-')}</strong></p>
@@ -419,6 +504,7 @@
     paginationState,
     applyPaginationControls,
     renderTable,
+    explainGroupRecommendation,
     detailTitle,
     renderDetail,
     setDetailAddVisible

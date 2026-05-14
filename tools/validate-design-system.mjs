@@ -310,6 +310,7 @@ const proposalAcceptanceJs = await fs.readFile(path.join(root, 'js/proposal-acce
 const proposalBuilderJs = await fs.readFile(path.join(root, 'js/proposal-builder.js'), 'utf8');
 const handoffServiceJs = await fs.readFile(path.join(root, 'assets/js/services/handoff-consultivo.service.js'), 'utf8');
 const platformCss = await fs.readFile(path.join(root, 'assets/css/platform.css'), 'utf8');
+const stylesCss = await fs.readFile(path.join(root, 'css/styles.css'), 'utf8');
 if (!adminUsersJs.includes('data-admin-recovery-imported-items')) fail('admin-users.js sem painel operacional de itens importados.');
 if (!adminUsersJs.includes('data-admin-package-assign')) fail('admin-users.js sem acao de atribuicao de item importado.');
 if (!adminUsersJs.includes('data-admin-package-handoff')) fail('admin-users.js sem acao de handoff de item importado.');
@@ -376,6 +377,7 @@ if (!handoffServiceJs.includes('api.saveLead')) fail('handoff-consultivo.service
 
 const simulatorHtml = await fs.readFile(path.join(root, 'pages/simulador.html'), 'utf8');
 const simulatorAppJs = await fs.readFile(path.join(root, 'js/app.js'), 'utf8');
+const simulatorShelfJs = await fs.readFile(path.join(root, 'js/simulator-shelf.js'), 'utf8');
 const proposalSummaryJs = await fs.readFile(path.join(root, 'js/proposal-summary.js'), 'utf8');
 const proposalGovernanceJs = await fs.readFile(path.join(root, 'js/proposal-governance.js'), 'utf8');
 if (!simulatorHtml.includes('data-proposal-acceptance-panel')) fail('simulador.html sem painel de aceite local da proposta.');
@@ -385,9 +387,14 @@ if (!simulatorHtml.includes('../js/proposal-versioning.js')) fail('simulador.htm
 if (!simulatorHtml.includes('../js/proposal-governance.js')) fail('simulador.html nao carrega proposal-governance.js.');
 if (!simulatorHtml.includes('../js/simulator-shelf.js')) fail('simulador.html nao carrega simulator-shelf.js.');
 if (!simulatorHtml.includes('../js/simulator-cart.js')) fail('simulador.html nao carrega simulator-cart.js.');
+if (!simulatorHtml.includes('data-simulator-objective-guide')) fail('simulador.html sem guia visual de objetivo do simulador.');
 if (!simulatorHtml.includes('../assets/js/services/handoff-consultivo.service.js')) fail('simulador.html nao carrega servico de handoff consultivo.');
 if (!simulatorAppJs.includes('BFSimulatorShelf')) fail('app.js sem delegacao de prateleira para BFSimulatorShelf.');
 if (!simulatorAppJs.includes('BFSimulatorCart')) fail('app.js sem delegacao de carrinho para BFSimulatorCart.');
+if (!simulatorAppJs.includes('applySimulatorObjectiveGuide')) fail('app.js sem acao de aplicar objetivo guiado.');
+if (!simulatorShelfJs.includes('data-shelf-recommendation')) fail('simulator-shelf.js sem recomendacao explicavel na prateleira.');
+if (!stylesCss.includes('.sim-objective-guide')) fail('styles.css sem layout do guia de objetivo.');
+if (!stylesCss.includes('.shelf-recommendation')) fail('styles.css sem layout de recomendacao da prateleira.');
 if (!simulatorAppJs.includes('salvarRevisaoProposta')) fail('app.js sem acao de salvar revisao da proposta.');
 if (!simulatorAppJs.includes('salvarVersaoProposta')) fail('app.js sem acao de salvar versao da proposta.');
 if (!simulatorAppJs.includes('criarHandoffProposta')) fail('app.js sem acao de criar handoff da proposta.');

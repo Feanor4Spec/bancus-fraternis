@@ -8,7 +8,8 @@
   },
   "journeyActions": {
     "complete": 3,
-    "empty": 2
+    "empty": 2,
+    "objective": "troca"
   },
   "savedCartItems": 1,
   "restoredCartItems": 1,

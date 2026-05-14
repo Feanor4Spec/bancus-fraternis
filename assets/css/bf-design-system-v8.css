@@ -1659,6 +1659,16 @@ th {
   .sim-header__inner {
     flex-wrap: wrap;
     gap: 10px;
+    padding-block: 8px;
+  }
+
+  .sim-header {
+    height: auto;
+    min-height: 64px;
+  }
+
+  .sim-header__brand {
+    min-width: 0;
   }
 
   .sim-header__actions {
@@ -1676,6 +1686,7 @@ th {
   .sim-header__actions .btn {
     min-width: 0;
     padding-inline: 8px;
+    min-height: 42px;
   }
 
   .sim-sidebar {

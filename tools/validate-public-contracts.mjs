@@ -194,7 +194,12 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-products-selection-panel',
   'data-decision-journey-form',
   'data-simulator-journey-actions',
+  'data-simulator-objective-guide',
+  'data-simulator-objective-card',
+  'data-simulator-objective-apply',
   'data-v8-stagebar',
+  'data-shelf-recommendation',
+  'data-shelf-recommendation-reason',
   'data-lousa-commercial-qa',
   'data-lousa-qa-checkpoint',
   'data-lousa-journey-checklist',
@@ -391,6 +396,9 @@ assert(simulator.includes('js/simulator-state.js'), 'simulador.html sem modulo s
 assert(simulator.includes('js/simulator-shelf.js'), 'simulador.html sem modulo simulator-shelf.');
 assert(simulator.includes('js/simulator-cart.js'), 'simulador.html sem modulo simulator-cart.');
 assert(app.includes('data-simulator-journey-actions'), 'app.js sem acoes de jornada do simulador.');
+assert(simulator.includes('data-simulator-objective-guide'), 'simulador.html sem guia de objetivo do simulador.');
+assert(app.includes('data-simulator-objective-card'), 'app.js sem card de objetivo do simulador.');
+assert(app.includes('data-simulator-objective-apply'), 'app.js sem acao de aplicar objetivo do simulador.');
 assert(app.includes('BFSimulatorShelf'), 'app.js nao delega filtros/prateleira para BFSimulatorShelf.');
 assert(app.includes('BFSimulatorCart'), 'app.js nao delega carrinho/projeto para BFSimulatorCart.');
 assert(app.includes('BFProposalBuilder'), 'app.js nao delega lousa de proposta para BFProposalBuilder.');
@@ -398,6 +406,8 @@ assert(app.includes('BFProposalGovernance'), 'app.js nao delega governanca de pr
 assert(simulatorShelf.includes('BFSimulatorShelf'), 'simulator-shelf.js sem export global da prateleira.');
 assert(simulatorShelf.includes('filterAndSortGroups'), 'simulator-shelf.js sem busca publica de prateleira.');
 assert(simulatorShelf.includes('renderDetail'), 'simulator-shelf.js sem render publico do detalhe da prateleira.');
+assert(simulatorShelf.includes('data-shelf-recommendation'), 'simulator-shelf.js sem recomendacao explicavel por grupo.');
+assert(simulatorShelf.includes('explainGroupRecommendation'), 'simulator-shelf.js sem regra publica de explicacao de grupo.');
 assert(simulatorCart.includes('BFSimulatorCart'), 'simulator-cart.js sem export global do carrinho.');
 assert(simulatorCart.includes('renderStep5CartHtml'), 'simulator-cart.js sem render publico do carrinho do passo 5.');
 assert(simulatorCart.includes('normalizeEditValue'), 'simulator-cart.js sem normalizacao publica de edicao.');
@@ -469,7 +479,7 @@ const report = {
   ok: failures.length === 0,
   contracts: {
     localStorageKeys: 18,
-    dataMarkers: 78,
+    dataMarkers: 83,
     globals: 19,
     deepLinks: 10,
     validators: 21,

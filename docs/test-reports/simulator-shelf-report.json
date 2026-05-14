@@ -25,7 +25,8 @@
     "startIdx": 3,
     "endIdx": 4
   },
-  "tableLength": 1363,
-  "detailLength": 2378,
+  "tableLength": 1629,
+  "detailLength": 3066,
+  "explanationReasons": 4,
   "failures": []
 }

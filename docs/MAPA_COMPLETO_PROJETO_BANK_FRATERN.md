@@ -139,7 +139,7 @@ Contrato confirmado:
 
 | Pagina | Estado | Conteudo |
 | --- | --- | --- |
-| `pages/simulador.html` | Ativa | Simulador completo de consorcio, prateleira com 17.396 grupos validos, projeto estruturado, proposta, aceite e handoff. |
+| `pages/simulador.html` | Ativa | Simulador completo de consorcio, prateleira com 17.396 grupos validos, guia de objetivo, recomendacao explicavel de grupos, projeto estruturado, proposta, aceite e handoff. |
 | `pages/simulador-consorcio.html` | Ativa | Porta de entrada para o simulador completo de consorcio. |
 | `pages/simulador-financiamento.html` | Ativa | Simulacao de financiamento com Price/SAC. |
 | `pages/simulador-veiculos.html` | Ativa | Comparacao de veiculo por financiamento ou consorcio. |
@@ -261,7 +261,7 @@ Simulador completo
   -> handoff consultivo de proposta
 ```
 
-Contratos principais: `data-simulator-readiness`, `data-proposal-acceptance-panel`, `data-proposal-version-panel`, `data-proposal-handoff-bridge`, `App`, `ConsorcioEngine`, `ProposalSummary`, `BFSimulatorShelf`, `BFSimulatorCart`, `BFProposalBuilder`, `BFProposalGovernance`, `BFProposalAcceptance`, `BFProposalVersions`, `BFHandoffConsultivoService`.
+Contratos principais: `data-simulator-readiness`, `data-simulator-objective-guide`, `data-shelf-recommendation`, `data-proposal-acceptance-panel`, `data-proposal-version-panel`, `data-proposal-handoff-bridge`, `App`, `ConsorcioEngine`, `ProposalSummary`, `BFSimulatorShelf`, `BFSimulatorCart`, `BFProposalBuilder`, `BFProposalGovernance`, `BFProposalAcceptance`, `BFProposalVersions`, `BFHandoffConsultivoService`.
 
 ### Jornada de operacao
 
@@ -445,7 +445,7 @@ Os marcadores mais importantes por area:
 | Calculadoras | `data-calculator-form`, `data-calculator-form-alert`, `data-calculator-coherence`, `data-calculator-coherence-alert`, `data-calculator-field`, `data-calculator-field-error`, `data-calculator-next-action`, `data-calculator-next-action-card`, `data-calculator-result`, `data-calculator-result-mode`, `data-calculator-history`, `data-calculators-hub`. |
 | Trilha | `data-decision-journey-form`, `data-decision-journey-state`, `data-decision-journey-steps`, `data-decision-journey-actions`. |
 | Comparador | `data-comparator-form`, `data-comparator-result`, `data-comparator-preset-summary`, `data-comparator-model-recommendation`. |
-| Simulador | `data-simulator-readiness`, `data-simulator-decision-strip`, `data-simulator-journey-actions`, `data-shelf-col`. |
+| Simulador | `data-simulator-readiness`, `data-simulator-decision-strip`, `data-simulator-journey-actions`, `data-simulator-objective-guide`, `data-simulator-objective-card`, `data-simulator-objective-apply`, `data-shelf-col`, `data-shelf-recommendation`, `data-shelf-recommendation-reason`. |
 | Proposta | `data-proposal-acceptance-panel`, `data-proposal-handoff-bridge`, `data-proposal-builder-board`, `data-proposal-builder-readiness`, `data-proposal-builder-option`, `data-proposal-version-panel`, `data-proposal-version-history`, `data-proposal-version-comparison`. |
 | Handoff | `data-handoff-list`, `data-handoff-detail`, `data-handoff-metrics`, `data-handoff-recovery-signals`, `data-handoff-action-plan`, `data-handoff-action-execution`, `data-handoff-proposal-version`, `data-handoff-commercial-stage`, `data-handoff-commercial-stage-panel`, `data-handoff-commercial-stage-history`. |
 | Cliente | `data-client-continuity-strip`, `data-client-continuity-cockpit`, `data-client-next-action`, `data-client-handoff-status`, `data-client-proposal-status`, `data-client-simulation-context`, `data-client-commercial-stage`, `data-client-decision-journey`, `data-client-recovery-signals`. |

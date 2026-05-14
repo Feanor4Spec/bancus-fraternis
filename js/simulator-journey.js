@@ -41,7 +41,133 @@
     const value = String(text || '').toLowerCase();
     if (value.includes('invest') || value.includes('patrimonio') || value.includes('aposent')) return 'investimento';
     if (value.includes('liquidez') || value.includes('reserva')) return 'investimento';
+    if (value.includes('troca') || value.includes('veiculo') || value.includes('auto')) return 'troca';
+    if (value.includes('reforma') || value.includes('constr')) return 'reforma';
     return 'aquisicao';
+  }
+
+  function normalizeObjective(value) {
+    const text = String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+    if (text.includes('trocar_veiculo') || text.includes('troca') || text.includes('veiculo') || text.includes('auto')) return 'troca';
+    if (text.includes('reforma') || text.includes('constr')) return 'reforma';
+    if (text.includes('invest') || text.includes('patrimonio') || text.includes('aposent')) return 'investimento';
+    if (text.includes('liquidez') || text.includes('reserva') || text.includes('obter_liquidez')) return 'investimento';
+    if (text.includes('comprar_bem') || text.includes('compra') || text.includes('aquis')) return 'aquisicao';
+    return 'aquisicao';
+  }
+
+  const objectiveGuides = {
+    aquisicao: {
+      label: 'Aquisicao planejada',
+      title: 'Comprar bem com previsibilidade',
+      body: 'Comece por grupos com score alto, carteira controlada e taxa administravel. A proposta deve explicar carta, lance, prazo e uso do credito.',
+      filters: {
+        filtroClassificacao: 'A',
+        filtroSaude: 'Controlada',
+        filtroTaxaMax: '18',
+        filtroPrazoMin: '36',
+        filtroPrazoMax: '240'
+      },
+      sortBy: 'maior_score',
+      comparePreset: 'comprar_bem',
+      reasons: ['Score alto primeiro', 'Taxa maxima sugerida', 'Carteira controlada'],
+      nextStep: 'Selecionar 2 ou 3 grupos para comparar antes da proposta.'
+    },
+    troca: {
+      label: 'Troca ou upgrade',
+      title: 'Trocar veiculo sem perder controle de parcela',
+      body: 'Priorize grupos de automoveis com prazo menor, boa saude e dinamica suficiente para comparar parcela, lance e credito liquido.',
+      filters: {
+        filtroProduto: '3',
+        filtroClassificacao: 'A',
+        filtroTaxaMax: '20',
+        filtroPrazoMin: '24',
+        filtroPrazoMax: '96'
+      },
+      sortBy: 'maior_score',
+      comparePreset: 'trocar_veiculo',
+      reasons: ['Segmento de automoveis', 'Prazo mais curto', 'Score operacional'],
+      nextStep: 'Comparar grupos antes de gerar proposta para o cliente.'
+    },
+    reforma: {
+      label: 'Reforma ou construcao',
+      title: 'Montar credito com lastro e flexibilidade',
+      body: 'Use grupos de imoveis, valide FGTS quando fizer sentido e mantenha a memoria de calculo aberta para explicar regras de uso do credito.',
+      filters: {
+        filtroProduto: '1',
+        filtroClassificacao: 'A',
+        filtroTaxaMax: '19',
+        filtroPrazoMin: '60',
+        filtroPrazoMax: '240',
+        filtroFgts: true
+      },
+      sortBy: 'maior_score',
+      comparePreset: 'comprar_bem',
+      reasons: ['Segmento imovel', 'FGTS como opcao', 'Prazo compativel com obra'],
+      nextStep: 'Validar carta liquida e cronograma antes do PDF.'
+    },
+    investimento: {
+      label: 'Planejamento patrimonial',
+      title: 'Comparar disciplina, custo e horizonte',
+      body: 'Comece com grupos fortes em score e taxa, sem estreitar demais o segmento. A proposta deve destacar risco, horizonte e custo de oportunidade.',
+      filters: {
+        filtroClassificacao: 'A',
+        filtroTaxaMax: '17',
+        filtroPrazoMin: '48',
+        filtroPrazoMax: '240'
+      },
+      sortBy: 'menor_taxa',
+      comparePreset: 'obter_liquidez',
+      reasons: ['Menor taxa primeiro', 'Horizonte longo', 'Leitura patrimonial'],
+      nextStep: 'Gerar comparacao e explicar custo de oportunidade na proposta.'
+    }
+  };
+
+  function applyTargetValueToFilters(filters, context) {
+    const next = { ...(filters || {}) };
+    const prefill = context && context.prefill ? context.prefill : {};
+    const target = safeNumber(prefill.valorAlvo);
+    if (target > 0) {
+      next.filtroCartaMin = Math.max(0, Math.round((target * 0.85) / 1000) * 1000);
+      next.filtroCartaMax = Math.round((target * 1.15) / 1000) * 1000;
+    }
+    return next;
+  }
+
+  function buildObjectiveGuidance(input = {}) {
+    const context = input.context || {};
+    const prefill = context.prefill || {};
+    const objective = normalizeObjective(
+      input.objective ||
+      input.preset ||
+      prefill.clienteObjetivo ||
+      context.objective ||
+      'aquisicao'
+    );
+    const guide = objectiveGuides[objective] || objectiveGuides.aquisicao;
+    const filters = applyTargetValueToFilters(guide.filters, context);
+    const target = safeNumber(prefill.valorAlvo);
+    const facts = [
+      target > 0 ? `Carta alvo ${target.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}` : 'Carta alvo livre',
+      guide.reasons[0],
+      guide.reasons[1]
+    ].filter(Boolean);
+    return {
+      objective,
+      label: guide.label,
+      title: guide.title,
+      body: guide.body,
+      filters,
+      sortBy: guide.sortBy,
+      comparePreset: guide.comparePreset || 'comprar_bem',
+      reasons: guide.reasons.slice(),
+      facts,
+      nextStep: guide.nextStep,
+      actionLabel: 'Aplicar orientacao e ver grupos'
+    };
   }
 
   function buildPrefillPlan(context) {
@@ -182,6 +308,8 @@
     calculatorPageHref,
     inferObjetivoValue,
     buildPrefillPlan,
+    normalizeObjective,
+    buildObjectiveGuidance,
     buildDecisionCards,
     buildJourneyActions
   };

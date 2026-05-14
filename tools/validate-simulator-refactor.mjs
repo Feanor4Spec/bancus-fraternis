@@ -49,6 +49,8 @@ assert(stateIndex < appIndex, 'simulator-state.js deve carregar antes de app.js.
 assert(appJs.includes('BFSimulatorJourney'), 'app.js nao delega contexto/jornada para BFSimulatorJourney.');
 assert(appJs.includes('BFSimulatorState'), 'app.js nao delega snapshots para BFSimulatorState.');
 assert(appJs.includes('data-simulator-journey-actions'), 'app.js nao renderiza data-simulator-journey-actions.');
+assert(simulatorHtml.includes('data-simulator-objective-guide'), 'simulador.html sem guia de objetivo para filtros.');
+assert(appJs.includes('applySimulatorObjectiveGuide'), 'app.js sem acao de aplicar filtros guiados por objetivo.');
 assert(v8Css.includes('[data-simulator-journey-actions]'), 'CSS v8 nao estiliza data-simulator-journey-actions.');
 
 const context = { window: {}, console };
@@ -61,6 +63,7 @@ const state = context.window.BFSimulatorState;
 
 assert(journey && typeof journey.getDecisionContextSnapshot === 'function', 'BFSimulatorJourney.getDecisionContextSnapshot indisponivel.');
 assert(journey && typeof journey.buildPrefillPlan === 'function', 'BFSimulatorJourney.buildPrefillPlan indisponivel.');
+assert(journey && typeof journey.buildObjectiveGuidance === 'function', 'BFSimulatorJourney.buildObjectiveGuidance indisponivel.');
 assert(journey && typeof journey.buildJourneyActions === 'function', 'BFSimulatorJourney.buildJourneyActions indisponivel.');
 assert(state && typeof state.collectSavedCart === 'function', 'BFSimulatorState.collectSavedCart indisponivel.');
 assert(state && typeof state.restoreSavedCartItems === 'function', 'BFSimulatorState.restoreSavedCartItems indisponivel.');
@@ -83,6 +86,10 @@ const decisionContext = journey.getDecisionContextSnapshot({
   })
 });
 const prefillPlan = journey.buildPrefillPlan(decisionContext);
+const objectiveGuide = journey.buildObjectiveGuidance({
+  objective: 'trocar_veiculo',
+  context: decisionContext
+});
 const completeActions = journey.buildJourneyActions({
   dataStatus: { loaded: true },
   hasCart: true,
@@ -101,6 +108,9 @@ const emptyActions = journey.buildJourneyActions({
 });
 assert(prefillPlan.some((item) => item.id === 'valorCarta' && item.value === 300000), 'Plano de prefill nao preserva valor alvo.');
 assert(prefillPlan.some((item) => item.id === 'compLanceProprio'), 'Plano de prefill nao preserva lance sugerido.');
+assert(objectiveGuide.objective === 'troca', 'Guia de objetivo nao normalizou trocar_veiculo.');
+assert(objectiveGuide.filters.filtroProduto === '3', 'Guia de troca deveria sugerir segmento de automoveis.');
+assert(Number(objectiveGuide.filters.filtroCartaMin) > 0, 'Guia de objetivo deveria herdar carta alvo do contexto.');
 assert(completeActions.some((item) => item.action === 'salvarSimulacao'), 'Acoes de jornada nao sugerem salvar cenario apos resultado.');
 assert(emptyActions.some((item) => item.action === 'goToStep:4'), 'Acoes de jornada nao direcionam para prateleira quando ha grupos filtrados.');
 
@@ -202,7 +212,8 @@ const report = {
   },
   journeyActions: {
     complete: completeActions.length,
-    empty: emptyActions.length
+    empty: emptyActions.length,
+    objective: objectiveGuide.objective
   },
   savedCartItems: savedCart.length,
   restoredCartItems: restored.length,

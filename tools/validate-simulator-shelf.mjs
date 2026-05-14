@@ -21,6 +21,7 @@ const [
   simulatorHtml,
   appJs,
   shelfJs,
+  stylesCss,
   contracts,
   plan,
   map,
@@ -30,6 +31,7 @@ const [
   read('pages/simulador.html'),
   read('js/app.js'),
   read('js/simulator-shelf.js'),
+  read('css/styles.css'),
   read('docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md'),
   read('docs/PLANO_ACAO_EVOLUCAO_BANK_FRATERN.md'),
   read('docs/MAPA_COMPLETO_PROJETO_BANK_FRATERN.md'),
@@ -58,6 +60,7 @@ assert(simulatorShelfIndex < appIndex, 'simulator-shelf.js deve carregar antes d
   'paginateGroups',
   'applyPaginationControls',
   'renderTable',
+  'explainGroupRecommendation',
   'renderDetail',
   'setDetailAddVisible'
 ].forEach((token) => {
@@ -74,7 +77,9 @@ assert(shelf && typeof shelf.readFilters === 'function', 'BFSimulatorShelf.readF
 assert(shelf && typeof shelf.filterAndSortGroups === 'function', 'BFSimulatorShelf.filterAndSortGroups indisponivel.');
 assert(shelf && typeof shelf.paginateGroups === 'function', 'BFSimulatorShelf.paginateGroups indisponivel.');
 assert(shelf && typeof shelf.renderTable === 'function', 'BFSimulatorShelf.renderTable indisponivel.');
+assert(shelf && typeof shelf.explainGroupRecommendation === 'function', 'BFSimulatorShelf.explainGroupRecommendation indisponivel.');
 assert(shelf && typeof shelf.renderDetail === 'function', 'BFSimulatorShelf.renderDetail indisponivel.');
+assert(stylesCss.includes('.shelf-recommendation'), 'styles.css sem leitura explicavel da prateleira.');
 
 assert(shelf.pageSizeFromSettings({ get: () => 999 }) === 500, 'pageSizeFromSettings deveria limitar pageSize a 500.');
 assert(shelf.normalizePageSize(5) === 10, 'normalizePageSize deveria limitar pageSize minimo a 10.');
@@ -172,13 +177,17 @@ const table = shelf.renderTable([sampleGroup], {
   pageSize: 25
 }, {
   projectItems: [{ groupKey: 'G-1' }],
+  filters: filters,
   formatMoney: (value) => `R$ ${Number(value).toFixed(2)}`,
   formatNumber: (value) => String(Number(value))
 });
+const explanation = shelf.explainGroupRecommendation(sampleGroup, { filters });
 assert(table.countText === '1 grupo encontrado', 'renderTable gerou contador incorreto.');
 assert(table.bodyHtml.includes('shelf-row--added'), 'renderTable deveria marcar grupo ja adicionado.');
 assert(table.bodyHtml.includes('App.selecionarGrupo(0)'), 'renderTable deveria manter acao publica App.selecionarGrupo.');
 assert(table.bodyHtml.includes('data-shelf-col="acoes"'), 'renderTable deveria preservar data-shelf-col.');
+assert(table.bodyHtml.includes('data-shelf-recommendation'), 'renderTable deveria explicar recomendacao do grupo.');
+assert(explanation.reasons.length >= 2, 'explainGroupRecommendation deveria gerar motivos acionaveis.');
 
 const title = shelf.detailTitle(sampleGroup);
 const detail = shelf.renderDetail(sampleGroup, {
@@ -189,6 +198,7 @@ const detail = shelf.renderDetail(sampleGroup, {
 assert(title.includes('Grupo 1001'), 'detailTitle deveria preservar codigo do grupo.');
 assert(detail.includes('Lance Embutido Max.'), 'renderDetail deveria preservar regras comerciais.');
 assert(detail.includes('Admin QA'), 'renderDetail deveria preservar administradora.');
+assert(detail.includes('data-shelf-recommendation'), 'renderDetail deveria incluir explicacao da recomendacao.');
 
 [
   'BFSimulatorShelf',
@@ -215,6 +225,7 @@ const report = {
   },
   tableLength: table.bodyHtml.length,
   detailLength: detail.length,
+  explanationReasons: explanation.reasons.length,
   failures
 };
 

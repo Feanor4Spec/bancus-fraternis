@@ -4,6 +4,22 @@
 
 ---
 
+## [v8.91.0] - 2026-05-13
+
+### Simulador guiado por objetivo
+
+#### Adicionado
+- Etapa de filtros do simulador ganhou `data-simulator-objective-guide` para orientar a prateleira conforme objetivo do cliente.
+- `BFSimulatorJourney.buildObjectiveGuidance` passou a sugerir filtros, ordenacao, fatos e proximo passo por objetivo.
+- Prateleira de grupos ganhou recomendacao explicavel em `data-shelf-recommendation` e `data-shelf-recommendation-reason`.
+
+#### Modificado
+- `BFSimulatorShelf` agora expoe `explainGroupRecommendation` para traduzir score, taxa, prazo, FGTS, saude e papel do grupo em motivos claros.
+- O fluxo de filtros ganhou acao `App.applySimulatorObjectiveGuide()` para aplicar filtros sugeridos e abrir a prateleira.
+- Header mobile do simulador ganhou altura natural quando os controles quebram em duas linhas, evitando sobreposicao com o conteudo.
+
+---
+
 ## [v8.90.0] - 2026-05-13
 
 ### Operacao Admin das tabelas dedicadas

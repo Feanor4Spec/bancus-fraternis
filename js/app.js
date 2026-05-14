@@ -74,6 +74,7 @@ const App = (() => {
     // Se é etapa 3 (Filtros), popular dropdowns
     if (step === 3) {
       populateShelfFilters();
+      renderSimulatorObjectiveGuide();
     }
     // Se é etapa 4 (Prateleira), carregar grupos
     if (step === 4 && !options.skipAutoSearch) {
@@ -397,6 +398,88 @@ const App = (() => {
     return window.BFSimulatorJourney && window.BFSimulatorJourney.inferObjetivoValue
       ? window.BFSimulatorJourney.inferObjetivoValue(text)
       : 'aquisicao';
+  }
+
+  function getSimulatorObjective() {
+    const params = new URLSearchParams(window.location.search || '');
+    const fieldValue = document.getElementById('clienteObjetivo')?.value || '';
+    const urlValue = params.get('preset') || params.get('objetivo') || params.get('productId') || '';
+    const sourceValue = document.body.dataset.simulatorObjectiveManual === 'true'
+      ? fieldValue
+      : (urlValue || fieldValue);
+    if (window.BFSimulatorJourney && window.BFSimulatorJourney.normalizeObjective) {
+      return window.BFSimulatorJourney.normalizeObjective(sourceValue);
+    }
+    return inferObjetivoValue(sourceValue);
+  }
+
+  function buildSimulatorObjectiveGuidance() {
+    const context = getDecisionContextSnapshot();
+    if (window.BFSimulatorJourney && window.BFSimulatorJourney.buildObjectiveGuidance) {
+      return window.BFSimulatorJourney.buildObjectiveGuidance({
+        objective: getSimulatorObjective(),
+        context,
+        filters: getShelfFilters()
+      });
+    }
+    return null;
+  }
+
+  function renderSimulatorObjectiveGuide() {
+    const target = document.querySelector('[data-simulator-objective-guide]');
+    if (!target) return;
+    const guide = buildSimulatorObjectiveGuidance();
+    if (!guide) {
+      target.innerHTML = '<div class="sim-objective-guide__empty">Defina o objetivo do cliente para receber uma sugestao de prateleira.</div>';
+      return;
+    }
+    document.body.dataset.simulatorObjective = guide.objective || 'aquisicao';
+    target.dataset.simulatorObjectiveGuide = guide.objective || 'aquisicao';
+    target.innerHTML = `
+      <article class="sim-objective-guide__card" data-simulator-objective-card="${escapeSettingsText(guide.objective)}">
+        <div>
+          <span class="sim-objective-guide__eyebrow">Jornada guiada por objetivo</span>
+          <h3>${escapeSettingsText(guide.title)}</h3>
+          <p>${escapeSettingsText(guide.body)}</p>
+        </div>
+        <div class="sim-objective-guide__facts">
+          ${(guide.facts || []).map((fact) => `<span>${escapeSettingsText(fact)}</span>`).join('')}
+        </div>
+        <div class="sim-objective-guide__actions">
+          <button class="btn btn--primary" type="button" data-simulator-objective-apply onclick="App.applySimulatorObjectiveGuide()">${escapeSettingsText(guide.actionLabel || 'Aplicar orientacao')}</button>
+          <a class="btn btn--ghost" href="comparador.html?preset=${escapeSettingsText(guide.comparePreset || 'comprar_bem')}">Comparar alternativas</a>
+        </div>
+        <small>${escapeSettingsText(guide.nextStep || '')}</small>
+      </article>
+    `;
+  }
+
+  function applyGuideValue(id, value) {
+    const el = document.getElementById(id);
+    if (!el || value === undefined || value === null || value === '') return false;
+    if (el.type === 'checkbox') {
+      el.checked = value === true || value === 'true';
+      return true;
+    }
+    if (el.tagName === 'SELECT') return setSelectByValueOrText(el, value);
+    el.value = String(value);
+    return true;
+  }
+
+  function applySimulatorObjectiveGuide() {
+    const guide = buildSimulatorObjectiveGuidance();
+    if (!guide) return;
+    let applied = 0;
+    Object.entries(guide.filters || {}).forEach(([id, value]) => {
+      applied += applyGuideValue(id, value) ? 1 : 0;
+    });
+    const sortEl = document.getElementById('shelfSort');
+    if (sortEl && guide.sortBy) sortEl.value = guide.sortBy;
+    document.body.dataset.simulatorObjectiveGuideApplied = guide.objective || 'aquisicao';
+    renderSimulatorObjectiveGuide();
+    buscarGrupos();
+    goToStep(4, { skipValidation: true, skipAutoSearch: true });
+    showToast(`${applied} filtros aplicados para ${guide.label || 'objetivo do cliente'}.`, 'success');
   }
 
   function applyDecisionContextPrefill() {
@@ -1475,6 +1558,8 @@ const App = (() => {
     }
 
     renderSimulatorDecision();
+    document.body.dataset.simulatorObjectiveManual = 'true';
+    renderSimulatorObjectiveGuide();
     showToast('Dados de exemplo carregados!', 'success');
   }
 
@@ -1499,6 +1584,9 @@ const App = (() => {
     renderProposalBuilderBoard();
     renderProposalAcceptancePanel();
     renderProposalVersionPanel();
+    delete document.body.dataset.simulatorObjectiveManual;
+    delete document.body.dataset.simulatorObjectiveGuideApplied;
+    renderSimulatorObjectiveGuide();
     goToStep(1);
     renderSimulatorDecision();
     showToast('Simulação resetada.', 'warning');
@@ -1594,6 +1682,10 @@ const App = (() => {
     // Toggle FGTS
     document.getElementById('usarFGTS')?.addEventListener('change', toggleFGTSFields);
     document.getElementById('parcelaReduzida')?.addEventListener('change', toggleReducaoFields);
+    document.getElementById('clienteObjetivo')?.addEventListener('change', () => {
+      document.body.dataset.simulatorObjectiveManual = 'true';
+      renderSimulatorObjectiveGuide();
+    });
 
     // Toggle tabela detalhada
     document.getElementById('tabelaDetalhada')?.addEventListener('change', () => {
@@ -1608,6 +1700,7 @@ const App = (() => {
 
     applyConfiguredDefaults();
     applyDecisionContextPrefill();
+    renderSimulatorObjectiveGuide();
 
     // Renderizar etapa inicial
     renderSteps();
@@ -2028,6 +2121,17 @@ const App = (() => {
     };
   }
 
+  function explainGroupRecommendation(group, options = {}) {
+    if (window.BFSimulatorShelf && window.BFSimulatorShelf.explainGroupRecommendation) {
+      return window.BFSimulatorShelf.explainGroupRecommendation(group, {
+        filters: getShelfFilters(),
+        objective: getSimulatorObjective(),
+        ...options
+      });
+    }
+    return { tone: 'neutral', label: 'Comparar', reasons: [], risks: [] };
+  }
+
   function buscarGrupos() {
     try {
       const progress = window.BankFraternProgress;
@@ -2165,6 +2269,7 @@ const App = (() => {
   function limparFiltros() {
     if (window.BFSimulatorShelf && window.BFSimulatorShelf.clearFilters) {
       window.BFSimulatorShelf.clearFilters(document);
+      renderSimulatorObjectiveGuide();
       buscarGrupos();
       return;
     }
@@ -2173,6 +2278,7 @@ const App = (() => {
     ids.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
     const checks = ['filtroFgts', 'filtroParcelaReduzida'];
     checks.forEach(id => { const el = document.getElementById(id); if (el) el.checked = false; });
+    renderSimulatorObjectiveGuide();
     buscarGrupos();
   }
 
@@ -2202,6 +2308,8 @@ const App = (() => {
     if (window.BFSimulatorShelf && window.BFSimulatorShelf.renderTable) {
       const rendered = window.BFSimulatorShelf.renderTable(groups, pag, {
         projectItems: projetoEstruturado.itens,
+        filters: getShelfFilters(),
+        objective: getSimulatorObjective(),
         formatMoney: Format.money,
         formatNumber: Format.number
       });
@@ -2266,6 +2374,8 @@ const App = (() => {
       if (contentEl) {
         contentEl.innerHTML = window.BFSimulatorShelf.renderDetail(g, {
           heuristicEngine: typeof HeuristicEngine !== 'undefined' ? HeuristicEngine : null,
+          filters: getShelfFilters(),
+          objective: getSimulatorObjective(),
           getEffectiveLanceEmbutidoMax,
           formatMoney: Format.money,
           formatNumber: Format.number
@@ -3141,6 +3251,8 @@ const App = (() => {
     addInadimplenciaRow,
     showToast,
     applyConfiguredDefaults,
+    renderSimulatorObjectiveGuide,
+    applySimulatorObjectiveGuide,
     Format,
     // V2 — Comparador
     executarComparacao,
@@ -3148,6 +3260,7 @@ const App = (() => {
     // V3/V7 — Prateleira
     buscarGrupos,
     limparFiltros,
+    explainGroupRecommendation,
     verDetalheGrupo,
     fecharDetalheGrupo,
     selecionarGrupoDoDetalhe,
