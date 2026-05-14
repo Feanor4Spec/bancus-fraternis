@@ -119,6 +119,10 @@ assert(pageJs.includes('data-calculator-form-alert'), 'Formulario da calculadora
 assert(pageJs.includes('data-calculator-coherence-alert'), 'Formulario da calculadora nao expoe alerta de coerencia.');
 assert(pageJs.includes('data-calculator-field'), 'Formulario da calculadora nao expoe marcador de campo.');
 assert(pageJs.includes('data-calculator-field-error'), 'Formulario da calculadora nao expoe erro por campo.');
+assert(pageJs.includes('FIELD_PROFILE_SOURCES'), 'Pagina de calculadora nao mapeia origem dos campos reaproveitados.');
+assert(pageJs.includes('data-calculator-field-origin'), 'Formulario da calculadora nao expoe origem default/profile do campo.');
+assert(pageJs.includes('data-calculator-field-source'), 'Formulario da calculadora nao expoe selo de origem do perfil.');
+assert(pageJs.includes('fieldSource: profileSourceForField'), 'BFCalculatorJourney nao expoe fieldSource para QA.');
 assert(pageJs.includes('validateForm(form, meta)'), 'Pagina de calculadora nao valida formulario antes de calcular.');
 assert(pageJs.includes('coherenceAlerts(meta.slug, values)'), 'Pagina de calculadora nao calcula alertas de coerencia.');
 assert(pageJs.includes('document.body.dataset.calculatorCoherence'), 'Pagina de calculadora nao expoe status de coerencia no body.');
@@ -138,6 +142,7 @@ assert(pageJs.includes('profile-ready-capacity'), 'Continuidade nao reconhece ca
 assert(pageJs.includes('profile-ready-bid'), 'Continuidade nao reconhece lance sugerido pronto.');
 assert(platformCss.includes('.bf-calculator-field[data-calculator-field-state="invalid"]'), 'CSS nao estiliza estado invalido de campo da calculadora.');
 assert(platformCss.includes('.bf-calculator-coherence-alert'), 'CSS nao estiliza alerta de coerencia da calculadora.');
+assert(platformCss.includes('.bf-calculator-field-source'), 'CSS nao estiliza origem de campo reaproveitado do perfil.');
 assert(docsMap.includes('19 calculadoras'), 'Mapa completo nao registra o catalogo de 19 calculadoras.');
 assert(functionMap.includes('Mapa de funcoes das calculadoras'), 'Mapa funcional das calculadoras nao foi criado.');
 
@@ -241,6 +246,7 @@ const report = {
   persistentSubmitChecked: ['capacidade-credito', 'lance-consorcio'],
   formValidation: {
     markers: ['data-calculator-form-alert', 'data-calculator-coherence-alert', 'data-calculator-field', 'data-calculator-field-error'],
+    sourceMarkers: ['data-calculator-field-origin', 'data-calculator-field-source'],
     nextActionMarkers: ['data-calculator-next-action', 'data-calculator-next-action-card'],
     continuityMarkers: ['data-calculator-profile-continuity', 'data-calculators-profile-continuity'],
     continuityStates: ['profile-preview-not-saved', 'profile-missing-renda', 'profile-missing-reserva', 'profile-ready-capacity', 'profile-ready-bid'],

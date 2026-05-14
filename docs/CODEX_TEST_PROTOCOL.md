@@ -578,6 +578,7 @@ Validacoes obrigatorias:
 - `pages/calculadoras.html` deve recomendar a trilha minima: `custos-fixos -> reserva-emergencia -> compra-vista-parcelado -> comparador`.
 - Toda pagina individual deve abrir uma previa com `data-calculator-result-mode="preview"` sem gravar `bf_financial_profile_v1`, `bf_calculator_history_v1` ou `bf_decision_context_audit_v1`.
 - Campos invalidos devem expor `data-calculator-field-error`, alerta `data-calculator-form-alert` e bloquear o submit persistente.
+- Campos preenchidos pelo perfil devem expor `data-calculator-field-origin="profile"` e `data-calculator-field-source`.
 - Campos validos alterados pelo usuario devem atualizar a previa sem persistencia.
 - Alertas de coerencia devem expor `data-calculator-coherence-alert`, atualizar `data-calculator-coherence` e nao bloquear salvamento.
 - A ponte da calculadora deve expor `data-calculator-next-action` e `data-calculator-next-action-card` com CTA principal aderente ao risco.

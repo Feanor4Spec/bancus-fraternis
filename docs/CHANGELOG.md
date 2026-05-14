@@ -4,6 +4,20 @@
 
 ---
 
+## [v8.94.0] - 2026-05-14
+
+### Origem dos campos nas calculadoras
+
+#### Adicionado
+- Campos preenchidos pelo perfil consolidado agora exibem `data-calculator-field-source`, com selo "Preenchido pelo perfil".
+- Cada campo ganhou `data-calculator-field-origin="profile|default"` para QA e leitura de usabilidade.
+- `BFCalculatorJourney.fieldSource` passou a expor a origem do dado reaproveitado para futuras integrações.
+
+#### Modificado
+- Validador das calculadoras, contratos publicos, mapa funcional, mapa completo e protocolo de testes passaram a proteger a origem dos campos.
+
+---
+
 ## [v8.93.0] - 2026-05-14
 
 ### Continuidade por perfil nas calculadoras

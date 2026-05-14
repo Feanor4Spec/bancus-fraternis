@@ -9,6 +9,8 @@ As calculadoras formam a camada de diagnostico financeiro da plataforma. Cada pa
 
 Correcoes deste ciclo:
 
+- Campos reaproveitados do perfil consolidado expoem `data-calculator-field-source` e `data-calculator-field-origin="profile"` para mostrar a origem do dado ao usuario.
+
 - A previa inicial deixou de usar `submit` automatico.
 - A previa inicial chama `window.BFCalculadoras.simulate(slug, input, { persist: false })`.
 - O botao `Calcular e salvar cenario` chama `simulate(..., { persist: true })`.
@@ -87,6 +89,6 @@ Correcoes deste ciclo:
 | --- | --- | --- |
 | P0 | Revisar textos e labels das 19 calculadoras em linguagem de decisao | Reduzir friccao e deixar claro o proximo passo |
 | P0 | Criar estado visual de erro por campo e validacao de intervalo | Evitar cenarios irreais antes do submit |
-| P1 | Mostrar origem do dado reaproveitado no campo preenchido pelo perfil | Aumentar confianca na continuidade entre calculadoras |
+| Concluido parcial | Mostrar origem do dado reaproveitado no campo preenchido pelo perfil | Campos preenchidos pelo perfil exibem selo de origem e marcador publico |
 | P1 | Criar comparacao lateral entre ultimo salvo e previa atual | Facilitar iteracao consultiva |
 | P2 | Versionar schemas de input/output por calculadora | Preparar backend/API futura sem quebrar dados locais |

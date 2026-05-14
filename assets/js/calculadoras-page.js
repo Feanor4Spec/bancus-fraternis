@@ -772,27 +772,88 @@
     return `${Number(value).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}${suffix}`;
   }
 
+  const FIELD_PROFILE_SOURCES = {
+    rendaLiquida: { keys: ['rendaMensal'], label: 'renda mensal do perfil' },
+    rendaMensal: { keys: ['rendaMensal'], label: 'renda mensal do perfil' },
+    salarioLiquido: { keys: ['rendaMensal'], label: 'renda mensal do perfil' },
+    gastoMensal: { keys: ['gastoMensal'], label: 'custos mensais do perfil' },
+    dividasMensais: { keys: ['dividasMensais'], label: 'dividas mensais do perfil' },
+    reservaAtual: { keys: ['reservaAtual'], label: 'reserva atual do perfil' },
+    capacidadePagamento: { keys: ['capacidadePagamento'], label: 'capacidade segura salva' },
+    valorCarta: { keys: ['valorCarta', 'valorCredito'], label: 'credito alvo salvo' },
+    valorCredito: { keys: ['valorCredito', 'valorCarta'], label: 'credito alvo salvo' },
+    lanceDesejadoPct: { keys: ['lanceProprioSugeridoPct'], label: 'lance sugerido salvo' },
+    aporteMensal: { keys: ['capacidadeAporte'], label: 'capacidade de aporte salva' },
+    taxaOportunidadeMes: { keys: ['taxaOportunidadeMes'], label: 'taxa de oportunidade salva' },
+    valorInicial: { keys: ['patrimonioEstimado'], label: 'patrimonio estimado salvo' },
+    patrimonioAtual: { keys: ['patrimonioEstimado'], label: 'patrimonio estimado salvo' },
+    patrimonioInicial: { keys: ['patrimonioEstimado'], label: 'patrimonio estimado salvo' },
+    uf: { keys: ['uf'], label: 'UF salva no perfil' }
+  };
+
+  function profileSourceForField(field, value) {
+    const source = FIELD_PROFILE_SOURCES[field.name];
+    const profile = window.BFCalculadoras && typeof window.BFCalculadoras.loadProfile === 'function'
+      ? window.BFCalculadoras.loadProfile()
+      : {};
+    if (!source || !profile || typeof profile !== 'object') return null;
+    const matchedKey = source.keys.find((key) => {
+      const profileValue = profile[key];
+      if (profileValue === undefined || profileValue === null || profileValue === '') return false;
+      if (typeof profileValue === 'number') return profileValue > 0 || field.type === 'select';
+      return String(profileValue).trim() !== '';
+    });
+    if (!matchedKey) return null;
+    const profileValue = profile[matchedKey];
+    if (field.type !== 'select' && Number.isFinite(Number(profileValue)) && Number.isFinite(Number(value))) {
+      const delta = Math.abs(Number(profileValue) - Number(value));
+      const percentDelta = Math.abs(Number(profileValue) / 100 - Number(value));
+      if (delta > 0.01 && percentDelta > 0.01 && !['valorCarta', 'valorCredito', 'lanceDesejadoPct', 'aporteMensal'].includes(field.name)) return null;
+    }
+    return {
+      key: matchedKey,
+      label: source.label,
+      value: profileValue
+    };
+  }
+
+  function renderFieldSource(source, sourceId) {
+    if (!source) return '';
+    return `
+      <small id="${escapeHtml(sourceId)}" class="bf-calculator-field-source" data-calculator-field-source data-calculator-field-source-key="${escapeHtml(source.key)}">
+        Preenchido pelo perfil: ${escapeHtml(source.label)}
+      </small>
+    `;
+  }
+
   function renderField(field, value, slug) {
     const rule = fieldRule(slug, field);
     const helpId = `calc-help-${field.name}`;
     const errorId = `calc-error-${field.name}`;
-    const describedBy = `${helpId} ${errorId}`;
+    const source = profileSourceForField(field, value);
+    const sourceId = `calc-source-${field.name}`;
+    const describedBy = `${source ? `${sourceId} ` : ''}${helpId} ${errorId}`;
+    const sourceAttrs = source
+      ? `data-calculator-field-origin="profile" data-calculator-field-source-key="${escapeHtml(source.key)}"`
+      : 'data-calculator-field-origin="default"';
     if (field.type === 'select') {
       return `
-        <label class="bf-calculator-field" data-calculator-field="${escapeHtml(field.name)}" data-calculator-field-state="valid">
+        <label class="bf-calculator-field" data-calculator-field="${escapeHtml(field.name)}" data-calculator-field-state="valid" ${sourceAttrs}>
           <span>${escapeHtml(field.label)}</span>
           <select name="${escapeHtml(field.name)}" required aria-describedby="${escapeHtml(describedBy)}" data-calculator-input>
             ${(field.options || []).map((option) => `<option value="${escapeHtml(option)}"${String(option) === String(value) ? ' selected' : ''}>${escapeHtml(option)}</option>`).join('')}
           </select>
+          ${renderFieldSource(source, sourceId)}
           <small id="${escapeHtml(helpId)}" class="bf-calculator-field-help">${escapeHtml(fieldGuidance(slug, field))}</small>
           <small id="${escapeHtml(errorId)}" class="bf-calculator-field-error" data-calculator-field-error></small>
         </label>
       `;
     }
     return `
-      <label class="bf-calculator-field" data-calculator-field="${escapeHtml(field.name)}" data-calculator-field-state="valid">
+      <label class="bf-calculator-field" data-calculator-field="${escapeHtml(field.name)}" data-calculator-field-state="valid" ${sourceAttrs}>
         <span>${escapeHtml(field.label)}</span>
         <input name="${escapeHtml(field.name)}" type="${escapeHtml(field.type || 'number')}" step="${escapeHtml(field.step || '1')}" value="${escapeHtml(value)}" ${renderLimitAttributes(rule)} required aria-describedby="${escapeHtml(describedBy)}" data-calculator-input>
+        ${renderFieldSource(source, sourceId)}
         <small id="${escapeHtml(helpId)}" class="bf-calculator-field-help">${escapeHtml(fieldGuidance(slug, field))}</small>
         <small id="${escapeHtml(errorId)}" class="bf-calculator-field-error" data-calculator-field-error></small>
       </label>
@@ -1157,6 +1218,7 @@
     simulatorHref,
     preset: calculatorPreset,
     profileContinuity: buildCalculatorProfileContinuity,
+    fieldSource: profileSourceForField,
     nextAction: buildCalculatorNextAction
   };
 

@@ -195,6 +195,9 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-client-continuity-timeline',
   'data-products-selection-panel',
   'data-decision-journey-form',
+  'data-calculator-field-origin',
+  'data-calculator-field-source',
+  'data-calculator-field-source-key',
   'data-calculator-profile-continuity',
   'data-calculators-profile-continuity',
   'data-simulator-journey-actions',
@@ -442,12 +445,17 @@ assert(contracts.includes('data-calculator-result-mode'), 'Contrato publico nao 
 assert(contracts.includes('data-calculator-form-alert'), 'Contrato publico nao documenta alerta de validacao das calculadoras.');
 assert(contracts.includes('data-calculator-coherence'), 'Contrato publico nao documenta status de coerencia das calculadoras.');
 assert(contracts.includes('data-calculator-coherence-alert'), 'Contrato publico nao documenta alerta de coerencia das calculadoras.');
+assert(contracts.includes('data-calculator-field-origin'), 'Contrato publico nao documenta origem default/profile dos campos das calculadoras.');
+assert(contracts.includes('data-calculator-field-source'), 'Contrato publico nao documenta selo de origem dos campos das calculadoras.');
+assert(contracts.includes('data-calculator-field-source-key'), 'Contrato publico nao documenta chave de origem dos campos das calculadoras.');
 assert(contracts.includes('data-calculator-next-action'), 'Contrato publico nao documenta proxima acao dinamica das calculadoras.');
 assert(contracts.includes('data-calculator-next-action-card'), 'Contrato publico nao documenta card de proxima acao das calculadoras.');
 assert(contracts.includes('data-calculator-profile-continuity'), 'Contrato publico nao documenta continuidade por perfil nas calculadoras.');
 assert(contracts.includes('data-calculators-profile-continuity'), 'Contrato publico nao documenta continuidade por perfil no hub de calculadoras.');
 assert(contracts.includes('data-calculator-field-error'), 'Contrato publico nao documenta erro por campo das calculadoras.');
 assert(calculatorsPage.includes('buildCalculatorProfileContinuity'), 'calculadoras-page.js sem regra de continuidade por perfil.');
+assert(calculatorsPage.includes('FIELD_PROFILE_SOURCES'), 'calculadoras-page.js sem mapa de origem de campos reaproveitados.');
+assert(calculatorsPage.includes('fieldSource: profileSourceForField'), 'BFCalculatorJourney sem fieldSource publico.');
 assert(calculatorsPage.includes('profile-preview-not-saved'), 'calculadoras-page.js sem estado de previa sem salvar para continuidade.');
 assert(calculatorsPage.includes('profile-ready-bid'), 'calculadoras-page.js sem estado de lance pronto para continuidade.');
 assert(await exists('404.html'), 'Fallback 404.html ausente.');
@@ -497,7 +505,7 @@ const report = {
   ok: failures.length === 0,
   contracts: {
     localStorageKeys: 18,
-    dataMarkers: 90,
+    dataMarkers: 93,
     globals: 19,
     deepLinks: 10,
     validators: 22,

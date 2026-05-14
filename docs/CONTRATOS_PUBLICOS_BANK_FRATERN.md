@@ -54,7 +54,7 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | Publicacao demo | `data-public-demo-notice`, `.bf-demo-chip`. |
 | Home | `data-home-hero-contextual`, `data-home-continuity-cockpit`, `data-home-next-actions`, `data-journey-analytics`. |
 | Produtos | `data-products-grid`, `data-products-filter`, `data-products-selection-panel`, `data-products-compare-link`, `data-products-decision-strip`. |
-| Calculadoras | `data-calculator-form`, `data-calculator-form-alert`, `data-calculator-coherence`, `data-calculator-coherence-alert`, `data-calculator-field`, `data-calculator-field-error`, `data-calculator-next-action`, `data-calculator-next-action-card`, `data-calculator-profile-continuity`, `data-calculators-profile-continuity`, `data-calculator-result`, `data-calculator-result-mode`, `data-calculator-history`, `data-calculators-hub`, `data-calculator-decision-strip`. |
+| Calculadoras | `data-calculator-form`, `data-calculator-form-alert`, `data-calculator-coherence`, `data-calculator-coherence-alert`, `data-calculator-field`, `data-calculator-field-error`, `data-calculator-field-origin`, `data-calculator-field-source`, `data-calculator-field-source-key`, `data-calculator-next-action`, `data-calculator-next-action-card`, `data-calculator-profile-continuity`, `data-calculators-profile-continuity`, `data-calculator-result`, `data-calculator-result-mode`, `data-calculator-history`, `data-calculators-hub`, `data-calculator-decision-strip`. |
 | Trilha | `data-decision-journey-form`, `data-decision-journey-state`, `data-decision-journey-steps`, `data-decision-journey-actions`. |
 | Comparador | `data-comparator-form`, `data-comparator-result`, `data-comparator-preset-summary`, `data-comparator-model-recommendation`. |
 | Simulador | `data-simulator-readiness`, `data-simulator-decision-strip`, `data-simulator-journey-actions`, `data-simulator-objective-guide`, `data-simulator-objective-card`, `data-simulator-objective-apply`, `data-simulator-result-decision`, `data-simulator-result-cta`, `data-simulator-result-premise`, `data-simulator-result-risk`, `data-simulator-result-comparison`, `data-v8-stagebar`, `data-shelf-col`, `data-shelf-recommendation`, `data-shelf-recommendation-reason`. |
@@ -138,7 +138,7 @@ Leitura progressiva dos snapshots:
 | `BFHome` | Home contextual e continuidade. |
 | `BFDecisionContext` | Perfil financeiro, historico e prefill de simulacao. |
 | `BFCalculadoras` | Catalogo, calculo e historico das 19 calculadoras. |
-| `BFCalculatorJourney` | Deep links de calculadoras para jornada. |
+| `BFCalculatorJourney` | Deep links de calculadoras para jornada, continuidade e origem dos campos reaproveitados. |
 | `BFFinancialFormulas`, `BFPriceFormulas`, `BFSacFormulas`, `BFConsorcioFormulas`, `BFComparisonFormulas` | Formulas reutilizadas. |
 | `BFDadosService` | Carga de datasets locais. |
 | `BFProposalBuilder` | Regras da lousa de proposta: storage, presets, prontidao, foco, dependencias e contadores. |

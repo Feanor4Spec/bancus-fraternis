@@ -2494,6 +2494,7 @@
 }
 
 .bf-calculator-field-help,
+.bf-calculator-field-source,
 .bf-calculator-field-error {
   font-size: 12px;
   line-height: 1.45;
@@ -2501,6 +2502,21 @@
 
 .bf-calculator-field-help {
   color: var(--bf-muted);
+}
+
+.bf-calculator-field-source {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px;
+  border: 1px solid var(--bf-info-bd, #cfe0f5);
+  border-radius: 999px;
+  color: var(--bf-navy-900);
+  background: var(--bf-info-bg, #eff6ff);
+  font-weight: 850;
+  overflow-wrap: anywhere;
 }
 
 .bf-calculator-field-error {

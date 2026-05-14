@@ -13,6 +13,10 @@
       "data-calculator-field",
       "data-calculator-field-error"
     ],
+    "sourceMarkers": [
+      "data-calculator-field-origin",
+      "data-calculator-field-source"
+    ],
     "nextActionMarkers": [
       "data-calculator-next-action",
       "data-calculator-next-action-card"
@@ -36,7 +40,7 @@
       "compra-vista-parcelado"
     ]
   },
-  "generatedAt": "2026-05-14T02:13:04.644Z",
+  "generatedAt": "2026-05-14T02:20:05.262Z",
   "previewReport": [
     {
       "slug": "juros-compostos",
