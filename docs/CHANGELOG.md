@@ -4,6 +4,20 @@
 
 ---
 
+## [v8.96.0] - 2026-05-14
+
+### Fila dedicada de registros no Admin
+
+#### Adicionado
+- Dashboard Admin ganhou `data-admin-dedicated-queue` para separar leads, simulacoes e propostas materializadas em uma fila propria.
+- A fila ganhou filtros `data-admin-dedicated-queue-filter` por busca, tipo, status, prioridade e dono, com resumo em `data-admin-dedicated-queue-summary`.
+- Cada item filtrado expoe `data-admin-dedicated-queue-item` e preserva os controles inline `data-admin-backend-materialized-save` para atualizar status, etapa e prioridade.
+
+#### Modificado
+- Contratos publicos, mapa completo, plano de evolucao, protocolo de testes e validadores passaram a proteger a nova leitura operacional do Admin.
+
+---
+
 ## [v8.95.0] - 2026-05-14
 
 ### Comparacao com ultimo salvo nas calculadoras

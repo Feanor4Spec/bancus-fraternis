@@ -337,9 +337,15 @@ if (!adminUsersJs.includes('data-admin-backend-materialized-item')) fail('admin-
 if (!adminUsersJs.includes('data-admin-backend-materialized-control')) fail('admin-users.js sem controles operacionais de tabela dedicada.');
 if (!adminUsersJs.includes('data-admin-backend-materialized-field')) fail('admin-users.js sem campos editaveis de tabela dedicada.');
 if (!adminUsersJs.includes('data-admin-backend-materialized-save')) fail('admin-users.js sem botao de salvar tabela dedicada.');
+if (!adminUsersJs.includes('data-admin-dedicated-queue')) fail('admin-users.js sem fila dedicada de registros materializados.');
+if (!adminUsersJs.includes('data-admin-dedicated-queue-filter')) fail('admin-users.js sem filtros da fila dedicada.');
+if (!adminUsersJs.includes('data-admin-dedicated-queue-summary')) fail('admin-users.js sem resumo da fila dedicada.');
+if (!adminUsersJs.includes('data-admin-dedicated-queue-item')) fail('admin-users.js sem itens da fila dedicada.');
 if (!adminUsersJs.includes('handleMaterializedUpdate')) fail('admin-users.js sem handler de PATCH para tabela dedicada.');
 if (!adminUsersJs.includes('materializedUpdateMethod')) fail('admin-users.js sem roteamento updateLead/updateSimulation/updateProposal.');
 if (!platformCss.includes('.bf-admin-materialized-controls')) fail('platform.css sem layout dos controles de tabela dedicada.');
+if (!platformCss.includes('.bf-admin-dedicated-queue')) fail('platform.css sem layout da fila dedicada do Admin.');
+if (!platformCss.includes('.bf-admin-dedicated-toolbar')) fail('platform.css sem layout dos filtros da fila dedicada.');
 if (!adminUsersJs.includes('listLeads(30)')) fail('admin-users.js sem leitura de leads materializados.');
 if (!adminUsersJs.includes('listSimulations(30)')) fail('admin-users.js sem leitura de simulacoes materializadas.');
 if (!adminUsersJs.includes('listProposals(30)')) fail('admin-users.js sem leitura de propostas materializadas.');

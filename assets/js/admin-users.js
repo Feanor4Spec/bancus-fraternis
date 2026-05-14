@@ -6,6 +6,14 @@
   const ADMIN_COMMERCIAL_STAGE_AUDIT_KEY = 'bf_admin_commercial_stage_audit_v1';
   const ADMIN_COMMERCIAL_STAGE_AUDIT_LIMIT = 160;
   let backendLocalImportState = { loading: false, result: null };
+  let backendEventsLastContext = null;
+  const backendDedicatedQueueFilters = {
+    search: '',
+    type: '',
+    status: '',
+    priority: '',
+    owner: ''
+  };
 
   function qs(selector) {
     return document.querySelector(selector);
@@ -41,6 +49,15 @@
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  function formatCurrency(value) {
+    const amount = Number(value || 0);
+    if (!Number.isFinite(amount) || amount <= 0) return '-';
+    if (window.BFFormatters && typeof window.BFFormatters.currency === 'function') {
+      return window.BFFormatters.currency(amount);
+    }
+    return amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
   function setMessage(message, tone) {
@@ -3261,6 +3278,255 @@
     `;
   }
 
+  function materializedOptionLabel(options, current, fallback) {
+    const normalized = String(current || '');
+    const match = (options || []).find(([value]) => String(value) === normalized);
+    if (match) return match[1];
+    return fallback || normalized.replace(/_/g, ' ') || '-';
+  }
+
+  function materializedKindLabel(kind) {
+    return journeyEntityKindLabel(kind);
+  }
+
+  function materializedStatusLabel(kind, status) {
+    return materializedOptionLabel(materializedStatusOptions(kind), status, 'Ativo');
+  }
+
+  function materializedStageLabel(kind, stage) {
+    return materializedOptionLabel(materializedStageOptions(kind), stage, 'Sem etapa');
+  }
+
+  function materializedPriorityLabel(priority) {
+    const value = String(priority || 'media').toLowerCase();
+    const labels = { alta: 'Alta', media: 'Media', baixa: 'Baixa' };
+    return labels[value] || labels.media;
+  }
+
+  function materializedPriorityTone(priority) {
+    const value = String(priority || 'media').toLowerCase();
+    return ['alta', 'baixa'].includes(value) ? value : 'media';
+  }
+
+  function materializedOwner(item) {
+    return item.ownerEmail || item.owner || item.assignedTo || item.actorEmail || 'sem dono';
+  }
+
+  function materializedAmount(item) {
+    const payload = item && item.payload && typeof item.payload === 'object' ? item.payload : {};
+    const values = [
+      item && item.amount,
+      item && item.value,
+      item && item.totalAmount,
+      item && item.creditAmount,
+      payload.amount,
+      payload.valorCarta,
+      payload.creditoTotal,
+      payload.proposalValue
+    ];
+    const found = values.find((value) => Number.isFinite(Number(value)) && Number(value) > 0);
+    return formatCurrency(found);
+  }
+
+  function materializedQueueHref(item) {
+    const id = encodeURIComponent(item.id || '');
+    if (item.kind === 'lead') return `handoff-consultivo.html?from=admin&handoffId=${id}#fila-handoff`;
+    if (item.kind === 'simulation') return `simulador.html?from=admin&simulationId=${id}`;
+    if (item.kind === 'proposal') return `simulador.html?from=admin&proposalId=${id}#proposal-builder-panel`;
+    return '#admin-banco-eventos';
+  }
+
+  function materializedQueueNextStep(item) {
+    const kind = String(item.kind || '');
+    const status = String(item.status || '');
+    const priority = materializedPriorityTone(item.priority);
+    const hours = eventHoursSince(item.updatedAt || item.createdAt);
+    if (priority === 'alta' && hours >= slaHoursForPriority(item.priority)) {
+      return 'Priorizar retomada agora: registro passou do SLA sugerido para a prioridade atual.';
+    }
+    if (kind === 'lead') {
+      if (status === 'novo') return 'Distribuir dono e iniciar contato consultivo com contexto completo.';
+      if (status === 'aguardando_cliente') return 'Retomar cliente e registrar proxima cadencia no funil.';
+      if (status === 'em_atendimento') return 'Avancar diagnostico para proposta, comparador ou simulacao vinculada.';
+      return 'Manter historico atualizado para nao perder continuidade comercial.';
+    }
+    if (kind === 'simulation') {
+      if (status === 'saved') return 'Revisar simulacao, comparar premissas e decidir se vira proposta.';
+      if (status === 'proposta') return 'Conferir proposta vinculada e preparar handoff consultivo.';
+      return 'Validar se a simulacao ainda representa o objetivo financeiro do cliente.';
+    }
+    if (kind === 'proposal') {
+      if (['draft', 'pending'].includes(status)) return 'Fechar revisao da lousa e congelar versao antes de enviar ao cliente.';
+      if (status === 'reviewed') return 'Enviar proposta ou anexar ao handoff para continuidade do consultor.';
+      if (status === 'expired') return 'Revisar premissas vencidas antes de retomar a conversa.';
+      return 'Acompanhar aceite, validade e proximo contato.';
+    }
+    return 'Abrir contexto e definir o proximo atendimento.';
+  }
+
+  function materializedQueueSearchText(item) {
+    return [
+      materializedKindLabel(item.kind),
+      item.id,
+      item.title,
+      item.status,
+      item.stage,
+      item.priority,
+      item.relatedId,
+      materializedOwner(item)
+    ].join(' ').toLowerCase();
+  }
+
+  function materializedQueueMatches(item, filters) {
+    const search = String(filters.search || '').trim().toLowerCase();
+    if (filters.type && item.kind !== filters.type) return false;
+    if (filters.status && String(item.status || '') !== filters.status) return false;
+    if (filters.priority && materializedPriorityTone(item.priority) !== filters.priority) return false;
+    if (filters.owner && materializedOwner(item) !== filters.owner) return false;
+    if (search && !materializedQueueSearchText(item).includes(search)) return false;
+    return true;
+  }
+
+  function uniqueSorted(values) {
+    return Array.from(new Set((values || []).filter(Boolean))).sort((a, b) => String(a).localeCompare(String(b)));
+  }
+
+  function renderBackendDedicatedQueueFilterOptions(values, current, labeler) {
+    return values.map((value) => `<option value="${escapeHtml(value)}"${selectedAttr(current, value)}>${escapeHtml(labeler ? labeler(value) : value)}</option>`).join('');
+  }
+
+  function renderBackendDedicatedQueue(materializedRowsSource) {
+    const rows = (Array.isArray(materializedRowsSource) ? materializedRowsSource : [])
+      .slice()
+      .sort((a, b) => String(b.updatedAt || b.createdAt || '').localeCompare(String(a.updatedAt || a.createdAt || '')));
+    const filters = backendDedicatedQueueFilters;
+    const filteredRows = rows.filter((item) => materializedQueueMatches(item, filters));
+    const owners = uniqueSorted(rows.map(materializedOwner));
+    const types = uniqueSorted(rows.map((item) => item.kind));
+    const statuses = uniqueSorted(rows.map((item) => item.status));
+    const priorities = [['alta', 'Alta'], ['media', 'Media'], ['baixa', 'Baixa']];
+    const highPriority = filteredRows.filter((item) => materializedPriorityTone(item.priority) === 'alta').length;
+    const overdue = filteredRows.filter((item) => eventHoursSince(item.updatedAt || item.createdAt) >= slaHoursForPriority(item.priority)).length;
+    const visibleOwners = uniqueSorted(filteredRows.map(materializedOwner)).length;
+    const itemsHtml = filteredRows.slice(0, 12).map((item) => {
+      const kind = String(item.kind || '');
+      const priorityTone = materializedPriorityTone(item.priority);
+      const ageLabel = eventAgeLabel(eventHoursSince(item.updatedAt || item.createdAt));
+      const itemKey = `${kind || 'table'}:${item.id || ''}`;
+      return `
+        <article class="bf-admin-dedicated-item bf-admin-dedicated-item--${escapeHtml(priorityTone)}" data-admin-dedicated-queue-item="${escapeHtml(itemKey)}" data-admin-dedicated-queue-kind="${escapeHtml(kind)}" data-admin-dedicated-queue-owner="${escapeHtml(materializedOwner(item))}" data-admin-backend-materialized-item="${escapeHtml(itemKey)}" data-admin-backend-materialized-kind="${escapeHtml(kind)}" data-admin-backend-materialized-id="${escapeHtml(item.id || '')}">
+          <div class="bf-admin-dedicated-item__top">
+            <div>
+              <span>${escapeHtml(materializedKindLabel(kind))} dedicado</span>
+              <strong>${escapeHtml(item.title || item.id || 'Registro')}</strong>
+              <small>${escapeHtml(item.id || '-')} - ${escapeHtml(item.materializedTable || 'tabela dedicada')}</small>
+            </div>
+            <a class="btn btn--ghost btn--sm" href="${escapeHtml(materializedQueueHref(item))}">Abrir</a>
+          </div>
+          <dl>
+            <div><dt>Status</dt><dd>${escapeHtml(materializedStatusLabel(kind, item.status))}</dd></div>
+            <div><dt>Etapa</dt><dd>${escapeHtml(materializedStageLabel(kind, item.stage))}</dd></div>
+            <div><dt>Prioridade</dt><dd>${escapeHtml(materializedPriorityLabel(item.priority))}</dd></div>
+            <div><dt>Dono</dt><dd>${escapeHtml(materializedOwner(item))}</dd></div>
+            <div><dt>Aging</dt><dd>${escapeHtml(ageLabel)}</dd></div>
+            <div><dt>Valor</dt><dd>${escapeHtml(materializedAmount(item))}</dd></div>
+          </dl>
+          <p>${escapeHtml(materializedQueueNextStep(item))}</p>
+          ${item.relatedId ? `<small>Relacionado: ${escapeHtml(item.relatedId)}</small>` : ''}
+          ${renderMaterializedControls(item)}
+        </article>
+      `;
+    }).join('');
+
+    document.body.dataset.adminDedicatedQueueCount = String(filteredRows.length);
+    document.body.dataset.adminDedicatedQueueTotal = String(rows.length);
+
+    return `
+      <section class="bf-admin-dedicated-queue" id="admin-fila-dedicada" data-admin-dedicated-queue data-admin-dedicated-queue-total="${rows.length}" data-admin-dedicated-queue-visible="${filteredRows.length}">
+        <div class="bf-admin-panel-heading">
+          <div>
+            <span class="bf-badge bf-badge--gold">Fila dedicada</span>
+            <h3>Leads, simulacoes e propostas</h3>
+            <p>Separa registros reais do SQLite por tipo, status, prioridade e dono sem perder a edicao inline.</p>
+          </div>
+          <button class="btn btn--ghost btn--sm" type="button" data-admin-dedicated-queue-clear>Limpar filtros</button>
+        </div>
+        <div class="bf-admin-dedicated-toolbar" data-admin-dedicated-queue-filters>
+          <input type="search" value="${escapeHtml(filters.search)}" data-admin-dedicated-queue-filter="search" placeholder="Buscar por titulo, id, dono ou etapa" aria-label="Buscar na fila dedicada">
+          <select data-admin-dedicated-queue-filter="type" aria-label="Filtrar por tipo">
+            <option value="">Todos os tipos</option>
+            ${renderBackendDedicatedQueueFilterOptions(types, filters.type, materializedKindLabel)}
+          </select>
+          <select data-admin-dedicated-queue-filter="status" aria-label="Filtrar por status">
+            <option value="">Todos os status</option>
+            ${renderBackendDedicatedQueueFilterOptions(statuses, filters.status, (value) => String(value || '').replace(/_/g, ' '))}
+          </select>
+          <select data-admin-dedicated-queue-filter="priority" aria-label="Filtrar por prioridade">
+            <option value="">Todas prioridades</option>
+            ${priorities.map(([value, label]) => `<option value="${value}"${selectedAttr(filters.priority, value)}>${label}</option>`).join('')}
+          </select>
+          <select data-admin-dedicated-queue-filter="owner" aria-label="Filtrar por dono">
+            <option value="">Todos os donos</option>
+            ${renderBackendDedicatedQueueFilterOptions(owners, filters.owner)}
+          </select>
+        </div>
+        <div class="bf-platform-metrics" data-admin-dedicated-queue-summary>
+          <article class="bf-platform-metric is-strong"><small>Visiveis</small><strong>${filteredRows.length}</strong></article>
+          <article class="bf-platform-metric"><small>Total SQLite</small><strong>${rows.length}</strong></article>
+          <article class="bf-platform-metric"><small>Alta prioridade</small><strong>${highPriority}</strong></article>
+          <article class="bf-platform-metric"><small>Fora do SLA</small><strong>${overdue}</strong></article>
+          <article class="bf-platform-metric"><small>Donos</small><strong>${visibleOwners}</strong></article>
+        </div>
+        <div class="bf-admin-dedicated-list">
+          ${itemsHtml || '<div class="bf-empty-state" data-admin-dedicated-queue-empty>Nenhum registro dedicado encontrado para os filtros atuais.</div>'}
+        </div>
+      </section>
+    `;
+  }
+
+  function resetBackendDedicatedQueueFilters() {
+    backendDedicatedQueueFilters.search = '';
+    backendDedicatedQueueFilters.type = '';
+    backendDedicatedQueueFilters.status = '';
+    backendDedicatedQueueFilters.priority = '';
+    backendDedicatedQueueFilters.owner = '';
+  }
+
+  function updateBackendDedicatedQueueFilter(field) {
+    const key = field && field.dataset ? field.dataset.adminDedicatedQueueFilter : '';
+    if (!Object.prototype.hasOwnProperty.call(backendDedicatedQueueFilters, key)) return false;
+    backendDedicatedQueueFilters[key] = field.value || '';
+    return true;
+  }
+
+  function rerenderBackendEventsFromCache() {
+    if (!backendEventsLastContext || !backendEventsLastContext.target || !document.body.contains(backendEventsLastContext.target)) {
+      renderBackendEvents();
+      return;
+    }
+    const active = document.activeElement;
+    const focusKey = active && active.dataset ? active.dataset.adminDedicatedQueueFilter : '';
+    const selectionStart = active && typeof active.selectionStart === 'number' ? active.selectionStart : null;
+    renderBackendEventsResult(
+      backendEventsLastContext.target,
+      backendEventsLastContext.health,
+      backendEventsLastContext.events,
+      backendEventsLastContext.databaseStatus,
+      backendEventsLastContext.snapshots,
+      backendEventsLastContext.entitiesResult,
+      backendEventsLastContext.materializedResult
+    );
+    if (focusKey) {
+      const field = qs(`[data-admin-dedicated-queue-filter="${focusKey}"]`);
+      if (field) {
+        field.focus();
+        if (field.type === 'search' && selectionStart !== null && typeof field.setSelectionRange === 'function') {
+          field.setSelectionRange(selectionStart, selectionStart);
+        }
+      }
+    }
+  }
+
   function renderBackendEventsUnavailable(target, message, detail) {
     target.innerHTML = `
       <div class="bf-admin-panel-heading">
@@ -3432,6 +3698,8 @@
           ${renderMaterializedControls(item)}
         </article>
       `).join('');
+    backendEventsLastContext = { target, health, events, databaseStatus, snapshots, entitiesResult, materializedResult };
+    const dedicatedQueue = renderBackendDedicatedQueue(materializedRowsSource);
 
     target.innerHTML = `
       <div class="bf-admin-panel-heading">
@@ -3459,6 +3727,7 @@
         <article class="bf-platform-metric"><small>Journal</small><strong>${escapeHtml(sqlite.journalMode || '-')}</strong></article>
         <article class="bf-platform-metric"><small>Integridade</small><strong>${escapeHtml(sqlite.quickCheck || '-')}</strong></article>
       </div>
+      ${dedicatedQueue}
       <div class="bf-admin-mini-grid">
         <div class="bf-calculator-history">${tableRows || '<div class="bf-empty-state">Tabelas ainda nao lidas pela API local.</div>'}</div>
         <div class="bf-calculator-history">${rows || '<div class="bf-empty-state">Nenhum evento server-side registrado ainda.</div>'}</div>
@@ -3824,6 +4093,13 @@
         renderBackendEvents();
         return;
       }
+      const clearDedicatedQueueButton = event.target.closest('[data-admin-dedicated-queue-clear]');
+      if (clearDedicatedQueueButton) {
+        resetBackendDedicatedQueueFilters();
+        setMessage('Filtros da fila dedicada limpos.', 'success');
+        rerenderBackendEventsFromCache();
+        return;
+      }
       const materializedSave = event.target.closest('[data-admin-backend-materialized-save]');
       if (materializedSave) {
         handleMaterializedUpdate(materializedSave);
@@ -3838,6 +4114,18 @@
       if (runButton) {
         handleLocalImport(false);
       }
+    });
+
+    qs('[data-admin-backend-events]')?.addEventListener('change', (event) => {
+      const field = event.target.closest('[data-admin-dedicated-queue-filter]');
+      if (!field || !updateBackendDedicatedQueueFilter(field)) return;
+      rerenderBackendEventsFromCache();
+    });
+
+    qs('[data-admin-backend-events]')?.addEventListener('input', (event) => {
+      const field = event.target.closest('[data-admin-dedicated-queue-filter="search"]');
+      if (!field || !updateBackendDedicatedQueueFilter(field)) return;
+      rerenderBackendEventsFromCache();
     });
 
     qs('[data-admin-journey-funnel]')?.addEventListener('click', (event) => {

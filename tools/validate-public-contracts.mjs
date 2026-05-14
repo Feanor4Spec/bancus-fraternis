@@ -166,6 +166,12 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-admin-backend-materialized-control',
   'data-admin-backend-materialized-field',
   'data-admin-backend-materialized-save',
+  'data-admin-dedicated-queue',
+  'data-admin-dedicated-queue-filters',
+  'data-admin-dedicated-queue-filter',
+  'data-admin-dedicated-queue-summary',
+  'data-admin-dedicated-queue-item',
+  'data-admin-dedicated-queue-clear',
   'data-admin-backend-table',
   'data-admin-backend-database-provider',
   'data-admin-backend-event-refresh',
@@ -303,6 +309,12 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-admin-backend-materialized-control',
   'data-admin-backend-materialized-field',
   'data-admin-backend-materialized-save',
+  'data-admin-dedicated-queue',
+  'data-admin-dedicated-queue-filters',
+  'data-admin-dedicated-queue-filter',
+  'data-admin-dedicated-queue-summary',
+  'data-admin-dedicated-queue-item',
+  'data-admin-dedicated-queue-clear',
   'data-admin-backend-table',
   'data-admin-backend-database-provider',
   'data-admin-backend-event-refresh',
@@ -325,6 +337,10 @@ assert(adminUsers.includes('data-admin-backend-materialized'), 'Dashboard Admin 
 assert(adminUsers.includes('data-admin-backend-materialized-item'), 'Dashboard Admin sem item de tabela dedicada server-side.');
 assert(adminUsers.includes('data-admin-backend-materialized-control'), 'Dashboard Admin sem controles de tabela dedicada.');
 assert(adminUsers.includes('data-admin-backend-materialized-save'), 'Dashboard Admin sem acao PATCH de tabela dedicada.');
+assert(adminUsers.includes('data-admin-dedicated-queue'), 'Dashboard Admin sem fila dedicada de registros materializados.');
+assert(adminUsers.includes('data-admin-dedicated-queue-filter'), 'Dashboard Admin sem filtros da fila dedicada.');
+assert(adminUsers.includes('data-admin-dedicated-queue-item'), 'Dashboard Admin sem itens da fila dedicada.');
+assert(adminUsers.includes('rerenderBackendEventsFromCache'), 'Dashboard Admin sem rerender local da fila dedicada.');
 assert(adminUsers.includes('handleMaterializedUpdate'), 'Dashboard Admin sem handler de atualizacao dedicada.');
 assert(adminUsers.includes('materializedUpdateMethod'), 'Dashboard Admin sem roteamento de updateLead/updateSimulation/updateProposal.');
 assert(clientDashboard.includes('data-client-backend-snapshots'), 'Dashboard Cliente sem marcador de origem de snapshots server-side.');
