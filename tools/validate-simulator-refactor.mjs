@@ -22,6 +22,7 @@ const [
   appJs,
   journeyJs,
   stateJs,
+  resultJs,
   v8Css,
   contracts,
   plan,
@@ -31,6 +32,7 @@ const [
   read('js/app.js'),
   read('js/simulator-journey.js'),
   read('js/simulator-state.js'),
+  read('js/simulator-result.js'),
   read('assets/css/bf-design-system-v8.css'),
   read('docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md'),
   read('docs/PLANO_ACAO_EVOLUCAO_BANK_FRATERN.md'),
@@ -39,15 +41,19 @@ const [
 
 const journeyIndex = simulatorHtml.indexOf('../js/simulator-journey.js');
 const stateIndex = simulatorHtml.indexOf('../js/simulator-state.js');
+const resultIndex = simulatorHtml.indexOf('../js/simulator-result.js');
 const appIndex = simulatorHtml.indexOf('../js/app.js');
 
 assert(journeyIndex > -1, 'simulador.html nao carrega js/simulator-journey.js.');
 assert(stateIndex > -1, 'simulador.html nao carrega js/simulator-state.js.');
+assert(resultIndex > -1, 'simulador.html nao carrega js/simulator-result.js.');
 assert(appIndex > -1, 'simulador.html nao carrega js/app.js.');
 assert(journeyIndex < appIndex, 'simulator-journey.js deve carregar antes de app.js.');
 assert(stateIndex < appIndex, 'simulator-state.js deve carregar antes de app.js.');
+assert(resultIndex < appIndex, 'simulator-result.js deve carregar antes de app.js.');
 assert(appJs.includes('BFSimulatorJourney'), 'app.js nao delega contexto/jornada para BFSimulatorJourney.');
 assert(appJs.includes('BFSimulatorState'), 'app.js nao delega snapshots para BFSimulatorState.');
+assert(appJs.includes('BFSimulatorResult'), 'app.js nao delega calculo/resultado para BFSimulatorResult.');
 assert(appJs.includes('data-simulator-journey-actions'), 'app.js nao renderiza data-simulator-journey-actions.');
 assert(simulatorHtml.includes('data-simulator-objective-guide'), 'simulador.html sem guia de objetivo para filtros.');
 assert(appJs.includes('applySimulatorObjectiveGuide'), 'app.js sem acao de aplicar filtros guiados por objetivo.');
@@ -57,9 +63,11 @@ const context = { window: {}, console };
 vm.createContext(context);
 vm.runInContext(journeyJs, context, { filename: 'simulator-journey.js' });
 vm.runInContext(stateJs, context, { filename: 'simulator-state.js' });
+vm.runInContext(resultJs, context, { filename: 'simulator-result.js' });
 
 const journey = context.window.BFSimulatorJourney;
 const state = context.window.BFSimulatorState;
+const result = context.window.BFSimulatorResult;
 
 assert(journey && typeof journey.getDecisionContextSnapshot === 'function', 'BFSimulatorJourney.getDecisionContextSnapshot indisponivel.');
 assert(journey && typeof journey.buildPrefillPlan === 'function', 'BFSimulatorJourney.buildPrefillPlan indisponivel.');
@@ -68,6 +76,10 @@ assert(journey && typeof journey.buildJourneyActions === 'function', 'BFSimulato
 assert(state && typeof state.collectSavedCart === 'function', 'BFSimulatorState.collectSavedCart indisponivel.');
 assert(state && typeof state.restoreSavedCartItems === 'function', 'BFSimulatorState.restoreSavedCartItems indisponivel.');
 assert(state && typeof state.buildSimulationPayload === 'function', 'BFSimulatorState.buildSimulationPayload indisponivel.');
+assert(result && typeof result.calculate === 'function', 'BFSimulatorResult.calculate indisponivel.');
+assert(result && typeof result.renderSummary === 'function', 'BFSimulatorResult.renderSummary indisponivel.');
+assert(result && typeof result.renderProposal === 'function', 'BFSimulatorResult.renderProposal indisponivel.');
+assert(result && typeof result.renderAnalyticalTable === 'function', 'BFSimulatorResult.renderAnalyticalTable indisponivel.');
 
 const decisionContext = journey.getDecisionContextSnapshot({
   buildSimulationPrefill: () => ({
@@ -113,6 +125,62 @@ assert(objectiveGuide.filters.filtroProduto === '3', 'Guia de troca deveria suge
 assert(Number(objectiveGuide.filters.filtroCartaMin) > 0, 'Guia de objetivo deveria herdar carta alvo do contexto.');
 assert(completeActions.some((item) => item.action === 'salvarSimulacao'), 'Acoes de jornada nao sugerem salvar cenario apos resultado.');
 assert(emptyActions.some((item) => item.action === 'goToStep:4'), 'Acoes de jornada nao direcionam para prateleira quando ha grupos filtrados.');
+
+const calculation = result.calculate({ valorCarta: 200000 }, {
+  engine: {
+    simular: (params) => ({
+      resumo: { cartaLiquida: Number(params.valorCarta || 0) },
+      cronograma: [{
+        mes: 1,
+        parcelaTotal: 1200,
+        saldoAnterior: 200000,
+        indiceAplicado: 0,
+        saldoAjustado: 200000,
+        valorLance: 0,
+        valorAdiantado: 0,
+        multa: 0,
+        juros: 0,
+        saldoFinal: 198800,
+        prazoRestante: 99,
+        evento: 'normal'
+      }]
+    }),
+    compararCenarios: () => ({ base: true })
+  }
+});
+assert(calculation.ok && calculation.resultado.resumo.cartaLiquida === 200000, 'BFSimulatorResult.calculate nao retornou resultado valido.');
+assert(calculation.cenarios && calculation.cenarios.base, 'BFSimulatorResult.calculate nao preservou cenarios comparativos.');
+
+let summaryRendered = false;
+context.window.ProposalSummary = {
+  render: (container, payload, options) => {
+    summaryRendered = Boolean(container && payload && payload.resultado && options && options.surface);
+    container.innerHTML = '<section data-rendered-summary></section>';
+  }
+};
+const summaryContainer = { innerHTML: '' };
+result.renderSummary(summaryContainer, {
+  params: { valorCarta: 200000 },
+  resultado: calculation.resultado,
+  cenarios: calculation.cenarios,
+  project: { itens: [] },
+  decisionContext
+}, { surface: 'summary' });
+assert(summaryRendered && summaryContainer.innerHTML.includes('data-rendered-summary'), 'BFSimulatorResult.renderSummary nao delegou para ProposalSummary.');
+
+const tableBody = { innerHTML: '' };
+const fakeTableRoot = {
+  getElementById: (id) => {
+    if (id === 'tabela-body') return tableBody;
+    if (id === 'tabelaDetalhada') return { checked: true };
+    return null;
+  },
+  querySelectorAll: () => []
+};
+const tableRendered = result.renderAnalyticalTable(fakeTableRoot, { resultado: calculation.resultado }, {
+  formatMoney: (value) => `R$ ${Number(value || 0)}`
+});
+assert(tableRendered && tableBody.innerHTML.includes('badge--normal'), 'BFSimulatorResult.renderAnalyticalTable nao renderizou cronograma.');
 
 const fields = {
   nomeCliente: { id: 'nomeCliente', type: 'text', value: 'Cliente Local', tagName: 'INPUT' },
@@ -195,6 +263,7 @@ assert(state.resolveResumeStep(payload) === 7, 'resolveResumeStep deveria retoma
 [
   'BFSimulatorJourney',
   'BFSimulatorState',
+  'BFSimulatorResult',
   'data-simulator-journey-actions',
   'tools/validate-simulator-refactor.mjs'
 ].forEach((contract) => {
@@ -207,8 +276,9 @@ const report = {
   modules: {
     journey: true,
     state: true,
-    scriptOrder: journeyIndex < appIndex && stateIndex < appIndex,
-    appDelegates: appJs.includes('BFSimulatorJourney') && appJs.includes('BFSimulatorState')
+    result: true,
+    scriptOrder: journeyIndex < appIndex && stateIndex < appIndex && resultIndex < appIndex,
+    appDelegates: appJs.includes('BFSimulatorJourney') && appJs.includes('BFSimulatorState') && appJs.includes('BFSimulatorResult')
   },
   journeyActions: {
     complete: completeActions.length,
@@ -217,6 +287,7 @@ const report = {
   },
   savedCartItems: savedCart.length,
   restoredCartItems: restored.length,
+  resultRows: calculation.resultado.cronograma.length,
   failures
 };
 

@@ -56,7 +56,7 @@ Validacoes obrigatorias:
 - Paginas sem shell compartilhado que continuam ativas devem carregar o v8 diretamente.
 - `pages/index.html` deve manter a narrativa institucional antes do perfil financeiro.
 - `pages/simulador.html` deve preservar loading da base real, barra percentual e retomada por `simulationId`.
-- `pages/simulador.html` deve carregar `js/simulator-journey.js`, `js/simulator-state.js`, `js/simulator-shelf.js`, `js/simulator-cart.js`, `js/proposal-builder.js` e `js/proposal-governance.js` antes de `js/app.js`, preservando `App.*`.
+- `pages/simulador.html` deve carregar `js/simulator-journey.js`, `js/simulator-state.js`, `js/simulator-shelf.js`, `js/simulator-cart.js`, `js/simulator-result.js`, `js/proposal-builder.js` e `js/proposal-governance.js` antes de `js/app.js`, preservando `App.*`.
 - `data-simulator-journey-actions` deve aparecer no painel de decisao do simulador quando a jornada for renderizada.
 - `data-simulator-objective-guide` deve aparecer na etapa de filtros e `data-simulator-objective-apply` deve aplicar filtros sugeridos por objetivo antes da prateleira.
 - `data-shelf-recommendation` e `data-shelf-recommendation-reason` devem explicar por que cada grupo apareceu, preservando `App.selecionarGrupo`.

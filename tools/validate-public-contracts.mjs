@@ -47,6 +47,7 @@ const [
   app,
   simulatorShelf,
   simulatorCart,
+  simulatorResult,
   proposalSummary,
   proposalBuilder,
   proposalGovernance,
@@ -75,6 +76,7 @@ const [
   read('js/app.js'),
   read('js/simulator-shelf.js'),
   read('js/simulator-cart.js'),
+  read('js/simulator-result.js'),
   read('js/proposal-summary.js'),
   read('js/proposal-builder.js'),
   read('js/proposal-governance.js'),
@@ -242,6 +244,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'BFSimulatorState',
   'BFSimulatorShelf',
   'BFSimulatorCart',
+  'BFSimulatorResult',
   'BFComparatorModels',
   'BFTrilhaDecisaoService',
   'BFDecisionJourneyContext',
@@ -426,12 +429,14 @@ assert(simulator.includes('js/simulator-journey.js'), 'simulador.html sem modulo
 assert(simulator.includes('js/simulator-state.js'), 'simulador.html sem modulo simulator-state.');
 assert(simulator.includes('js/simulator-shelf.js'), 'simulador.html sem modulo simulator-shelf.');
 assert(simulator.includes('js/simulator-cart.js'), 'simulador.html sem modulo simulator-cart.');
+assert(simulator.includes('js/simulator-result.js'), 'simulador.html sem modulo simulator-result.');
 assert(app.includes('data-simulator-journey-actions'), 'app.js sem acoes de jornada do simulador.');
 assert(simulator.includes('data-simulator-objective-guide'), 'simulador.html sem guia de objetivo do simulador.');
 assert(app.includes('data-simulator-objective-card'), 'app.js sem card de objetivo do simulador.');
 assert(app.includes('data-simulator-objective-apply'), 'app.js sem acao de aplicar objetivo do simulador.');
 assert(app.includes('BFSimulatorShelf'), 'app.js nao delega filtros/prateleira para BFSimulatorShelf.');
 assert(app.includes('BFSimulatorCart'), 'app.js nao delega carrinho/projeto para BFSimulatorCart.');
+assert(app.includes('BFSimulatorResult'), 'app.js nao delega resultado para BFSimulatorResult.');
 assert(app.includes('BFProposalBuilder'), 'app.js nao delega lousa de proposta para BFProposalBuilder.');
 assert(app.includes('BFProposalGovernance'), 'app.js nao delega governanca de proposta para BFProposalGovernance.');
 assert(simulatorShelf.includes('BFSimulatorShelf'), 'simulator-shelf.js sem export global da prateleira.');
@@ -442,6 +447,10 @@ assert(simulatorShelf.includes('explainGroupRecommendation'), 'simulator-shelf.j
 assert(simulatorCart.includes('BFSimulatorCart'), 'simulator-cart.js sem export global do carrinho.');
 assert(simulatorCart.includes('renderStep5CartHtml'), 'simulator-cart.js sem render publico do carrinho do passo 5.');
 assert(simulatorCart.includes('normalizeEditValue'), 'simulator-cart.js sem normalizacao publica de edicao.');
+assert(simulatorResult.includes('BFSimulatorResult'), 'simulator-result.js sem export global do resultado.');
+assert(simulatorResult.includes('renderAnalyticalTable'), 'simulator-result.js sem render publico da tabela analitica.');
+assert(simulatorResult.includes('renderProposal'), 'simulator-result.js sem render publico da proposta.');
+assert(simulatorResult.includes('calculate'), 'simulator-result.js sem orquestracao publica de calculo.');
 assert(proposalBuilder.includes('bank_fratern_proposal_builder_v1'), 'proposal-builder.js sem chave da lousa de proposta.');
 assert(proposalBuilder.includes('BFProposalBuilder'), 'proposal-builder.js sem export global da lousa de proposta.');
 assert(proposalBuilder.includes("key: 'decision'"), 'proposal-builder.js sem opcao de decisao final na lousa.');
@@ -528,7 +537,7 @@ const report = {
   contracts: {
     localStorageKeys: 18,
     dataMarkers: 95,
-    globals: 19,
+    globals: 20,
     deepLinks: 10,
     validators: 22,
     calculatorCount

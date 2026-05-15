@@ -757,15 +757,19 @@ const App = (() => {
   function calcular() {
     const params = getParams();
     currentParams = params;
-    resultado = ConsorcioEngine.simular(params);
+    const calculation = window.BFSimulatorResult && window.BFSimulatorResult.calculate
+      ? window.BFSimulatorResult.calculate(params, { engine: ConsorcioEngine })
+      : { ok: false, mensagens: ['Modulo de resultado indisponivel.'] };
 
-    if (resultado.erro) {
-      showToast(resultado.mensagens.join('\n'), 'error');
+    if (!calculation.ok) {
+      showToast((calculation.mensagens || ['Nao foi possivel calcular a simulacao.']).join('\n'), 'error');
       resultado = null;
+      cenarios = null;
       return;
     }
 
-    cenarios = ConsorcioEngine.compararCenarios(params);
+    resultado = calculation.resultado;
+    cenarios = calculation.cenarios;
     renderResultados();
     renderTabela();
     renderProposta();
@@ -779,8 +783,8 @@ const App = (() => {
     const container = document.getElementById('proposal-summary-container');
     if (!container) return;
 
-    if (typeof ProposalSummary !== 'undefined' && ProposalSummary.render) {
-      ProposalSummary.render(container, {
+    if (window.BFSimulatorResult && window.BFSimulatorResult.renderSummary) {
+      window.BFSimulatorResult.renderSummary(container, {
         params: currentParams,
         resultado,
         cenarios,
@@ -806,6 +810,10 @@ const App = (() => {
   // ─── Renderização da Tabela Analítica (Etapa 5) ───
   function renderTabela() {
     if (!resultado) return;
+    if (window.BFSimulatorResult && window.BFSimulatorResult.renderAnalyticalTable) {
+      window.BFSimulatorResult.renderAnalyticalTable(document, { resultado }, { formatMoney: Format.money });
+      return;
+    }
     const tbody = document.getElementById('tabela-body');
     if (!tbody) return;
 
@@ -1074,8 +1082,8 @@ const App = (() => {
     renderProposalAcceptancePanel(acceptance);
     renderProposalVersionPanel(acceptance, builder);
 
-    if (typeof ProposalSummary !== 'undefined' && ProposalSummary.render) {
-      ProposalSummary.render(container, {
+    if (window.BFSimulatorResult && window.BFSimulatorResult.renderProposal) {
+      window.BFSimulatorResult.renderProposal(container, {
         params: currentParams,
         resultado,
         cenarios,
@@ -1088,7 +1096,7 @@ const App = (() => {
         chartPrefix: 'proposal-export',
         surface: 'proposal',
         builder
-      });
+      }, { exportManager: ExportManager });
       return;
     }
 

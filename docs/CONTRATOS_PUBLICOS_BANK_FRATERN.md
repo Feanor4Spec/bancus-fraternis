@@ -148,6 +148,7 @@ Leitura progressiva dos snapshots:
 | `BFSimulatorState` | Snapshots de formulario, carrinho salvo e payload de simulacao. |
 | `BFSimulatorShelf` | Regras da prateleira do simulador: filtros, paginacao, visibilidade de colunas, tabela e detalhe do grupo. |
 | `BFSimulatorCart` | Regras do carrinho/projeto estruturado do simulador: totais, HTML do carrinho, normalizacao de edicao e aplicacao de resultados. |
+| `BFSimulatorResult` | Orquestracao de calculo, resumo, proposta e tabela analitica do simulador, mantendo `App.*` como fachada publica. |
 | `BFProductsJourney` | Produtos, selecao e analytics de jornada. |
 | `BFComparadorService`, `BFComparatorModels` | Comparador, modelos, auditoria e presets. |
 | `BFTrilhaDecisaoService`, `BFDecisionJourneyContext` | Trilha assistida, contexto de entrada e saida. |

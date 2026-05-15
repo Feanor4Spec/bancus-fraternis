@@ -258,6 +258,7 @@ const requiredFiles = [
   'js/simulator-state.js',
   'js/simulator-shelf.js',
   'js/simulator-cart.js',
+  'js/simulator-result.js',
   'js/proposal-acceptance.js',
   'js/proposal-versioning.js',
   'assets/js/services/handoff-consultivo.service.js',
@@ -393,6 +394,7 @@ if (!platformCss.includes('.bf-calculator-saved-comparison')) fail('platform.css
 const simulatorHtml = await fs.readFile(path.join(root, 'pages/simulador.html'), 'utf8');
 const simulatorAppJs = await fs.readFile(path.join(root, 'js/app.js'), 'utf8');
 const simulatorShelfJs = await fs.readFile(path.join(root, 'js/simulator-shelf.js'), 'utf8');
+const simulatorResultJs = await fs.readFile(path.join(root, 'js/simulator-result.js'), 'utf8');
 const proposalSummaryJs = await fs.readFile(path.join(root, 'js/proposal-summary.js'), 'utf8');
 const proposalGovernanceJs = await fs.readFile(path.join(root, 'js/proposal-governance.js'), 'utf8');
 if (!simulatorHtml.includes('data-proposal-acceptance-panel')) fail('simulador.html sem painel de aceite local da proposta.');
@@ -402,12 +404,15 @@ if (!simulatorHtml.includes('../js/proposal-versioning.js')) fail('simulador.htm
 if (!simulatorHtml.includes('../js/proposal-governance.js')) fail('simulador.html nao carrega proposal-governance.js.');
 if (!simulatorHtml.includes('../js/simulator-shelf.js')) fail('simulador.html nao carrega simulator-shelf.js.');
 if (!simulatorHtml.includes('../js/simulator-cart.js')) fail('simulador.html nao carrega simulator-cart.js.');
+if (!simulatorHtml.includes('../js/simulator-result.js')) fail('simulador.html nao carrega simulator-result.js.');
 if (!simulatorHtml.includes('data-simulator-objective-guide')) fail('simulador.html sem guia visual de objetivo do simulador.');
 if (!simulatorHtml.includes('../assets/js/services/handoff-consultivo.service.js')) fail('simulador.html nao carrega servico de handoff consultivo.');
 if (!simulatorAppJs.includes('BFSimulatorShelf')) fail('app.js sem delegacao de prateleira para BFSimulatorShelf.');
 if (!simulatorAppJs.includes('BFSimulatorCart')) fail('app.js sem delegacao de carrinho para BFSimulatorCart.');
+if (!simulatorAppJs.includes('BFSimulatorResult')) fail('app.js sem delegacao de resultado para BFSimulatorResult.');
 if (!simulatorAppJs.includes('applySimulatorObjectiveGuide')) fail('app.js sem acao de aplicar objetivo guiado.');
 if (!simulatorShelfJs.includes('data-shelf-recommendation')) fail('simulator-shelf.js sem recomendacao explicavel na prateleira.');
+if (!simulatorResultJs.includes('renderAnalyticalTable')) fail('simulator-result.js sem tabela analitica extraida.');
 if (!stylesCss.includes('.sim-objective-guide')) fail('styles.css sem layout do guia de objetivo.');
 if (!stylesCss.includes('.shelf-recommendation')) fail('styles.css sem layout de recomendacao da prateleira.');
 if (!stylesCss.includes('.ps-section--decision')) fail('styles.css sem layout da decisao final do resultado.');

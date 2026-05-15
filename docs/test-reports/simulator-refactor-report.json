@@ -3,6 +3,7 @@
   "modules": {
     "journey": true,
     "state": true,
+    "result": true,
     "scriptOrder": true,
     "appDelegates": true
   },
@@ -13,5 +14,6 @@
   },
   "savedCartItems": 1,
   "restoredCartItems": 1,
+  "resultRows": 1,
   "failures": []
 }

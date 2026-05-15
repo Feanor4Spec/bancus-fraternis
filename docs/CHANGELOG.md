@@ -4,6 +4,21 @@
 
 ---
 
+## [v8.97.0] - 2026-05-15
+
+### Resultado do simulador modularizado
+
+#### Adicionado
+- Criado `js/simulator-result.js` com export global `BFSimulatorResult`.
+- O novo service concentra `calculate`, `renderSummary`, `renderProposal`, `renderAnalyticalTable` e `badgeClass`.
+- `pages/simulador.html` passou a carregar `simulator-result.js` antes de `app.js`.
+
+#### Modificado
+- `App.calcular`, `App.renderResultados`, `App.renderTabela` e `App.renderProposta` passaram a delegar calculo, resumo, proposta e tabela analitica para `BFSimulatorResult`, preservando `App.*`.
+- Contratos publicos, mapa, plano, protocolo e validadores passaram a proteger o novo corte de modularizacao do simulador.
+
+---
+
 ## [v8.96.0] - 2026-05-14
 
 ### Fila dedicada de registros no Admin

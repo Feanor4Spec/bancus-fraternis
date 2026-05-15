@@ -262,7 +262,7 @@ Simulador completo
   -> handoff consultivo de proposta
 ```
 
-Contratos principais: `data-simulator-readiness`, `data-simulator-objective-guide`, `data-shelf-recommendation`, `data-simulator-result-decision`, `data-proposal-acceptance-panel`, `data-proposal-version-panel`, `data-proposal-handoff-bridge`, `App`, `ConsorcioEngine`, `ProposalSummary`, `BFSimulatorShelf`, `BFSimulatorCart`, `BFProposalBuilder`, `BFProposalGovernance`, `BFProposalAcceptance`, `BFProposalVersions`, `BFHandoffConsultivoService`.
+Contratos principais: `data-simulator-readiness`, `data-simulator-objective-guide`, `data-shelf-recommendation`, `data-simulator-result-decision`, `data-proposal-acceptance-panel`, `data-proposal-version-panel`, `data-proposal-handoff-bridge`, `App`, `ConsorcioEngine`, `ProposalSummary`, `BFSimulatorShelf`, `BFSimulatorCart`, `BFSimulatorResult`, `BFProposalBuilder`, `BFProposalGovernance`, `BFProposalAcceptance`, `BFProposalVersions`, `BFHandoffConsultivoService`.
 
 ### Jornada de operacao
 
@@ -300,7 +300,7 @@ Melhoria implementada em 2026-05-07:
 - O funil/cadencia comercial agora exporta JSON sanitizado em `bank-fratern.admin-commercial-pipeline.v1`, com leads anonimizados, totais por etapa e movimentacoes recentes para reuniao diaria.
 - O Handoff Consultivo agora le a etapa comercial salva pelo Admin, mostra chip/painel de cadencia, ultima movimentacao e atraso da etapa para o consultor.
 - A lousa navegavel agora possui checkpoints de QA comercial para cockpit cliente, handoff consultivo, funil/cadencia admin, exportacao sanitizada e smoke test online.
-- O simulador iniciou reducao de divida tecnica com `BFSimulatorJourney`, `BFSimulatorState`, `BFSimulatorShelf`, `BFSimulatorCart`, `BFProposalBuilder` e `BFProposalGovernance`, preservando `App.*`, payloads salvos, prateleira, carrinho/projeto, PDF/proposta, aceite, versionamento e acoes de continuidade.
+- O simulador iniciou reducao de divida tecnica com `BFSimulatorJourney`, `BFSimulatorState`, `BFSimulatorShelf`, `BFSimulatorCart`, `BFSimulatorResult`, `BFProposalBuilder` e `BFProposalGovernance`, preservando `App.*`, payloads salvos, prateleira, carrinho/projeto, resultado, PDF/proposta, aceite, versionamento e acoes de continuidade.
 - O painel consultivo filtra por origem e mostra badge/resumo da origem nos cards e no detalhe.
 - O dashboard admin mostra metricas de propostas e trilhas na fila de handoff.
 - O contrato e coberto por `tools/validate-handoff-origins.mjs` e `tools/validate-handoff-consultant-operations.mjs`.
@@ -311,13 +311,14 @@ Melhoria implementada em 2026-05-07:
 
 | Arquivo | Responsabilidade |
 | --- | --- |
-| `js/app.js` | Fachada/controlador principal do simulador completo. Ainda concentra wizard, calculo e acoes publicas, mas ja delega jornada, snapshots, prateleira, carrinho/projeto, lousa e governanca visual da proposta para modulos dedicados. |
+| `js/app.js` | Fachada/controlador principal do simulador completo. Ainda concentra wizard e acoes publicas, mas ja delega jornada, snapshots, prateleira, carrinho/projeto, calculo/resultado, lousa e governanca visual da proposta para modulos dedicados. |
 | `js/proposal-builder.js` | Service da lousa de proposta/PDF: storage, presets, opcoes, dependencias, foco, decisao final, prontidao e estimativa de paginas. |
 | `js/proposal-governance.js` | Service visual da governanca da proposta: paineis de versionamento, aceite local, historicos, leitura do formulario e ponte de handoff. |
 | `js/simulator-journey.js` | Service do simulador para contexto de origem, prefill e proximas acoes da jornada. |
 | `js/simulator-state.js` | Service do simulador para snapshots de formulario, carrinho salvo, payload de simulacao e retomada. |
 | `js/simulator-shelf.js` | Service da prateleira: filtros, page size, colunas, ordenacao, paginacao, tabela e detalhe do grupo. |
 | `js/simulator-cart.js` | Service do carrinho/projeto estruturado: item criado a partir da prateleira, totais, campos editaveis, HTML do passo 4/5 e aplicacao de resultados. |
+| `js/simulator-result.js` | Service do resultado do simulador: orquestracao de calculo, resumo, proposta e tabela analitica. |
 | `js/engine.js` | Motor de consorcio, cronograma, eventos, resumo e cenarios. |
 | `js/shelf-data.js` | Carregamento e normalizacao da base real/fallback de grupos. |
 | `js/shelf-engine.js` | Score, filtros, paginacao, projeto estruturado e simulacao consolidada da prateleira. |
@@ -461,7 +462,7 @@ Os marcadores mais importantes por area:
 
 Exports principais confirmados:
 
-`BFAuth`, `Settings`, `BFHome`, `BFDecisionContext`, `BFCalculadoras`, `BFCalculatorJourney`, `BFFinancialFormulas`, `BFDadosService`, `BFProductsJourney`, `BFComparadorService`, `BFComparatorModels`, `BFTrilhaDecisaoService`, `BFDecisionJourneyContext`, `BFModelosRecomendacaoService`, `BFHandoffConsultivoService`, `BFJourneyRecoveryService`, `BFAdminRecoveryService`, `BFSimulatorShelf`, `BFSimulatorCart`, `BFProposalBuilder`, `BFProposalGovernance`, `BFProposalAcceptance`, `BFProposalVersions`, `BankFraternProgress`.
+`BFAuth`, `Settings`, `BFHome`, `BFDecisionContext`, `BFCalculadoras`, `BFCalculatorJourney`, `BFFinancialFormulas`, `BFDadosService`, `BFProductsJourney`, `BFComparadorService`, `BFComparatorModels`, `BFTrilhaDecisaoService`, `BFDecisionJourneyContext`, `BFModelosRecomendacaoService`, `BFHandoffConsultivoService`, `BFJourneyRecoveryService`, `BFAdminRecoveryService`, `BFSimulatorShelf`, `BFSimulatorCart`, `BFSimulatorResult`, `BFProposalBuilder`, `BFProposalGovernance`, `BFProposalAcceptance`, `BFProposalVersions`, `BankFraternProgress`.
 
 ### Deep links e rotas funcionais
 
@@ -509,7 +510,7 @@ Scripts confirmados em `tools/`:
 | `validate-online-journey-smoke.mjs` | Smoke test online no GitHub Pages para as 10 etapas do roteiro navegavel. |
 | `validate-simulator-groups.mjs` | Carga completa da base real no simulador, filtro vazio, score, ordenacao e paginacao. |
 | `validate-simulator-performance.mjs` | Peso da base compacta, schema colunar, fallback e reducao de bytes do simulador online. |
-| `validate-simulator-refactor.mjs` | Modulos extraidos do simulador, ordem de scripts, payload salvo e proximas acoes da jornada. |
+| `validate-simulator-refactor.mjs` | Modulos extraidos do simulador, ordem de scripts, resultado modularizado, payload salvo e proximas acoes da jornada. |
 | `validate-simulator-shelf.mjs` | Prateleira do simulador, ordem de scripts, filtros, ordenacao, paginacao, tabela e detalhe do grupo. |
 | `validate-simulator-cart.mjs` | Carrinho/projeto estruturado do simulador, ordem de scripts, totais, edicao e render do passo 4/5. |
 | `validate-simulator-result-decision.mjs` | Resultado como decisao final, recomendacao, riscos, premissas, comparacoes e CTA para proposta. |

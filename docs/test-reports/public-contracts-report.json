@@ -3,7 +3,7 @@
   "contracts": {
     "localStorageKeys": 18,
     "dataMarkers": 95,
-    "globals": 19,
+    "globals": 20,
     "deepLinks": 10,
     "validators": 22,
     "calculatorCount": 19
