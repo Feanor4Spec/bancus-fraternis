@@ -506,7 +506,7 @@
     const chips = [];
     if (cfg.defaultSegmento) chips.push(`Segmento: ${SEGMENTS[cfg.defaultSegmento] || cfg.defaultSegmento}`);
     if (cfg.defaultAdmin) chips.push(`Admin: ${cfg.defaultAdmin}`);
-    chips.push(`${cfg.pageSize || 50} grupos por pagina`);
+    chips.push(`${cfg.pageSize || 20} grupos por pagina`);
     chips.push(cfg.autoScore === false ? 'Score manual' : 'Score automatico');
     chips.push(`MOB ${cfg.defaultMesContemplacao || 18}`);
     return chips;

@@ -295,7 +295,7 @@ const App = (() => {
     const chips = [
       cfg.defaultSegmento ? `Segmento ${cfg.defaultSegmento}` : 'Todos os segmentos',
       cfg.defaultAdmin ? `Admin ${cfg.defaultAdmin}` : 'Todas as administradoras',
-      `${cfg.pageSize || 50} grupos/pagina`,
+      `${cfg.pageSize || 20} grupos/pagina`,
       cfg.autoScore === false ? 'Score manual' : 'Score automatico',
       `Lance ate ${cfg.maxLanceEmbutido || 30}%`,
       `Reajuste ${cfg.defaultIndiceReajuste || 5}%`,
@@ -2003,10 +2003,10 @@ const App = (() => {
       return window.BFSimulatorShelf.pageSizeFromSettings(typeof Settings !== 'undefined' ? Settings : null);
     }
     try {
-      const size = (typeof Settings !== 'undefined' && Settings.get) ? Number(Settings.get('pageSize')) : 50;
-      return Number.isFinite(size) && size > 0 ? Math.min(500, Math.max(10, Math.round(size))) : 50;
+      const size = (typeof Settings !== 'undefined' && Settings.get) ? Number(Settings.get('pageSize')) : 20;
+      return Number.isFinite(size) && size > 0 ? Math.min(50, Math.max(20, Math.round(size))) : 20;
     } catch (e) {
-      return 50;
+      return 20;
     }
   }
   let _shelfCurrentPage = 1;
@@ -2056,7 +2056,7 @@ const App = (() => {
       ? window.BFSimulatorShelf.normalizePageSize(value)
       : (() => {
           const n = parseInt(value, 10);
-          return Number.isFinite(n) && n > 0 ? Math.min(500, Math.max(10, n)) : 50;
+          return Number.isFinite(n) && n > 0 ? Math.min(50, Math.max(20, n)) : 20;
         })();
     if (typeof Settings !== 'undefined' && Settings.set) Settings.set('pageSize', pageSize);
     _shelfCurrentPage = 1;

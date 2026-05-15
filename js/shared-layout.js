@@ -20,7 +20,7 @@
     smoothScroll: true,
     darkMode: false,
     autoScore: true,
-    pageSize: 50,
+    pageSize: 20,
     defaultSegmento: '',
     defaultAdmin: '',
     defaultIndiceReajuste: 5,
@@ -41,6 +41,11 @@
     }
   }
 
+  function normalizeSharedPageSize(value) {
+    const size = Number(value);
+    return Number.isFinite(size) && size > 0 ? Math.min(50, Math.max(20, Math.round(size))) : settingsDefaults.pageSize;
+  }
+
   function applySharedSettings() {
     if (window.Settings && typeof window.Settings.applyGlobal === 'function') {
       window.Settings.applyGlobal();
@@ -55,7 +60,8 @@
     document.body.classList.toggle('bf-settings-autoscore-off', config.autoScore === false);
     document.documentElement.style.scrollBehavior = config.smoothScroll === false ? 'auto' : 'smooth';
     document.body.dataset.settingsApplied = 'true';
-    document.body.dataset.settingsPageSize = String(config.pageSize || 50);
+    const pageSize = normalizeSharedPageSize(config.pageSize);
+    document.body.dataset.settingsPageSize = String(pageSize);
     document.body.dataset.settingsAutoScore = config.autoScore === false ? 'off' : 'on';
     document.body.dataset.settingsSegmento = String(config.defaultSegmento || '');
 
@@ -63,7 +69,7 @@
       const parts = [];
       if (config.defaultAdmin) parts.push(`admin ${config.defaultAdmin}`);
       if (config.defaultSegmento) parts.push(`segmento ${config.defaultSegmento}`);
-      parts.push(`${config.pageSize || 50} grupos/pagina`);
+      parts.push(`${pageSize} grupos/pagina`);
       parts.push(config.autoScore === false ? 'score manual' : 'score automatico');
       el.textContent = parts.join(' | ');
     });

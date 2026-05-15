@@ -1,6 +1,6 @@
 # Mapa Completo do Projeto Bancus Fraternis
 
-Atualizado em 2026-05-13.
+Atualizado em 2026-05-15.
 
 Este mapa foi recriado a partir da leitura real do workspace. Ele documenta o Bancus Fraternis como plataforma de decisao financeira, nao apenas como simulador de consorcio. O objetivo e permitir que uma pessoa ou agente entenda a superficie atual do produto antes de evoluir Home, produtos, calculadoras, trilha assistida, comparador, simulador, proposta, handoff, dashboard cliente e dashboard admin.
 
@@ -140,7 +140,7 @@ Contrato confirmado:
 
 | Pagina | Estado | Conteudo |
 | --- | --- | --- |
-| `pages/simulador.html` | Ativa | Simulador completo de consorcio, prateleira com 17.396 grupos validos, guia de objetivo, recomendacao explicavel de grupos, projeto estruturado, proposta, aceite e handoff. |
+| `pages/simulador.html` | Ativa | Simulador completo de consorcio, prateleira com 17.396 grupos validos, controle de 20 a 50 grupos por pagina, guia de objetivo, recomendacao explicavel de grupos, projeto estruturado, proposta, aceite e handoff. |
 | `pages/simulador-consorcio.html` | Ativa | Porta de entrada para o simulador completo de consorcio. |
 | `pages/simulador-financiamento.html` | Ativa | Simulacao de financiamento com Price/SAC. |
 | `pages/simulador-veiculos.html` | Ativa | Comparacao de veiculo por financiamento ou consorcio. |
@@ -253,7 +253,7 @@ Contratos principais: `data-decision-journey-form`, `data-decision-journey-state
 ```text
 Simulador completo
   -> dados do consultor e cliente
-  -> prateleira de grupos
+  -> prateleira de grupos com 20 a 50 itens por pagina
   -> projeto estruturado
   -> calculo e graficos
   -> proposta espelhada no PDF
@@ -262,7 +262,7 @@ Simulador completo
   -> handoff consultivo de proposta
 ```
 
-Contratos principais: `data-simulator-readiness`, `data-simulator-objective-guide`, `data-shelf-recommendation`, `data-simulator-result-decision`, `data-proposal-acceptance-panel`, `data-proposal-version-panel`, `data-proposal-handoff-bridge`, `App`, `ConsorcioEngine`, `ProposalSummary`, `BFSimulatorShelf`, `BFSimulatorCart`, `BFSimulatorResult`, `BFProposalBuilder`, `BFProposalGovernance`, `BFProposalAcceptance`, `BFProposalVersions`, `BFHandoffConsultivoService`.
+Contratos principais: `data-simulator-readiness`, `data-simulator-objective-guide`, `data-shelf-recommendation`, `data-simulator-result-decision`, `data-proposal-acceptance-panel`, `data-proposal-version-panel`, `data-proposal-handoff-bridge`, `App`, `ConsorcioEngine`, `ProposalSummary`, `BFSimulatorShelf`, `BFSimulatorCart`, `BFSimulatorResult`, `BFProposalBuilder`, `BFProposalGovernance`, `BFProposalAcceptance`, `BFProposalVersions`, `BFHandoffConsultivoService`. A preferencia `pageSize` da prateleira e normalizada entre 20 e 50, com padrao 20.
 
 ### Jornada de operacao
 
@@ -511,7 +511,7 @@ Scripts confirmados em `tools/`:
 | `validate-simulator-groups.mjs` | Carga completa da base real no simulador, filtro vazio, score, ordenacao e paginacao. |
 | `validate-simulator-performance.mjs` | Peso da base compacta, schema colunar, fallback e reducao de bytes do simulador online. |
 | `validate-simulator-refactor.mjs` | Modulos extraidos do simulador, ordem de scripts, resultado modularizado, payload salvo e proximas acoes da jornada. |
-| `validate-simulator-shelf.mjs` | Prateleira do simulador, ordem de scripts, filtros, ordenacao, paginacao, tabela e detalhe do grupo. |
+| `validate-simulator-shelf.mjs` | Prateleira do simulador, ordem de scripts, filtros, page size 20-50, ordenacao, paginacao, tabela e detalhe do grupo. |
 | `validate-simulator-cart.mjs` | Carrinho/projeto estruturado do simulador, ordem de scripts, totais, edicao e render do passo 4/5. |
 | `validate-simulator-result-decision.mjs` | Resultado como decisao final, recomendacao, riscos, premissas, comparacoes e CTA para proposta. |
 | `validate-handoff-origins.mjs` | Origem dos handoffs por proposta, trilha, sinal e pacote importado. |

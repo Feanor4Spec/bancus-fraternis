@@ -19,7 +19,7 @@ const Settings = (() => {
     showJourney: true,
     smoothScroll: true,
     darkMode: false,
-    pageSize: 50,
+    pageSize: 20,
     autoScore: true,
     defaultPoliticaSaldo: 'carta',
     defaultIndiceReajuste: 5,
@@ -56,7 +56,7 @@ const Settings = (() => {
     merged.maxLanceEmbutido = clampNumber(merged.maxLanceEmbutido, 0, 100, DEFAULTS.maxLanceEmbutido);
     merged.defaultIndiceReajuste = clampNumber(merged.defaultIndiceReajuste, 0, 50, DEFAULTS.defaultIndiceReajuste);
     merged.defaultMesContemplacao = Math.round(clampNumber(merged.defaultMesContemplacao, 1, 300, DEFAULTS.defaultMesContemplacao));
-    merged.pageSize = Math.round(clampNumber(merged.pageSize, 10, 500, DEFAULTS.pageSize));
+    merged.pageSize = Math.round(clampNumber(merged.pageSize, 20, 50, DEFAULTS.pageSize));
     merged.defaultPoliticaSaldo = merged.defaultPoliticaSaldo === 'carta_mais_custos' ? 'carta_mais_custos' : 'carta';
     merged.defaultAdmin = String(merged.defaultAdmin || '').trim();
     merged.defaultSegmento = String(merged.defaultSegmento || '').trim();

@@ -532,13 +532,8 @@
                 <option value="mais_contemplacoes">Mais Contemplações</option>
               </select>
               <label class="form-label" style="margin:0;" for="shelfPageSize">Por página:</label>
-              <select id="shelfPageSize" class="form-select" style="width:auto;min-width:92px;"
-                onchange="App.changeShelfPageSize(this.value)">
-                <option value="25">25</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-                <option value="200">200</option>
-              </select>
+              <input id="shelfPageSize" class="form-input" type="number" min="20" max="50" step="1" value="20"
+                style="width:88px;" onchange="App.changeShelfPageSize(this.value)">
               <details class="shelf-columns-menu">
                 <summary class="btn btn--sm btn--ghost">ܷ Colunas</summary>
                 <div class="shelf-columns-menu__panel">

@@ -1,6 +1,6 @@
 # Configuracoes Globais - Fase 4
 
-Atualizado em 2026-04-24.
+Atualizado em 2026-05-15.
 
 ## Objetivo
 
@@ -14,7 +14,7 @@ Transformar `pages/configuracoes.html` em um centro de preferencias realmente ap
 | `smoothScroll` | Portal | Alterna scroll suave/global. |
 | `darkMode` | Portal | Aplica classe global de tema escuro experimental. |
 | `autoScore` | Simulador | Liga/desliga recomputacao automatica de score da prateleira. |
-| `pageSize` | Simulador | Define grupos por pagina na prateleira. |
+| `pageSize` | Simulador | Define grupos por pagina na prateleira, com padrao 20 e limite 50. |
 | `defaultSegmento` | Home e simulador | Prioriza destaques da Home e preenche filtro de segmento. |
 | `defaultAdmin` | Simulador | Preenche filtro de administradora quando existe na base. |
 | `defaultPoliticaSaldo` | Simulador | Define politica inicial do comparador. |

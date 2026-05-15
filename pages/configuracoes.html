@@ -153,12 +153,7 @@
       </div>
       <form class="bf-platform-form">
         <label for="cfg-pageSize">Grupos por pagina
-          <select id="cfg-pageSize">
-            <option value="25">25 grupos</option>
-            <option value="50">50 grupos</option>
-            <option value="100">100 grupos</option>
-            <option value="200">200 grupos</option>
-          </select>
+          <input id="cfg-pageSize" type="number" min="20" max="50" step="1" value="20">
         </label>
       </form>
     </section>
@@ -221,8 +216,13 @@
         config[key] = el.type === 'number' ? (parseFloat(val) || 0) : val;
       });
       const ok = Settings.save(config);
-      Settings.applyGlobal(config);
-      renderConfigSummary(config);
+      const normalized = Settings.load();
+      Object.entries(fieldMap).forEach(([elId, key]) => {
+        const el = document.getElementById(elId);
+        if (el && normalized[key] !== undefined) el.value = normalized[key];
+      });
+      Settings.applyGlobal(normalized);
+      renderConfigSummary(normalized);
       showToast(ok ? 'Configuracoes salvas com sucesso.' : 'Erro ao salvar configuracoes.', ok ? '#059669' : '#dc2626');
     }
 

@@ -972,7 +972,7 @@ Preferencias a validar:
 - `autoScore=false` deve mudar a ordenacao inicial da prateleira para `menor_taxa` e evitar recomputar score na busca.
 - `defaultSegmento` deve preencher `#filtroProduto` no simulador e priorizar grupos em destaque na Home.
 - `defaultAdmin` deve preencher `#filtroAdministradora` quando a administradora existir na base carregada.
-- `pageSize` deve preencher `#shelfPageSize` e ser respeitado pela prateleira.
+- `pageSize` deve preencher `#shelfPageSize`, iniciar em 20 e ser respeitado pela prateleira ate o limite 50.
 - `defaultPoliticaSaldo`, `defaultIndiceReajuste`, `defaultMesContemplacao` e `maxLanceEmbutido` devem preencher o comparador/parametros do simulador.
 
 Evidencias esperadas:

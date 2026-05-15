@@ -4,6 +4,21 @@
 
 ---
 
+## [v8.98.0] - 2026-05-15
+
+### Controle de quantidade na prateleira
+
+#### Modificado
+- A prateleira do simulador agora inicia com 20 grupos por pagina.
+- O controle de quantidade na prateleira e em Configuracoes passou a aceitar qualquer valor de 20 a 50 grupos.
+- Preferencias antigas salvas com valores abaixo de 20 ou acima de 50 agora sao normalizadas para o intervalo permitido.
+
+#### Governanca
+- `tools/validate-simulator-shelf.mjs` passou a proteger o padrao 20 e o limite maximo 50.
+- Mapa, plano, contratos publicos e protocolo de testes foram atualizados com a nova regra de UX.
+
+---
+
 ## [v8.97.0] - 2026-05-15
 
 ### Resultado do simulador modularizado

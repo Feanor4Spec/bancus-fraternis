@@ -1,6 +1,6 @@
 # Contratos Publicos - Bancus Fraternis
 
-Atualizado em 2026-05-14.
+Atualizado em 2026-05-15.
 
 Este documento e a matriz viva dos contratos que novas evolucoes devem preservar. O Bancus Fraternis e uma plataforma estatica/progressiva de decisao financeira; por isso, compatibilidade local importa tanto quanto visual e jornada.
 
@@ -20,7 +20,7 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | `bf_auth_users_v1` | `BFAuth` | Usuarios locais, papeis e status. | Preservar shape de usuario e senha local apenas no prototipo. |
 | `bf_auth_session_v1` | `BFAuth` | Sessao local de 8 horas. | Manter leitura tolerante quando sessao expirar. |
 | `bf_backend_session_v1` | `BFBackendApi` | Token da API local Node/SQLite quando o site roda em `localhost`. | Fallback obrigatorio para paginas estaticas, `file://` e GitHub Pages. |
-| `consorciopro_settings` | `Settings` | Preferencias historicas do simulador. | Nome legado controlado; nao renomear sem migracao. |
+| `consorciopro_settings` | `Settings` | Preferencias historicas do simulador, incluindo `pageSize` da prateleira normalizado entre 20 e 50. | Nome legado controlado; nao renomear sem migracao. |
 | `consorciopro_simulations` | `Storage` / `App` | Simulacoes salvas do simulador completo. | Manter leitura de simulacoes antigas. |
 | `bank_fratern_proposal_acceptances_v1` | `BFProposalAcceptance` | Revisoes, aceite local e status de proposta. | Preservar `proposalId`, `status`, `version` e `snapshot`. |
 | `bank_fratern_proposal_versions_v1` | `BFProposalVersions` | Snapshots versionados da proposta, lousa, metricas e comparacao antes do handoff. | Preservar `proposalId`, `version`, `sourceHash`, `builder` e `metrics`. |

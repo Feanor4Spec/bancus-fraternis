@@ -19,8 +19,10 @@ async function read(relativePath) {
 
 const [
   simulatorHtml,
+  settingsHtml,
   appJs,
   shelfJs,
+  settingsJs,
   stylesCss,
   contracts,
   plan,
@@ -29,8 +31,10 @@ const [
   protocol
 ] = await Promise.all([
   read('pages/simulador.html'),
+  read('pages/configuracoes.html'),
   read('js/app.js'),
   read('js/simulator-shelf.js'),
+  read('js/settings.js'),
   read('css/styles.css'),
   read('docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md'),
   read('docs/PLANO_ACAO_EVOLUCAO_BANK_FRATERN.md'),
@@ -51,6 +55,18 @@ assert(appIndex > -1, 'simulador.html nao carrega js/app.js.');
 assert(shelfEngineIndex < simulatorShelfIndex, 'simulator-shelf.js deve carregar depois de shelf-engine.js.');
 assert(simulatorShelfIndex < cartIndex, 'simulator-shelf.js deve carregar antes de simulator-cart.js.');
 assert(simulatorShelfIndex < appIndex, 'simulator-shelf.js deve carregar antes de app.js.');
+assert(simulatorHtml.includes('id="shelfPageSize"'), 'simulador.html deve ter controle shelfPageSize.');
+assert(simulatorHtml.includes('type="number"') && simulatorHtml.includes('min="20"') && simulatorHtml.includes('max="50"'), 'simulador.html deve limitar shelfPageSize entre 20 e 50.');
+assert(simulatorHtml.includes('value="20"'), 'simulador.html deve iniciar shelfPageSize em 20.');
+assert(!simulatorHtml.includes('value="100"'), 'simulador.html nao deve oferecer pageSize 100.');
+assert(!simulatorHtml.includes('value="200"'), 'simulador.html nao deve oferecer pageSize 200.');
+assert(settingsHtml.includes('id="cfg-pageSize"'), 'configuracoes.html deve ter controle cfg-pageSize.');
+assert(settingsHtml.includes('type="number"') && settingsHtml.includes('min="20"') && settingsHtml.includes('max="50"'), 'configuracoes.html deve limitar cfg-pageSize entre 20 e 50.');
+assert(settingsHtml.includes('value="20"'), 'configuracoes.html deve iniciar cfg-pageSize em 20.');
+assert(!settingsHtml.includes('value="100"'), 'configuracoes.html nao deve oferecer pageSize 100.');
+assert(!settingsHtml.includes('value="200"'), 'configuracoes.html nao deve oferecer pageSize 200.');
+assert(settingsJs.includes('pageSize: 20'), 'settings.js deve iniciar pageSize em 20.');
+assert(settingsJs.includes('clampNumber(merged.pageSize, 20, 50'), 'settings.js deve normalizar pageSize entre 20 e 50.');
 
 [
   'BFSimulatorShelf',
@@ -81,8 +97,10 @@ assert(shelf && typeof shelf.explainGroupRecommendation === 'function', 'BFSimul
 assert(shelf && typeof shelf.renderDetail === 'function', 'BFSimulatorShelf.renderDetail indisponivel.');
 assert(stylesCss.includes('.shelf-recommendation'), 'styles.css sem leitura explicavel da prateleira.');
 
-assert(shelf.pageSizeFromSettings({ get: () => 999 }) === 500, 'pageSizeFromSettings deveria limitar pageSize a 500.');
-assert(shelf.normalizePageSize(5) === 10, 'normalizePageSize deveria limitar pageSize minimo a 10.');
+assert(shelf.pageSizeFromSettings({ get: () => 999 }) === 50, 'pageSizeFromSettings deveria limitar pageSize a 50.');
+assert(shelf.pageSizeFromSettings({ get: () => undefined }) === 20, 'pageSizeFromSettings deveria usar pageSize padrao 20.');
+assert(shelf.normalizePageSize(5) === 20, 'normalizePageSize deveria limitar pageSize minimo a 20.');
+assert(shelf.normalizePageSize(100) === 50, 'normalizePageSize deveria limitar pageSize maximo a 50.');
 
 const fields = {
   filtroAdministradora: { value: 'Admin QA' },
@@ -209,6 +227,10 @@ assert(detail.includes('data-shelf-recommendation'), 'renderDetail deveria inclu
   assert(plan.includes(contract) || map.includes(contract) || readme.includes(contract), `Docs de produto sem ${contract}.`);
   assert(protocol.includes(contract) || protocol.includes(protocolToken) || contract === 'BFSimulatorShelf', `Protocolo de testes sem ${contract}.`);
 });
+assert(contracts.includes('pageSize') && contracts.includes('20 e 50'), 'Contratos publicos devem documentar pageSize 20-50.');
+assert(map.includes('20 a 50 grupos por pagina'), 'Mapa completo deve documentar pageSize 20-50 da prateleira.');
+assert(plan.includes('padrao 20') && plan.includes('limitado a 50'), 'Plano de evolucao deve documentar pageSize padrao 20 e limite 50.');
+assert(protocol.includes('iniciar em 20') && protocol.includes('limite 50'), 'Protocolo deve proteger pageSize 20-50.');
 
 const report = {
   ok: failures.length === 0,

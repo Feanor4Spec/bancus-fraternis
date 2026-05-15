@@ -1,6 +1,6 @@
 # Plano de Acao de Evolucao Bancus Fraternis
 
-Atualizado em 2026-05-13.
+Atualizado em 2026-05-15.
 
 Prioridade definida: produto e jornada.
 
@@ -87,7 +87,7 @@ Cada etapa deve responder quatro perguntas:
 | 13 | Lousa de proposta modularizada | Concluido parcial | Storage, presets, opcoes, dependencias, foco, prontidao e estimativa de paginas da proposta/PDF sairam do controlador principal. | `BFProposalBuilder`, `js/proposal-builder.js`, `tools/validate-proposal-builder.mjs`. |
 | 14 | Governanca visual da proposta modularizada | Concluido parcial | Renderizacao de versoes, comparacao, aceite, historicos, leitura do formulario e ponte de handoff sairam do controlador principal. | `BFProposalGovernance`, `js/proposal-governance.js`, `tools/validate-proposal-governance.mjs`. |
 | 15 | Carrinho/projeto do simulador modularizado | Concluido parcial | Criacao/remocao/edicao de itens, totais, render do carrinho e aplicacao de resultados sairam do controlador principal para service dedicado. | `BFSimulatorCart`, `js/simulator-cart.js`, `tools/validate-simulator-cart.mjs`. |
-| 16 | Prateleira do simulador modularizada | Concluido parcial | Filtros, page size, colunas, ordenacao, paginacao, tabela e detalhe do grupo sairam do controlador principal para service dedicado. | `BFSimulatorShelf`, `js/simulator-shelf.js`, `tools/validate-simulator-shelf.mjs`. |
+| 16 | Prateleira do simulador modularizada | Concluido parcial | Filtros, page size, colunas, ordenacao, paginacao, tabela e detalhe do grupo sairam do controlador principal para service dedicado. O page size agora inicia em 20 e fica limitado a 50. | `BFSimulatorShelf`, `js/simulator-shelf.js`, `tools/validate-simulator-shelf.mjs`. |
 | 17 | Jornada das calculadoras saneada | Concluido parcial | Mapeadas as 19 funcoes, removido submit automatico no carregamento, adicionada previa sem persistencia, modo de resultado e validador ponta a ponta das calculadoras. | `docs/MAPA_FUNCOES_CALCULADORAS_BANK_FRATERN.md`, `data-calculator-result-mode`, `tools/validate-calculator-journey.mjs`. |
 | 18 | Validacao guiada das calculadoras | Concluido parcial | Campos ganharam ajuda, min/max, erro local e alerta consolidado; previa recalcula sem persistencia durante edicoes validas e submit invalido nao salva. | `data-calculator-field-error`, `data-calculator-form-alert`, `tools/validate-calculator-journey.mjs`. |
 | 19 | Coerencia de cenario nas calculadoras | Concluido parcial | Custos acima da renda, reserva insuficiente, folga baixa, lance acima do limite e compra que fragiliza caixa agora geram alerta nao bloqueante. | `data-calculator-coherence-alert`, `data-calculator-coherence`, `tools/validate-calculator-journey.mjs`. |
@@ -111,6 +111,7 @@ Cada etapa deve responder quatro perguntas:
 | 37 | Comparacao com ultimo salvo nas calculadoras | Concluido parcial | Resultado atual compara metricas numericas com o ultimo salvo da mesma calculadora para apoiar iteracao consultiva. | `data-calculator-saved-comparison`, `data-calculator-saved-comparison-item`, `BFCalculatorJourney.savedComparison`. |
 | 38 | Fila dedicada de registros no Admin | Concluido parcial | Admin separa leads, simulacoes e propostas materializadas em uma fila propria com busca, filtros por tipo/status/prioridade/dono, resumo operacional e edicao inline preservada. | `data-admin-dedicated-queue`, `data-admin-dedicated-queue-filter`, `data-admin-dedicated-queue-item`, `renderBackendDedicatedQueue`. |
 | 39 | Resultado do simulador modularizado | Concluido parcial | Calculo, resumo, proposta e tabela analitica passaram a ser delegados para `BFSimulatorResult`, mantendo `App.*`, PDF e proposta como fachada publica. | `js/simulator-result.js`, `BFSimulatorResult`, `tools/validate-simulator-refactor.mjs`. |
+| 40 | Quantidade configuravel da prateleira | Concluido | Consultor escolhe quantos grupos ver na prateleira, com padrao 20 e limite 50, mantendo Configuracoes, Home e Simulador alinhados. | `pages/simulador.html`, `pages/configuracoes.html`, `js/settings.js`, `js/app.js`, `js/simulator-shelf.js`, `tools/validate-simulator-shelf.mjs`. |
 
 ## Proximos Passos Priorizados
 
@@ -143,6 +144,7 @@ Cada etapa deve responder quatro perguntas:
 | Concluido parcial | Resultado como decisao | Transformar o resumo financeiro em recomendacao final com riscos, premissas, comparacao e CTA para proposta. | `js/app.js`, `js/proposal-summary.js`, `js/proposal-builder.js`, `css/styles.css`, `tools/validate-simulator-result-decision.mjs`. | Resultado deixa claro qual grupo/cenario seguir, o que revisar e quando gerar proposta. |
 | Concluido parcial | Filtros e fila dedicada no Admin | Separados leads, simulacoes e propostas em uma fila propria com filtros por tipo, status, prioridade e dono, mantendo a edicao inline atual. | `assets/js/admin-users.js`, `assets/css/platform.css`, `tools/validate-local-database.mjs`. | Admin encontra rapidamente registros dedicados e consegue priorizar o proximo atendimento sem navegar pela auditoria completa. |
 | Concluido parcial | Proxima extracao do simulador | Separado calculo/orquestracao de resultado em modulo menor, mantendo `App.*` como fachada publica. | `js/app.js`, `js/engine.js`, `js/simulator-result.js`. | Reduzir `app.js` sem quebrar resultados, proposta, PDF e simulacoes salvas. |
+| Concluido | Prateleira com quantidade controlada | Padronizado controle numerico de 20 a 50 grupos por pagina, comecando em 20, com normalizacao das preferencias antigas. | `pages/simulador.html`, `pages/configuracoes.html`, `js/settings.js`, `js/simulator-shelf.js`, `tools/validate-simulator-shelf.mjs`. | Consultor consegue reduzir ou ampliar a leitura da prateleira sem passar de 50 grupos visiveis por pagina. |
 | P3 | Backend/API produtivo futuro | Documentar fronteiras de migracao para usuarios, leads, simulacoes, propostas e handoffs, mantendo `localStorage` como fallback publico. | `docs/PLANO_IMPLEMENTACAO_EVOLUTIVO_BANK_FRATERN.md`, `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md`, `docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md`. | Plano tecnico define contratos de migracao do SQLite local para backend hospedado. |
 
 ## Fase 1 - Saneamento da Jornada Navegavel

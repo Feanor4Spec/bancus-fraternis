@@ -42,18 +42,18 @@
     return n.toLocaleString('pt-BR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
   }
 
-  function pageSizeFromSettings(settings, fallback = 50) {
+  function pageSizeFromSettings(settings, fallback = 20) {
     try {
       const raw = settings && typeof settings.get === 'function' ? Number(settings.get('pageSize')) : fallback;
-      return Number.isFinite(raw) && raw > 0 ? Math.min(500, Math.max(10, Math.round(raw))) : fallback;
+      return Number.isFinite(raw) && raw > 0 ? Math.min(50, Math.max(20, Math.round(raw))) : fallback;
     } catch (error) {
       return fallback;
     }
   }
 
-  function normalizePageSize(value, fallback = 50) {
+  function normalizePageSize(value, fallback = 20) {
     const n = parseInt(value, 10);
-    return Number.isFinite(n) && n > 0 ? Math.min(500, Math.max(10, n)) : fallback;
+    return Number.isFinite(n) && n > 0 ? Math.min(50, Math.max(20, n)) : fallback;
   }
 
   function loadHiddenColumns(settings) {
@@ -172,7 +172,7 @@
     if (shelfEngine && typeof shelfEngine.paginateGroups === 'function') {
       return shelfEngine.paginateGroups(list, page, pageSize);
     }
-    const safePageSize = Math.max(1, parseInt(pageSize, 10) || 50);
+    const safePageSize = Math.max(1, parseInt(pageSize, 10) || 20);
     const totalPages = Math.max(1, Math.ceil(list.length / safePageSize));
     const currentPage = Math.max(1, Math.min(parseInt(page, 10) || 1, totalPages));
     const start = (currentPage - 1) * safePageSize;
