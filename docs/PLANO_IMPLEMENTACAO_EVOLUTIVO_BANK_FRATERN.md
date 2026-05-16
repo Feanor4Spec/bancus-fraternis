@@ -1,10 +1,18 @@
 # Plano de Implementacao Evolutivo - Bancus Fraternis
 
-Atualizado em 2026-04-27.
+Atualizado em 2026-05-16.
 
 ## Estado Atual
 
 O portal entrou em um ciclo de paginas vivas. A home, a carteira e o monitor de assembleias ja carregam dados reais ou persistidos no navegador, preservando fallback demonstrativo quando ainda nao existe base transacional completa. A versao v8 inicia a unificacao visual do Bancus Fraternis para manter a mesma linguagem em paginas institucionais, calculadoras, simuladores, comparador, dashboards, governanca e handoff.
+
+### Fase 8AL executada neste ciclo - Backend produtivo governado
+
+- Criado `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md` para definir a migracao do SQLite local para backend hospedado sem quebrar `localStorage`, `BFBackendApi`, deep links ou publicacao estatica.
+- O plano separa dominios produtivos: usuarios, sessoes, eventos, snapshots, entidades de jornada, leads, simulacoes e propostas.
+- O Definition of Done produtivo passou a exigir LGPD, backup, observabilidade, escopo por `owner_email`, sanitizacao e rollback antes de troca de provider.
+- Criado `tools/validate-backend-production-plan.mjs` para proteger a matriz de migracao e conectar contratos, mapa, plano, README, protocolo e changelog.
+- Proximo incremento recomendado: preparar uma camada de provider `BANCUS_DB_PROVIDER`, mantendo SQLite local como fallback de desenvolvimento.
 
 ### Fase 8AK executada neste ciclo - Produtos com contexto preservado
 

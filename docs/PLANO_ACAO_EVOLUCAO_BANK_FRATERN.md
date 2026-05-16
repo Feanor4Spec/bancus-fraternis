@@ -1,6 +1,6 @@
 # Plano de Acao de Evolucao Bancus Fraternis
 
-Atualizado em 2026-05-15.
+Atualizado em 2026-05-16.
 
 Prioridade definida: produto e jornada.
 
@@ -66,6 +66,7 @@ Cada etapa deve responder quatro perguntas:
 | QA online da jornada publicada | Concluido | `tools/validate-online-journey-smoke.mjs` valida no GitHub Pages as 10 etapas da lousa, anchors, marcadores e fallback estatico; `docs/test-reports/online-journey-browser-report.json` registra a checagem renderizada. |
 | Performance do simulador online | Concluido parcial | Simulador passou a carregar `Tab_Grupos_Consorcio.compact.json` primeiro, preservando fallback para o JSON canonico e todos os 17.396 grupos validos. |
 | Banco local de usuarios, eventos e snapshots | Concluido parcial | SQLite local em `.runtime/`, endpoints `/api/database/status`, `/api/auth/*`, `/api/users`, `/api/events`, `/api/snapshots`, `/api/journey-entities`, `/api/leads`, `/api/simulations`, `/api/proposals`, escrita direta de leads/simulacoes/propostas, `BFBackendApi`, painel Admin de eventos/status/snapshots/entidades/tabelas dedicadas, fila dedicada filtravel, Dashboard Cliente com leitura server-side de snapshots, entidades e tabelas, hash `scrypt-sha256`, sessoes server-side e fallback estatico preservado. |
+| Backend/API produtivo futuro | Concluido parcial | Plano produtivo criado para migrar SQLite local para backend hospedado preservando `localStorage`, `BFBackendApi`, escopo por `owner_email`, contratos `/api/*`, LGPD, backup e observabilidade. |
 | Governanca permanente | Em andamento | Changelog, mapa, plano, validadores, contratos publicos e lousa navegavel atualizados por entrega. |
 
 ## Mapa de Implementacao Atualizado
@@ -112,6 +113,7 @@ Cada etapa deve responder quatro perguntas:
 | 38 | Fila dedicada de registros no Admin | Concluido parcial | Admin separa leads, simulacoes e propostas materializadas em uma fila propria com busca, filtros por tipo/status/prioridade/dono, resumo operacional e edicao inline preservada. | `data-admin-dedicated-queue`, `data-admin-dedicated-queue-filter`, `data-admin-dedicated-queue-item`, `renderBackendDedicatedQueue`. |
 | 39 | Resultado do simulador modularizado | Concluido parcial | Calculo, resumo, proposta e tabela analitica passaram a ser delegados para `BFSimulatorResult`, mantendo `App.*`, PDF e proposta como fachada publica. | `js/simulator-result.js`, `BFSimulatorResult`, `tools/validate-simulator-refactor.mjs`. |
 | 40 | Quantidade configuravel da prateleira | Concluido | Consultor escolhe quantos grupos ver na prateleira, com padrao 20 e limite 50, mantendo Configuracoes, Home e Simulador alinhados. | `pages/simulador.html`, `pages/configuracoes.html`, `js/settings.js`, `js/app.js`, `js/simulator-shelf.js`, `tools/validate-simulator-shelf.mjs`. |
+| 41 | Backend produtivo governado | Concluido parcial | Fronteira de migracao definida para usuarios, sessoes, eventos, snapshots, leads, simulacoes e propostas, mantendo fallback estatico e contratos publicos. | `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md`, `tools/validate-backend-production-plan.mjs`. |
 
 ## Proximos Passos Priorizados
 
@@ -145,7 +147,7 @@ Cada etapa deve responder quatro perguntas:
 | Concluido parcial | Filtros e fila dedicada no Admin | Separados leads, simulacoes e propostas em uma fila propria com filtros por tipo, status, prioridade e dono, mantendo a edicao inline atual. | `assets/js/admin-users.js`, `assets/css/platform.css`, `tools/validate-local-database.mjs`. | Admin encontra rapidamente registros dedicados e consegue priorizar o proximo atendimento sem navegar pela auditoria completa. |
 | Concluido parcial | Proxima extracao do simulador | Separado calculo/orquestracao de resultado em modulo menor, mantendo `App.*` como fachada publica. | `js/app.js`, `js/engine.js`, `js/simulator-result.js`. | Reduzir `app.js` sem quebrar resultados, proposta, PDF e simulacoes salvas. |
 | Concluido | Prateleira com quantidade controlada | Padronizado controle numerico de 20 a 50 grupos por pagina, comecando em 20, com normalizacao das preferencias antigas. | `pages/simulador.html`, `pages/configuracoes.html`, `js/settings.js`, `js/simulator-shelf.js`, `tools/validate-simulator-shelf.mjs`. | Consultor consegue reduzir ou ampliar a leitura da prateleira sem passar de 50 grupos visiveis por pagina. |
-| P3 | Backend/API produtivo futuro | Documentar fronteiras de migracao para usuarios, leads, simulacoes, propostas e handoffs, mantendo `localStorage` como fallback publico. | `docs/PLANO_IMPLEMENTACAO_EVOLUTIVO_BANK_FRATERN.md`, `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md`, `docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md`. | Plano tecnico define contratos de migracao do SQLite local para backend hospedado. |
+| Concluido parcial | Backend/API produtivo futuro | Fronteiras de migracao documentadas para usuarios, sessoes, eventos, snapshots, leads, simulacoes, propostas e handoffs, mantendo `localStorage` como fallback publico. | `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md`, `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md`, `docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md`, `tools/validate-backend-production-plan.mjs`. | Plano tecnico define contratos de migracao do SQLite local para backend hospedado, com LGPD, backup, observabilidade e rollback como criterios de aceite. |
 
 ## Fase 1 - Saneamento da Jornada Navegavel
 
@@ -503,8 +505,10 @@ Testes recomendados:
 | Concluido parcial | Ler snapshots server-side nos dashboards. | Resolvido em 2026-05-13 com `GET /api/snapshots` escopado por sessao, Dashboard Cliente preferindo SQLite e Admin listando snapshots recentes. |
 | Concluido parcial | Criar camada relacional sobre snapshots. | Resolvido em 2026-05-13 com `journey_entities`, `GET /api/journey-entities`, resumo Admin e badge Cliente. |
 | Concluido parcial | Materializar tabelas dedicadas de jornada. | Resolvido em 2026-05-13 com `journey_leads`, `journey_simulations`, `journey_proposals` e endpoints dedicados. |
+| Concluido parcial | Governar backend/API produtivo futuro. | Resolvido em 2026-05-16 com `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md`, matriz de dominios, DoD produtivo e `tools/validate-backend-production-plan.mjs`. |
 | Concluido | Criar validador de aliases/rotas. | `tools/validate-route-aliases.mjs`. |
 | P3 | Continuar reduzindo responsabilidades de `js/app.js` e `assets/js/bf-platform.js`. | Proximo corte recomendado: integracoes finais de exportacao/retomada do simulador ou modularizacao progressiva de `assets/js/bf-platform.js`. |
+| P3 | Preparar provider produtivo de banco. | A partir de `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md`, criar camada `BANCUS_DB_PROVIDER` sem quebrar SQLite local nem `BFBackendApi`. |
 
 ## Contratos que Devem Ser Preservados
 

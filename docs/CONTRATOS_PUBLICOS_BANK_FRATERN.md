@@ -1,6 +1,6 @@
 # Contratos Publicos - Bancus Fraternis
 
-Atualizado em 2026-05-15.
+Atualizado em 2026-05-16.
 
 Este documento e a matriz viva dos contratos que novas evolucoes devem preservar. O Bancus Fraternis e uma plataforma estatica/progressiva de decisao financeira; por isso, compatibilidade local importa tanto quanto visual e jornada.
 
@@ -106,6 +106,20 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | `GET /api/proposals/:id` | Retorna proposta pontual da tabela dedicada. | Exige bearer token; admin ve qualquer proposta, demais papeis apenas registros proprios. |
 | `PATCH /api/proposals/:id` | Atualiza proposta pontual sem trocar dono indevidamente. | Exige bearer token; cliente/consultor nao podem atualizar registro de outro `owner_email`. |
 
+## Backend Produtivo Futuro
+
+Plano de referencia: `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md`.
+
+Regras publicas para a troca de provider:
+
+- `localStorage` continua fallback publico para GitHub Pages, `file://` e demos offline.
+- `BFBackendApi` segue como fachada de compatibilidade; paginas nao devem chamar provider produtivo diretamente.
+- SQLite local continua valido para desenvolvimento e deve passar em `tools/validate-local-database.mjs`.
+- Backend hospedado futuro deve preservar semantica de `/api/auth/*`, `/api/users`, `/api/events`, `/api/snapshots`, `/api/journey-entities`, `/api/leads`, `/api/simulations` e `/api/proposals`.
+- Admin pode ver tudo; consultor e cliente ficam escopados por `owner_email`.
+- Payloads produtivos precisam remover senha, token, hash, CPF, telefone, WhatsApp e e-mail sensivel antes de persistir ou exportar.
+- Qualquer mudanca de provider precisa de backup, observabilidade, rollback e validacao por `tools/validate-backend-production-plan.mjs`.
+
 Hooks reais que tentam gravar snapshots quando `BFBackendApi` esta disponivel:
 
 | Origem | Tipo de snapshot | Fonte local preservada |
@@ -182,6 +196,7 @@ Leitura progressiva dos snapshots:
 | `tools/validate-public-contracts.mjs` | Este documento, contratos publicos e DoD. |
 | `tools/validate-public-release-safety.mjs` | Exposicao publica, paths locais, dados pessoais de exemplo, aviso demo, fallback estatico e CI. |
 | `tools/validate-local-database.mjs` | Banco local SQLite, seeds, hash de senha, sessao, eventos sanitizados e contratos de API. |
+| `tools/validate-backend-production-plan.mjs` | Backend produtivo futuro, dominios, tabelas, endpoints, LGPD, backup, observabilidade e compatibilidade estatica. |
 | `tools/inspect-local-sql-environment.mjs` | Diagnostico local de CLIs, portas padrao e servicos SQL externos antes de trocar provider. |
 | `tools/validate-docs-modernization.mjs` | README ativo, docs historicos e contagem atual de 19 calculadoras. |
 | `tools/validate-auth-navigation.mjs` | Login local, seed users, redirect seguro e bloqueio por papel. |

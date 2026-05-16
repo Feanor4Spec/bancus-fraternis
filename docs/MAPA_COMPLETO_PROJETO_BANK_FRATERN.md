@@ -1,6 +1,6 @@
 # Mapa Completo do Projeto Bancus Fraternis
 
-Atualizado em 2026-05-15.
+Atualizado em 2026-05-16.
 
 Este mapa foi recriado a partir da leitura real do workspace. Ele documenta o Bancus Fraternis como plataforma de decisao financeira, nao apenas como simulador de consorcio. O objetivo e permitir que uma pessoa ou agente entenda a superficie atual do produto antes de evoluir Home, produtos, calculadoras, trilha assistida, comparador, simulador, proposta, handoff, dashboard cliente e dashboard admin.
 
@@ -535,6 +535,7 @@ Scripts confirmados em `tools/`:
 | `validate-public-contracts.mjs` | Matriz de contratos publicos, DoD e governanca de compatibilidade. |
 | `validate-public-release-safety.mjs` | Publicacao segura: paths locais, dados pessoais de exemplo, selo demo, fallback estatico e CI. |
 | `validate-local-database.mjs` | SQLite local, seeds, login, sessoes, eventos, snapshots sanitizados, status tecnico e contratos de API. |
+| `validate-backend-production-plan.mjs` | Plano de migracao para backend produtivo, dominios, tabelas, endpoints, LGPD, backup e compatibilidade estatica. |
 | `inspect-local-sql-environment.mjs` | Diagnostico local de CLIs, portas padrao e servicos SQL externos. |
 | `validate-docs-modernization.mjs` | README ativo, docs historicos marcados e catalogo atual de 19 calculadoras. |
 | `run-v8af-browser-evidence.mjs` | Evidencias visuais do fluxo proposta/handoff. |
@@ -550,6 +551,7 @@ Scripts confirmados em `tools/`:
 | `docs/DESIGN_SYSTEM_V8_BANK_FRATERN.md` | Contrato visual v8. |
 | `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md` | Contratos publicos de localStorage, data markers, deep links, exports globais e DoD. |
 | `docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md` | Banco local SQLite, endpoints, tabelas, seeds, compatibilidade e validacao. |
+| `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md` | Ponte do SQLite local para backend hospedado futuro, preservando fallback estatico, `BFBackendApi`, escopo e migracao por dominio. |
 | `docs/CALCULADORAS_FUNCIONAIS_BANK_FRATERN.md` | Ecossistema de calculadoras. |
 | `docs/MAPA_FUNCOES_CALCULADORAS_BANK_FRATERN.md` | Mapa funcional das 19 calculadoras, inputs, motor, saidas e continuidade. |
 | `docs/TRILHA_ASSISTIDA_DECISAO.md` | Trilha assistida. |
@@ -572,7 +574,7 @@ Governanca documental: docs ativos passaram a usar Bancus Fraternis como platafo
 8. Tratar `versions/` como backup, nao como fonte ativa.
 9. Tratar GitHub Pages como superficie publica: toda mudanca online deve preservar selo demo, fallback estatico e auditoria de publicacao segura.
 10. Considerar performance ao tocar na base grande `data_base/Tab_Grupos_Consorcio.json`; regenerar e validar `data_base/Tab_Grupos_Consorcio.compact.json` quando a base canonica mudar.
-11. Tratar SQLite local como infraestrutura de desenvolvimento: `.runtime/` nao entra no Git e backend produtivo ainda exige hospedagem, LGPD, backup e permissao server-side completa.
+11. Tratar SQLite local como infraestrutura de desenvolvimento: `.runtime/` nao entra no Git e backend produtivo deve seguir `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md`, com hospedagem, LGPD, backup, observabilidade e permissao server-side completa.
 12. Antes de trocar o provider SQLite, confirmar servidor externo com `tools/inspect-local-sql-environment.mjs`.
 
 ## Proximos Vetores
@@ -581,7 +583,7 @@ O vetor recomendado para o proximo ciclo continua sendo produto e jornada, agora
 
 1. Continuar a modularizacao do simulador, extraindo calculo/orquestracao de resultado e integracoes de proposta sem quebrar `App.*`.
 2. Preparar leitura server-side desses snapshots no Dashboard Cliente e nos cockpits operacionais, mantendo fallback por `localStorage`.
-3. Preparar migracao futura do SQLite local para backend/API produtivo sem quebrar `localStorage`, deep links e services globais.
+3. Executar a migracao futura do SQLite local para backend/API produtivo a partir de `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md`, sem quebrar `localStorage`, deep links e services globais.
 4. Manter a lousa como porta de QA visual a cada nova entrega funcional.
 
 O plano detalhado esta em `docs/PLANO_ACAO_EVOLUCAO_BANK_FRATERN.md`.

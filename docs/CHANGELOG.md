@@ -4,6 +4,20 @@
 
 ---
 
+## [v8.99.0] - 2026-05-16
+
+### Backend produtivo governado
+
+#### Adicionado
+- Criado `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md` para definir a ponte entre SQLite local, `localStorage` e backend hospedado futuro.
+- Criado `tools/validate-backend-production-plan.mjs` para proteger dominios, tabelas, endpoints, contratos publicos, LGPD, backup e observabilidade antes da troca de provider.
+
+#### Modificado
+- Contratos publicos, banco local, mapa, README, protocolo e plano de acao passaram a apontar o plano produtivo como proxima fronteira de backend/API.
+- `tools/validate-design-system.mjs` e `tools/validate-public-contracts.mjs` passaram a exigir o novo validador.
+
+---
+
 ## [v8.98.0] - 2026-05-15
 
 ### Controle de quantidade na prateleira

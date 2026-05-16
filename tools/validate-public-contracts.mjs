@@ -34,6 +34,7 @@ const [
   contracts,
   map,
   plan,
+  backendProductionPlan,
   protocol,
   apiDocs,
   designValidator,
@@ -63,6 +64,7 @@ const [
   read('docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md'),
   read('docs/MAPA_COMPLETO_PROJETO_BANK_FRATERN.md'),
   read('docs/PLANO_ACAO_EVOLUCAO_BANK_FRATERN.md'),
+  read('docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md'),
   read('docs/CODEX_TEST_PROTOCOL.md'),
   read('pages/api-docs.html'),
   read('tools/validate-design-system.mjs'),
@@ -498,6 +500,7 @@ assert(protocol.includes('validate-public-contracts.mjs'), 'Protocolo de testes 
 assert(apiDocs.includes('id="contratos-publicos"'), 'api-docs.html sem secao de contratos publicos.');
 assert(apiDocs.includes('Lista as 19 calculadoras'), 'api-docs.html ainda nao reflete catalogo atual de 19 calculadoras.');
 assert(designValidator.includes('tools/validate-public-contracts.mjs'), 'validate-design-system nao exige validate-public-contracts.');
+assert(designValidator.includes('tools/validate-backend-production-plan.mjs'), 'validate-design-system nao exige validate-backend-production-plan.');
 assert(designValidator.includes('tools/validate-docs-modernization.mjs'), 'validate-design-system nao exige validate-docs-modernization.');
 assert(designValidator.includes('tools/validate-navigable-journey.mjs'), 'validate-design-system nao exige validate-navigable-journey.');
 assert(designValidator.includes('tools/validate-github-pages-deploy.mjs'), 'validate-design-system nao exige validate-github-pages-deploy.');
@@ -510,6 +513,13 @@ const calculators = JSON.parse(calculatorsJson);
 const calculatorCount = Array.isArray(calculators) ? calculators.length : 0;
 assert(calculatorCount === 19, `Catalogo de calculadoras deveria ter 19 itens; encontrou ${calculatorCount}.`);
 assert(contracts.includes('19 calculadoras'), 'Contrato publico nao explicita catalogo atual de 19 calculadoras.');
+assert(contracts.includes('## Backend Produtivo Futuro'), 'Contrato publico nao documenta backend produtivo futuro.');
+assert(contracts.includes('docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md'), 'Contrato publico nao referencia plano backend produtivo.');
+assert(contracts.includes('tools/validate-backend-production-plan.mjs'), 'Contrato publico nao referencia validador de backend produtivo.');
+assert(backendProductionPlan.includes('localStorage continua sendo fallback publico'), 'Plano backend produtivo nao preserva fallback localStorage.');
+assert(backendProductionPlan.includes('BFBackendApi'), 'Plano backend produtivo nao preserva BFBackendApi.');
+assert(backendProductionPlan.includes('BANCUS_DB_PROVIDER'), 'Plano backend produtivo nao define provider futuro.');
+assert(backendProductionPlan.includes('LGPD') && backendProductionPlan.includes('backup') && backendProductionPlan.includes('observabilidade'), 'Plano backend produtivo sem governanca operacional.');
 
 const docs = await fs.readdir(path.join(root, 'docs'));
 const legacyHits = [];
@@ -539,7 +549,7 @@ const report = {
     dataMarkers: 95,
     globals: 20,
     deepLinks: 10,
-    validators: 22,
+    validators: 23,
     calculatorCount
   },
   warnings,

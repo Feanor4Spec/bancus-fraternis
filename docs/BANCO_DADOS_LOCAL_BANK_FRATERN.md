@@ -1,6 +1,6 @@
 # Banco De Dados Local - Bancus Fraternis
 
-Atualizado em 2026-05-13.
+Atualizado em 2026-05-16.
 
 ## Objetivo
 
@@ -17,6 +17,7 @@ Esta entrega cria a primeira camada server-side do Bancus Fraternis sem quebrar 
 | `assets/js/admin-users.js` | Dashboard Admin le `/api/events`, `/api/snapshots`, `/api/journey-entities`, `/api/leads`, `/api/simulations`, `/api/proposals`, edita registros dedicados via `PATCH`, mostra status server-side e executa migracao guiada do `localStorage`. |
 | `tools/validate-local-database.mjs` | Validador de schema, seeds, login, sessao, eventos, snapshots, entidades relacionais e escrita direta sanitizada. |
 | `tools/inspect-local-sql-environment.mjs` | Diagnostico de CLIs, portas padrao e servicos SQL locais para proxima troca de provider. |
+| `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md` | Plano de migracao do SQLite local para backend hospedado preservando `localStorage`, `BFBackendApi` e contratos `/api/*`. |
 
 ## Banco
 
@@ -111,12 +112,13 @@ As senhas seed continuam documentadas em `docs/AUTH_ADMIN_LOCAL.md` para demonst
 - Os controles `data-admin-backend-materialized-field` e `data-admin-backend-materialized-save` permitem ao Admin alterar status, etapa e prioridade via `PATCH`, gerando auditoria server-side.
 - O mesmo painel exibe `data-admin-backend-table` e `data-admin-backend-database-provider` para confirmar provider, arquivo, PRAGMAs e tabelas ativas.
 - A migracao guiada usa `data-admin-local-import-panel`, `data-admin-local-import-preview`, `data-admin-local-import-run` e `data-admin-local-snapshot-count`; usuarios existentes sao pulados, snapshots repetidos sao atualizados e novos usuarios recebem senha temporaria `Temp@123`.
-- Produção futura deve trocar o SQLite local por backend hospedado, controle de permissao server-side completo, LGPD e politicas de backup.
+- Producao futura deve seguir `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md`, trocando o SQLite local por backend hospedado com controle de permissao server-side completo, LGPD, politicas de backup, observabilidade e rollback.
 
 ## Validacao
 
 ```bash
 node tools/validate-local-database.mjs
+node tools/validate-backend-production-plan.mjs
 node tools/inspect-local-sql-environment.mjs
 ```
 
