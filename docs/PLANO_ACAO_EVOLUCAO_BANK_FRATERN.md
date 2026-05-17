@@ -1,6 +1,6 @@
 # Plano de Acao de Evolucao Bancus Fraternis
 
-Atualizado em 2026-05-16.
+Atualizado em 2026-05-17.
 
 Prioridade definida: produto e jornada.
 
@@ -67,6 +67,7 @@ Cada etapa deve responder quatro perguntas:
 | Performance do simulador online | Concluido parcial | Simulador passou a carregar `Tab_Grupos_Consorcio.compact.json` primeiro, preservando fallback para o JSON canonico e todos os 17.396 grupos validos. |
 | Banco local de usuarios, eventos e snapshots | Concluido parcial | SQLite local em `.runtime/`, endpoints `/api/database/status`, `/api/auth/*`, `/api/users`, `/api/events`, `/api/snapshots`, `/api/journey-entities`, `/api/leads`, `/api/simulations`, `/api/proposals`, escrita direta de leads/simulacoes/propostas, `BFBackendApi`, painel Admin de eventos/status/snapshots/entidades/tabelas dedicadas, fila dedicada filtravel, Dashboard Cliente com leitura server-side de snapshots, entidades e tabelas, hash `scrypt-sha256`, sessoes server-side e fallback estatico preservado. |
 | Backend/API produtivo futuro | Concluido parcial | Plano produtivo criado para migrar SQLite local para backend hospedado preservando `localStorage`, `BFBackendApi`, escopo por `owner_email`, contratos `/api/*`, LGPD, backup e observabilidade. |
+| Provider de banco configuravel | Concluido parcial | `BANCUS_DB_PROVIDER` foi criado com `sqlite` como padrao e providers futuros bloqueados ate adapter validado. |
 | Governanca permanente | Em andamento | Changelog, mapa, plano, validadores, contratos publicos e lousa navegavel atualizados por entrega. |
 
 ## Mapa de Implementacao Atualizado
@@ -114,6 +115,7 @@ Cada etapa deve responder quatro perguntas:
 | 39 | Resultado do simulador modularizado | Concluido parcial | Calculo, resumo, proposta e tabela analitica passaram a ser delegados para `BFSimulatorResult`, mantendo `App.*`, PDF e proposta como fachada publica. | `js/simulator-result.js`, `BFSimulatorResult`, `tools/validate-simulator-refactor.mjs`. |
 | 40 | Quantidade configuravel da prateleira | Concluido | Consultor escolhe quantos grupos ver na prateleira, com padrao 20 e limite 50, mantendo Configuracoes, Home e Simulador alinhados. | `pages/simulador.html`, `pages/configuracoes.html`, `js/settings.js`, `js/app.js`, `js/simulator-shelf.js`, `tools/validate-simulator-shelf.mjs`. |
 | 41 | Backend produtivo governado | Concluido parcial | Fronteira de migracao definida para usuarios, sessoes, eventos, snapshots, leads, simulacoes e propostas, mantendo fallback estatico e contratos publicos. | `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md`, `tools/validate-backend-production-plan.mjs`. |
+| 42 | Provider de banco configuravel | Concluido parcial | Camada inicial de provider criada com `BANCUS_DB_PROVIDER`, aliases para SQLite e erro explicito para providers sem adapter. | `js/backend/db.js`, `server.js`, `tools/validate-local-database.mjs`, `tools/validate-backend-production-plan.mjs`. |
 
 ## Proximos Passos Priorizados
 
@@ -508,7 +510,8 @@ Testes recomendados:
 | Concluido parcial | Governar backend/API produtivo futuro. | Resolvido em 2026-05-16 com `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md`, matriz de dominios, DoD produtivo e `tools/validate-backend-production-plan.mjs`. |
 | Concluido | Criar validador de aliases/rotas. | `tools/validate-route-aliases.mjs`. |
 | P3 | Continuar reduzindo responsabilidades de `js/app.js` e `assets/js/bf-platform.js`. | Proximo corte recomendado: integracoes finais de exportacao/retomada do simulador ou modularizacao progressiva de `assets/js/bf-platform.js`. |
-| P3 | Preparar provider produtivo de banco. | A partir de `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md`, criar camada `BANCUS_DB_PROVIDER` sem quebrar SQLite local nem `BFBackendApi`. |
+| Concluido parcial | Preparar provider produtivo de banco. | `BANCUS_DB_PROVIDER` criado sem quebrar SQLite local nem `BFBackendApi`; proximo passo e adapter piloto para Postgres ou servico gerenciado equivalente. |
+| P3 | Criar adapter produtivo piloto. | Implementar provider real hospedado em ambiente de homologacao, mantendo SQLite como fallback e sem mudar contratos `/api/*`. |
 
 ## Contratos que Devem Ser Preservados
 

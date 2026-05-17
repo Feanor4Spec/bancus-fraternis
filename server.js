@@ -199,6 +199,7 @@ async function handleApiRequest(req, res) {
     sendJson(res, 200, {
       ok: true,
       database: Boolean(localDatabase),
+      provider: localDatabase ? localDatabase.provider : null,
       schema: SCHEMA_VERSION,
       stats: localDatabase ? localDatabase.stats() : null
     });
@@ -699,5 +700,5 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, () => {
   console.log(`Bancus Fraternis local server running at http://localhost:${PORT}/pages/index.html`);
-  if (localDatabase) console.log(`Local database ready: ${SCHEMA_VERSION}`);
+  if (localDatabase) console.log(`Local database ready: ${SCHEMA_VERSION} (${localDatabase.provider})`);
 });

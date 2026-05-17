@@ -1,6 +1,6 @@
 # Mapa Completo do Projeto Bancus Fraternis
 
-Atualizado em 2026-05-16.
+Atualizado em 2026-05-17.
 
 Este mapa foi recriado a partir da leitura real do workspace. Ele documenta o Bancus Fraternis como plataforma de decisao financeira, nao apenas como simulador de consorcio. O objetivo e permitir que uma pessoa ou agente entenda a superficie atual do produto antes de evoluir Home, produtos, calculadoras, trilha assistida, comparador, simulador, proposta, handoff, dashboard cliente e dashboard admin.
 
@@ -59,7 +59,7 @@ Separado como runtime, evidencia, backup ou historico:
 | --- | --- |
 | `index.html` | Redirect simples para `pages/index.html`. |
 | `server.js` | Servidor canonico local. Usa porta `8080` por padrao, serve `/` como `pages/index.html`, cria aliases curtos para todas as paginas HTML em `pages/` e expoe API local `/api/*` para auth, usuarios, status do banco, eventos, snapshots e jornada direta. |
-| `js/backend/db.js` | Camada SQLite local: schema, seeds, hash `scrypt-sha256`, sessoes, eventos/snapshots sanitizados, entidades relacionais, escrita direta em tabelas dedicadas de leads/simulacoes/propostas e diagnostico tecnico do provider. |
+| `js/backend/db.js` | Camada SQLite local e primeira camada de provider: schema, seeds, hash `scrypt-sha256`, sessoes, eventos/snapshots sanitizados, entidades relacionais, escrita direta em tabelas dedicadas, `BANCUS_DB_PROVIDER=sqlite` e diagnostico tecnico do provider. |
 | `js/server.js` | Servidor legado do simulador antigo. Mantido como historico tecnico, nao como entrada principal. |
 | `Sistema.gitignore` | Ignora editor, node, python, envs, chaves e temporarios. |
 
@@ -574,7 +574,7 @@ Governanca documental: docs ativos passaram a usar Bancus Fraternis como platafo
 8. Tratar `versions/` como backup, nao como fonte ativa.
 9. Tratar GitHub Pages como superficie publica: toda mudanca online deve preservar selo demo, fallback estatico e auditoria de publicacao segura.
 10. Considerar performance ao tocar na base grande `data_base/Tab_Grupos_Consorcio.json`; regenerar e validar `data_base/Tab_Grupos_Consorcio.compact.json` quando a base canonica mudar.
-11. Tratar SQLite local como infraestrutura de desenvolvimento: `.runtime/` nao entra no Git e backend produtivo deve seguir `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md`, com hospedagem, LGPD, backup, observabilidade e permissao server-side completa.
+11. Tratar SQLite local como infraestrutura de desenvolvimento: `.runtime/` nao entra no Git, `BANCUS_DB_PROVIDER=sqlite` e o padrao atual, e backend produtivo deve seguir `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md`, com hospedagem, LGPD, backup, observabilidade e permissao server-side completa.
 12. Antes de trocar o provider SQLite, confirmar servidor externo com `tools/inspect-local-sql-environment.mjs`.
 
 ## Proximos Vetores

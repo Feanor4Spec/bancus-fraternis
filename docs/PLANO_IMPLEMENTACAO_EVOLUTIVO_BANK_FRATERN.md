@@ -1,10 +1,19 @@
 # Plano de Implementacao Evolutivo - Bancus Fraternis
 
-Atualizado em 2026-05-16.
+Atualizado em 2026-05-17.
 
 ## Estado Atual
 
 O portal entrou em um ciclo de paginas vivas. A home, a carteira e o monitor de assembleias ja carregam dados reais ou persistidos no navegador, preservando fallback demonstrativo quando ainda nao existe base transacional completa. A versao v8 inicia a unificacao visual do Bancus Fraternis para manter a mesma linguagem em paginas institucionais, calculadoras, simuladores, comparador, dashboards, governanca e handoff.
+
+### Fase 8AM executada neste ciclo - Provider de banco configuravel
+
+- `js/backend/db.js` passou a normalizar `BANCUS_DB_PROVIDER`, mantendo `sqlite` como provider padrao.
+- Aliases locais `local`, `dev`, `development` e `node:sqlite` apontam para SQLite.
+- Providers futuros sem adapter implementado, como `postgresql`, falham com mensagem explicita e nao criam banco acidental.
+- `/api/health` passou a informar o provider ativo quando a API local possui banco.
+- `tools/validate-local-database.mjs` e `tools/validate-backend-production-plan.mjs` passaram a proteger a camada de provider.
+- Proximo incremento recomendado: criar adapter produtivo piloto, provavelmente Postgres ou servico gerenciado equivalente, sem mudar `BFBackendApi` nem endpoints `/api/*`.
 
 ### Fase 8AL executada neste ciclo - Backend produtivo governado
 

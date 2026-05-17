@@ -4,6 +4,21 @@
 
 ---
 
+## [v8.100.0] - 2026-05-17
+
+### Provider de banco configuravel
+
+#### Adicionado
+- `js/backend/db.js` passou a expor `DEFAULT_DB_PROVIDER`, `SUPPORTED_DB_PROVIDERS`, `normalizeDbProvider` e `isSupportedDbProvider`.
+- `BANCUS_DB_PROVIDER` foi formalizado com `sqlite` como provider padrao e unico provider implementado neste ciclo.
+- Providers futuros, como `postgresql`, agora falham com mensagem explicita enquanto nao houver adapter real.
+
+#### Modificado
+- `/api/health` passou a retornar o provider ativo quando o banco local esta disponivel.
+- Validadores de banco local e backend produtivo passaram a proteger a camada inicial de provider.
+
+---
+
 ## [v8.99.0] - 2026-05-16
 
 ### Backend produtivo governado

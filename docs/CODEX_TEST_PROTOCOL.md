@@ -989,11 +989,13 @@ Validacoes a rodar antes de qualquer troca de provider:
 - `node tools/validate-local-database.mjs`
 - `node tools/validate-public-contracts.mjs`
 - `node tools/validate-public-release-safety.mjs`
+- `BANCUS_DB_PROVIDER=sqlite node tools/validate-local-database.mjs`
 
 Contratos a proteger:
 
 - `localStorage` continua fallback publico para GitHub Pages, `file://` e demos offline.
 - `BFBackendApi` segue como fachada de compatibilidade para API local e futura API hospedada.
+- `BANCUS_DB_PROVIDER` deve manter `sqlite` como padrao enquanto nao houver adapter produtivo validado.
 - Endpoints `/api/auth/*`, `/api/users`, `/api/events`, `/api/snapshots`, `/api/journey-entities`, `/api/leads`, `/api/simulations` e `/api/proposals` nao devem mudar de semantica sem migracao.
 - Escopo por `owner_email`: admin ve tudo; consultor e cliente veem apenas registros permitidos.
 - Payloads produtivos devem remover senha, token, hash, CPF, telefone, WhatsApp e e-mail sensivel.

@@ -1,6 +1,6 @@
 # Contratos Publicos - Bancus Fraternis
 
-Atualizado em 2026-05-16.
+Atualizado em 2026-05-17.
 
 Este documento e a matriz viva dos contratos que novas evolucoes devem preservar. O Bancus Fraternis e uma plataforma estatica/progressiva de decisao financeira; por isso, compatibilidade local importa tanto quanto visual e jornada.
 
@@ -115,6 +115,7 @@ Regras publicas para a troca de provider:
 - `localStorage` continua fallback publico para GitHub Pages, `file://` e demos offline.
 - `BFBackendApi` segue como fachada de compatibilidade; paginas nao devem chamar provider produtivo diretamente.
 - SQLite local continua valido para desenvolvimento e deve passar em `tools/validate-local-database.mjs`.
+- `BANCUS_DB_PROVIDER` aceita `sqlite` como provider padrao nesta etapa; providers sem adapter implementado devem falhar de forma explicita.
 - Backend hospedado futuro deve preservar semantica de `/api/auth/*`, `/api/users`, `/api/events`, `/api/snapshots`, `/api/journey-entities`, `/api/leads`, `/api/simulations` e `/api/proposals`.
 - Admin pode ver tudo; consultor e cliente ficam escopados por `owner_email`.
 - Payloads produtivos precisam remover senha, token, hash, CPF, telefone, WhatsApp e e-mail sensivel antes de persistir ou exportar.

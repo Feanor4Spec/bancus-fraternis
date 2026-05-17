@@ -516,10 +516,12 @@ assert(contracts.includes('19 calculadoras'), 'Contrato publico nao explicita ca
 assert(contracts.includes('## Backend Produtivo Futuro'), 'Contrato publico nao documenta backend produtivo futuro.');
 assert(contracts.includes('docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md'), 'Contrato publico nao referencia plano backend produtivo.');
 assert(contracts.includes('tools/validate-backend-production-plan.mjs'), 'Contrato publico nao referencia validador de backend produtivo.');
+assert(contracts.includes('BANCUS_DB_PROVIDER'), 'Contrato publico nao documenta BANCUS_DB_PROVIDER.');
 assert(backendProductionPlan.includes('localStorage continua sendo fallback publico'), 'Plano backend produtivo nao preserva fallback localStorage.');
 assert(backendProductionPlan.includes('BFBackendApi'), 'Plano backend produtivo nao preserva BFBackendApi.');
 assert(backendProductionPlan.includes('BANCUS_DB_PROVIDER'), 'Plano backend produtivo nao define provider futuro.');
 assert(backendProductionPlan.includes('LGPD') && backendProductionPlan.includes('backup') && backendProductionPlan.includes('observabilidade'), 'Plano backend produtivo sem governanca operacional.');
+assert(apiDocs.includes('BANCUS_DB_PROVIDER') && apiDocs.includes('<code>sqlite</code>'), 'api-docs.html nao explica provider sqlite atual.');
 
 const docs = await fs.readdir(path.join(root, 'docs'));
 const legacyHits = [];

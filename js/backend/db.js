@@ -4,11 +4,21 @@ const path = require('node:path');
 const { DatabaseSync } = require('node:sqlite');
 
 const SCHEMA_VERSION = 'bancus-fraternis.local-db.v1';
+const DEFAULT_DB_PROVIDER = 'sqlite';
 const DEFAULT_DB_PATH = path.join(__dirname, '..', '..', '.runtime', 'bancus-fraternis.sqlite');
 const SESSION_TTL_MS = 1000 * 60 * 60 * 8;
 const PASSWORD_ALGORITHM = 'scrypt-sha256';
 const MAX_EVENT_PAYLOAD_CHARS = 50000;
 const IMPORT_TEMP_PASSWORD = 'Temp@123';
+const SUPPORTED_DB_PROVIDERS = ['sqlite'];
+const FUTURE_DB_PROVIDERS = ['postgresql'];
+const DB_PROVIDER_ALIASES = {
+  sqlite: 'sqlite',
+  'node:sqlite': 'sqlite',
+  local: 'sqlite',
+  development: 'sqlite',
+  dev: 'sqlite'
+};
 
 const ROLE_LABELS = {
   admin: 'Administrador',
@@ -87,6 +97,21 @@ function normalizeRole(role) {
 
 function normalizeStatus(status) {
   return STATUS_LABELS[status] ? status : 'active';
+}
+
+function normalizeDbProvider(value) {
+  const raw = String(value || process.env.BANCUS_DB_PROVIDER || DEFAULT_DB_PROVIDER).trim().toLowerCase();
+  return DB_PROVIDER_ALIASES[raw] || raw || DEFAULT_DB_PROVIDER;
+}
+
+function isSupportedDbProvider(provider) {
+  return SUPPORTED_DB_PROVIDERS.includes(normalizeDbProvider(provider));
+}
+
+function assertSupportedDbProvider(provider) {
+  const normalized = normalizeDbProvider(provider);
+  if (isSupportedDbProvider(normalized)) return normalized;
+  throw new Error(`BANCUS_DB_PROVIDER=${normalized} ainda nao possui adapter implementado. Providers suportados nesta versao: ${SUPPORTED_DB_PROVIDERS.join(', ')}. Providers futuros planejados: ${FUTURE_DB_PROVIDERS.join(', ')}.`);
 }
 
 function normalizeText(value, fallback = '') {
@@ -550,9 +575,10 @@ function initializeSchema(db) {
 }
 
 class BancusDatabase {
-  constructor(db, dbPath) {
+  constructor(db, dbPath, options = {}) {
     this.db = db;
     this.dbPath = dbPath;
+    this.provider = normalizeDbProvider(options.provider);
     this.schemaVersion = SCHEMA_VERSION;
     this.seedUsers();
     this.rebuildJourneyEntities();
@@ -1525,7 +1551,7 @@ class BancusDatabase {
 
     return {
       ok: true,
-      provider: 'sqlite',
+      provider: this.provider,
       driver: 'node:sqlite DatabaseSync',
       schemaVersion: this.schemaVersion,
       databasePath: safeRelativePath(this.dbPath),
@@ -1555,18 +1581,24 @@ function resolveDbPath(inputPath) {
 }
 
 function createDatabase(options = {}) {
+  const provider = assertSupportedDbProvider(options.provider);
   const dbPath = resolveDbPath(options.dbPath);
   fs.mkdirSync(path.dirname(dbPath), { recursive: true });
   const db = new DatabaseSync(dbPath);
   initializeSchema(db);
-  return new BancusDatabase(db, dbPath);
+  return new BancusDatabase(db, dbPath, { provider });
 }
 
 module.exports = {
   SCHEMA_VERSION,
+  DEFAULT_DB_PROVIDER,
   DEFAULT_DB_PATH,
+  SUPPORTED_DB_PROVIDERS,
+  FUTURE_DB_PROVIDERS,
   ROLE_LABELS,
   STATUS_LABELS,
+  normalizeDbProvider,
+  isSupportedDbProvider,
   createDatabase,
   hashPassword,
   verifyPassword,

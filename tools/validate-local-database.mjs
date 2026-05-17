@@ -28,7 +28,31 @@ async function cleanup() {
 
 await cleanup();
 
-const { createDatabase, SCHEMA_VERSION } = require('../js/backend/db.js');
+const {
+  createDatabase,
+  SCHEMA_VERSION,
+  DEFAULT_DB_PROVIDER,
+  SUPPORTED_DB_PROVIDERS,
+  FUTURE_DB_PROVIDERS,
+  normalizeDbProvider,
+  isSupportedDbProvider
+} = require('../js/backend/db.js');
+
+assert(DEFAULT_DB_PROVIDER === 'sqlite', 'Provider padrao deveria continuar sqlite.');
+assert(Array.isArray(SUPPORTED_DB_PROVIDERS) && SUPPORTED_DB_PROVIDERS.includes('sqlite'), 'Providers suportados deveriam incluir sqlite.');
+assert(Array.isArray(FUTURE_DB_PROVIDERS) && FUTURE_DB_PROVIDERS.includes('postgresql'), 'Providers futuros deveriam registrar postgresql como proximo candidato.');
+assert(normalizeDbProvider('node:sqlite') === 'sqlite', 'Alias node:sqlite deveria normalizar para sqlite.');
+assert(normalizeDbProvider('local') === 'sqlite', 'Alias local deveria normalizar para sqlite.');
+assert(isSupportedDbProvider('sqlite'), 'sqlite deveria ser provider suportado.');
+assert(!isSupportedDbProvider('postgresql'), 'postgresql ainda nao deveria estar marcado como provider suportado.');
+let unsupportedProviderMessage = '';
+try {
+  createDatabase({ provider: 'postgresql', dbPath: `${dbPath}.unsupported` });
+} catch (error) {
+  unsupportedProviderMessage = error.message || '';
+}
+assert(unsupportedProviderMessage.includes('BANCUS_DB_PROVIDER=postgresql'), 'Provider postgresql deveria falhar com mensagem explicita.');
+
 const localDb = createDatabase({ dbPath });
 
 try {
@@ -323,6 +347,7 @@ try {
     '/api/leads',
     '/api/simulations',
     '/api/proposals',
+    'provider: localDatabase ? localDatabase.provider : null',
     'upsertDirectJourneyRow',
     'findMaterializedJourneyRow',
     '-direct-',
@@ -471,6 +496,8 @@ try {
       handoff: handoffService.includes('api.saveLead')
     },
     provider: databaseStatus.provider,
+    supportedProviders: SUPPORTED_DB_PROVIDERS,
+    futureProviders: FUTURE_DB_PROVIDERS,
     tables: databaseStatus.tables.length,
     importedUsers: importRun.users.imported,
     importedEvents: importRun.events.imported,

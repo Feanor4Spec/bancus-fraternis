@@ -16,6 +16,12 @@
     "handoff": true
   },
   "provider": "sqlite",
+  "supportedProviders": [
+    "sqlite"
+  ],
+  "futureProviders": [
+    "postgresql"
+  ],
   "tables": 8,
   "importedUsers": 1,
   "importedEvents": 1,

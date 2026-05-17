@@ -22,7 +22,9 @@ const [
   protocol,
   changelog,
   designValidator,
-  publicContractsValidator
+  publicContractsValidator,
+  backendDb,
+  server
 ] = await Promise.all([
   read('docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md'),
   read('docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md'),
@@ -33,7 +35,9 @@ const [
   read('docs/CODEX_TEST_PROTOCOL.md'),
   read('docs/CHANGELOG.md'),
   read('tools/validate-design-system.mjs'),
-  read('tools/validate-public-contracts.mjs')
+  read('tools/validate-public-contracts.mjs'),
+  read('js/backend/db.js'),
+  read('server.js')
 ]);
 
 [
@@ -114,14 +118,21 @@ assert(map.includes('PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md'), 'Mapa completo n
 assert(readme.includes('PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md'), 'README nao referencia plano backend produtivo.');
 assert(protocol.includes('validate-backend-production-plan.mjs'), 'Protocolo de testes nao recomenda validate-backend-production-plan.');
 assert(changelog.includes('v8.99.0') && changelog.includes('Backend produtivo governado'), 'Changelog sem entrada v8.99.0 de backend produtivo.');
+assert(changelog.includes('v8.100.0') && changelog.includes('Provider de banco configuravel'), 'Changelog sem entrada v8.100.0 de provider configuravel.');
 assert(designValidator.includes('tools/validate-backend-production-plan.mjs'), 'validate-design-system nao exige validate-backend-production-plan.');
 assert(publicContractsValidator.includes('docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md'), 'validate-public-contracts nao le plano backend produtivo.');
+assert(backendDb.includes('DEFAULT_DB_PROVIDER') && backendDb.includes("'sqlite'"), 'db.js sem provider padrao sqlite.');
+assert(backendDb.includes('SUPPORTED_DB_PROVIDERS') && backendDb.includes('normalizeDbProvider'), 'db.js sem camada de provider configuravel.');
+assert(backendDb.includes('BANCUS_DB_PROVIDER') && backendDb.includes('assertSupportedDbProvider'), 'db.js sem bloqueio explicito de provider nao implementado.');
+assert(backendDb.includes('isSupportedDbProvider') && backendDb.includes('postgresql'), 'db.js deveria permitir validar provider futuro nao implementado.');
+assert(server.includes('provider: localDatabase ? localDatabase.provider : null'), 'server.js sem provider no health da API.');
 
 const report = {
   ok: failures.length === 0,
   plan: 'docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md',
   checkedTables: 8,
   checkedEndpoints: 14,
+  providerLayer: backendDb.includes('SUPPORTED_DB_PROVIDERS'),
   failures
 };
 

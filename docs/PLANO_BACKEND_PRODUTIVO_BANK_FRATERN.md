@@ -1,6 +1,6 @@
 # Plano Backend Produtivo - Bancus Fraternis
 
-Atualizado em 2026-05-16.
+Atualizado em 2026-05-17.
 
 ## Objetivo
 
@@ -15,6 +15,7 @@ Regra central: localStorage continua sendo fallback publico para GitHub Pages, `
 | Browser estatico | Ativo | HTML, services `window.BF*`, `localStorage`, datasets JSON e validadores. |
 | API local | Ativo em `node server.js` | `/api/auth/*`, `/api/users`, `/api/events`, `/api/snapshots`, `/api/journey-entities`, `/api/leads`, `/api/simulations`, `/api/proposals`. |
 | Banco local | Ativo | SQLite em `.runtime/bancus-fraternis.sqlite`, fora do Git. |
+| Provider configuravel | Ativo parcial | `BANCUS_DB_PROVIDER=sqlite` e o contrato inicial; providers futuros ficam bloqueados ate adapter validado. |
 | Backend hospedado | Futuro | Deve nascer dos contratos existentes, nao de um modelo paralelo. |
 
 ## Principios De Migracao
@@ -85,7 +86,7 @@ Endpoints futuros de produto, calculadoras, comparador e recomendacoes so devem 
 | Fase | Objetivo | Entrega |
 | --- | --- | --- |
 | P3.1 | Congelar contratos atuais | Este plano, contratos publicos, validadores e matriz de migracao. |
-| P3.2 | Abstrair provider | Preparar `BANCUS_DB_PROVIDER` e separar SQLite local de provider hospedado sem mudar `BFBackendApi`. |
+| P3.2 | Abstrair provider | Concluido parcial: `BANCUS_DB_PROVIDER` existe, `sqlite` e padrao e providers sem adapter falham com mensagem explicita sem mudar `BFBackendApi`. |
 | P3.3 | Hospedar banco piloto | Subir Postgres ou servico gerenciado equivalente com schema espelhado. |
 | P3.4 | Autenticacao produtiva | Tirar senha demonstrativa da operacao real, reforcar politica de sessao, auditoria e permissao server-side. |
 | P3.5 | Migracao assistida | Importar usuarios, eventos, snapshots e entidades dedicadas com relatorio de divergencias. |
@@ -117,7 +118,7 @@ Uma troca para backend hospedado so pode ser aceita quando:
 
 ## Backlog Tecnico
 
-- Criar camada de provider para banco produtivo mantendo SQLite local.
+- Expandir a camada de provider para Postgres ou servico gerenciado equivalente mantendo SQLite local.
 - Adicionar migrations versionadas para `users`, `sessions`, `events`, `snapshots`, `journey_entities`, `journey_leads`, `journey_simulations` e `journey_proposals`.
 - Criar relatorio de migracao com totais importados, pulados, atualizados e rejeitados.
 - Adicionar politicas de retencao para eventos e snapshots.

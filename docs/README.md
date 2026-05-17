@@ -1,6 +1,6 @@
 # Bancus Fraternis - Plataforma de decisao financeira
 
-Atualizado em 2026-05-16.
+Atualizado em 2026-05-17.
 
 O Bancus Fraternis e uma plataforma estatica/progressiva para apoiar decisao financeira, simulacao de consorcio, comparacao de produtos, proposta consultiva e handoff comercial. O antigo ConsorcioPro permanece como nome legado do simulador de consorcio e de algumas chaves locais, mas a linguagem de produto atual e Bancus Fraternis.
 
@@ -15,7 +15,7 @@ O Bancus Fraternis e uma plataforma estatica/progressiva para apoiar decisao fin
 - Lousa de proposta/PDF no simulador para o consultor selecionar blocos, graficos, conceitos e formulas, com presets consultivo/tecnico, prontidao e historico versionado antes da exportacao/handoff.
 - Dashboard Cliente, Handoff Consultivo e Dashboard Admin com cockpit de retomada, continuidade, origem, aging, prioridade, propostas versionadas/vencidas, etapa comercial, proximos passos, fila guiada executavel, produtividade, carteira por consultor, filtros comerciais, funil comercial movel por etapa, cadencia comercial e exportacoes sanitizadas de carteira e funil.
 - Publicacao em GitHub Pages com selo de ambiente demo/local, fallback estatico e validador de seguranca publica.
-- Backend local Node/SQLite preparado como ponte progressiva para backend produtivo futuro, com plano de migracao preservando `localStorage`, `BFBackendApi`, contratos `/api/*` e escopo por `owner_email`.
+- Backend local Node/SQLite preparado como ponte progressiva para backend produtivo futuro, com `BANCUS_DB_PROVIDER=sqlite`, plano de migracao preservando `localStorage`, `BFBackendApi`, contratos `/api/*` e escopo por `owner_email`.
 
 ## Entrada Recomendada
 
@@ -36,6 +36,12 @@ Para usar o servidor local com aliases curtos:
 
 ```bash
 node server.js
+```
+
+Para explicitar o provider local atual:
+
+```bash
+BANCUS_DB_PROVIDER=sqlite node server.js
 ```
 
 Depois acesse:

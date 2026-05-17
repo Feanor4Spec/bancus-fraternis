@@ -1,6 +1,6 @@
 # Banco De Dados Local - Bancus Fraternis
 
-Atualizado em 2026-05-16.
+Atualizado em 2026-05-17.
 
 ## Objetivo
 
@@ -32,6 +32,14 @@ Override local:
 ```bash
 BANCUS_DB_PATH=.runtime/outro-banco.sqlite node server.js
 ```
+
+Provider local:
+
+```bash
+BANCUS_DB_PROVIDER=sqlite node server.js
+```
+
+`sqlite` e o provider padrao e unico provider implementado nesta etapa. Aliases locais como `local`, `dev`, `development` e `node:sqlite` tambem normalizam para `sqlite`. Providers futuros, como `postgresql`, ficam bloqueados ate existir adapter produtivo validado.
 
 `.runtime/` fica fora do Git, entao o banco local nao e publicado.
 
@@ -111,6 +119,8 @@ As senhas seed continuam documentadas em `docs/AUTH_ADMIN_LOCAL.md` para demonst
 - O mesmo painel lista tabelas dedicadas server-side em `data-admin-backend-materialized`, cada item em `data-admin-backend-materialized-item` e controles operacionais em `data-admin-backend-materialized-control`.
 - Os controles `data-admin-backend-materialized-field` e `data-admin-backend-materialized-save` permitem ao Admin alterar status, etapa e prioridade via `PATCH`, gerando auditoria server-side.
 - O mesmo painel exibe `data-admin-backend-table` e `data-admin-backend-database-provider` para confirmar provider, arquivo, PRAGMAs e tabelas ativas.
+- `/api/health` informa `provider` quando o banco local esta disponivel.
+- `BANCUS_DB_PROVIDER` normaliza aliases locais para `sqlite` e recusa providers sem adapter implementado.
 - A migracao guiada usa `data-admin-local-import-panel`, `data-admin-local-import-preview`, `data-admin-local-import-run` e `data-admin-local-snapshot-count`; usuarios existentes sao pulados, snapshots repetidos sao atualizados e novos usuarios recebem senha temporaria `Temp@123`.
 - Producao futura deve seguir `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md`, trocando o SQLite local por backend hospedado com controle de permissao server-side completo, LGPD, politicas de backup, observabilidade e rollback.
 
