@@ -35,6 +35,7 @@ const [
   map,
   plan,
   backendProductionPlan,
+  nextPhasesPlan,
   protocol,
   apiDocs,
   designValidator,
@@ -65,6 +66,7 @@ const [
   read('docs/MAPA_COMPLETO_PROJETO_BANK_FRATERN.md'),
   read('docs/PLANO_ACAO_EVOLUCAO_BANK_FRATERN.md'),
   read('docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md'),
+  read('docs/PROXIMAS_FASES_BANK_FRATERN.md'),
   read('docs/CODEX_TEST_PROTOCOL.md'),
   read('pages/api-docs.html'),
   read('tools/validate-design-system.mjs'),
@@ -275,6 +277,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'tools/validate-public-contracts.mjs',
   'tools/validate-public-release-safety.mjs',
   'tools/validate-local-database.mjs',
+  'tools/validate-next-phases-plan.mjs',
   'tools/inspect-local-sql-environment.mjs',
   'tools/validate-design-system.mjs',
   'tools/validate-calculadoras.mjs',
@@ -515,12 +518,16 @@ assert(calculatorCount === 19, `Catalogo de calculadoras deveria ter 19 itens; e
 assert(contracts.includes('19 calculadoras'), 'Contrato publico nao explicita catalogo atual de 19 calculadoras.');
 assert(contracts.includes('## Backend Produtivo Futuro'), 'Contrato publico nao documenta backend produtivo futuro.');
 assert(contracts.includes('docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md'), 'Contrato publico nao referencia plano backend produtivo.');
+assert(contracts.includes('docs/PROXIMAS_FASES_BANK_FRATERN.md'), 'Contrato publico nao referencia proximas fases produtivas.');
 assert(contracts.includes('tools/validate-backend-production-plan.mjs'), 'Contrato publico nao referencia validador de backend produtivo.');
+assert(contracts.includes('tools/validate-next-phases-plan.mjs'), 'Contrato publico nao referencia validador de proximas fases.');
 assert(contracts.includes('BANCUS_DB_PROVIDER'), 'Contrato publico nao documenta BANCUS_DB_PROVIDER.');
 assert(backendProductionPlan.includes('localStorage continua sendo fallback publico'), 'Plano backend produtivo nao preserva fallback localStorage.');
 assert(backendProductionPlan.includes('BFBackendApi'), 'Plano backend produtivo nao preserva BFBackendApi.');
 assert(backendProductionPlan.includes('BANCUS_DB_PROVIDER'), 'Plano backend produtivo nao define provider futuro.');
 assert(backendProductionPlan.includes('LGPD') && backendProductionPlan.includes('backup') && backendProductionPlan.includes('observabilidade'), 'Plano backend produtivo sem governanca operacional.');
+assert(nextPhasesPlan.includes('8AN / P3.3A') && nextPhasesPlan.includes('8AO / P3.3B'), 'Proximas fases sem schema/migrations e adapter produtivo.');
+assert(nextPhasesPlan.includes('BANCUS_DATABASE_URL') && nextPhasesPlan.includes('rollback'), 'Proximas fases sem URL produtiva ou rollback.');
 assert(apiDocs.includes('BANCUS_DB_PROVIDER') && apiDocs.includes('<code>sqlite</code>'), 'api-docs.html nao explica provider sqlite atual.');
 
 const docs = await fs.readdir(path.join(root, 'docs'));
@@ -551,7 +558,7 @@ const report = {
     dataMarkers: 95,
     globals: 20,
     deepLinks: 10,
-    validators: 23,
+    validators: 24,
     calculatorCount
   },
   warnings,

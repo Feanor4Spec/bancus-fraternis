@@ -1,6 +1,6 @@
 # Contratos Publicos - Bancus Fraternis
 
-Atualizado em 2026-05-17.
+Atualizado em 2026-05-21.
 
 Este documento e a matriz viva dos contratos que novas evolucoes devem preservar. O Bancus Fraternis e uma plataforma estatica/progressiva de decisao financeira; por isso, compatibilidade local importa tanto quanto visual e jornada.
 
@@ -109,6 +109,7 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 ## Backend Produtivo Futuro
 
 Plano de referencia: `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md`.
+Roadmap executavel: `docs/PROXIMAS_FASES_BANK_FRATERN.md`.
 
 Regras publicas para a troca de provider:
 
@@ -116,6 +117,7 @@ Regras publicas para a troca de provider:
 - `BFBackendApi` segue como fachada de compatibilidade; paginas nao devem chamar provider produtivo diretamente.
 - SQLite local continua valido para desenvolvimento e deve passar em `tools/validate-local-database.mjs`.
 - `BANCUS_DB_PROVIDER` aceita `sqlite` como provider padrao nesta etapa; providers sem adapter implementado devem falhar de forma explicita.
+- A Fase 8AN / P3.3A deve criar schema e migrations versionadas antes de qualquer `BANCUS_DB_PROVIDER=postgresql`.
 - Backend hospedado futuro deve preservar semantica de `/api/auth/*`, `/api/users`, `/api/events`, `/api/snapshots`, `/api/journey-entities`, `/api/leads`, `/api/simulations` e `/api/proposals`.
 - Admin pode ver tudo; consultor e cliente ficam escopados por `owner_email`.
 - Payloads produtivos precisam remover senha, token, hash, CPF, telefone, WhatsApp e e-mail sensivel antes de persistir ou exportar.
@@ -198,6 +200,7 @@ Leitura progressiva dos snapshots:
 | `tools/validate-public-release-safety.mjs` | Exposicao publica, paths locais, dados pessoais de exemplo, aviso demo, fallback estatico e CI. |
 | `tools/validate-local-database.mjs` | Banco local SQLite, seeds, hash de senha, sessao, eventos sanitizados e contratos de API. |
 | `tools/validate-backend-production-plan.mjs` | Backend produtivo futuro, dominios, tabelas, endpoints, LGPD, backup, observabilidade e compatibilidade estatica. |
+| `tools/validate-next-phases-plan.mjs` | Roadmap das proximas fases produtivas, ordem de migrations, adapter, autenticacao, migracao, observabilidade e corte controlado. |
 | `tools/inspect-local-sql-environment.mjs` | Diagnostico local de CLIs, portas padrao e servicos SQL externos antes de trocar provider. |
 | `tools/validate-docs-modernization.mjs` | README ativo, docs historicos e contagem atual de 19 calculadoras. |
 | `tools/validate-auth-navigation.mjs` | Login local, seed users, redirect seguro e bloqueio por papel. |

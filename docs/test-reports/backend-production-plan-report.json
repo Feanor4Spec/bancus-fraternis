@@ -4,5 +4,6 @@
   "checkedTables": 8,
   "checkedEndpoints": 14,
   "providerLayer": true,
+  "nextPhases": true,
   "failures": []
 }

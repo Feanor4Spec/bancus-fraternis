@@ -1,0 +1,8 @@
+{
+  "ok": true,
+  "plan": "docs/PROXIMAS_FASES_BANK_FRATERN.md",
+  "phases": 7,
+  "firstImplementation": "8AN / P3.3A",
+  "nextProvider": "postgresql",
+  "failures": []
+}

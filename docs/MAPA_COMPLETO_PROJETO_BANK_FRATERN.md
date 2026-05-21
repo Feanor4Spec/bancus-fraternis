@@ -1,6 +1,6 @@
 # Mapa Completo do Projeto Bancus Fraternis
 
-Atualizado em 2026-05-17.
+Atualizado em 2026-05-21.
 
 Este mapa foi recriado a partir da leitura real do workspace. Ele documenta o Bancus Fraternis como plataforma de decisao financeira, nao apenas como simulador de consorcio. O objetivo e permitir que uma pessoa ou agente entenda a superficie atual do produto antes de evoluir Home, produtos, calculadoras, trilha assistida, comparador, simulador, proposta, handoff, dashboard cliente e dashboard admin.
 
@@ -552,6 +552,7 @@ Scripts confirmados em `tools/`:
 | `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md` | Contratos publicos de localStorage, data markers, deep links, exports globais e DoD. |
 | `docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md` | Banco local SQLite, endpoints, tabelas, seeds, compatibilidade e validacao. |
 | `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md` | Ponte do SQLite local para backend hospedado futuro, preservando fallback estatico, `BFBackendApi`, escopo e migracao por dominio. |
+| `docs/PROXIMAS_FASES_BANK_FRATERN.md` | Roadmap executavel das proximas fases: migrations, adapter produtivo, autenticacao, migracao assistida, observabilidade, corte controlado e UX com dados vivos. |
 | `docs/CALCULADORAS_FUNCIONAIS_BANK_FRATERN.md` | Ecossistema de calculadoras. |
 | `docs/MAPA_FUNCOES_CALCULADORAS_BANK_FRATERN.md` | Mapa funcional das 19 calculadoras, inputs, motor, saidas e continuidade. |
 | `docs/TRILHA_ASSISTIDA_DECISAO.md` | Trilha assistida. |
@@ -574,16 +575,16 @@ Governanca documental: docs ativos passaram a usar Bancus Fraternis como platafo
 8. Tratar `versions/` como backup, nao como fonte ativa.
 9. Tratar GitHub Pages como superficie publica: toda mudanca online deve preservar selo demo, fallback estatico e auditoria de publicacao segura.
 10. Considerar performance ao tocar na base grande `data_base/Tab_Grupos_Consorcio.json`; regenerar e validar `data_base/Tab_Grupos_Consorcio.compact.json` quando a base canonica mudar.
-11. Tratar SQLite local como infraestrutura de desenvolvimento: `.runtime/` nao entra no Git, `BANCUS_DB_PROVIDER=sqlite` e o padrao atual, e backend produtivo deve seguir `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md`, com hospedagem, LGPD, backup, observabilidade e permissao server-side completa.
+11. Tratar SQLite local como infraestrutura de desenvolvimento: `.runtime/` nao entra no Git, `BANCUS_DB_PROVIDER=sqlite` e o padrao atual, e backend produtivo deve seguir `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md` e `docs/PROXIMAS_FASES_BANK_FRATERN.md`, com hospedagem, LGPD, backup, observabilidade e permissao server-side completa.
 12. Antes de trocar o provider SQLite, confirmar servidor externo com `tools/inspect-local-sql-environment.mjs`.
 
 ## Proximos Vetores
 
 O vetor recomendado para o proximo ciclo continua sendo produto e jornada, agora com foco em reduzir risco tecnico sem quebrar contratos publicos:
 
-1. Continuar a modularizacao do simulador, extraindo calculo/orquestracao de resultado e integracoes de proposta sem quebrar `App.*`.
-2. Preparar leitura server-side desses snapshots no Dashboard Cliente e nos cockpits operacionais, mantendo fallback por `localStorage`.
-3. Executar a migracao futura do SQLite local para backend/API produtivo a partir de `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md`, sem quebrar `localStorage`, deep links e services globais.
-4. Manter a lousa como porta de QA visual a cada nova entrega funcional.
+1. Executar a Fase 8AN / P3.3A de schema e migrations versionadas antes de qualquer provider hospedado.
+2. Criar o adapter produtivo piloto `postgresql` somente depois do manifest de schema e rollback estarem validados.
+3. Evoluir autenticacao produtiva, migracao assistida, observabilidade, backup e corte controlado seguindo `docs/PROXIMAS_FASES_BANK_FRATERN.md`.
+4. Manter a lousa como porta de QA visual a cada nova entrega funcional e preservar `localStorage` como fallback publico.
 
-O plano detalhado esta em `docs/PLANO_ACAO_EVOLUCAO_BANK_FRATERN.md`.
+O plano detalhado esta em `docs/PLANO_ACAO_EVOLUCAO_BANK_FRATERN.md` e as fases futuras estao em `docs/PROXIMAS_FASES_BANK_FRATERN.md`.

@@ -1,6 +1,6 @@
 # Protocolo de testes preferencial - Codex
 
-Atualizado em 2026-05-12 para o projeto Bancus Fraternis.
+Atualizado em 2026-05-21 para o projeto Bancus Fraternis.
 
 ## Caminho base
 
@@ -986,6 +986,7 @@ Evidencias esperadas:
 Validacoes a rodar antes de qualquer troca de provider:
 
 - `node tools/validate-backend-production-plan.mjs`
+- `node tools/validate-next-phases-plan.mjs`
 - `node tools/validate-local-database.mjs`
 - `node tools/validate-public-contracts.mjs`
 - `node tools/validate-public-release-safety.mjs`
@@ -996,9 +997,20 @@ Contratos a proteger:
 - `localStorage` continua fallback publico para GitHub Pages, `file://` e demos offline.
 - `BFBackendApi` segue como fachada de compatibilidade para API local e futura API hospedada.
 - `BANCUS_DB_PROVIDER` deve manter `sqlite` como padrao enquanto nao houver adapter produtivo validado.
+- `docs/PROXIMAS_FASES_BANK_FRATERN.md` deve manter a ordem: migrations e schema antes de adapter produtivo, adapter antes de autenticacao produtiva, autenticacao antes de migracao assistida, migracao antes de corte controlado.
 - Endpoints `/api/auth/*`, `/api/users`, `/api/events`, `/api/snapshots`, `/api/journey-entities`, `/api/leads`, `/api/simulations` e `/api/proposals` nao devem mudar de semantica sem migracao.
 - Escopo por `owner_email`: admin ve tudo; consultor e cliente veem apenas registros permitidos.
 - Payloads produtivos devem remover senha, token, hash, CPF, telefone, WhatsApp e e-mail sensivel.
+
+Proximas fases aceitas:
+
+- Fase 8AN / P3.3A: schema e migrations versionadas.
+- Fase 8AO / P3.3B: adapter produtivo piloto com `BANCUS_DB_PROVIDER=postgresql` e `BANCUS_DATABASE_URL`.
+- Fase 8AP / P3.4: autenticacao produtiva.
+- Fase 8AQ / P3.5: migracao assistida e reconciliacao.
+- Fase 8AR / P3.6: observabilidade, backup e LGPD.
+- Fase 8AS / P3.7: corte controlado por ambiente.
+- Fase 8AT / P4.1: UX com dados vivos.
 
 ## Ecossistema de calculadoras
 

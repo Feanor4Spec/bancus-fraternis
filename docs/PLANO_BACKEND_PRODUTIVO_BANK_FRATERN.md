@@ -1,6 +1,6 @@
 # Plano Backend Produtivo - Bancus Fraternis
 
-Atualizado em 2026-05-17.
+Atualizado em 2026-05-21.
 
 ## Objetivo
 
@@ -16,6 +16,7 @@ Regra central: localStorage continua sendo fallback publico para GitHub Pages, `
 | API local | Ativo em `node server.js` | `/api/auth/*`, `/api/users`, `/api/events`, `/api/snapshots`, `/api/journey-entities`, `/api/leads`, `/api/simulations`, `/api/proposals`. |
 | Banco local | Ativo | SQLite em `.runtime/bancus-fraternis.sqlite`, fora do Git. |
 | Provider configuravel | Ativo parcial | `BANCUS_DB_PROVIDER=sqlite` e o contrato inicial; providers futuros ficam bloqueados ate adapter validado. |
+| Proximas fases | Planejado | `docs/PROXIMAS_FASES_BANK_FRATERN.md` detalha migrations, adapter produtivo, auth, migracao, observabilidade e corte controlado. |
 | Backend hospedado | Futuro | Deve nascer dos contratos existentes, nao de um modelo paralelo. |
 
 ## Principios De Migracao
@@ -87,11 +88,26 @@ Endpoints futuros de produto, calculadoras, comparador e recomendacoes so devem 
 | --- | --- | --- |
 | P3.1 | Congelar contratos atuais | Este plano, contratos publicos, validadores e matriz de migracao. |
 | P3.2 | Abstrair provider | Concluido parcial: `BANCUS_DB_PROVIDER` existe, `sqlite` e padrao e providers sem adapter falham com mensagem explicita sem mudar `BFBackendApi`. |
-| P3.3 | Hospedar banco piloto | Subir Postgres ou servico gerenciado equivalente com schema espelhado. |
+| P3.3A | Versionar schema | Criar migrations, manifest de schema e rollback antes de conectar provider hospedado. |
+| P3.3B | Hospedar banco piloto | Subir Postgres ou servico gerenciado equivalente com schema espelhado e adapter controlado. |
 | P3.4 | Autenticacao produtiva | Tirar senha demonstrativa da operacao real, reforcar politica de sessao, auditoria e permissao server-side. |
 | P3.5 | Migracao assistida | Importar usuarios, eventos, snapshots e entidades dedicadas com relatorio de divergencias. |
 | P3.6 | Observabilidade e backup | Logs, metricas, alertas, backup automatizado e rotina de restauracao testada. |
 | P3.7 | Corte controlado | Ativar API hospedada por ambiente, mantendo fallback estatico e plano de rollback. |
+
+## Proximas Fases Detalhadas
+
+O detalhamento executavel esta em `docs/PROXIMAS_FASES_BANK_FRATERN.md`.
+
+| Fase | Prioridade | Entrega principal | Validador esperado |
+| --- | --- | --- | --- |
+| 8AN / P3.3A | P0 | Schema e migrations versionadas para todas as tabelas atuais. | `tools/validate-database-migrations.mjs` |
+| 8AO / P3.3B | P0 | Adapter `postgresql` piloto com `BANCUS_DATABASE_URL` e fallback SQLite. | `tools/validate-database-provider.mjs` |
+| 8AP / P3.4 | P0 | Autenticacao produtiva, revogacao, escopo e auditoria server-side. | `tools/validate-auth-navigation.mjs` |
+| 8AQ / P3.5 | P1 | Migracao assistida com preview, divergencias e idempotencia. | `tools/validate-database-migration-reconciliation.mjs` |
+| 8AR / P3.6 | P1 | Health, logs sanitizados, backup/restore e checklist LGPD. | `tools/validate-backend-production-plan.mjs` |
+| 8AS / P3.7 | P1 | Corte por ambiente, smoke test e rollback documentado. | `tools/validate-online-journey-smoke.mjs` |
+| 8AT / P4.1 | P2 | UX com dados vivos em cliente, consultor e admin. | `tools/validate-dashboard-continuity-flow.mjs` |
 
 ## Definition Of Done Produtiva
 

@@ -21,6 +21,7 @@ const [
   readme,
   protocol,
   changelog,
+  nextPhases,
   designValidator,
   publicContractsValidator,
   backendDb,
@@ -34,6 +35,7 @@ const [
   read('docs/README.md'),
   read('docs/CODEX_TEST_PROTOCOL.md'),
   read('docs/CHANGELOG.md'),
+  read('docs/PROXIMAS_FASES_BANK_FRATERN.md'),
   read('tools/validate-design-system.mjs'),
   read('tools/validate-public-contracts.mjs'),
   read('js/backend/db.js'),
@@ -119,8 +121,15 @@ assert(readme.includes('PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md'), 'README nao r
 assert(protocol.includes('validate-backend-production-plan.mjs'), 'Protocolo de testes nao recomenda validate-backend-production-plan.');
 assert(changelog.includes('v8.99.0') && changelog.includes('Backend produtivo governado'), 'Changelog sem entrada v8.99.0 de backend produtivo.');
 assert(changelog.includes('v8.100.0') && changelog.includes('Provider de banco configuravel'), 'Changelog sem entrada v8.100.0 de provider configuravel.');
+assert(changelog.includes('v8.101.0') && changelog.includes('Proximas fases produtivas'), 'Changelog sem entrada v8.101.0 de proximas fases.');
+assert(nextPhases.includes('8AN / P3.3A') && nextPhases.includes('Schema e Migrations Versionadas'), 'Proximas fases sem P3.3A de schema/migrations.');
+assert(nextPhases.includes('8AO / P3.3B') && nextPhases.includes('BANCUS_DB_PROVIDER=postgresql'), 'Proximas fases sem adapter postgresql piloto.');
+assert(nextPhases.includes('8AS / P3.7') && nextPhases.includes('rollback'), 'Proximas fases sem corte controlado com rollback.');
+assert(backendPlan.includes('docs/PROXIMAS_FASES_BANK_FRATERN.md'), 'Plano backend nao referencia proximas fases.');
 assert(designValidator.includes('tools/validate-backend-production-plan.mjs'), 'validate-design-system nao exige validate-backend-production-plan.');
+assert(designValidator.includes('tools/validate-next-phases-plan.mjs'), 'validate-design-system nao exige validate-next-phases-plan.');
 assert(publicContractsValidator.includes('docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md'), 'validate-public-contracts nao le plano backend produtivo.');
+assert(publicContractsValidator.includes('docs/PROXIMAS_FASES_BANK_FRATERN.md'), 'validate-public-contracts nao le proximas fases.');
 assert(backendDb.includes('DEFAULT_DB_PROVIDER') && backendDb.includes("'sqlite'"), 'db.js sem provider padrao sqlite.');
 assert(backendDb.includes('SUPPORTED_DB_PROVIDERS') && backendDb.includes('normalizeDbProvider'), 'db.js sem camada de provider configuravel.');
 assert(backendDb.includes('BANCUS_DB_PROVIDER') && backendDb.includes('assertSupportedDbProvider'), 'db.js sem bloqueio explicito de provider nao implementado.');
@@ -133,6 +142,7 @@ const report = {
   checkedTables: 8,
   checkedEndpoints: 14,
   providerLayer: backendDb.includes('SUPPORTED_DB_PROVIDERS'),
+  nextPhases: nextPhases.includes('8AN / P3.3A'),
   failures
 };
 

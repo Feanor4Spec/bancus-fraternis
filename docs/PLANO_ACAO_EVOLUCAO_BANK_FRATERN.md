@@ -1,6 +1,6 @@
 # Plano de Acao de Evolucao Bancus Fraternis
 
-Atualizado em 2026-05-17.
+Atualizado em 2026-05-21.
 
 Prioridade definida: produto e jornada.
 
@@ -68,6 +68,7 @@ Cada etapa deve responder quatro perguntas:
 | Banco local de usuarios, eventos e snapshots | Concluido parcial | SQLite local em `.runtime/`, endpoints `/api/database/status`, `/api/auth/*`, `/api/users`, `/api/events`, `/api/snapshots`, `/api/journey-entities`, `/api/leads`, `/api/simulations`, `/api/proposals`, escrita direta de leads/simulacoes/propostas, `BFBackendApi`, painel Admin de eventos/status/snapshots/entidades/tabelas dedicadas, fila dedicada filtravel, Dashboard Cliente com leitura server-side de snapshots, entidades e tabelas, hash `scrypt-sha256`, sessoes server-side e fallback estatico preservado. |
 | Backend/API produtivo futuro | Concluido parcial | Plano produtivo criado para migrar SQLite local para backend hospedado preservando `localStorage`, `BFBackendApi`, escopo por `owner_email`, contratos `/api/*`, LGPD, backup e observabilidade. |
 | Provider de banco configuravel | Concluido parcial | `BANCUS_DB_PROVIDER` foi criado com `sqlite` como padrao e providers futuros bloqueados ate adapter validado. |
+| Proximas fases produtivas | Planejado | `docs/PROXIMAS_FASES_BANK_FRATERN.md` organiza schema/migrations, adapter produtivo, autenticacao, migracao, observabilidade, corte controlado e UX com dados vivos. |
 | Governanca permanente | Em andamento | Changelog, mapa, plano, validadores, contratos publicos e lousa navegavel atualizados por entrega. |
 
 ## Mapa de Implementacao Atualizado
@@ -116,6 +117,7 @@ Cada etapa deve responder quatro perguntas:
 | 40 | Quantidade configuravel da prateleira | Concluido | Consultor escolhe quantos grupos ver na prateleira, com padrao 20 e limite 50, mantendo Configuracoes, Home e Simulador alinhados. | `pages/simulador.html`, `pages/configuracoes.html`, `js/settings.js`, `js/app.js`, `js/simulator-shelf.js`, `tools/validate-simulator-shelf.mjs`. |
 | 41 | Backend produtivo governado | Concluido parcial | Fronteira de migracao definida para usuarios, sessoes, eventos, snapshots, leads, simulacoes e propostas, mantendo fallback estatico e contratos publicos. | `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md`, `tools/validate-backend-production-plan.mjs`. |
 | 42 | Provider de banco configuravel | Concluido parcial | Camada inicial de provider criada com `BANCUS_DB_PROVIDER`, aliases para SQLite e erro explicito para providers sem adapter. | `js/backend/db.js`, `server.js`, `tools/validate-local-database.mjs`, `tools/validate-backend-production-plan.mjs`. |
+| 43 | Proximas fases produtivas | Planejado | Roadmap executavel criado para migrations, adapter PostgreSQL piloto, autenticacao produtiva, migracao assistida, observabilidade, corte controlado e UX com dados vivos. | `docs/PROXIMAS_FASES_BANK_FRATERN.md`, `tools/validate-next-phases-plan.mjs`. |
 
 ## Proximos Passos Priorizados
 
@@ -150,6 +152,8 @@ Cada etapa deve responder quatro perguntas:
 | Concluido parcial | Proxima extracao do simulador | Separado calculo/orquestracao de resultado em modulo menor, mantendo `App.*` como fachada publica. | `js/app.js`, `js/engine.js`, `js/simulator-result.js`. | Reduzir `app.js` sem quebrar resultados, proposta, PDF e simulacoes salvas. |
 | Concluido | Prateleira com quantidade controlada | Padronizado controle numerico de 20 a 50 grupos por pagina, comecando em 20, com normalizacao das preferencias antigas. | `pages/simulador.html`, `pages/configuracoes.html`, `js/settings.js`, `js/simulator-shelf.js`, `tools/validate-simulator-shelf.mjs`. | Consultor consegue reduzir ou ampliar a leitura da prateleira sem passar de 50 grupos visiveis por pagina. |
 | Concluido parcial | Backend/API produtivo futuro | Fronteiras de migracao documentadas para usuarios, sessoes, eventos, snapshots, leads, simulacoes, propostas e handoffs, mantendo `localStorage` como fallback publico. | `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md`, `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md`, `docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md`, `tools/validate-backend-production-plan.mjs`. | Plano tecnico define contratos de migracao do SQLite local para backend hospedado, com LGPD, backup, observabilidade e rollback como criterios de aceite. |
+| P0 | Schema e migrations versionadas | Criar a Fase 8AN / P3.3A antes do adapter produtivo, com migrations idempotentes, manifest de schema e rollback. | `js/backend/migrations/*`, `js/backend/db.js`, `tools/validate-database-migrations.mjs`, `docs/PROXIMAS_FASES_BANK_FRATERN.md`. | Todas as tabelas atuais possuem migration, SQLite segue verde e o adapter futuro tem contrato de schema. |
+| P0 | Adapter produtivo piloto | Implementar a Fase 8AO / P3.3B com `BANCUS_DB_PROVIDER=postgresql`, `BANCUS_DATABASE_URL`, smoke test e fallback SQLite. | `js/backend/providers/*`, `server.js`, `tools/validate-database-provider.mjs`. | `BFBackendApi` e `/api/*` preservam semantica, provider sem credencial falha explicitamente e staging usa dados de teste. |
 
 ## Fase 1 - Saneamento da Jornada Navegavel
 
@@ -511,7 +515,9 @@ Testes recomendados:
 | Concluido | Criar validador de aliases/rotas. | `tools/validate-route-aliases.mjs`. |
 | P3 | Continuar reduzindo responsabilidades de `js/app.js` e `assets/js/bf-platform.js`. | Proximo corte recomendado: integracoes finais de exportacao/retomada do simulador ou modularizacao progressiva de `assets/js/bf-platform.js`. |
 | Concluido parcial | Preparar provider produtivo de banco. | `BANCUS_DB_PROVIDER` criado sem quebrar SQLite local nem `BFBackendApi`; proximo passo e adapter piloto para Postgres ou servico gerenciado equivalente. |
-| P3 | Criar adapter produtivo piloto. | Implementar provider real hospedado em ambiente de homologacao, mantendo SQLite como fallback e sem mudar contratos `/api/*`. |
+| P0 | Criar schema e migrations versionadas. | Fase 8AN / P3.3A: criar manifest e migrations antes de ativar qualquer provider hospedado. |
+| P0 | Criar adapter produtivo piloto. | Fase 8AO / P3.3B: implementar provider real hospedado em ambiente de homologacao, mantendo SQLite como fallback e sem mudar contratos `/api/*`. |
+| P1 | Preparar autenticacao, migracao, observabilidade e corte controlado. | Seguir `docs/PROXIMAS_FASES_BANK_FRATERN.md` para tirar credenciais demonstrativas da operacao real, migrar dados com reconciliacao, testar backup/restore e ativar por ambiente. |
 
 ## Contratos que Devem Ser Preservados
 
@@ -528,10 +534,10 @@ Testes recomendados:
 - Matriz publica: `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md`.
 - Banco local progressivo: `docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md`, `BFBackendApi`, `bf_backend_session_v1`, `/api/database/status`, `/api/auth/*`, `/api/users`, `/api/events`, `/api/snapshots`, `/api/journey-entities`, `/api/leads`, `/api/simulations`, `/api/proposals`, `data-client-backend-snapshots`, `data-client-backend-entities`, `data-client-backend-materialized`, `data-admin-backend-snapshots`, `data-admin-backend-entities` e `data-admin-backend-materialized`.
 
-## Fora de Escopo deste Plano
+## Fora de Escopo da Fase Documental Original
 
-- Migracao para backend/API produtiva hospedada.
-- Banco produtivo de leads ou simulacoes.
+- Migracao funcional para backend/API produtiva hospedada sem antes executar `docs/PROXIMAS_FASES_BANK_FRATERN.md`.
+- Banco produtivo de leads ou simulacoes sem schema/migrations, adapter validado e rollback.
 - Integracao Open Finance.
 - Refatoracao estrutural completa dos controladores grandes.
 - Mudancas nas formulas financeiras sem demanda especifica.
@@ -544,8 +550,9 @@ Testes recomendados:
 4. Fase 2: continuidade da jornada. Em andamento; Home, Produtos, Calculadoras, Trilha contextual, cockpit do Dashboard Cliente, lousa de QA visual e primeiras acoes contextuais do simulador foram implementados.
 5. Fase 5: governanca permanente e reducao de divida documental. Em andamento; contratos publicos, changelog, evidencias browser, CI/Pages e roteiro de teste navegavel estao ativos.
 6. Fase local de banco/API: iniciada para usuarios, sessoes, eventos e snapshots, ainda com fallback estatico obrigatorio.
-7. Proximo ciclo backend local: criar endpoints de escrita direta para leads, simulacoes e propostas quando a regra de negocio sair do prototipo.
-8. Fase futura: backend/API produtivo. Migrar SQLite local para servico hospedado preservando compatibilidade com `localStorage`.
+7. Proximo ciclo backend produtivo: executar Fase 8AN / P3.3A, criando schema e migrations versionadas antes de provider hospedado.
+8. Depois do schema: executar Fase 8AO / P3.3B, criando adapter `postgresql` piloto em homologacao.
+9. Fases seguintes: autenticacao produtiva, migracao assistida, observabilidade/backup, corte controlado e UX com dados vivos conforme `docs/PROXIMAS_FASES_BANK_FRATERN.md`.
 
 Essa ordem reduz risco: primeiro tira friccao de acesso, depois melhora operacao comercial, depois aprofunda experiencia e governanca.
 

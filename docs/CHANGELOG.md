@@ -4,6 +4,20 @@
 
 ---
 
+## [v8.101.0] - 2026-05-21
+
+### Proximas fases produtivas
+
+#### Adicionado
+- Criado `docs/PROXIMAS_FASES_BANK_FRATERN.md` com as fases 8AN a 8AT: schema/migrations, adapter produtivo, autenticacao, migracao assistida, observabilidade, corte controlado e UX com dados vivos.
+- Criado `tools/validate-next-phases-plan.mjs` para proteger a ordem das proximas fases e suas referencias nos planos principais.
+
+#### Modificado
+- Plano backend produtivo, plano de acao, mapa completo, README, contratos publicos e protocolo de testes passaram a apontar o roadmap executavel.
+- A proxima entrega recomendada ficou definida como Fase 8AN / P3.3A: schema e migrations versionadas antes de qualquer provider hospedado.
+
+---
+
 ## [v8.100.0] - 2026-05-17
 
 ### Provider de banco configuravel

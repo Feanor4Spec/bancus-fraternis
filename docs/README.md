@@ -1,6 +1,6 @@
 # Bancus Fraternis - Plataforma de decisao financeira
 
-Atualizado em 2026-05-17.
+Atualizado em 2026-05-21.
 
 O Bancus Fraternis e uma plataforma estatica/progressiva para apoiar decisao financeira, simulacao de consorcio, comparacao de produtos, proposta consultiva e handoff comercial. O antigo ConsorcioPro permanece como nome legado do simulador de consorcio e de algumas chaves locais, mas a linguagem de produto atual e Bancus Fraternis.
 
@@ -15,7 +15,7 @@ O Bancus Fraternis e uma plataforma estatica/progressiva para apoiar decisao fin
 - Lousa de proposta/PDF no simulador para o consultor selecionar blocos, graficos, conceitos e formulas, com presets consultivo/tecnico, prontidao e historico versionado antes da exportacao/handoff.
 - Dashboard Cliente, Handoff Consultivo e Dashboard Admin com cockpit de retomada, continuidade, origem, aging, prioridade, propostas versionadas/vencidas, etapa comercial, proximos passos, fila guiada executavel, produtividade, carteira por consultor, filtros comerciais, funil comercial movel por etapa, cadencia comercial e exportacoes sanitizadas de carteira e funil.
 - Publicacao em GitHub Pages com selo de ambiente demo/local, fallback estatico e validador de seguranca publica.
-- Backend local Node/SQLite preparado como ponte progressiva para backend produtivo futuro, com `BANCUS_DB_PROVIDER=sqlite`, plano de migracao preservando `localStorage`, `BFBackendApi`, contratos `/api/*` e escopo por `owner_email`.
+- Backend local Node/SQLite preparado como ponte progressiva para backend produtivo futuro, com `BANCUS_DB_PROVIDER=sqlite`, plano de migracao preservando `localStorage`, `BFBackendApi`, contratos `/api/*`, escopo por `owner_email` e proximas fases produtivas detalhadas.
 
 ## Entrada Recomendada
 
@@ -67,13 +67,14 @@ http://localhost:8080/dashboard-admin.html
 | Dashboard Cliente | `pages/dashboard-cliente.html`, `assets/js/dashboard-cliente.js` |
 | Dashboard Admin | `pages/dashboard-admin.html`, `assets/js/admin-users.js`, `assets/js/services/admin-recovery.service.js` |
 | Governanca | `docs/MAPA_COMPLETO_PROJETO_BANK_FRATERN.md`, `docs/PLANO_ACAO_EVOLUCAO_BANK_FRATERN.md`, `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md` |
-| Backend produtivo | `docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md`, `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md`, `tools/validate-backend-production-plan.mjs` |
+| Backend produtivo | `docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md`, `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md`, `docs/PROXIMAS_FASES_BANK_FRATERN.md`, `tools/validate-backend-production-plan.mjs` |
 
 ## Documentos-Chave
 
 - `docs/MAPA_COMPLETO_PROJETO_BANK_FRATERN.md`: leitura completa do projeto, paginas, dados, contratos e lacunas.
 - `docs/MAPA_FUNCOES_CALCULADORAS_BANK_FRATERN.md`: mapa das 19 funcoes de calculadoras, inputs, motor, saidas e continuidade.
 - `docs/PLANO_ACAO_EVOLUCAO_BANK_FRATERN.md`: fases de evolucao e status do que ja foi implementado.
+- `docs/PROXIMAS_FASES_BANK_FRATERN.md`: proximas fases executaveis para schema, migrations, adapter produtivo, autenticacao, migracao, observabilidade e corte controlado.
 - `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md`: contratos publicos de `localStorage`, `data-*`, deep links, exports globais e Definition of Done.
 - `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md`: ponte entre SQLite local, API local e backend hospedado futuro.
 - `docs/CODEX_TEST_PROTOCOL.md`: protocolo de testes e evidencias.
@@ -88,6 +89,7 @@ node tools/validate-design-system.mjs
 node tools/validate-public-release-safety.mjs
 node tools/validate-public-contracts.mjs
 node tools/validate-backend-production-plan.mjs
+node tools/validate-next-phases-plan.mjs
 node tools/validate-docs-modernization.mjs
 node tools/validate-online-journey-smoke.mjs
 node tools/validate-github-pages-deploy.mjs

@@ -1,10 +1,18 @@
 # Plano de Implementacao Evolutivo - Bancus Fraternis
 
-Atualizado em 2026-05-17.
+Atualizado em 2026-05-21.
 
 ## Estado Atual
 
 O portal entrou em um ciclo de paginas vivas. A home, a carteira e o monitor de assembleias ja carregam dados reais ou persistidos no navegador, preservando fallback demonstrativo quando ainda nao existe base transacional completa. A versao v8 inicia a unificacao visual do Bancus Fraternis para manter a mesma linguagem em paginas institucionais, calculadoras, simuladores, comparador, dashboards, governanca e handoff.
+
+### Fase 8AN planejada neste ciclo - Proximas fases produtivas
+
+- Criado `docs/PROXIMAS_FASES_BANK_FRATERN.md` como roadmap executavel das proximas entregas.
+- A ordem recomendada agora prioriza schema e migrations versionadas antes de qualquer adapter hospedado.
+- As fases seguintes ficaram separadas em adapter `postgresql` piloto, autenticacao produtiva, migracao assistida, observabilidade/backup, corte controlado e UX com dados vivos.
+- Criado `tools/validate-next-phases-plan.mjs` para proteger a consistencia entre roadmap, plano produtivo, mapa, plano de acao, README, contratos e changelog.
+- Proximo incremento recomendado: implementar a Fase 8AN / P3.3A, criando migrations idempotentes e manifest de schema para todas as tabelas atuais.
 
 ### Fase 8AM executada neste ciclo - Provider de banco configuravel
 
