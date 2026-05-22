@@ -34,6 +34,8 @@ const {
   DEFAULT_DB_PROVIDER,
   SUPPORTED_DB_PROVIDERS,
   FUTURE_DB_PROVIDERS,
+  SCHEMA_MIGRATIONS_DIR,
+  SCHEMA_MANIFEST_PATH,
   normalizeDbProvider,
   isSupportedDbProvider
 } = require('../js/backend/db.js');
@@ -41,6 +43,8 @@ const {
 assert(DEFAULT_DB_PROVIDER === 'sqlite', 'Provider padrao deveria continuar sqlite.');
 assert(Array.isArray(SUPPORTED_DB_PROVIDERS) && SUPPORTED_DB_PROVIDERS.includes('sqlite'), 'Providers suportados deveriam incluir sqlite.');
 assert(Array.isArray(FUTURE_DB_PROVIDERS) && FUTURE_DB_PROVIDERS.includes('postgresql'), 'Providers futuros deveriam registrar postgresql como proximo candidato.');
+assert(String(SCHEMA_MIGRATIONS_DIR).includes('migrations'), 'db.js deveria exportar diretorio de migrations.');
+assert(String(SCHEMA_MANIFEST_PATH).endsWith('schema-manifest.json'), 'db.js deveria exportar caminho do manifest de schema.');
 assert(normalizeDbProvider('node:sqlite') === 'sqlite', 'Alias node:sqlite deveria normalizar para sqlite.');
 assert(normalizeDbProvider('local') === 'sqlite', 'Alias local deveria normalizar para sqlite.');
 assert(isSupportedDbProvider('sqlite'), 'sqlite deveria ser provider suportado.');

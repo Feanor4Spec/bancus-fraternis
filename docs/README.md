@@ -17,6 +17,7 @@ O Bancus Fraternis e uma plataforma estatica/progressiva para apoiar decisao fin
 - UX com dados vivos iniciada: Dashboard Cliente mostra fonte ativa e contadores server-side; Handoff Consultivo le `/api/leads`, mescla com a fila local e sincroniza status, responsavel, checklist e notas quando a API local esta ativa.
 - Publicacao em GitHub Pages com selo de ambiente demo/local, fallback estatico e validador de seguranca publica.
 - Backend local Node/SQLite preparado como ponte progressiva para backend produtivo futuro, com `BANCUS_DB_PROVIDER=sqlite`, plano de migracao preservando `localStorage`, `BFBackendApi`, contratos `/api/*`, escopo por `owner_email` e proximas fases produtivas detalhadas.
+- Schema local versionado em `js/backend/migrations`, com baseline SQLite, rollback, `schema-manifest.json` e validador de paridade antes do adapter produtivo.
 
 ## Entrada Recomendada
 
@@ -69,6 +70,7 @@ http://localhost:8080/dashboard-admin.html
 | Dashboard Admin | `pages/dashboard-admin.html`, `assets/js/admin-users.js`, `assets/js/services/admin-recovery.service.js` |
 | Governanca | `docs/MAPA_COMPLETO_PROJETO_BANK_FRATERN.md`, `docs/PLANO_ACAO_EVOLUCAO_BANK_FRATERN.md`, `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md` |
 | Backend produtivo | `docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md`, `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md`, `docs/PROXIMAS_FASES_BANK_FRATERN.md`, `tools/validate-backend-production-plan.mjs` |
+| Migrations | `js/backend/migrations/schema-manifest.json`, `js/backend/migrations/001_bancus_fraternis_local_db.sql`, `tools/validate-database-migrations.mjs` |
 
 ## Documentos-Chave
 
@@ -90,6 +92,7 @@ node tools/validate-design-system.mjs
 node tools/validate-public-release-safety.mjs
 node tools/validate-public-contracts.mjs
 node tools/validate-backend-production-plan.mjs
+node tools/validate-database-migrations.mjs
 node tools/validate-next-phases-plan.mjs
 node tools/validate-live-data-ux.mjs
 node tools/validate-docs-modernization.mjs

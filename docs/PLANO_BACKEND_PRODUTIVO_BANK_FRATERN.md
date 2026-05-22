@@ -1,6 +1,6 @@
 # Plano Backend Produtivo - Bancus Fraternis
 
-Atualizado em 2026-05-21.
+Atualizado em 2026-05-22.
 
 ## Objetivo
 
@@ -16,7 +16,8 @@ Regra central: localStorage continua sendo fallback publico para GitHub Pages, `
 | API local | Ativo em `node server.js` | `/api/auth/*`, `/api/users`, `/api/events`, `/api/snapshots`, `/api/journey-entities`, `/api/leads`, `/api/simulations`, `/api/proposals`. |
 | Banco local | Ativo | SQLite em `.runtime/bancus-fraternis.sqlite`, fora do Git. |
 | Provider configuravel | Ativo parcial | `BANCUS_DB_PROVIDER=sqlite` e o contrato inicial; providers futuros ficam bloqueados ate adapter validado. |
-| Proximas fases | Planejado | `docs/PROXIMAS_FASES_BANK_FRATERN.md` detalha migrations, adapter produtivo, auth, migracao, observabilidade e corte controlado. |
+| Schema versionado | Ativo parcial | `js/backend/migrations/schema-manifest.json`, baseline SQL, rollback e `tools/validate-database-migrations.mjs`. |
+| Proximas fases | Em andamento | `docs/PROXIMAS_FASES_BANK_FRATERN.md` detalha migrations, adapter produtivo, auth, migracao, observabilidade e corte controlado. |
 | Backend hospedado | Futuro | Deve nascer dos contratos existentes, nao de um modelo paralelo. |
 
 ## Principios De Migracao
@@ -88,7 +89,7 @@ Endpoints futuros de produto, calculadoras, comparador e recomendacoes so devem 
 | --- | --- | --- |
 | P3.1 | Congelar contratos atuais | Este plano, contratos publicos, validadores e matriz de migracao. |
 | P3.2 | Abstrair provider | Concluido parcial: `BANCUS_DB_PROVIDER` existe, `sqlite` e padrao e providers sem adapter falham com mensagem explicita sem mudar `BFBackendApi`. |
-| P3.3A | Versionar schema | Criar migrations, manifest de schema e rollback antes de conectar provider hospedado. |
+| P3.3A | Versionar schema | Concluido parcial: baseline `001_bancus_fraternis_local_db.sql`, manifest de schema e rollback criados antes de conectar provider hospedado. |
 | P3.3B | Hospedar banco piloto | Subir Postgres ou servico gerenciado equivalente com schema espelhado e adapter controlado. |
 | P3.4 | Autenticacao produtiva | Tirar senha demonstrativa da operacao real, reforcar politica de sessao, auditoria e permissao server-side. |
 | P3.5 | Migracao assistida | Importar usuarios, eventos, snapshots e entidades dedicadas com relatorio de divergencias. |
@@ -101,7 +102,7 @@ O detalhamento executavel esta em `docs/PROXIMAS_FASES_BANK_FRATERN.md`.
 
 | Fase | Prioridade | Entrega principal | Validador esperado |
 | --- | --- | --- | --- |
-| 8AN / P3.3A | P0 | Schema e migrations versionadas para todas as tabelas atuais. | `tools/validate-database-migrations.mjs` |
+| 8AN / P3.3A | P0 | Schema e migrations versionadas para todas as tabelas atuais, com `schema-manifest.json`. | `tools/validate-database-migrations.mjs` |
 | 8AO / P3.3B | P0 | Adapter `postgresql` piloto com `BANCUS_DATABASE_URL` e fallback SQLite. | `tools/validate-database-provider.mjs` |
 | 8AP / P3.4 | P0 | Autenticacao produtiva, revogacao, escopo e auditoria server-side. | `tools/validate-auth-navigation.mjs` |
 | 8AQ / P3.5 | P1 | Migracao assistida com preview, divergencias e idempotencia. | `tools/validate-database-migration-reconciliation.mjs` |
@@ -114,6 +115,7 @@ O detalhamento executavel esta em `docs/PROXIMAS_FASES_BANK_FRATERN.md`.
 Uma troca para backend hospedado so pode ser aceita quando:
 
 - `node tools/validate-backend-production-plan.mjs` estiver verde.
+- `node tools/validate-database-migrations.mjs` estiver verde.
 - `node tools/validate-local-database.mjs` continuar verde para o fallback SQLite.
 - `node tools/validate-public-contracts.mjs` continuar verde para contratos publicos.
 - `node tools/validate-public-release-safety.mjs` confirmar que a publicacao estatica nao vazou dados reais.
@@ -135,7 +137,7 @@ Uma troca para backend hospedado so pode ser aceita quando:
 ## Backlog Tecnico
 
 - Expandir a camada de provider para Postgres ou servico gerenciado equivalente mantendo SQLite local.
-- Adicionar migrations versionadas para `users`, `sessions`, `events`, `snapshots`, `journey_entities`, `journey_leads`, `journey_simulations` e `journey_proposals`.
+- Expandir migrations versionadas a partir da baseline `001_bancus_fraternis_local_db.sql` para qualquer nova tabela, coluna ou indice.
 - Criar relatorio de migracao com totais importados, pulados, atualizados e rejeitados.
 - Adicionar politicas de retencao para eventos e snapshots.
 - Separar segredo de sessao e configuracoes de ambiente fora do repositorio.
@@ -145,6 +147,7 @@ Uma troca para backend hospedado so pode ser aceita quando:
 
 ```bash
 node tools/validate-backend-production-plan.mjs
+node tools/validate-database-migrations.mjs
 node tools/validate-local-database.mjs
 node tools/validate-public-contracts.mjs
 node tools/validate-public-release-safety.mjs

@@ -11,12 +11,16 @@ Esta entrega cria a primeira camada server-side do Bancus Fraternis sem quebrar 
 | Arquivo | Papel |
 | --- | --- |
 | `js/backend/db.js` | Camada SQLite, schema, seeds, hash de senha, sessoes, eventos, snapshots, entidades relacionais e tabelas dedicadas. |
+| `js/backend/migrations/schema-manifest.json` | Manifest versionado do schema: versao, provider, tabelas, colunas, indices, campos sensiveis e rollback. |
+| `js/backend/migrations/001_bancus_fraternis_local_db.sql` | Migration baseline idempotente do SQLite local. |
+| `js/backend/migrations/001_bancus_fraternis_local_db.rollback.sql` | Rollback destrutivo para bancos vazios, validadores ou rebuild local com backup explicito. |
 | `server.js` | Servidor estatico + endpoints `/api/*`. |
 | `assets/js/services/backend-api.service.js` | Ponte do navegador para a API local com fallback silencioso. |
 | `js/auth.js` | Continua sendo a fachada publica de auth e espelha login/usuarios no banco quando a API existe. |
 | `assets/js/admin-users.js` | Dashboard Admin le `/api/events`, `/api/snapshots`, `/api/journey-entities`, `/api/leads`, `/api/simulations`, `/api/proposals`, edita registros dedicados via `PATCH`, mostra status server-side e executa migracao guiada do `localStorage`. |
 | `assets/js/handoff-consultivo.js` | Handoff Consultivo le `/api/leads`, mescla registros vivos com a fila local e sincroniza atendimento via `PATCH /api/leads/:id` quando ha API local. |
 | `tools/validate-local-database.mjs` | Validador de schema, seeds, login, sessao, eventos, snapshots, entidades relacionais e escrita direta sanitizada. |
+| `tools/validate-database-migrations.mjs` | Validador da baseline versionada: manifest, SQL, rollback e paridade com o SQLite real. |
 | `tools/inspect-local-sql-environment.mjs` | Diagnostico de CLIs, portas padrao e servicos SQL locais para proxima troca de provider. |
 | `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md` | Plano de migracao do SQLite local para backend hospedado preservando `localStorage`, `BFBackendApi` e contratos `/api/*`. |
 | `docs/PROXIMAS_FASES_BANK_FRATERN.md` | Roadmap de schema, migrations, adapter produtivo, autenticacao, migracao, observabilidade e corte controlado. |
@@ -42,6 +46,28 @@ BANCUS_DB_PROVIDER=sqlite node server.js
 ```
 
 `sqlite` e o provider padrao e unico provider implementado nesta etapa. Aliases locais como `local`, `dev`, `development` e `node:sqlite` tambem normalizam para `sqlite`. Providers futuros, como `postgresql`, ficam bloqueados ate existir adapter produtivo validado.
+
+## Schema Versionado
+
+Baseline atual:
+
+```text
+js/backend/migrations/001_bancus_fraternis_local_db.sql
+```
+
+Manifest:
+
+```text
+js/backend/migrations/schema-manifest.json
+```
+
+Rollback:
+
+```text
+js/backend/migrations/001_bancus_fraternis_local_db.rollback.sql
+```
+
+O manifest e a migration cobrem as tabelas `users`, `sessions`, `events`, `snapshots`, `journey_entities`, `journey_leads`, `journey_simulations` e `journey_proposals`. O rollback e destrutivo e so deve ser usado em banco vazio, validador ou rebuild local com backup explicito.
 
 `.runtime/` fica fora do Git, entao o banco local nao e publicado.
 
@@ -132,6 +158,7 @@ As senhas seed continuam documentadas em `docs/AUTH_ADMIN_LOCAL.md` para demonst
 
 ```bash
 node tools/validate-local-database.mjs
+node tools/validate-database-migrations.mjs
 node tools/validate-backend-production-plan.mjs
 node tools/validate-live-data-ux.mjs
 node tools/inspect-local-sql-environment.mjs
@@ -140,6 +167,7 @@ node tools/inspect-local-sql-environment.mjs
 Valida:
 
 - criacao das tabelas;
+- paridade entre `schema-manifest.json`, migration baseline, rollback e schema SQLite real;
 - 3 usuarios seed;
 - login com senha correta;
 - recusa de senha incorreta;

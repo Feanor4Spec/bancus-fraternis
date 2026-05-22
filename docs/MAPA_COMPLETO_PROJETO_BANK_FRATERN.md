@@ -16,7 +16,7 @@ Estado confirmado nesta leitura:
 - 16 services em `assets/js/services/`.
 - 5 arquivos de formulas em `assets/js/formulas/`.
 - 5 componentes em `assets/js/components/`.
-- 45 scripts de validacao/evidencia em `tools/`.
+- 46 scripts de validacao/evidencia em `tools/`.
 - 52 aliases curtos confirmados em `server.js`, um para cada pagina HTML em `pages/`.
 
 O centro de produto e uma jornada continua:
@@ -60,6 +60,7 @@ Separado como runtime, evidencia, backup ou historico:
 | `index.html` | Redirect simples para `pages/index.html`. |
 | `server.js` | Servidor canonico local. Usa porta `8080` por padrao, serve `/` como `pages/index.html`, cria aliases curtos para todas as paginas HTML em `pages/` e expoe API local `/api/*` para auth, usuarios, status do banco, eventos, snapshots e jornada direta. |
 | `js/backend/db.js` | Camada SQLite local e primeira camada de provider: schema, seeds, hash `scrypt-sha256`, sessoes, eventos/snapshots sanitizados, entidades relacionais, escrita direta em tabelas dedicadas, `BANCUS_DB_PROVIDER=sqlite` e diagnostico tecnico do provider. |
+| `js/backend/migrations/` | Baseline versionada do schema SQLite, rollback e manifest para o futuro adapter produtivo. |
 | `js/server.js` | Servidor legado do simulador antigo. Mantido como historico tecnico, nao como entrada principal. |
 | `Sistema.gitignore` | Ignora editor, node, python, envs, chaves e temporarios. |
 
@@ -70,6 +71,7 @@ Contrato confirmado:
 - Todas as paginas tambem respondem por URL curta, como `/trilha-decisao.html`.
 - O contrato e coberto por `tools/validate-route-aliases.mjs`.
 - Quando roda via Node, `GET /api/health`, `/api/database/status`, `POST /api/database/import-local`, `/api/auth/*`, `/api/users`, `/api/events`, `/api/snapshots`, `/api/journey-entities`, `/api/leads`, `/api/simulations` e `/api/proposals` usam SQLite local em `.runtime/`.
+- O schema local tem baseline versionada em `js/backend/migrations/001_bancus_fraternis_local_db.sql`, rollback destrutivo controlado e manifest `schema-manifest.json`, cobertos por `tools/validate-database-migrations.mjs`.
 - `GET /api/snapshots` e escopado por sessao: admin lista todos; cliente/consultor recebem apenas snapshots do proprio `owner_email`.
 - `GET /api/journey-entities` indexa snapshots em `lead`, `simulation` e `proposal`, preservando o mesmo escopo por sessao.
 - `GET /api/leads`, `/api/simulations` e `/api/proposals` leem tabelas dedicadas materializadas a partir do mesmo pipeline.
@@ -335,6 +337,7 @@ Melhoria implementada em 2026-05-07:
 | `js/settings.js` | Preferencias locais e defaults. |
 | `js/auth.js` | Usuarios locais, sessao, papeis e guardas. |
 | `js/backend/db.js` | Banco local SQLite para usuarios, sessoes, eventos, snapshots, entidades de jornada, tabelas dedicadas, escrita direta, status tecnico e importacao guiada. |
+| `js/backend/migrations/*` | Migration baseline, rollback e manifest do schema local para adapter produtivo futuro. |
 | `js/shared-layout.js` | Shell comum, header/footer, contrato v8 e estado de conta. |
 | `js/home.js` | Home contextual, cockpit de continuidade e retomada de trilha ativa. |
 | `js/portfolio-live.js` | Carteira, oportunidades, agenda e insights. |

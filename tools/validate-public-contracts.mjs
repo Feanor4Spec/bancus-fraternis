@@ -287,6 +287,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'tools/validate-public-contracts.mjs',
   'tools/validate-public-release-safety.mjs',
   'tools/validate-local-database.mjs',
+  'tools/validate-database-migrations.mjs',
   'tools/validate-next-phases-plan.mjs',
   'tools/validate-live-data-ux.mjs',
   'tools/inspect-local-sql-environment.mjs',
@@ -543,6 +544,7 @@ assert(contracts.includes('## Backend Produtivo Futuro'), 'Contrato publico nao 
 assert(contracts.includes('docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md'), 'Contrato publico nao referencia plano backend produtivo.');
 assert(contracts.includes('docs/PROXIMAS_FASES_BANK_FRATERN.md'), 'Contrato publico nao referencia proximas fases produtivas.');
 assert(contracts.includes('tools/validate-backend-production-plan.mjs'), 'Contrato publico nao referencia validador de backend produtivo.');
+assert(contracts.includes('tools/validate-database-migrations.mjs'), 'Contrato publico nao referencia validador de migrations.');
 assert(contracts.includes('tools/validate-next-phases-plan.mjs'), 'Contrato publico nao referencia validador de proximas fases.');
 assert(contracts.includes('BANCUS_DB_PROVIDER'), 'Contrato publico nao documenta BANCUS_DB_PROVIDER.');
 assert(backendProductionPlan.includes('localStorage continua sendo fallback publico'), 'Plano backend produtivo nao preserva fallback localStorage.');
@@ -581,7 +583,7 @@ const report = {
     dataMarkers: 101,
     globals: 20,
     deepLinks: 10,
-    validators: 25,
+    validators: 26,
     calculatorCount
   },
   warnings,

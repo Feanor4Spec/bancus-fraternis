@@ -34,17 +34,21 @@ Regra de continuidade: nenhuma fase abaixo remove o fallback estatico. A API pro
 
 Objetivo: antes de ligar um provider hospedado, transformar o schema local atual em contrato versionado.
 
+Status em 2026-05-22: concluido parcialmente. A migration baseline `js/backend/migrations/001_bancus_fraternis_local_db.sql`, o rollback `001_bancus_fraternis_local_db.rollback.sql`, o manifest `schema-manifest.json` e o validador `tools/validate-database-migrations.mjs` foram criados sobre o schema SQLite atual.
+
 Entregas:
 
-- Criar pasta de migrations versionadas para `users`, `sessions`, `events`, `snapshots`, `journey_entities`, `journey_leads`, `journey_simulations` e `journey_proposals`.
-- Criar manifest de schema com versao, tabelas, indices, campos sensiveis e politica de rollback.
+- Criar pasta de migrations versionadas para `users`, `sessions`, `events`, `snapshots`, `journey_entities`, `journey_leads`, `journey_simulations` e `journey_proposals`. Concluido na baseline `001_bancus_fraternis_local_db.sql`.
+- Criar manifest de schema com versao, tabelas, indices, campos sensiveis e politica de rollback. Concluido em `schema-manifest.json`.
 - Separar SQL portavel de detalhes especificos do SQLite ou PostgreSQL.
-- Criar validador de migrations que roda sem tocar dados reais.
+- Criar validador de migrations que roda sem tocar dados reais. Concluido em `tools/validate-database-migrations.mjs`.
 
 Arquivos provaveis:
 
 - `js/backend/db.js`
-- `js/backend/migrations/*`
+- `js/backend/migrations/001_bancus_fraternis_local_db.sql`
+- `js/backend/migrations/001_bancus_fraternis_local_db.rollback.sql`
+- `js/backend/migrations/schema-manifest.json`
 - `tools/validate-database-migrations.mjs`
 - `docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md`
 - `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md`
@@ -228,6 +232,7 @@ Criterios de aceite:
 node tools/validate-next-phases-plan.mjs
 node tools/validate-backend-production-plan.mjs
 node tools/validate-local-database.mjs
+node tools/validate-database-migrations.mjs
 node tools/validate-public-contracts.mjs
 node tools/validate-live-data-ux.mjs
 node tools/validate-public-release-safety.mjs
@@ -236,4 +241,4 @@ node tools/validate-design-system.mjs
 
 ## Decisao Para O Proximo Ciclo
 
-O proximo ciclo tecnico implementavel continua sendo a Fase 8AN / P3.3A. A Fase 8AT foi iniciada de forma incremental usando SQLite local, mas a menor entrega com maior reducao de risco ainda e criar migrations e manifest de schema antes do adapter produtivo. So depois disso faz sentido ativar `BANCUS_DB_PROVIDER=postgresql`.
+O proximo ciclo tecnico implementavel passa a ser a Fase 8AO / P3.3B: adapter produtivo piloto. A baseline de schema ja existe; antes de ativar `BANCUS_DB_PROVIDER=postgresql`, o adapter deve consumir o manifest, exigir `BANCUS_DATABASE_URL`, validar migrations e manter rollback para SQLite/localStorage.

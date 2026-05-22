@@ -1,0 +1,79 @@
+{
+  "schemaVersion": "bancus-fraternis.local-db.v1",
+  "provider": "sqlite",
+  "futureProviders": ["postgresql"],
+  "currentMigration": "001_bancus_fraternis_local_db.sql",
+  "rollback": "001_bancus_fraternis_local_db.rollback.sql",
+  "passwordAlgorithm": "scrypt-sha256",
+  "sensitiveFields": [
+    "password_hash",
+    "password_salt",
+    "token_hash",
+    "payload_json"
+  ],
+  "tables": [
+    {
+      "name": "users",
+      "purpose": "Usuarios locais, papeis, status e credenciais hasheadas.",
+      "primaryKey": ["id"],
+      "columns": ["id", "name", "email", "role", "status", "department", "phone", "password_hash", "password_salt", "password_algorithm", "password_updated_at", "created_at", "updated_at", "last_login_at"],
+      "indexes": ["idx_users_email"]
+    },
+    {
+      "name": "sessions",
+      "purpose": "Sessoes server-side com token hasheado, expiracao e revogacao.",
+      "primaryKey": ["id"],
+      "foreignKeys": ["user_id -> users.id"],
+      "columns": ["id", "user_id", "token_hash", "role", "created_at", "expires_at", "revoked_at"],
+      "indexes": ["idx_sessions_token_hash", "idx_sessions_user"]
+    },
+    {
+      "name": "events",
+      "purpose": "Eventos sanitizados de auth, jornada, proposta, handoff e admin.",
+      "primaryKey": ["id"],
+      "columns": ["id", "type", "source", "owner_email", "actor_email", "session_id", "entity_type", "entity_id", "payload_json", "created_at"],
+      "indexes": ["idx_events_created_at", "idx_events_type", "idx_events_owner_email"]
+    },
+    {
+      "name": "snapshots",
+      "purpose": "Estados recuperaveis de simulacao, trilha, proposta, lousa, perfil, modelos e handoff.",
+      "primaryKey": ["id"],
+      "columns": ["id", "type", "source", "owner_email", "actor_email", "entity_id", "title", "status", "storage_key", "payload_json", "created_at", "updated_at"],
+      "indexes": ["idx_snapshots_type", "idx_snapshots_owner_email", "idx_snapshots_updated_at"]
+    },
+    {
+      "name": "journey_entities",
+      "purpose": "Indice relacional derivado ou direto para lead, simulation e proposal.",
+      "primaryKey": ["kind", "id"],
+      "columns": ["id", "kind", "source_snapshot_id", "snapshot_type", "owner_email", "actor_email", "title", "status", "stage", "priority", "source", "related_id", "amount", "payload_json", "created_at", "updated_at"],
+      "indexes": ["idx_journey_entities_kind", "idx_journey_entities_owner_email", "idx_journey_entities_updated_at", "idx_journey_entities_snapshot"]
+    },
+    {
+      "name": "journey_leads",
+      "purpose": "Tabela dedicada de leads materializados e diretos.",
+      "primaryKey": ["id"],
+      "columns": ["id", "kind", "source_snapshot_id", "snapshot_type", "owner_email", "actor_email", "title", "status", "stage", "priority", "source", "related_id", "amount", "payload_json", "created_at", "updated_at"],
+      "indexes": ["idx_journey_leads_owner_email", "idx_journey_leads_updated_at"]
+    },
+    {
+      "name": "journey_simulations",
+      "purpose": "Tabela dedicada de simulacoes materializadas e diretas.",
+      "primaryKey": ["id"],
+      "columns": ["id", "kind", "source_snapshot_id", "snapshot_type", "owner_email", "actor_email", "title", "status", "stage", "priority", "source", "related_id", "amount", "payload_json", "created_at", "updated_at"],
+      "indexes": ["idx_journey_simulations_owner_email", "idx_journey_simulations_updated_at"]
+    },
+    {
+      "name": "journey_proposals",
+      "purpose": "Tabela dedicada de propostas materializadas e diretas.",
+      "primaryKey": ["id"],
+      "columns": ["id", "kind", "source_snapshot_id", "snapshot_type", "owner_email", "actor_email", "title", "status", "stage", "priority", "source", "related_id", "amount", "payload_json", "created_at", "updated_at"],
+      "indexes": ["idx_journey_proposals_owner_email", "idx_journey_proposals_updated_at"]
+    }
+  ],
+  "rules": [
+    "Migrations precisam ser idempotentes.",
+    "Rollback so deve ser usado em bancos vazios, de validacao ou com backup explicito.",
+    "Adapters futuros devem preservar nomes logicos, escopo por owner_email e sanitizacao de payload_json.",
+    "Nenhum endpoint publico deve retornar password_hash, password_salt ou token_hash."
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "ok": true,
+  "schemaVersion": "bancus-fraternis.local-db.v1",
+  "provider": "sqlite",
+  "migration": "001_bancus_fraternis_local_db.sql",
+  "rollback": "001_bancus_fraternis_local_db.rollback.sql",
+  "tables": [
+    "users",
+    "sessions",
+    "events",
+    "snapshots",
+    "journey_entities",
+    "journey_leads",
+    "journey_simulations",
+    "journey_proposals"
+  ],
+  "indexes": 19,
+  "warnings": [],
+  "failures": []
+}

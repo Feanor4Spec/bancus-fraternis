@@ -6,6 +6,8 @@ const { DatabaseSync } = require('node:sqlite');
 const SCHEMA_VERSION = 'bancus-fraternis.local-db.v1';
 const DEFAULT_DB_PROVIDER = 'sqlite';
 const DEFAULT_DB_PATH = path.join(__dirname, '..', '..', '.runtime', 'bancus-fraternis.sqlite');
+const SCHEMA_MIGRATIONS_DIR = path.join(__dirname, 'migrations');
+const SCHEMA_MANIFEST_PATH = path.join(SCHEMA_MIGRATIONS_DIR, 'schema-manifest.json');
 const SESSION_TTL_MS = 1000 * 60 * 60 * 8;
 const PASSWORD_ALGORITHM = 'scrypt-sha256';
 const MAX_EVENT_PAYLOAD_CHARS = 50000;
@@ -1593,6 +1595,8 @@ module.exports = {
   SCHEMA_VERSION,
   DEFAULT_DB_PROVIDER,
   DEFAULT_DB_PATH,
+  SCHEMA_MIGRATIONS_DIR,
+  SCHEMA_MANIFEST_PATH,
   SUPPORTED_DB_PROVIDERS,
   FUTURE_DB_PROVIDERS,
   ROLE_LABELS,

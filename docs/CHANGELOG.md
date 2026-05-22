@@ -4,6 +4,22 @@
 
 ---
 
+## [v8.103.0] - 2026-05-22
+
+### Schema e migrations versionadas
+
+#### Adicionado
+- Criada a pasta `js/backend/migrations` com a migration baseline `001_bancus_fraternis_local_db.sql`.
+- Criado rollback `001_bancus_fraternis_local_db.rollback.sql` para rebuilds locais/validadores com backup explicito.
+- Criado `schema-manifest.json` com versao, provider, tabelas, colunas, indices, campos sensiveis e regras de compatibilidade.
+- Criado `tools/validate-database-migrations.mjs` para comparar manifest, SQL versionado, rollback e schema real criado pelo SQLite.
+
+#### Modificado
+- `js/backend/db.js` passou a exportar `SCHEMA_MIGRATIONS_DIR` e `SCHEMA_MANIFEST_PATH`.
+- Plano de acao, proximas fases, banco local, contratos publicos, README e protocolo de testes foram atualizados para marcar a Fase 8AN / P3.3A como iniciada/concluida parcialmente.
+
+---
+
 ## [v8.102.0] - 2026-05-22
 
 ### UX com dados vivos

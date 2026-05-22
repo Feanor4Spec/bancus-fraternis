@@ -101,6 +101,7 @@ for (const marker of orderedMarkers) {
   'tools/validate-next-phases-plan.mjs',
   'tools/validate-backend-production-plan.mjs',
   'tools/validate-local-database.mjs',
+  'tools/validate-database-migrations.mjs',
   'tools/validate-public-contracts.mjs',
   'tools/validate-live-data-ux.mjs',
   'tools/validate-public-release-safety.mjs',
@@ -121,11 +122,14 @@ for (const marker of orderedMarkers) {
 
 assert(backendPlan.includes('P3.3A') && backendPlan.includes('P3.3B'), 'Plano backend sem divisao P3.3A/P3.3B.');
 assert(actionPlan.includes('Schema e migrations versionadas') && actionPlan.includes('Adapter produtivo piloto'), 'Plano de acao sem proximas fases P0.');
+assert(actionPlan.includes('schema-manifest.json') && actionPlan.includes('001_bancus_fraternis_local_db.sql'), 'Plano de acao sem artefatos da fase de migrations.');
 assert(actionPlan.includes('UX com dados vivos') && actionPlan.includes('tools/validate-live-data-ux.mjs'), 'Plano de acao sem status de UX com dados vivos.');
 assert(protocol.includes('Fase 8AN / P3.3A') && protocol.includes('Fase 8AS / P3.7'), 'Protocolo sem fases futuras aceitas.');
 assert(changelog.includes('v8.101.0') && changelog.includes('Proximas fases produtivas'), 'Changelog sem entrada v8.101.0.');
 assert(changelog.includes('v8.102.0') && changelog.includes('UX com dados vivos'), 'Changelog sem entrada v8.102.0.');
+assert(changelog.includes('v8.103.0') && changelog.includes('Schema e migrations versionadas'), 'Changelog sem entrada v8.103.0.');
 assert(designValidator.includes('tools/validate-next-phases-plan.mjs'), 'validate-design-system nao exige validate-next-phases-plan.');
+assert(designValidator.includes('tools/validate-database-migrations.mjs'), 'validate-design-system nao exige validate-database-migrations.');
 assert(backendValidator.includes('docs/PROXIMAS_FASES_BANK_FRATERN.md'), 'validate-backend-production-plan nao le proximas fases.');
 assert(publicContractsValidator.includes('docs/PROXIMAS_FASES_BANK_FRATERN.md'), 'validate-public-contracts nao le proximas fases.');
 
