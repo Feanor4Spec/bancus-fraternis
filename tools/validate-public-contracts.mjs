@@ -60,6 +60,8 @@ const [
   calculatorsPage,
   decisionJourney,
   handoffService,
+  handoffPage,
+  handoffJs,
   calculatorsJson
 ] = await Promise.all([
   read('docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md'),
@@ -91,6 +93,8 @@ const [
   read('assets/js/calculadoras-page.js'),
   read('assets/js/services/trilha-decisao.service.js'),
   read('assets/js/services/handoff-consultivo.service.js'),
+  read('pages/handoff-consultivo.html'),
+  read('assets/js/handoff-consultivo.js'),
   read('assets/data/calculadoras.json')
 ]);
 
@@ -193,12 +197,18 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-handoff-commercial-stage',
   'data-handoff-commercial-stage-panel',
   'data-handoff-commercial-stage-history',
+  'data-handoff-live-data-panel',
+  'data-handoff-live-source',
+  'data-handoff-live-refresh',
   'data-login-form',
   'data-public-demo-notice',
   'data-client-continuity-cockpit',
   'data-client-backend-snapshots',
   'data-client-backend-entities',
   'data-client-backend-materialized',
+  'data-client-live-data-panel',
+  'data-client-live-source',
+  'data-client-live-refresh',
   'data-client-next-action',
   'data-client-handoff-status',
   'data-client-proposal-status',
@@ -278,6 +288,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'tools/validate-public-release-safety.mjs',
   'tools/validate-local-database.mjs',
   'tools/validate-next-phases-plan.mjs',
+  'tools/validate-live-data-ux.mjs',
   'tools/inspect-local-sql-environment.mjs',
   'tools/validate-design-system.mjs',
   'tools/validate-calculadoras.mjs',
@@ -354,6 +365,10 @@ assert(adminUsers.includes('materializedUpdateMethod'), 'Dashboard Admin sem rot
 assert(clientDashboard.includes('data-client-backend-snapshots'), 'Dashboard Cliente sem marcador de origem de snapshots server-side.');
 assert(clientDashboard.includes('data-client-backend-entities'), 'Dashboard Cliente sem marcador de origem de entidades relacionais server-side.');
 assert(clientDashboard.includes('data-client-backend-materialized'), 'Dashboard Cliente sem marcador de tabelas dedicadas server-side.');
+assert(clientDashboard.includes('data-client-live-data-panel'), 'Dashboard Cliente sem painel de dados vivos.');
+assert(clientDashboard.includes('data-client-live-source'), 'Dashboard Cliente sem marcador de fonte viva.');
+assert(clientDashboard.includes('data-client-live-refresh'), 'Dashboard Cliente sem acao de atualizar dados vivos.');
+assert(clientDashboard.includes('clientLiveDataReady'), 'Dashboard Cliente sem readiness de dados vivos.');
 assert(clientDashboard.includes('listSnapshots(100)'), 'Dashboard Cliente sem leitura de snapshots server-side.');
 assert(clientDashboard.includes('listJourneyEntities(100)'), 'Dashboard Cliente sem leitura de entidades relacionais server-side.');
 assert(clientDashboard.includes('listLeads(30)'), 'Dashboard Cliente sem leitura de leads materializados.');
@@ -507,6 +522,14 @@ assert(designValidator.includes('tools/validate-backend-production-plan.mjs'), '
 assert(designValidator.includes('tools/validate-docs-modernization.mjs'), 'validate-design-system nao exige validate-docs-modernization.');
 assert(designValidator.includes('tools/validate-navigable-journey.mjs'), 'validate-design-system nao exige validate-navigable-journey.');
 assert(designValidator.includes('tools/validate-github-pages-deploy.mjs'), 'validate-design-system nao exige validate-github-pages-deploy.');
+assert(designValidator.includes('tools/validate-live-data-ux.mjs'), 'validate-design-system nao exige validate-live-data-ux.');
+assert(handoffPage.includes('data-handoff-live-data-panel'), 'Handoff Consultivo sem painel de dados vivos.');
+assert(handoffJs.includes('loadBackendLeads'), 'Handoff Consultivo sem leitura de leads vivos.');
+assert(handoffJs.includes('api.listLeads'), 'Handoff Consultivo sem contrato listLeads.');
+assert(handoffJs.includes('api.updateLead'), 'Handoff Consultivo sem sincronizacao updateLead.');
+assert(handoffJs.includes('data-handoff-live-source'), 'Handoff Consultivo sem marcador de fonte viva.');
+assert(handoffJs.includes('data-handoff-live-refresh'), 'Handoff Consultivo sem acao de atualizar fila viva.');
+assert(handoffJs.includes('handoffLiveDataReady'), 'Handoff Consultivo sem readiness de dados vivos.');
 assert(lousa.includes('data-lousa-journey-checklist'), 'lousa-navegacao.html sem checklist de jornada navegavel.');
 assert(lousa.includes('data-lousa-journey-acceptance'), 'lousa-navegacao.html sem criterios de aceite da jornada navegavel.');
 assert(lousa.includes('data-lousa-commercial-qa'), 'lousa-navegacao.html sem QA comercial navegavel.');
@@ -555,10 +578,10 @@ const report = {
   ok: failures.length === 0,
   contracts: {
     localStorageKeys: 18,
-    dataMarkers: 95,
+    dataMarkers: 101,
     globals: 20,
     deepLinks: 10,
-    validators: 24,
+    validators: 25,
     calculatorCount
   },
   warnings,

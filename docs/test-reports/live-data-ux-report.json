@@ -1,0 +1,16 @@
+{
+  "ok": true,
+  "surfaces": {
+    "dashboardCliente": {
+      "panel": true,
+      "refresh": true,
+      "readiness": true
+    },
+    "handoffConsultivo": {
+      "panel": true,
+      "backendLeads": true,
+      "updateLead": true
+    }
+  },
+  "failures": []
+}

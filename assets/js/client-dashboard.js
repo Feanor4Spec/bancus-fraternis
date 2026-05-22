@@ -1068,7 +1068,68 @@
     return true;
   }
 
+  function renderLiveDataPanel() {
+    const target = document.querySelector('[data-client-live-data-panel]');
+    if (!target) return;
+
+    const snapshots = backendSnapshotView();
+    const entities = backendEntityView();
+    const materialized = backendMaterializedView();
+    const loading = backendSnapshotState.loading || backendEntityState.loading || backendMaterializedState.loading;
+    const hasLiveData = snapshots.loaded || entities.loaded || materialized.loaded;
+    const hasError = snapshots.error || entities.error || materialized.error;
+    const source = hasLiveData ? 'sqlite' : 'localStorage';
+    const sourceLabel = hasLiveData ? 'SQLite local' : 'localStorage';
+    const readiness = loading ? 'loading' : hasLiveData ? 'true' : hasError ? 'error' : 'fallback';
+    const recordCount = Number(snapshots.count || 0) + Number(entities.count || 0) + Number(materialized.count || 0);
+    const refreshedAt = new Date().toISOString();
+    const statusCopy = loading
+      ? 'Atualizando leitura server-side da jornada.'
+      : hasLiveData
+        ? 'A jornada esta usando dados vivos do backend local com fallback preservado.'
+        : 'Abra por localhost e entre com usuario para ativar SQLite; por enquanto a tela usa os dados locais do navegador.';
+
+    target.dataset.clientLiveSource = source;
+    target.dataset.clientLiveRefresh = refreshedAt;
+    document.body.dataset.clientLiveDataReady = readiness;
+    document.body.dataset.clientLiveDataSource = source;
+    document.body.dataset.clientLiveDataRecords = String(recordCount);
+    document.body.dataset.clientLiveDataRefreshedAt = refreshedAt;
+
+    target.innerHTML = `
+      <div class="bf-admin-panel-heading">
+        <div>
+          <span class="bf-badge ${hasLiveData ? 'bf-badge--ok' : 'bf-badge--gold'}" data-client-live-source="${escapeHtml(source)}">${escapeHtml(sourceLabel)}</span>
+          <h2>Dados vivos da jornada do cliente</h2>
+          <p>${escapeHtml(statusCopy)}</p>
+          ${hasError ? `<small>${escapeHtml(hasError)}</small>` : ''}
+        </div>
+        <button class="btn btn--ghost btn--sm" type="button" data-client-live-refresh>${loading ? 'Atualizando...' : 'Atualizar dados'}</button>
+      </div>
+      <div class="bf-platform-metrics">
+        ${window.BFCards ? window.BFCards.metric('Snapshots', snapshots.count || 0, snapshots.loaded ? 'is-strong' : '') : ''}
+        ${window.BFCards ? window.BFCards.metric('Entidades', entities.count || 0, entities.loaded ? 'is-strong' : '') : ''}
+        ${window.BFCards ? window.BFCards.metric('Leads', materialized.leadCount || 0, materialized.leadCount ? 'is-warn' : '') : ''}
+        ${window.BFCards ? window.BFCards.metric('Simulacoes', materialized.simulationCount || 0) : ''}
+        ${window.BFCards ? window.BFCards.metric('Propostas', materialized.proposalCount || 0) : ''}
+      </div>
+      <div class="bf-client-activity">
+        <article class="bf-client-activity__item">
+          <span>Fonte ativa</span>
+          <strong>${escapeHtml(sourceLabel)}</strong>
+          <small>${escapeHtml(hasLiveData ? `Escopo ${snapshots.scope || entities.scope || 'usuario'}` : 'Fallback local preservado para abrir o projeto sem servidor.')}</small>
+        </article>
+        <article class="bf-client-activity__item">
+          <span>Ultima leitura</span>
+          <strong>${escapeHtml(formatDate(refreshedAt))}</strong>
+          <small>${escapeHtml(recordCount ? `${recordCount} registros lidos para compor a experiencia.` : 'Sem registros server-side retornados nesta sessao.')}</small>
+        </article>
+      </div>
+    `;
+  }
+
   function renderSnapshotAwareSections() {
+    renderLiveDataPanel();
     renderCalculatorProfile();
     renderDecisionJourney();
     renderComparatorModels();
@@ -1272,6 +1333,16 @@
     });
 
     document.addEventListener('click', (event) => {
+      const refreshButton = event.target.closest('[data-client-live-refresh]');
+      if (refreshButton) {
+        refreshButton.disabled = true;
+        renderLiveDataPanel();
+        Promise.all([loadBackendSnapshots(), loadBackendEntities(), loadBackendMaterializedTables()])
+          .then(() => renderSnapshotAwareSections())
+          .catch(() => renderSnapshotAwareSections());
+        return;
+      }
+
       const button = event.target.closest('[data-client-create-handoff]');
       if (!button || !window.BFHandoffConsultivoService || !window.BFTrilhaDecisaoService) return;
       const journey = window.BFTrilhaDecisaoService.load();

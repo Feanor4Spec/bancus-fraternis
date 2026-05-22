@@ -102,6 +102,7 @@ for (const marker of orderedMarkers) {
   'tools/validate-backend-production-plan.mjs',
   'tools/validate-local-database.mjs',
   'tools/validate-public-contracts.mjs',
+  'tools/validate-live-data-ux.mjs',
   'tools/validate-public-release-safety.mjs',
   'tools/validate-design-system.mjs'
 ].forEach((validator) => assert(nextPhases.includes(validator), `Proximas fases sem validador ${validator}.`));
@@ -120,8 +121,10 @@ for (const marker of orderedMarkers) {
 
 assert(backendPlan.includes('P3.3A') && backendPlan.includes('P3.3B'), 'Plano backend sem divisao P3.3A/P3.3B.');
 assert(actionPlan.includes('Schema e migrations versionadas') && actionPlan.includes('Adapter produtivo piloto'), 'Plano de acao sem proximas fases P0.');
+assert(actionPlan.includes('UX com dados vivos') && actionPlan.includes('tools/validate-live-data-ux.mjs'), 'Plano de acao sem status de UX com dados vivos.');
 assert(protocol.includes('Fase 8AN / P3.3A') && protocol.includes('Fase 8AS / P3.7'), 'Protocolo sem fases futuras aceitas.');
 assert(changelog.includes('v8.101.0') && changelog.includes('Proximas fases produtivas'), 'Changelog sem entrada v8.101.0.');
+assert(changelog.includes('v8.102.0') && changelog.includes('UX com dados vivos'), 'Changelog sem entrada v8.102.0.');
 assert(designValidator.includes('tools/validate-next-phases-plan.mjs'), 'validate-design-system nao exige validate-next-phases-plan.');
 assert(backendValidator.includes('docs/PROXIMAS_FASES_BANK_FRATERN.md'), 'validate-backend-production-plan nao le proximas fases.');
 assert(publicContractsValidator.includes('docs/PROXIMAS_FASES_BANK_FRATERN.md'), 'validate-public-contracts nao le proximas fases.');

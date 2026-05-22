@@ -1,6 +1,6 @@
 # Proximas Fases - Bancus Fraternis
 
-Atualizado em 2026-05-21.
+Atualizado em 2026-05-22.
 
 ## Objetivo
 
@@ -28,7 +28,7 @@ Regra de continuidade: nenhuma fase abaixo remove o fallback estatico. A API pro
 | 4 | 8AQ / P3.5 - Migracao assistida e reconciliacao | P1 | Migrar dados locais para o provider produtivo com preview, divergencias e idempotencia. | Relatorio de importacao por dominio e comparacao SQLite x provider produtivo. |
 | 5 | 8AR / P3.6 - Observabilidade, backup e LGPD | P1 | Tornar operacao monitoravel, restauravel e auditavel. | Health checks, logs sanitizados, metricas, backup/restore testado e checklist LGPD. |
 | 6 | 8AS / P3.7 - Corte controlado por ambiente | P1 | Ativar backend hospedado por flag/ambiente com retorno seguro para SQLite/localStorage. | Smoke test de homologacao, plano de rollback e decisao Go/No-Go. |
-| 7 | 8AT / P4.1 - UX com dados vivos | P2 | Usar a persistencia produtiva para melhorar experiencia do cliente, consultor e admin. | Dashboards com estado mais fresco, retomada cross-device e alertas comerciais mais claros. |
+| 7 | 8AT / P4.1 - UX com dados vivos | P2 | Usar a persistencia produtiva para melhorar experiencia do cliente, consultor e admin. | Iniciado no SQLite local: painel vivo no cliente e fila consultiva lendo `/api/leads`; proximos incrementos ampliam retomada cross-device. |
 
 ## Fase 8AN / P3.3A - Schema e Migrations Versionadas
 
@@ -196,11 +196,13 @@ Criterios de aceite:
 
 Objetivo: usar a base produtiva para melhorar a experiencia, sem trocar a logica financeira ou os contratos de jornada.
 
+Status em 2026-05-22: iniciado sobre o backend local/SQLite, sem aguardar adapter hospedado. Dashboard Cliente mostra a fonte ativa e contadores vivos em `data-client-live-data-panel`; Handoff Consultivo le `/api/leads`, mescla com `localStorage` e sincroniza status, responsavel, checklist e notas por `PATCH /api/leads/:id` quando a API local existe.
+
 Entregas:
 
-- Dashboard Cliente com retomada cross-device a partir de snapshots/propostas server-side.
+- Dashboard Cliente com retomada cross-device a partir de snapshots/propostas server-side. Iniciado com painel de fonte viva e contadores de snapshots, entidades, leads, simulacoes e propostas.
 - Dashboard Admin com fila dedicada mais confiavel por dados server-side.
-- Handoff Consultivo com status compartilhado entre admin e consultor.
+- Handoff Consultivo com status compartilhado entre admin e consultor. Iniciado com fila consultiva de dados vivos e sincronizacao de leads backend-only.
 - Simulador e proposta preservando versionamento mesmo quando o usuario troca de navegador.
 
 Arquivos provaveis:
@@ -218,6 +220,7 @@ Criterios de aceite:
 - Consultor ve a mesma etapa comercial que o Admin.
 - Falha de API nao bloqueia a jornada local.
 - Dados pessoais nao aparecem em exports publicos.
+- `tools/validate-live-data-ux.mjs` passa junto de contratos publicos e continuidade do cliente.
 
 ## Validacoes Recomendadas
 
@@ -226,10 +229,11 @@ node tools/validate-next-phases-plan.mjs
 node tools/validate-backend-production-plan.mjs
 node tools/validate-local-database.mjs
 node tools/validate-public-contracts.mjs
+node tools/validate-live-data-ux.mjs
 node tools/validate-public-release-safety.mjs
 node tools/validate-design-system.mjs
 ```
 
 ## Decisao Para O Proximo Ciclo
 
-O proximo ciclo implementavel deve ser a Fase 8AN / P3.3A. Ela e a menor entrega com maior reducao de risco: cria migrations e manifest de schema antes do adapter produtivo. So depois disso faz sentido ativar `BANCUS_DB_PROVIDER=postgresql`.
+O proximo ciclo tecnico implementavel continua sendo a Fase 8AN / P3.3A. A Fase 8AT foi iniciada de forma incremental usando SQLite local, mas a menor entrega com maior reducao de risco ainda e criar migrations e manifest de schema antes do adapter produtivo. So depois disso faz sentido ativar `BANCUS_DB_PROVIDER=postgresql`.

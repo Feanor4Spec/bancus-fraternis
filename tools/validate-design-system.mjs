@@ -208,10 +208,12 @@ for (const pageName of files) {
   if (pageName === 'dashboard-cliente.html' && !html.includes('data-journey-analytics')) fail('dashboard-cliente.html sem metricas locais de jornada.');
   if (pageName === 'dashboard-cliente.html' && !html.includes('data-client-recovery-signals')) fail('dashboard-cliente.html sem sinais de retomada da jornada.');
   if (pageName === 'dashboard-cliente.html' && !html.includes('journey-recovery.service.js')) fail('dashboard-cliente.html sem servico de retomada da jornada.');
+  if (pageName === 'dashboard-cliente.html' && !html.includes('data-client-live-data-panel')) fail('dashboard-cliente.html sem painel de dados vivos.');
   if (pageName === 'handoff-consultivo.html' && !html.includes('data-handoff-operational-strip')) fail('handoff-consultivo.html sem resumo operacional.');
   if (pageName === 'handoff-consultivo.html' && !html.includes('data-handoff-audit-feed')) fail('handoff-consultivo.html sem feed de auditoria.');
   if (pageName === 'handoff-consultivo.html' && !html.includes('data-handoff-recovery-signals')) fail('handoff-consultivo.html sem sinais de retomada para handoff.');
   if (pageName === 'handoff-consultivo.html' && !html.includes('journey-recovery.service.js')) fail('handoff-consultivo.html sem servico de retomada da jornada.');
+  if (pageName === 'handoff-consultivo.html' && !html.includes('data-handoff-live-data-panel')) fail('handoff-consultivo.html sem painel de dados vivos.');
   if (pageName === 'dashboard-admin.html' && !html.includes('data-admin-operational-strip')) fail('dashboard-admin.html sem resumo operacional.');
   if (pageName === 'dashboard-admin.html' && !html.includes('data-admin-journey-funnel')) fail('dashboard-admin.html sem funil administrativo de microconversoes.');
   if (pageName === 'dashboard-admin.html' && !html.includes('data-admin-operational-alerts')) fail('dashboard-admin.html sem alertas operacionais de SLA e abandono.');
@@ -289,6 +291,7 @@ const requiredFiles = [
   'tools/validate-local-database.mjs',
   'tools/validate-backend-production-plan.mjs',
   'tools/validate-next-phases-plan.mjs',
+  'tools/validate-live-data-ux.mjs',
   'tools/validate-docs-modernization.mjs',
   'tools/validate-handoff-consultant-operations.mjs',
   'tools/validate-auth-navigation.mjs',
@@ -315,6 +318,7 @@ const proposalVersioningJs = await fs.readFile(path.join(root, 'js/proposal-vers
 const proposalAcceptanceJs = await fs.readFile(path.join(root, 'js/proposal-acceptance.js'), 'utf8');
 const proposalBuilderJs = await fs.readFile(path.join(root, 'js/proposal-builder.js'), 'utf8');
 const handoffServiceJs = await fs.readFile(path.join(root, 'assets/js/services/handoff-consultivo.service.js'), 'utf8');
+const handoffJs = await fs.readFile(path.join(root, 'assets/js/handoff-consultivo.js'), 'utf8');
 const calculatorsPageJs = await fs.readFile(path.join(root, 'assets/js/calculadoras-page.js'), 'utf8');
 const platformCss = await fs.readFile(path.join(root, 'assets/css/platform.css'), 'utf8');
 const stylesCss = await fs.readFile(path.join(root, 'css/styles.css'), 'utf8');
@@ -376,6 +380,12 @@ if (!clientDashboardJs.includes('backendMaterializedState')) fail('client-dashbo
 if (!clientDashboardJs.includes('listLeads(30)')) fail('client-dashboard.js sem leitura de leads materializados.');
 if (!clientDashboardJs.includes('listSimulations(30)')) fail('client-dashboard.js sem leitura de simulacoes materializadas.');
 if (!clientDashboardJs.includes('listProposals(30)')) fail('client-dashboard.js sem leitura de propostas materializadas.');
+if (!clientDashboardJs.includes('renderLiveDataPanel')) fail('client-dashboard.js sem painel de UX com dados vivos.');
+if (!clientDashboardJs.includes('clientLiveDataReady')) fail('client-dashboard.js sem readiness de dados vivos.');
+if (!handoffJs.includes('loadBackendLeads')) fail('handoff-consultivo.js sem leitura de leads vivos.');
+if (!handoffJs.includes('mergeLiveHandoffs')) fail('handoff-consultivo.js sem merge local + backend.');
+if (!handoffJs.includes('syncBackendLead')) fail('handoff-consultivo.js sem sincronizacao de lead vivo.');
+if (!handoffJs.includes('data-handoff-live-refresh')) fail('handoff-consultivo.js sem atualizar fila viva.');
 if (!backendApiJs.includes('saveLead')) fail('BFBackendApi sem escrita direta de lead.');
 if (!backendApiJs.includes('updateLead')) fail('BFBackendApi sem atualizacao direta de lead.');
 if (!backendApiJs.includes('saveSimulation')) fail('BFBackendApi sem escrita direta de simulacao.');

@@ -1,6 +1,6 @@
 # Protocolo de testes preferencial - Codex
 
-Atualizado em 2026-05-21 para o projeto Bancus Fraternis.
+Atualizado em 2026-05-22 para o projeto Bancus Fraternis.
 
 ## Caminho base
 
@@ -81,6 +81,7 @@ Comandos preferenciais:
 $node='<node-runtime>'
 & $node tools\validate-design-system.mjs
 & $node tools\validate-public-contracts.mjs
+& $node tools\validate-live-data-ux.mjs
 & $node tools\validate-simulator-refactor.mjs
 & $node tools\validate-simulator-shelf.mjs
 & $node tools\validate-simulator-cart.mjs
@@ -987,6 +988,7 @@ Validacoes a rodar antes de qualquer troca de provider:
 
 - `node tools/validate-backend-production-plan.mjs`
 - `node tools/validate-next-phases-plan.mjs`
+- `node tools/validate-live-data-ux.mjs`
 - `node tools/validate-local-database.mjs`
 - `node tools/validate-public-contracts.mjs`
 - `node tools/validate-public-release-safety.mjs`
@@ -996,6 +998,7 @@ Contratos a proteger:
 
 - `localStorage` continua fallback publico para GitHub Pages, `file://` e demos offline.
 - `BFBackendApi` segue como fachada de compatibilidade para API local e futura API hospedada.
+- UX com dados vivos deve manter `data-client-live-data-panel`, `data-handoff-live-data-panel`, leitura de `/api/leads` e fallback para `localStorage`.
 - `BANCUS_DB_PROVIDER` deve manter `sqlite` como padrao enquanto nao houver adapter produtivo validado.
 - `docs/PROXIMAS_FASES_BANK_FRATERN.md` deve manter a ordem: migrations e schema antes de adapter produtivo, adapter antes de autenticacao produtiva, autenticacao antes de migracao assistida, migracao antes de corte controlado.
 - Endpoints `/api/auth/*`, `/api/users`, `/api/events`, `/api/snapshots`, `/api/journey-entities`, `/api/leads`, `/api/simulations` e `/api/proposals` nao devem mudar de semantica sem migracao.

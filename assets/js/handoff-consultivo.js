@@ -2,13 +2,20 @@
   'use strict';
 
   let selectedId = '';
+  let backendLeadState = {
+    loading: false,
+    loaded: false,
+    leads: [],
+    error: null,
+    refreshedAt: ''
+  };
 
   function qs(selector, root = document) {
     return root.querySelector(selector);
   }
 
   function escapeHtml(value) {
-    return String(value || '')
+    return String(value == null ? '' : value)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
@@ -52,8 +59,100 @@
     return recovery && recovery.list ? recovery.list({ includeComplete: true, ...options }) : [];
   }
 
+  function backendApi() {
+    return window.BFBackendApi && typeof window.BFBackendApi === 'object' ? window.BFBackendApi : null;
+  }
+
+  function currentActor() {
+    const user = window.BFAuth && window.BFAuth.getCurrentUser ? window.BFAuth.getCurrentUser() : null;
+    return {
+      email: user && user.email ? user.email : 'anon',
+      role: user && user.role ? user.role : 'anon'
+    };
+  }
+
+  function recentTimestamp(item) {
+    return String((item && (item.updatedAt || item.createdAt || item.criadoEm || item.atualizadoEm)) || '');
+  }
+
+  function backendPayload(row) {
+    return row && row.payload && typeof row.payload === 'object' && !Array.isArray(row.payload) ? row.payload : {};
+  }
+
+  function normalizeBackendLead(row) {
+    if (!row) return null;
+    const payload = backendPayload(row);
+    const summary = payload.summary && typeof payload.summary === 'object' ? payload.summary : {};
+    const stageKey = row.stage || payload.stage || (payload.commercialStage && payload.commercialStage.key) || 'contato';
+    const status = row.status || payload.status || 'novo';
+    const priority = row.priority || payload.priority || payload.prioridade || 'media';
+    return {
+      ...payload,
+      id: row.id || payload.id || payload.handoffId || '',
+      schema: payload.schema || 'bank-fratern.consultive-handoff.v1',
+      sourceType: payload.sourceType || payload.origem || '',
+      ownerEmail: row.ownerEmail || payload.ownerEmail || '',
+      ownerName: payload.ownerName || row.ownerEmail || '',
+      objective: payload.objective || payload.objetivo || '',
+      objectiveLabel: row.title || payload.objectiveLabel || payload.title || 'Lead server-side',
+      status,
+      priority,
+      assignedTo: payload.assignedTo || row.assignedTo || '',
+      summary: {
+        ...summary,
+        valorCredito: Number(summary.valorCredito || summary.ticket || row.amount || 0),
+        productName: summary.productName || payload.productName || payload.product || row.source || 'SQLite local',
+        modelName: summary.modelName || payload.modelName || row.stage || 'Registro vivo'
+      },
+      checklist: Array.isArray(payload.checklist) ? payload.checklist : [],
+      notes: Array.isArray(payload.notes) ? payload.notes : [],
+      timeline: Array.isArray(payload.timeline) ? payload.timeline : [],
+      commercialStage: payload.commercialStage && typeof payload.commercialStage === 'object'
+        ? { ...payload.commercialStage, key: payload.commercialStage.key || stageKey }
+        : { key: stageKey },
+      createdAt: row.createdAt || payload.createdAt || '',
+      updatedAt: row.updatedAt || payload.updatedAt || payload.createdAt || '',
+      _backendLead: true,
+      _backendMaterializedTable: row.materializedTable || 'journey_leads',
+      _backendStage: stageKey,
+      _backendSource: row.source || 'handoff-consultivo'
+    };
+  }
+
+  function mergeLiveHandoffs(localItems, backendItems) {
+    const byId = new Map();
+    (localItems || []).filter(Boolean).forEach((item) => {
+      const key = item.id || `local-${byId.size}`;
+      byId.set(key, item);
+    });
+
+    (backendItems || []).filter(Boolean).forEach((item) => {
+      const key = item.id || `backend-${byId.size}`;
+      const local = byId.get(key);
+      if (!local) {
+        byId.set(key, item);
+        return;
+      }
+      byId.set(key, {
+        ...local,
+        ...item,
+        sourceType: item.sourceType || local.sourceType || '',
+        summary: { ...(local.summary || {}), ...(item.summary || {}) },
+        checklist: item.checklist && item.checklist.length ? item.checklist : (local.checklist || []),
+        notes: item.notes && item.notes.length ? item.notes : (local.notes || []),
+        timeline: item.timeline && item.timeline.length ? item.timeline : (local.timeline || []),
+        createdAt: recentTimestamp(local) && recentTimestamp(local) < recentTimestamp(item) ? local.createdAt : (item.createdAt || local.createdAt),
+        updatedAt: recentTimestamp(local) > recentTimestamp(item) ? local.updatedAt : (item.updatedAt || local.updatedAt)
+      });
+    });
+
+    return Array.from(byId.values()).sort((a, b) => recentTimestamp(b).localeCompare(recentTimestamp(a)));
+  }
+
   function operationalItems() {
-    return service().enrichList ? service().enrichList(service().list()) : service().list();
+    const localItems = service().list ? service().list() : [];
+    const merged = mergeLiveHandoffs(localItems, backendLeadState.leads);
+    return service().enrichList ? service().enrichList(merged) : merged;
   }
 
   function hydrateAssigneeOptions(items) {
@@ -123,13 +222,190 @@
     return `<article class="bf-platform-metric${tone ? ` is-${tone}` : ''}"><small>${escapeHtml(label)}</small><strong>${escapeHtml(value)}</strong></article>`;
   }
 
+  async function loadBackendLeads() {
+    const api = backendApi();
+    if (!api || typeof api.available !== 'function' || !api.available() || typeof api.listLeads !== 'function') {
+      backendLeadState = {
+        loading: false,
+        loaded: false,
+        leads: [],
+        error: null,
+        refreshedAt: new Date().toISOString()
+      };
+      document.body.dataset.handoffLiveDataReady = 'fallback';
+      document.body.dataset.handoffLiveLeadCount = '0';
+      return false;
+    }
+
+    backendLeadState = {
+      ...backendLeadState,
+      loading: true,
+      error: null
+    };
+    document.body.dataset.handoffLiveDataReady = 'loading';
+
+    const result = await api.listLeads(80);
+    if (!result || !result.ok || !Array.isArray(result.leads)) {
+      backendLeadState = {
+        loading: false,
+        loaded: false,
+        leads: [],
+        error: result && result.message ? result.message : 'Nao foi possivel ler leads vivos.',
+        refreshedAt: new Date().toISOString()
+      };
+      document.body.dataset.handoffLiveDataReady = 'error';
+      document.body.dataset.handoffLiveLeadCount = '0';
+      return false;
+    }
+
+    backendLeadState = {
+      loading: false,
+      loaded: true,
+      leads: result.leads.map(normalizeBackendLead).filter((item) => item && item.id),
+      error: null,
+      refreshedAt: new Date().toISOString()
+    };
+    document.body.dataset.handoffLiveDataReady = 'true';
+    document.body.dataset.handoffLiveLeadCount = String(backendLeadState.leads.length);
+    return true;
+  }
+
+  function liveHandoffById(id) {
+    if (!id) return null;
+    return operationalItems().find((item) => item.id === id) || null;
+  }
+
+  function backendWritablePayload(item) {
+    if (!item) return {};
+    const {
+      _backendLead,
+      _backendMaterializedTable,
+      _backendStage,
+      _backendSource,
+      operational,
+      ...payload
+    } = item;
+    return payload;
+  }
+
+  function updateBackendLeadState(id, updater) {
+    let nextRecord = null;
+    backendLeadState = {
+      ...backendLeadState,
+      leads: backendLeadState.leads.map((item) => {
+        if (!item || item.id !== id) return item;
+        const patch = typeof updater === 'function' ? updater(item) : updater;
+        nextRecord = {
+          ...item,
+          ...(patch || {}),
+          _backendLead: true,
+          updatedAt: new Date().toISOString()
+        };
+        return nextRecord;
+      })
+    };
+    return nextRecord;
+  }
+
+  function syncBackendLead(item, patch = {}) {
+    const api = backendApi();
+    if (!item || !item.id || !api || typeof api.available !== 'function' || !api.available() || typeof api.updateLead !== 'function') {
+      return Promise.resolve({ ok: false, message: 'Backend indisponivel.' });
+    }
+    const next = {
+      ...item,
+      ...(patch || {}),
+      updatedAt: new Date().toISOString()
+    };
+    const payload = backendWritablePayload(next);
+    return api.updateLead(next.id, {
+      title: next.objectiveLabel || next.title || next.id,
+      status: next.status || 'novo',
+      stage: (next.commercialStage && next.commercialStage.key) || next._backendStage || 'contato',
+      priority: next.priority || 'media',
+      source: next._backendSource || 'handoff-consultivo',
+      amount: Number((next.summary && (next.summary.valorCredito || next.summary.ticket || next.summary.capacidadePagamento)) || 0),
+      payload,
+      updatedAt: next.updatedAt
+    }).then((result) => {
+      if (result && result.ok && result.lead) {
+        const normalized = normalizeBackendLead(result.lead);
+        if (normalized) {
+          backendLeadState = {
+            ...backendLeadState,
+            loaded: true,
+            error: null,
+            leads: backendLeadState.leads.map((record) => record.id === normalized.id ? normalized : record)
+          };
+          document.body.dataset.handoffLiveDataReady = 'true';
+        }
+      } else if (result && result.message) {
+        backendLeadState = { ...backendLeadState, error: result.message };
+        document.body.dataset.handoffLiveDataReady = 'error';
+      }
+      return result;
+    }).catch((error) => {
+      backendLeadState = {
+        ...backendLeadState,
+        error: error && error.message ? error.message : 'Falha ao sincronizar lead vivo.'
+      };
+      document.body.dataset.handoffLiveDataReady = 'error';
+      return { ok: false, message: backendLeadState.error };
+    });
+  }
+
+  function renderLiveDataPanel(allItems, filteredItems) {
+    const target = qs('[data-handoff-live-data-panel]');
+    if (!target) return;
+    const localCount = service().list ? service().list().length : 0;
+    const liveCount = backendLeadState.leads.length;
+    const mergedCount = (allItems || operationalItems()).length;
+    const visibleCount = (filteredItems || allItems || []).length;
+    const source = backendLeadState.loaded ? 'sqlite' : 'localStorage';
+    const readiness = backendLeadState.loading ? 'loading' : backendLeadState.loaded ? 'true' : backendLeadState.error ? 'error' : 'fallback';
+    const sourceLabel = backendLeadState.loaded ? 'SQLite local' : 'localStorage';
+    const copy = backendLeadState.loading
+      ? 'Atualizando fila server-side.'
+      : backendLeadState.loaded
+        ? (liveCount
+          ? 'Leads vivos do SQLite foram mesclados com a fila local para priorizacao consultiva.'
+          : 'API local ativa; nenhum lead vivo retornado para este usuario, e a fila local permanece disponivel.')
+        : 'A fila continua operacional via localStorage; use localhost com login para ativar a leitura de leads vivos.';
+
+    target.dataset.handoffLiveSource = source;
+    target.dataset.handoffLiveRefresh = backendLeadState.refreshedAt || '';
+    document.body.dataset.handoffLiveDataReady = readiness;
+    document.body.dataset.handoffLiveDataSource = source;
+    document.body.dataset.handoffLiveLeadCount = String(liveCount);
+    document.body.dataset.handoffLiveMergedCount = String(mergedCount);
+
+    target.innerHTML = `
+      <div class="bf-admin-panel-heading">
+        <div>
+          <span class="bf-badge ${liveCount ? 'bf-badge--ok' : 'bf-badge--gold'}" data-handoff-live-source="${escapeHtml(source)}">${escapeHtml(sourceLabel)}</span>
+          <h2>Fila consultiva com dados vivos</h2>
+          <p>${escapeHtml(copy)}</p>
+          ${backendLeadState.error ? `<small>${escapeHtml(backendLeadState.error)}</small>` : ''}
+        </div>
+        <button class="btn btn--ghost btn--sm" type="button" data-handoff-live-refresh>${backendLeadState.loading ? 'Atualizando...' : 'Atualizar fila'}</button>
+      </div>
+      <div class="bf-platform-metrics">
+        ${metric('Leads vivos', liveCount, liveCount ? 'strong' : '')}
+        ${metric('Leads locais', localCount)}
+        ${metric('Fila unificada', mergedCount, mergedCount ? 'strong' : '')}
+        ${metric('Visiveis no filtro', visibleCount)}
+        ${metric('Fonte', sourceLabel)}
+      </div>
+    `;
+  }
+
   function renderMetrics(items) {
     const target = qs('[data-handoff-metrics]');
     if (!target) return;
     const data = service().metrics(items);
     target.innerHTML = `
       <div class="bf-platform-metrics">
-        ${metric('Leads locais', data.total, 'strong')}
+        ${metric('Leads na fila', data.total, 'strong')}
         ${metric('Em aberto', data.open)}
         ${metric('Alta prioridade', data.highPriority, data.highPriority ? 'warn' : '')}
         ${metric('SLA vencido', data.overdue || 0, data.overdue ? 'warn' : '')}
@@ -363,6 +639,9 @@
   }
 
   function sourceSummary(item) {
+    if (item && item._backendLead) {
+      return `Registro vivo do SQLite (${item._backendMaterializedTable || 'journey_leads'}) sincronizado pela API local.`;
+    }
     const type = sourceType(item);
     if (type === 'proposal') {
       return [
@@ -532,6 +811,7 @@
           <span class="bf-handoff-status bf-handoff-status--${escapeHtml(item.status)}">${escapeHtml(status)}</span>
           <span class="bf-handoff-priority bf-handoff-priority--${escapeHtml(item.priority)}">${escapeHtml(priorityLabel(item.priority))}</span>
           <span class="bf-handoff-source bf-handoff-source--${escapeHtml(sourceType(item))}">${escapeHtml(sourceLabel(item))}</span>
+          ${item._backendLead ? `<span class="bf-handoff-source bf-handoff-source--backend" data-handoff-live-source="${escapeHtml(item._backendSource || 'sqlite')}">Dado vivo</span>` : ''}
           <span class="bf-handoff-aging bf-handoff-aging--${escapeHtml(op.tone || 'baixa')}">${escapeHtml(op.slaOverdue ? 'SLA vencido' : op.ageLabel || '-')}</span>
           <span class="bf-handoff-commercial-stage-tag bf-handoff-commercial-stage-tag--${escapeHtml(stage.tone || 'baixa')}" data-handoff-commercial-stage="${escapeHtml(stage.key || 'contato')}">${escapeHtml(stage.label || 'Contato')}</span>
         </div>
@@ -560,6 +840,7 @@
     const allItems = operationalItems();
     hydrateAssigneeOptions(allItems);
     const items = filtered(allItems);
+    renderLiveDataPanel(allItems, items);
     renderMetrics(items);
     renderOperationalStrip(items);
     renderConsultantCockpit(items);
@@ -626,8 +907,7 @@
   function renderDetail() {
     const target = qs('[data-handoff-detail]');
     if (!target) return;
-    const rawItem = service().find(selectedId);
-    const item = service().enrich ? service().enrich(rawItem) : rawItem;
+    const item = liveHandoffById(selectedId);
     if (!item) {
       target.innerHTML = '<div class="bf-empty-state">Selecione um handoff para acompanhar.</div>';
       return;
@@ -642,6 +922,7 @@
       <div class="bf-admin-panel-heading">
         <div>
           <span class="bf-badge bf-badge--ok">${escapeHtml(sourceLabel(item))}</span>
+          ${item._backendLead ? `<span class="bf-badge bf-badge--gold" data-handoff-live-source="${escapeHtml(item._backendSource || 'sqlite')}">Dado vivo</span>` : ''}
           <h2>${escapeHtml(item.objectiveLabel || item.id)}</h2>
           <p>${escapeHtml(ownerLabel)} - criado em ${escapeHtml(date(item.createdAt))}</p>
         </div>
@@ -721,6 +1002,15 @@
       qs(selector)?.addEventListener('change', renderList);
     });
 
+    qs('[data-handoff-live-data-panel]')?.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-handoff-live-refresh]');
+      if (!button) return;
+      button.disabled = true;
+      loadBackendLeads()
+        .then(() => renderList())
+        .catch(() => renderList());
+    });
+
     qs('[data-handoff-list]')?.addEventListener('click', (event) => {
       const button = event.target.closest('[data-handoff-open]');
       if (!button) return;
@@ -757,15 +1047,65 @@
       const assignee = event.target.closest('[data-handoff-assignee]');
       const check = event.target.closest('[data-handoff-check]');
       if (status) {
-        service().setStatus(status.dataset.handoffStatus, status.value);
+        const id = status.dataset.handoffStatus;
+        const live = liveHandoffById(id);
+        const local = service().find(id);
+        const updated = local ? service().setStatus(id, status.value) : null;
+        if (live && live._backendLead) {
+          const next = updateBackendLeadState(id, (item) => ({
+            status: status.value,
+            timeline: (updated && updated.timeline) || [{
+              id: `TL-${Date.now().toString(36).toUpperCase()}`,
+              type: `status:${status.value}`,
+              label: `Status alterado para ${status.value}`,
+              actorEmail: currentActor().email,
+              createdAt: new Date().toISOString()
+            }].concat(item.timeline || [])
+          }));
+          syncBackendLead(next);
+        }
         renderList();
       }
       if (assignee) {
-        service().assign(assignee.dataset.handoffAssignee, assignee.value);
+        const id = assignee.dataset.handoffAssignee;
+        const value = String(assignee.value || '').trim();
+        const live = liveHandoffById(id);
+        const local = service().find(id);
+        const updated = local ? service().assign(id, value) : null;
+        if (live && live._backendLead) {
+          const next = updateBackendLeadState(id, (item) => ({
+            assignedTo: value,
+            timeline: (updated && updated.timeline) || [{
+              id: `TL-${Date.now().toString(36).toUpperCase()}`,
+              type: 'assign',
+              label: 'Responsavel atualizado',
+              actorEmail: currentActor().email,
+              createdAt: new Date().toISOString()
+            }].concat(item.timeline || [])
+          }));
+          syncBackendLead(next);
+        }
         renderList();
       }
       if (check) {
-        service().toggleChecklist(selectedId, check.dataset.handoffCheck, check.checked);
+        const live = liveHandoffById(selectedId);
+        const local = service().find(selectedId);
+        const updated = local ? service().toggleChecklist(selectedId, check.dataset.handoffCheck, check.checked) : null;
+        if (live && live._backendLead) {
+          const next = updateBackendLeadState(selectedId, (item) => ({
+            checklist: (updated && updated.checklist) || (item.checklist || []).map((entry) => (
+              entry.id === check.dataset.handoffCheck ? { ...entry, done: check.checked === true } : entry
+            )),
+            timeline: (updated && updated.timeline) || [{
+              id: `TL-${Date.now().toString(36).toUpperCase()}`,
+              type: check.checked ? 'checklist:done' : 'checklist:open',
+              label: check.checked ? 'Checklist marcado' : 'Checklist reaberto',
+              actorEmail: currentActor().email,
+              createdAt: new Date().toISOString()
+            }].concat(item.timeline || [])
+          }));
+          syncBackendLead(next);
+        }
         renderList();
       }
     });
@@ -774,8 +1114,8 @@
       const button = event.target.closest('[data-handoff-action-status]');
       if (!button || !service().setActionExecution) return;
       const panel = button.closest('[data-handoff-action-execution]');
-      const rawItem = service().find(selectedId);
-      const item = service().enrich ? service().enrich(rawItem) : rawItem;
+      const item = liveHandoffById(selectedId);
+      if (!item) return;
       const plan = actionPlan(item);
       const status = button.dataset.handoffActionStatus;
       const reason = panel ? panel.querySelector('[data-handoff-action-reason]')?.value || '' : '';
@@ -799,7 +1139,38 @@
       const form = event.target.closest('[data-handoff-note-form]');
       if (!form) return;
       event.preventDefault();
-      service().addNote(form.dataset.handoffNoteForm, form.elements.note.value);
+      const id = form.dataset.handoffNoteForm;
+      const text = String(form.elements.note.value || '').trim().slice(0, 600);
+      const live = liveHandoffById(id);
+      const local = service().find(id);
+      const updated = local ? service().addNote(id, text) : null;
+      if (!local && live && live._backendLead && text) {
+        const actor = currentActor();
+        const note = {
+          id: `NOTE-${Date.now().toString(36).toUpperCase()}`,
+          text,
+          actorEmail: actor.email,
+          actorRole: actor.role,
+          createdAt: new Date().toISOString()
+        };
+        const next = updateBackendLeadState(id, (item) => ({
+          notes: [note].concat(item.notes || []),
+          timeline: [{
+            id: `TL-${Date.now().toString(36).toUpperCase()}`,
+            type: 'note',
+            label: 'Nota local adicionada',
+            actorEmail: actor.email,
+            createdAt: note.createdAt
+          }].concat(item.timeline || [])
+        }));
+        syncBackendLead(next);
+      } else if (updated && live && live._backendLead) {
+        const next = updateBackendLeadState(id, {
+          notes: updated.notes || [],
+          timeline: updated.timeline || live.timeline || []
+        });
+        syncBackendLead(next);
+      }
       form.reset();
       renderList();
     });
@@ -814,6 +1185,9 @@
     selectedId = params.get('handoffId') || params.get('id') || selectedId;
     bindControls();
     renderList();
+    loadBackendLeads().then((loaded) => {
+      if (loaded) renderList();
+    }).catch(() => renderList());
     document.body.dataset.handoffReady = 'true';
   });
 })();

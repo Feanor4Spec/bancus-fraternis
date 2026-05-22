@@ -1,6 +1,6 @@
 # Plano de Acao de Evolucao Bancus Fraternis
 
-Atualizado em 2026-05-21.
+Atualizado em 2026-05-22.
 
 Prioridade definida: produto e jornada.
 
@@ -69,6 +69,7 @@ Cada etapa deve responder quatro perguntas:
 | Backend/API produtivo futuro | Concluido parcial | Plano produtivo criado para migrar SQLite local para backend hospedado preservando `localStorage`, `BFBackendApi`, escopo por `owner_email`, contratos `/api/*`, LGPD, backup e observabilidade. |
 | Provider de banco configuravel | Concluido parcial | `BANCUS_DB_PROVIDER` foi criado com `sqlite` como padrao e providers futuros bloqueados ate adapter validado. |
 | Proximas fases produtivas | Planejado | `docs/PROXIMAS_FASES_BANK_FRATERN.md` organiza schema/migrations, adapter produtivo, autenticacao, migracao, observabilidade, corte controlado e UX com dados vivos. |
+| UX com dados vivos | Concluido parcial | Dashboard Cliente ganhou painel de fonte viva e o Handoff Consultivo agora mescla `/api/leads` com a fila local, sincronizando status, responsavel, checklist e notas via `PATCH` quando ha API local. |
 | Governanca permanente | Em andamento | Changelog, mapa, plano, validadores, contratos publicos e lousa navegavel atualizados por entrega. |
 
 ## Mapa de Implementacao Atualizado
@@ -118,6 +119,7 @@ Cada etapa deve responder quatro perguntas:
 | 41 | Backend produtivo governado | Concluido parcial | Fronteira de migracao definida para usuarios, sessoes, eventos, snapshots, leads, simulacoes e propostas, mantendo fallback estatico e contratos publicos. | `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md`, `tools/validate-backend-production-plan.mjs`. |
 | 42 | Provider de banco configuravel | Concluido parcial | Camada inicial de provider criada com `BANCUS_DB_PROVIDER`, aliases para SQLite e erro explicito para providers sem adapter. | `js/backend/db.js`, `server.js`, `tools/validate-local-database.mjs`, `tools/validate-backend-production-plan.mjs`. |
 | 43 | Proximas fases produtivas | Planejado | Roadmap executavel criado para migrations, adapter PostgreSQL piloto, autenticacao produtiva, migracao assistida, observabilidade, corte controlado e UX com dados vivos. | `docs/PROXIMAS_FASES_BANK_FRATERN.md`, `tools/validate-next-phases-plan.mjs`. |
+| 44 | UX com dados vivos | Concluido parcial | Dashboard Cliente mostra origem ativa e contadores vivos; Handoff Consultivo exibe uma fila consultiva com dados vivos, mescla leads SQLite com locais e sincroniza atualizacoes de atendimento. | `data-client-live-data-panel`, `data-handoff-live-data-panel`, `tools/validate-live-data-ux.mjs`. |
 
 ## Proximos Passos Priorizados
 
@@ -152,6 +154,7 @@ Cada etapa deve responder quatro perguntas:
 | Concluido parcial | Proxima extracao do simulador | Separado calculo/orquestracao de resultado em modulo menor, mantendo `App.*` como fachada publica. | `js/app.js`, `js/engine.js`, `js/simulator-result.js`. | Reduzir `app.js` sem quebrar resultados, proposta, PDF e simulacoes salvas. |
 | Concluido | Prateleira com quantidade controlada | Padronizado controle numerico de 20 a 50 grupos por pagina, comecando em 20, com normalizacao das preferencias antigas. | `pages/simulador.html`, `pages/configuracoes.html`, `js/settings.js`, `js/simulator-shelf.js`, `tools/validate-simulator-shelf.mjs`. | Consultor consegue reduzir ou ampliar a leitura da prateleira sem passar de 50 grupos visiveis por pagina. |
 | Concluido parcial | Backend/API produtivo futuro | Fronteiras de migracao documentadas para usuarios, sessoes, eventos, snapshots, leads, simulacoes, propostas e handoffs, mantendo `localStorage` como fallback publico. | `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md`, `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md`, `docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md`, `tools/validate-backend-production-plan.mjs`. | Plano tecnico define contratos de migracao do SQLite local para backend hospedado, com LGPD, backup, observabilidade e rollback como criterios de aceite. |
+| Concluido parcial | UX com dados vivos | Expor a fonte ativa no Dashboard Cliente e transformar o Handoff Consultivo em Fila consultiva com dados vivos, lendo `/api/leads` e mantendo fallback local. | `pages/dashboard-cliente.html`, `assets/js/client-dashboard.js`, `pages/handoff-consultivo.html`, `assets/js/handoff-consultivo.js`, `tools/validate-live-data-ux.mjs`. | Cliente entende se a jornada veio do SQLite ou `localStorage`; consultor ve e atualiza leads vivos sem perder a fila local. |
 | P0 | Schema e migrations versionadas | Criar a Fase 8AN / P3.3A antes do adapter produtivo, com migrations idempotentes, manifest de schema e rollback. | `js/backend/migrations/*`, `js/backend/db.js`, `tools/validate-database-migrations.mjs`, `docs/PROXIMAS_FASES_BANK_FRATERN.md`. | Todas as tabelas atuais possuem migration, SQLite segue verde e o adapter futuro tem contrato de schema. |
 | P0 | Adapter produtivo piloto | Implementar a Fase 8AO / P3.3B com `BANCUS_DB_PROVIDER=postgresql`, `BANCUS_DATABASE_URL`, smoke test e fallback SQLite. | `js/backend/providers/*`, `server.js`, `tools/validate-database-provider.mjs`. | `BFBackendApi` e `/api/*` preservam semantica, provider sem credencial falha explicitamente e staging usa dados de teste. |
 

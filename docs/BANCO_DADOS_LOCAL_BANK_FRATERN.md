@@ -1,6 +1,6 @@
 # Banco De Dados Local - Bancus Fraternis
 
-Atualizado em 2026-05-21.
+Atualizado em 2026-05-22.
 
 ## Objetivo
 
@@ -15,6 +15,7 @@ Esta entrega cria a primeira camada server-side do Bancus Fraternis sem quebrar 
 | `assets/js/services/backend-api.service.js` | Ponte do navegador para a API local com fallback silencioso. |
 | `js/auth.js` | Continua sendo a fachada publica de auth e espelha login/usuarios no banco quando a API existe. |
 | `assets/js/admin-users.js` | Dashboard Admin le `/api/events`, `/api/snapshots`, `/api/journey-entities`, `/api/leads`, `/api/simulations`, `/api/proposals`, edita registros dedicados via `PATCH`, mostra status server-side e executa migracao guiada do `localStorage`. |
+| `assets/js/handoff-consultivo.js` | Handoff Consultivo le `/api/leads`, mescla registros vivos com a fila local e sincroniza atendimento via `PATCH /api/leads/:id` quando ha API local. |
 | `tools/validate-local-database.mjs` | Validador de schema, seeds, login, sessao, eventos, snapshots, entidades relacionais e escrita direta sanitizada. |
 | `tools/inspect-local-sql-environment.mjs` | Diagnostico de CLIs, portas padrao e servicos SQL locais para proxima troca de provider. |
 | `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md` | Plano de migracao do SQLite local para backend hospedado preservando `localStorage`, `BFBackendApi` e contratos `/api/*`. |
@@ -113,6 +114,8 @@ As senhas seed continuam documentadas em `docs/AUTH_ADMIN_LOCAL.md` para demonst
 - Dashboard Cliente le `GET /api/snapshots?limit=100` quando houver API local, mescla com `localStorage` e sinaliza a fonte em `data-client-backend-snapshots`.
 - Dashboard Cliente le `GET /api/journey-entities?limit=100` quando houver API local e sinaliza a camada relacional em `data-client-backend-entities`.
 - Dashboard Cliente le `/api/leads`, `/api/simulations` e `/api/proposals` quando houver API local e sinaliza tabelas dedicadas em `data-client-backend-materialized`.
+- Dashboard Cliente consolida a leitura viva em `data-client-live-data-panel`, mostrando fonte ativa, contadores e acao de refresh sem bloquear o fallback local.
+- Handoff Consultivo le `/api/leads?limit=80`, mescla `journey_leads` com `bf_consultive_handoffs_v1`, marca fonte viva em `data-handoff-live-source` e sincroniza status, responsavel, checklist e notas por `PATCH /api/leads/:id`.
 - Escritas diretas em `/api/leads`, `/api/simulations` e `/api/proposals` nao substituem ainda os hooks de snapshot; elas preparam a migracao gradual para regras especificas por entidade mantendo compatibilidade com dados locais existentes.
 - Dashboard Admin exibe `data-admin-backend-events` com metricas do SQLite e ultimos eventos quando houver sessao admin da API.
 - O mesmo painel lista snapshots recentes server-side em `data-admin-backend-snapshots` e cada item em `data-admin-backend-snapshot`.
@@ -130,6 +133,7 @@ As senhas seed continuam documentadas em `docs/AUTH_ADMIN_LOCAL.md` para demonst
 ```bash
 node tools/validate-local-database.mjs
 node tools/validate-backend-production-plan.mjs
+node tools/validate-live-data-ux.mjs
 node tools/inspect-local-sql-environment.mjs
 ```
 
@@ -152,6 +156,7 @@ Valida:
 - escrita direta de lead, simulacao e proposta com payload sanitizado;
 - sincronizacao de escrita direta com `journey_entities`;
 - hooks reais de escrita direta em simulador, proposta, lousa e handoff;
+- UX com dados vivos no Dashboard Cliente e Handoff Consultivo;
 - edicao operacional de tabelas dedicadas no Dashboard Admin;
 - hooks reais de `recordSnapshot` em simulacao, proposta, perfil, trilha e handoff;
 - preview e execucao idempotente da migracao `localStorage` -> SQLite, incluindo snapshots;

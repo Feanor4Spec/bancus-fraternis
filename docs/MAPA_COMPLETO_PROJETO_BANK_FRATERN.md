@@ -1,6 +1,6 @@
 # Mapa Completo do Projeto Bancus Fraternis
 
-Atualizado em 2026-05-21.
+Atualizado em 2026-05-22.
 
 Este mapa foi recriado a partir da leitura real do workspace. Ele documenta o Bancus Fraternis como plataforma de decisao financeira, nao apenas como simulador de consorcio. O objetivo e permitir que uma pessoa ou agente entenda a superficie atual do produto antes de evoluir Home, produtos, calculadoras, trilha assistida, comparador, simulador, proposta, handoff, dashboard cliente e dashboard admin.
 
@@ -16,7 +16,7 @@ Estado confirmado nesta leitura:
 - 16 services em `assets/js/services/`.
 - 5 arquivos de formulas em `assets/js/formulas/`.
 - 5 componentes em `assets/js/components/`.
-- 40 scripts de validacao/evidencia em `tools/`.
+- 45 scripts de validacao/evidencia em `tools/`.
 - 52 aliases curtos confirmados em `server.js`, um para cada pagina HTML em `pages/`.
 
 O centro de produto e uma jornada continua:
@@ -77,6 +77,8 @@ Contrato confirmado:
 - Os fluxos reais de simulador, versionamento/aceite/lousa de proposta e handoff ja chamam `saveSimulation`, `saveProposal` e `saveLead` em modo progressivo.
 - O Dashboard Admin ja usa `PATCH` para alterar status, etapa e prioridade de registros dedicados, sem editar snapshots manualmente.
 - O Dashboard Admin tambem separa leads, simulacoes e propostas materializadas em `data-admin-dedicated-queue`, com filtros por tipo, status, prioridade e dono antes da auditoria completa.
+- O Dashboard Cliente possui painel de UX com dados vivos (`data-client-live-data-panel`) para mostrar fonte ativa, contadores server-side e fallback local.
+- O Handoff Consultivo le `/api/leads`, mescla `journey_leads` com `bf_consultive_handoffs_v1` e sincroniza status, responsavel, checklist e notas por `PATCH /api/leads/:id` quando a API local esta ativa.
 - Quando publicado em GitHub Pages ou aberto por `file://`, as paginas seguem funcionando com fallback em `localStorage`.
 
 ## Estrutura de Diretorios
@@ -123,7 +125,7 @@ Contrato confirmado:
 | --- | --- | --- |
 | `pages/login.html` | Ativa | Login local com perfis demo. |
 | `pages/configuracoes.html` | Ativa | Preferencias locais do simulador e plataforma. |
-| `pages/dashboard-cliente.html` | Ativa | Historico, perfil, modelos, trilha, sinais e handoff do usuario, lendo snapshots, entidades relacionais e tabelas dedicadas server-side quando a API local esta ativa e preservando fallback em `localStorage`. |
+| `pages/dashboard-cliente.html` | Ativa | Historico, perfil, modelos, trilha, sinais e handoff do usuario, lendo snapshots, entidades relacionais e tabelas dedicadas server-side quando a API local esta ativa, com painel de dados vivos e fallback em `localStorage`. |
 | `pages/dashboard-admin.html` | Ativa | Usuarios, recuperacao, pacotes, SLA, roteamento, metas, auditoria, funil, fila guiada executavel, produtividade, carteira por consultor, funil comercial movel, cadencia por etapa, eventos, snapshots, entidades, fila dedicada filtravel e operacao inline das tabelas dedicadas SQLite. |
 
 ### Produto, Decisao e Modelos
@@ -182,7 +184,7 @@ Todas usam o mesmo padrao de pagina, o motor de render `assets/js/calculadoras-p
 | --- | --- | --- |
 | `pages/carteira.html` | Ativa | Carteira de clientes, oportunidades, agenda e insights. |
 | `pages/assembleias.html` | Ativa | Acompanhamento de assembleias. |
-| `pages/handoff-consultivo.html` | Ativa | Painel consultivo de leads locais com plano de acao executavel por lead. |
+| `pages/handoff-consultivo.html` | Ativa | Painel consultivo de leads locais e vivos, mesclando `/api/leads` com `localStorage`, com plano de acao executavel por lead e sincronizacao de atendimento quando ha API local. |
 | `pages/consorcio_user_journey_map_v2.html` | Legado controlado | Mapa visual antigo da jornada do consorciado. |
 | `pages/index_2.html` | Legado controlado | Portal de operacoes anterior. |
 | `pages/index_v4_paginas.html` | Legado controlado | Navegacao/portal anterior. |

@@ -4,6 +4,21 @@
 
 ---
 
+## [v8.102.0] - 2026-05-22
+
+### UX com dados vivos
+
+#### Adicionado
+- Dashboard Cliente ganhou painel `data-client-live-data-panel` com fonte ativa, contagem de snapshots, entidades, leads, simulacoes e propostas vindas do backend local quando houver API.
+- Handoff Consultivo ganhou painel `data-handoff-live-data-panel` e passou a mesclar leads vivos de `/api/leads` com a fila local.
+- Criado `tools/validate-live-data-ux.mjs` para proteger a leitura progressiva, os marcadores publicos e a documentacao da fase.
+
+#### Modificado
+- Handoff Consultivo agora permite atualizar status, responsavel, checklist e notas em leads que vieram apenas do SQLite local, usando `PATCH /api/leads/:id` quando a API esta ativa.
+- Contratos publicos, plano, mapa e validadores passaram a registrar a etapa 8AT / P4.1 como iniciada sobre o backend local.
+
+---
+
 ## [v8.101.0] - 2026-05-21
 
 ### Proximas fases produtivas

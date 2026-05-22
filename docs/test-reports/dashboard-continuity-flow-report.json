@@ -16,7 +16,8 @@
     "handoffAging": true,
     "cockpit": true,
     "nextAction": true,
-    "commercialStage": true
+    "commercialStage": true,
+    "liveData": true
   },
   "failures": []
 }

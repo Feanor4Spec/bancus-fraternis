@@ -34,6 +34,7 @@ assert(dashboardHtml.includes('data-client-continuity-cockpit'), 'Dashboard Clie
 assert(dashboardHtml.includes('data-client-continuity-timeline'), 'Dashboard Cliente sem timeline de continuidade.');
 assert(dashboardHtml.includes('data-client-decision-journey'), 'Dashboard Cliente sem painel de trilha assistida.');
 assert(dashboardHtml.includes('data-client-recovery-signals'), 'Dashboard Cliente sem sinais de retomada.');
+assert(dashboardHtml.includes('data-client-live-data-panel'), 'Dashboard Cliente sem painel de dados vivos.');
 assert(dashboardHtml.includes('trilha-decisao.html?from=dashboard'), 'Hero do Dashboard Cliente nao preserva from=dashboard para Trilha.');
 assert(dashboardHtml.includes('simulador.html?from=dashboard'), 'Hero do Dashboard Cliente nao preserva from=dashboard para Simulador.');
 assert(dashboardHtml.includes('produtos.html?from=dashboard'), 'Hero do Dashboard Cliente nao preserva from=dashboard para Produtos.');
@@ -63,6 +64,11 @@ assert(clientJs.includes('BFHandoffConsultivoService') && clientJs.includes('com
 assert(clientJs.includes('handoff-consultivo.html#fila-handoff'), 'Dashboard Cliente nao aponta handoff para fila.');
 assert(clientJs.includes('comparador.html'), 'Dashboard Cliente nao oferece continuidade para comparador.');
 assert(clientJs.includes('simulador.html#proposta'), 'Dashboard Cliente nao oferece continuidade para proposta.');
+assert(clientJs.includes('function renderLiveDataPanel'), 'Dashboard Cliente sem renderLiveDataPanel.');
+assert(clientJs.includes('data-client-live-source'), 'Dashboard Cliente sem marcador de origem viva.');
+assert(clientJs.includes('data-client-live-refresh'), 'Dashboard Cliente sem atualizar dados vivos.');
+assert(clientJs.includes('clientLiveDataReady'), 'Dashboard Cliente sem readiness de dados vivos.');
+assert(clientJs.includes('backendMaterializedView'), 'Dashboard Cliente sem leitura materializada no painel vivo.');
 
 const summary = {
   ok: failures.length === 0,
@@ -74,7 +80,8 @@ const summary = {
     handoffAging: clientJs.includes('ageLabel'),
     cockpit: dashboardHtml.includes('data-client-continuity-cockpit'),
     nextAction: clientJs.includes('data-client-next-action'),
-    commercialStage: clientJs.includes('data-client-commercial-stage')
+    commercialStage: clientJs.includes('data-client-commercial-stage'),
+    liveData: clientJs.includes('clientLiveDataReady')
   },
   failures
 };
