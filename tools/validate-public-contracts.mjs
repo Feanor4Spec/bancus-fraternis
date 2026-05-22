@@ -222,6 +222,11 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-calculator-field-source-key',
   'data-calculator-saved-comparison',
   'data-calculator-saved-comparison-item',
+  'data-calculator-impact-panel',
+  'data-calculator-impact-score',
+  'data-calculator-impact-risk',
+  'data-calculator-impact-next-step',
+  'data-calculator-impact-source',
   'data-calculator-profile-continuity',
   'data-calculators-profile-continuity',
   'data-simulator-journey-actions',
@@ -294,6 +299,7 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'tools/validate-design-system.mjs',
   'tools/validate-calculadoras.mjs',
   'tools/validate-calculator-journey.mjs',
+  'tools/validate-calculator-impact-panel.mjs',
   'tools/validate-admin-dashboard-source-funnel.mjs',
   'tools/validate-proposal-builder.mjs',
   'tools/validate-proposal-governance.mjs',
@@ -498,6 +504,11 @@ assert(contracts.includes('data-calculator-field-source'), 'Contrato publico nao
 assert(contracts.includes('data-calculator-field-source-key'), 'Contrato publico nao documenta chave de origem dos campos das calculadoras.');
 assert(contracts.includes('data-calculator-saved-comparison'), 'Contrato publico nao documenta comparacao com ultimo salvo das calculadoras.');
 assert(contracts.includes('data-calculator-saved-comparison-item'), 'Contrato publico nao documenta itens de comparacao com ultimo salvo.');
+assert(contracts.includes('data-calculator-impact-panel'), 'Contrato publico nao documenta painel de impacto das calculadoras.');
+assert(contracts.includes('data-calculator-impact-score'), 'Contrato publico nao documenta score do painel de impacto das calculadoras.');
+assert(contracts.includes('data-calculator-impact-risk'), 'Contrato publico nao documenta risco do painel de impacto das calculadoras.');
+assert(contracts.includes('data-calculator-impact-next-step'), 'Contrato publico nao documenta proximo passo do painel de impacto.');
+assert(contracts.includes('data-calculator-impact-source'), 'Contrato publico nao documenta origem do painel de impacto.');
 assert(contracts.includes('data-calculator-next-action'), 'Contrato publico nao documenta proxima acao dinamica das calculadoras.');
 assert(contracts.includes('data-calculator-next-action-card'), 'Contrato publico nao documenta card de proxima acao das calculadoras.');
 assert(contracts.includes('data-calculator-profile-continuity'), 'Contrato publico nao documenta continuidade por perfil nas calculadoras.');
@@ -508,6 +519,8 @@ assert(calculatorsPage.includes('FIELD_PROFILE_SOURCES'), 'calculadoras-page.js 
 assert(calculatorsPage.includes('fieldSource: profileSourceForField'), 'BFCalculatorJourney sem fieldSource publico.');
 assert(calculatorsPage.includes('buildSavedComparison'), 'calculadoras-page.js sem comparacao entre previa e ultimo salvo.');
 assert(calculatorsPage.includes('savedComparison: buildSavedComparison'), 'BFCalculatorJourney sem savedComparison publico.');
+assert(calculatorsPage.includes('buildCalculatorImpactPanel'), 'calculadoras-page.js sem painel de impacto das calculadoras.');
+assert(calculatorsPage.includes('impactPanel: buildCalculatorImpactPanel'), 'BFCalculatorJourney sem impactPanel publico.');
 assert(calculatorsPage.includes('profile-preview-not-saved'), 'calculadoras-page.js sem estado de previa sem salvar para continuidade.');
 assert(calculatorsPage.includes('profile-ready-bid'), 'calculadoras-page.js sem estado de lance pronto para continuidade.');
 assert(await exists('404.html'), 'Fallback 404.html ausente.');
@@ -524,6 +537,7 @@ assert(designValidator.includes('tools/validate-docs-modernization.mjs'), 'valid
 assert(designValidator.includes('tools/validate-navigable-journey.mjs'), 'validate-design-system nao exige validate-navigable-journey.');
 assert(designValidator.includes('tools/validate-github-pages-deploy.mjs'), 'validate-design-system nao exige validate-github-pages-deploy.');
 assert(designValidator.includes('tools/validate-live-data-ux.mjs'), 'validate-design-system nao exige validate-live-data-ux.');
+assert(designValidator.includes('tools/validate-calculator-impact-panel.mjs'), 'validate-design-system nao exige validate-calculator-impact-panel.');
 assert(handoffPage.includes('data-handoff-live-data-panel'), 'Handoff Consultivo sem painel de dados vivos.');
 assert(handoffJs.includes('loadBackendLeads'), 'Handoff Consultivo sem leitura de leads vivos.');
 assert(handoffJs.includes('api.listLeads'), 'Handoff Consultivo sem contrato listLeads.');
@@ -580,10 +594,10 @@ const report = {
   ok: failures.length === 0,
   contracts: {
     localStorageKeys: 18,
-    dataMarkers: 101,
+    dataMarkers: 106,
     globals: 20,
     deepLinks: 10,
-    validators: 26,
+    validators: 27,
     calculatorCount
   },
   warnings,

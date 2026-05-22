@@ -583,6 +583,7 @@ Validacoes obrigatorias:
 - Campos preenchidos pelo perfil devem expor `data-calculator-field-origin="profile"` e `data-calculator-field-source`.
 - Campos validos alterados pelo usuario devem atualizar a previa sem persistencia.
 - Quando houver historico da mesma calculadora, a previa deve expor `data-calculator-saved-comparison` e itens `data-calculator-saved-comparison-item`.
+- O resultado deve expor `data-calculator-impact-panel`, `data-calculator-impact-score`, `data-calculator-impact-risk`, `data-calculator-impact-next-step` e `data-calculator-impact-source`.
 - Alertas de coerencia devem expor `data-calculator-coherence-alert`, atualizar `data-calculator-coherence` e nao bloquear salvamento.
 - A ponte da calculadora deve expor `data-calculator-next-action` e `data-calculator-next-action-card` com CTA principal aderente ao risco.
 - A continuidade por perfil deve expor `data-calculator-profile-continuity` e `data-calculators-profile-continuity`, diferenciando previa sem salvar, falta de renda, falta de reserva, capacidade pronta e lance sugerido.
@@ -606,6 +607,7 @@ $node='<node-runtime>'
 & $node --check assets\js\client-dashboard.js
 & $node tools\validate-calculadoras.mjs
 & $node tools\validate-calculator-journey.mjs
+& $node tools\validate-calculator-impact-panel.mjs
 & $node tools\validate-design-system.mjs
 ```
 
@@ -619,6 +621,7 @@ Evidencias esperadas:
 - `docs/test-prints/v8r-dashboard-cliente-continuidade-desktop.png`
 - `docs/test-prints/v8r-calculadoras-jornada-report.json`
 - `docs/test-reports/calculator-journey-report.json`
+- `docs/test-reports/calculator-impact-panel-report.json`
 - Checkpoint ZIP em `versions/`
 
 Prints minimos do ciclo v8:

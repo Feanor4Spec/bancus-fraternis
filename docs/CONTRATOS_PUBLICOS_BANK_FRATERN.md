@@ -54,7 +54,7 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | Publicacao demo | `data-public-demo-notice`, `.bf-demo-chip`. |
 | Home | `data-home-hero-contextual`, `data-home-continuity-cockpit`, `data-home-next-actions`, `data-journey-analytics`. |
 | Produtos | `data-products-grid`, `data-products-filter`, `data-products-selection-panel`, `data-products-compare-link`, `data-products-decision-strip`. |
-| Calculadoras | `data-calculator-form`, `data-calculator-form-alert`, `data-calculator-coherence`, `data-calculator-coherence-alert`, `data-calculator-field`, `data-calculator-field-error`, `data-calculator-field-origin`, `data-calculator-field-source`, `data-calculator-field-source-key`, `data-calculator-saved-comparison`, `data-calculator-saved-comparison-item`, `data-calculator-next-action`, `data-calculator-next-action-card`, `data-calculator-profile-continuity`, `data-calculators-profile-continuity`, `data-calculator-result`, `data-calculator-result-mode`, `data-calculator-history`, `data-calculators-hub`, `data-calculator-decision-strip`. |
+| Calculadoras | `data-calculator-form`, `data-calculator-form-alert`, `data-calculator-coherence`, `data-calculator-coherence-alert`, `data-calculator-field`, `data-calculator-field-error`, `data-calculator-field-origin`, `data-calculator-field-source`, `data-calculator-field-source-key`, `data-calculator-saved-comparison`, `data-calculator-saved-comparison-item`, `data-calculator-impact-panel`, `data-calculator-impact-score`, `data-calculator-impact-risk`, `data-calculator-impact-next-step`, `data-calculator-impact-source`, `data-calculator-next-action`, `data-calculator-next-action-card`, `data-calculator-profile-continuity`, `data-calculators-profile-continuity`, `data-calculator-result`, `data-calculator-result-mode`, `data-calculator-history`, `data-calculators-hub`, `data-calculator-decision-strip`. |
 | Trilha | `data-decision-journey-form`, `data-decision-journey-state`, `data-decision-journey-steps`, `data-decision-journey-actions`. |
 | Comparador | `data-comparator-form`, `data-comparator-result`, `data-comparator-preset-summary`, `data-comparator-model-recommendation`. |
 | Simulador | `data-simulator-readiness`, `data-simulator-decision-strip`, `data-simulator-journey-actions`, `data-simulator-objective-guide`, `data-simulator-objective-card`, `data-simulator-objective-apply`, `data-simulator-result-decision`, `data-simulator-result-cta`, `data-simulator-result-premise`, `data-simulator-result-risk`, `data-simulator-result-comparison`, `data-v8-stagebar`, `data-shelf-col`, `data-shelf-recommendation`, `data-shelf-recommendation-reason`. |
@@ -159,7 +159,7 @@ Leitura progressiva dos snapshots:
 | `BFHome` | Home contextual e continuidade. |
 | `BFDecisionContext` | Perfil financeiro, historico e prefill de simulacao. |
 | `BFCalculadoras` | Catalogo, calculo e historico das 19 calculadoras. |
-| `BFCalculatorJourney` | Deep links de calculadoras para jornada, continuidade, origem dos campos reaproveitados e comparacao com ultimo salvo. |
+| `BFCalculatorJourney` | Deep links de calculadoras para jornada, continuidade, origem dos campos reaproveitados, comparacao com ultimo salvo e painel de impacto. |
 | `BFFinancialFormulas`, `BFPriceFormulas`, `BFSacFormulas`, `BFConsorcioFormulas`, `BFComparisonFormulas` | Formulas reutilizadas. |
 | `BFDadosService` | Carga de datasets locais. |
 | `BFProposalBuilder` | Regras da lousa de proposta: storage, presets, prontidao, foco, dependencias e contadores. |
@@ -216,6 +216,7 @@ Leitura progressiva dos snapshots:
 | `tools/validate-route-aliases.mjs` | Paridade de 52 paginas e aliases curtos. |
 | `tools/validate-calculadoras.mjs` | Catalogo atual de 19 calculadoras, premissas, golden tests e contrato de previa sem submit automatico. |
 | `tools/validate-calculator-journey.mjs` | Execucao das 19 calculadoras, previa sem persistencia, validacao de formulario, alertas de coerencia, proxima acao dinamica, submit persistente e mapa funcional. |
+| `tools/validate-calculator-impact-panel.mjs` | Painel de impacto das 19 calculadoras, score, risco, origem preview/salvo, proximo passo e compatibilidade com `BFCalculatorJourney.impactPanel`. |
 | `tools/validate-simulator-groups.mjs` | Base real do simulador: 17.396 grupos validos. |
 | `tools/validate-simulator-performance.mjs` | Base compacta do simulador, peso online e fallback para JSON legado. |
 | `tools/validate-simulator-refactor.mjs` | Modulos extraidos do simulador, payload salvo e acoes de jornada. |

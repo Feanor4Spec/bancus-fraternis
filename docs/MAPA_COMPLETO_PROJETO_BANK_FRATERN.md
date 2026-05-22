@@ -16,7 +16,7 @@ Estado confirmado nesta leitura:
 - 16 services em `assets/js/services/`.
 - 5 arquivos de formulas em `assets/js/formulas/`.
 - 5 componentes em `assets/js/components/`.
-- 46 scripts de validacao/evidencia em `tools/`.
+- 47 scripts de validacao/evidencia em `tools/`.
 - 52 aliases curtos confirmados em `server.js`, um para cada pagina HTML em `pages/`.
 
 O centro de produto e uma jornada continua:
@@ -154,7 +154,7 @@ Contrato confirmado:
 
 ### Calculadoras
 
-Todas usam o mesmo padrao de pagina, o motor de render `assets/js/calculadoras-page.js` e o service `assets/js/services/calculadoras.service.js`. O mapa operacional das funcoes esta em `docs/MAPA_FUNCOES_CALCULADORAS_BANK_FRATERN.md`.
+Todas usam o mesmo padrao de pagina, o motor de render `assets/js/calculadoras-page.js` e o service `assets/js/services/calculadoras.service.js`. O mapa operacional das funcoes esta em `docs/MAPA_FUNCOES_CALCULADORAS_BANK_FRATERN.md`. O resultado de cada calculadora agora inclui um painel de impacto da jornada com score, risco, origem preview/salvo e proximo passo.
 
 | Pagina | Estado | Conteudo |
 | --- | --- | --- |
@@ -228,6 +228,7 @@ Hub de calculadoras
   -> previa sem persistencia
   -> validacao guiada por campo
   -> alertas de coerencia nao bloqueantes
+  -> painel de impacto com score, risco e proximo passo
   -> proxima acao dinamica
   -> submit explicito
   -> resultado + recomendacao
@@ -235,7 +236,7 @@ Hub de calculadoras
   -> simulador, comparador ou dashboard cliente
 ```
 
-Contratos principais: `data-calculator-form`, `data-calculator-form-alert`, `data-calculator-coherence`, `data-calculator-coherence-alert`, `data-calculator-field`, `data-calculator-field-error`, `data-calculator-field-origin`, `data-calculator-field-source`, `data-calculator-field-source-key`, `data-calculator-saved-comparison`, `data-calculator-saved-comparison-item`, `data-calculator-next-action`, `data-calculator-next-action-card`, `data-calculator-profile-continuity`, `data-calculators-profile-continuity`, `data-calculator-result`, `data-calculator-result-mode`, `BFCalculadoras`, `BFFinancialFormulas`, `BFDecisionContext`, `BFCalculatorJourney`, deep links com `from=calculator|calculators`, `calculatorSlug`, `historyId` e `preset`.
+Contratos principais: `data-calculator-form`, `data-calculator-form-alert`, `data-calculator-coherence`, `data-calculator-coherence-alert`, `data-calculator-field`, `data-calculator-field-error`, `data-calculator-field-origin`, `data-calculator-field-source`, `data-calculator-field-source-key`, `data-calculator-saved-comparison`, `data-calculator-saved-comparison-item`, `data-calculator-impact-panel`, `data-calculator-impact-score`, `data-calculator-impact-risk`, `data-calculator-impact-next-step`, `data-calculator-impact-source`, `data-calculator-next-action`, `data-calculator-next-action-card`, `data-calculator-profile-continuity`, `data-calculators-profile-continuity`, `data-calculator-result`, `data-calculator-result-mode`, `BFCalculadoras`, `BFFinancialFormulas`, `BFDecisionContext`, `BFCalculatorJourney`, deep links com `from=calculator|calculators`, `calculatorSlug`, `historyId` e `preset`.
 
 ### Jornada de trilha assistida
 
@@ -452,7 +453,7 @@ Os marcadores mais importantes por area:
 | --- | --- |
 | Home | `data-home-hero-contextual`, `data-home-continuity-cockpit`, `data-home-next-actions`. |
 | Produtos | `data-products-grid`, `data-products-filter`, `data-products-selection-panel`, `data-products-compare-link`. |
-| Calculadoras | `data-calculator-form`, `data-calculator-form-alert`, `data-calculator-coherence`, `data-calculator-coherence-alert`, `data-calculator-field`, `data-calculator-field-error`, `data-calculator-field-origin`, `data-calculator-field-source`, `data-calculator-field-source-key`, `data-calculator-saved-comparison`, `data-calculator-saved-comparison-item`, `data-calculator-next-action`, `data-calculator-next-action-card`, `data-calculator-profile-continuity`, `data-calculators-profile-continuity`, `data-calculator-result`, `data-calculator-result-mode`, `data-calculator-history`, `data-calculators-hub`. |
+| Calculadoras | `data-calculator-form`, `data-calculator-form-alert`, `data-calculator-coherence`, `data-calculator-coherence-alert`, `data-calculator-field`, `data-calculator-field-error`, `data-calculator-field-origin`, `data-calculator-field-source`, `data-calculator-field-source-key`, `data-calculator-saved-comparison`, `data-calculator-saved-comparison-item`, `data-calculator-impact-panel`, `data-calculator-impact-score`, `data-calculator-impact-risk`, `data-calculator-impact-next-step`, `data-calculator-impact-source`, `data-calculator-next-action`, `data-calculator-next-action-card`, `data-calculator-profile-continuity`, `data-calculators-profile-continuity`, `data-calculator-result`, `data-calculator-result-mode`, `data-calculator-history`, `data-calculators-hub`. |
 | Trilha | `data-decision-journey-form`, `data-decision-journey-state`, `data-decision-journey-steps`, `data-decision-journey-actions`. |
 | Comparador | `data-comparator-form`, `data-comparator-result`, `data-comparator-preset-summary`, `data-comparator-model-recommendation`. |
 | Simulador | `data-simulator-readiness`, `data-simulator-decision-strip`, `data-simulator-journey-actions`, `data-simulator-objective-guide`, `data-simulator-objective-card`, `data-simulator-objective-apply`, `data-simulator-result-decision`, `data-simulator-result-cta`, `data-simulator-result-premise`, `data-simulator-result-risk`, `data-simulator-result-comparison`, `data-shelf-col`, `data-shelf-recommendation`, `data-shelf-recommendation-reason`. |
@@ -522,6 +523,7 @@ Scripts confirmados em `tools/`:
 | `validate-handoff-origins.mjs` | Origem dos handoffs por proposta, trilha, sinal e pacote importado. |
 | `validate-calculadoras.mjs` | Catalogo, paginas, premissas, formulas e contrato de previa sem submit automatico. |
 | `validate-calculator-journey.mjs` | Execucao das 19 calculadoras, previa sem persistencia, validacao de formulario, alertas de coerencia, origem dos campos, comparacao com ultimo salvo, proxima acao dinamica, continuidade por perfil, submit persistente e mapa funcional. |
+| `validate-calculator-impact-panel.mjs` | Painel de impacto das 19 calculadoras, score, risco, origem preview/salvo, proximo passo e export `BFCalculatorJourney.impactPanel`. |
 | `validate-dashboard-continuity-flow.mjs` | Timeline e deep links do Dashboard Cliente. |
 | `validate-decision-flow.mjs` | Fluxo calculadora -> simulador -> historico. |
 | `validate-decision-journey-context.mjs` | Contexto de entrada e saida da Trilha Assistida. |

@@ -55,6 +55,7 @@ Cada etapa deve responder quatro perguntas:
 | Calculadoras com continuidade por perfil | Concluido parcial | CTA e timeline agora usam perfil consolidado para diferenciar previa sem salvar, falta de renda, falta de reserva, capacidade pronta e lance sugerido. |
 | Calculadoras com origem dos campos | Concluido parcial | Campos preenchidos pelo perfil mostram origem visual, reduzindo duvida sobre valores reaproveitados entre calculadoras. |
 | Calculadoras com iteracao comparavel | Concluido parcial | Previa atual mostra diferencas numericas contra o ultimo salvo da mesma calculadora, facilitando ajustes antes de salvar. |
+| Calculadoras com impacto de jornada | Concluido parcial | Resultado agora mostra painel de impacto com score, risco, origem preview/saved, memoria e proximo passo para cada calculadora. |
 | Trilha Assistida contextual | Concluido parcial | Entrada reconhece Produtos/Calculadoras e saidas usam `from=journey` com `sourceFrom`. |
 | Proposta/PDF com lousa seletiva | Concluido | Etapa 9 usa `proposal-builder-board`, presets consultivo/tecnico, prontidao de exportacao, selecao por grupos, `builder` em `ProposalSummary` e `tools/validate-proposal-builder.mjs`. |
 | Versionamento de propostas | Concluido | Etapa 9 usa `data-proposal-version-panel`, `BFProposalVersions`, historico por proposta, comparacao entre versoes e travamento da versao antes do handoff. |
@@ -122,6 +123,7 @@ Cada etapa deve responder quatro perguntas:
 | 43 | Proximas fases produtivas | Planejado | Roadmap executavel criado para migrations, adapter PostgreSQL piloto, autenticacao produtiva, migracao assistida, observabilidade, corte controlado e UX com dados vivos. | `docs/PROXIMAS_FASES_BANK_FRATERN.md`, `tools/validate-next-phases-plan.mjs`. |
 | 44 | UX com dados vivos | Concluido parcial | Dashboard Cliente mostra origem ativa e contadores vivos; Handoff Consultivo exibe uma fila consultiva com dados vivos, mescla leads SQLite com locais e sincroniza atualizacoes de atendimento. | `data-client-live-data-panel`, `data-handoff-live-data-panel`, `tools/validate-live-data-ux.mjs`. |
 | 45 | Schema e migrations versionadas | Concluido parcial | Criada baseline `001_bancus_fraternis_local_db.sql`, rollback, `schema-manifest.json` e validador que compara manifest, SQL e schema SQLite real. | `js/backend/migrations/*`, `tools/validate-database-migrations.mjs`. |
+| 46 | Impacto de jornada nas calculadoras | Concluido parcial | As 19 calculadoras mostram score, risco/coerencia, origem preview/saved, memoria e proximo passo em um painel unico de resultado. | `data-calculator-impact-panel`, `BFCalculatorJourney.impactPanel`, `tools/validate-calculator-impact-panel.mjs`. |
 
 ## Proximos Passos Priorizados
 

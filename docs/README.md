@@ -100,6 +100,7 @@ node tools/validate-online-journey-smoke.mjs
 node tools/validate-github-pages-deploy.mjs
 node tools/validate-calculadoras.mjs
 node tools/validate-calculator-journey.mjs
+node tools/validate-calculator-impact-panel.mjs
 node tools/validate-route-aliases.mjs
 node tools/validate-simulator-groups.mjs
 node tools/validate-simulator-performance.mjs

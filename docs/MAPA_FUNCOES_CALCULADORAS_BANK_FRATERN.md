@@ -21,7 +21,9 @@ Correcoes deste ciclo:
 - Alertas nao bloqueantes de coerencia expõem `data-calculator-coherence-alert` e `data-calculator-coherence="ok|warn|blocked"`.
 - A ponte de decisao expõe `data-calculator-next-action` e `data-calculator-next-action-card`.
 - A continuidade por perfil expoe `data-calculator-profile-continuity` e `data-calculators-profile-continuity`, separando previa sem salvar, falta de renda, falta de reserva, capacidade pronta e lance sugerido.
+- O resultado expoe `data-calculator-impact-panel`, `data-calculator-impact-score`, `data-calculator-impact-risk`, `data-calculator-impact-next-step` e `data-calculator-impact-source` para resumir impacto, risco, origem e proxima acao.
 - O validador `tools/validate-calculator-journey.mjs` executa as 19 calculadoras e garante que previa nao grava `localStorage`.
+- O validador `tools/validate-calculator-impact-panel.mjs` garante que as 19 calculadoras mantem o painel de impacto e o export `BFCalculatorJourney.impactPanel`.
 
 ## Contratos funcionais
 
@@ -69,11 +71,12 @@ Correcoes deste ciclo:
 5. Campos invalidos mostram erro local e bloqueiam o salvamento.
 6. Campos coerentes geram `ok`; cenarios arriscados geram alerta nao bloqueante.
 7. CTA principal muda conforme risco: revisar custos, montar reserva, calcular capacidade, ajustar lance, comparar ou simular.
-8. Ponte de continuidade consulta o perfil consolidado para decidir entre salvar a previa, completar renda, checar reserva, calcular capacidade ou simular com lance.
-9. Quando existe historico da mesma calculadora, a previa mostra variacao contra o ultimo salvo.
-10. Usuario clica `Calcular e salvar cenario`.
-11. Resultado passa para `saved`, grava `historyId`, atualiza perfil local e registra evento de decisao.
-12. Ponte contextual preserva `calculatorSlug`, `historyId`, `preset` e origem para Simulador, Trilha, Comparador e Dashboard Cliente.
+8. Painel de impacto resume metrica primaria, score do perfil, risco/coerencia, origem `preview|saved`, memoria e proximo passo.
+9. Ponte de continuidade consulta o perfil consolidado para decidir entre salvar a previa, completar renda, checar reserva, calcular capacidade ou simular com lance.
+10. Quando existe historico da mesma calculadora, a previa mostra variacao contra o ultimo salvo.
+11. Usuario clica `Calcular e salvar cenario`.
+12. Resultado passa para `saved`, grava `historyId`, atualiza perfil local e registra evento de decisao.
+13. Ponte contextual preserva `calculatorSlug`, `historyId`, `preset` e origem para Simulador, Trilha, Comparador e Dashboard Cliente.
 
 ## Debitos tratados neste ciclo
 
@@ -84,6 +87,7 @@ Correcoes deste ciclo:
 - Adicionados alertas de coerencia para cenarios de renda, reserva, credito, lance e compra.
 - Adicionada proxima acao dinamica para destacar o CTA correto por risco.
 - Adicionada continuidade por perfil para ajustar CTA e timeline conforme perfil real salvo.
+- Adicionado painel de impacto para transformar o resultado em leitura de jornada com score, risco, origem e proximo passo.
 
 ## Proximas evolucoes recomendadas
 
@@ -93,4 +97,5 @@ Correcoes deste ciclo:
 | P0 | Criar estado visual de erro por campo e validacao de intervalo | Evitar cenarios irreais antes do submit |
 | Concluido parcial | Mostrar origem do dado reaproveitado no campo preenchido pelo perfil | Campos preenchidos pelo perfil exibem selo de origem e marcador publico |
 | Concluido parcial | Criar comparacao lateral entre ultimo salvo e previa atual | Resultado mostra diferencas numericas entre previa e ultimo salvo da mesma calculadora |
+| Concluido parcial | Mostrar impacto do calculo na jornada | Resultado mostra score, risco, origem preview/saved e proximo passo por `data-calculator-impact-panel` |
 | P2 | Versionar schemas de input/output por calculadora | Preparar backend/API futura sem quebrar dados locais |

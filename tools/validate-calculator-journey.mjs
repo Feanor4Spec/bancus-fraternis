@@ -126,6 +126,14 @@ assert(pageJs.includes('fieldSource: profileSourceForField'), 'BFCalculatorJourn
 assert(pageJs.includes('buildSavedComparison'), 'Pagina de calculadora nao compara previa atual com ultimo salvo.');
 assert(pageJs.includes('data-calculator-saved-comparison'), 'Pagina de calculadora nao expoe comparacao com ultimo salvo.');
 assert(pageJs.includes('savedComparison: buildSavedComparison'), 'BFCalculatorJourney nao expoe savedComparison para QA.');
+assert(pageJs.includes('buildCalculatorImpactPanel'), 'Pagina de calculadora nao calcula painel de impacto da jornada.');
+assert(pageJs.includes('renderCalculatorImpactPanel'), 'Pagina de calculadora nao renderiza painel de impacto da jornada.');
+assert(pageJs.includes('data-calculator-impact-panel'), 'Pagina de calculadora nao expoe painel de impacto da jornada.');
+assert(pageJs.includes('data-calculator-impact-score'), 'Pagina de calculadora nao expoe score no painel de impacto.');
+assert(pageJs.includes('data-calculator-impact-risk'), 'Pagina de calculadora nao expoe risco no painel de impacto.');
+assert(pageJs.includes('data-calculator-impact-next-step'), 'Pagina de calculadora nao expoe proximo passo no painel de impacto.');
+assert(pageJs.includes('data-calculator-impact-source'), 'Pagina de calculadora nao expoe origem preview/saved no painel de impacto.');
+assert(pageJs.includes('impactPanel: buildCalculatorImpactPanel'), 'BFCalculatorJourney nao expoe impactPanel para QA.');
 assert(pageJs.includes('validateForm(form, meta)'), 'Pagina de calculadora nao valida formulario antes de calcular.');
 assert(pageJs.includes('coherenceAlerts(meta.slug, values)'), 'Pagina de calculadora nao calcula alertas de coerencia.');
 assert(pageJs.includes('document.body.dataset.calculatorCoherence'), 'Pagina de calculadora nao expoe status de coerencia no body.');
@@ -147,8 +155,10 @@ assert(platformCss.includes('.bf-calculator-field[data-calculator-field-state="i
 assert(platformCss.includes('.bf-calculator-coherence-alert'), 'CSS nao estiliza alerta de coerencia da calculadora.');
 assert(platformCss.includes('.bf-calculator-field-source'), 'CSS nao estiliza origem de campo reaproveitado do perfil.');
 assert(platformCss.includes('.bf-calculator-saved-comparison'), 'CSS nao estiliza comparacao com ultimo salvo.');
+assert(platformCss.includes('.bf-calculator-impact-panel'), 'CSS nao estiliza painel de impacto da calculadora.');
 assert(docsMap.includes('19 calculadoras'), 'Mapa completo nao registra o catalogo de 19 calculadoras.');
 assert(functionMap.includes('Mapa de funcoes das calculadoras'), 'Mapa funcional das calculadoras nao foi criado.');
+assert(functionMap.includes('data-calculator-impact-panel'), 'Mapa funcional das calculadoras nao registra painel de impacto.');
 
 ['custos-fixos', 'reserva-emergencia', 'capacidade-credito', 'lance-consorcio', 'compra-vista-parcelado'].forEach((slug) => {
   assert(pageJs.includes(`'${slug}'`), `Jornada critica sem orientacao de campo para ${slug}.`);
@@ -252,6 +262,7 @@ const report = {
     markers: ['data-calculator-form-alert', 'data-calculator-coherence-alert', 'data-calculator-field', 'data-calculator-field-error'],
     sourceMarkers: ['data-calculator-field-origin', 'data-calculator-field-source'],
     savedComparisonMarkers: ['data-calculator-saved-comparison', 'data-calculator-saved-comparison-item'],
+    impactMarkers: ['data-calculator-impact-panel', 'data-calculator-impact-score', 'data-calculator-impact-risk', 'data-calculator-impact-next-step', 'data-calculator-impact-source'],
     nextActionMarkers: ['data-calculator-next-action', 'data-calculator-next-action-card'],
     continuityMarkers: ['data-calculator-profile-continuity', 'data-calculators-profile-continuity'],
     continuityStates: ['profile-preview-not-saved', 'profile-missing-renda', 'profile-missing-reserva', 'profile-ready-capacity', 'profile-ready-bid'],

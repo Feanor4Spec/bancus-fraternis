@@ -1,0 +1,157 @@
+{
+  "ok": true,
+  "calculators": 19,
+  "markers": [
+    "data-calculator-impact-panel",
+    "data-calculator-impact-score",
+    "data-calculator-impact-risk",
+    "data-calculator-impact-next-step",
+    "data-calculator-impact-source"
+  ],
+  "riskyImpact": {
+    "risk": "coherence-warning",
+    "tone": "warning",
+    "nextAction": "profile-preview-not-saved"
+  },
+  "savedImpact": {
+    "source": "saved",
+    "score": 100,
+    "nextAction": "profile-ready-capacity"
+  },
+  "items": [
+    {
+      "slug": "juros-compostos",
+      "score": 0,
+      "risk": "profile-incomplete",
+      "nextAction": "profile-preview-not-saved",
+      "source": "preview"
+    },
+    {
+      "slug": "juros-simples",
+      "score": 0,
+      "risk": "profile-incomplete",
+      "nextAction": "profile-missing-renda",
+      "source": "preview"
+    },
+    {
+      "slug": "primeiro-milhao",
+      "score": 0,
+      "risk": "profile-incomplete",
+      "nextAction": "profile-preview-not-saved",
+      "source": "preview"
+    },
+    {
+      "slug": "aposentadoria",
+      "score": 0,
+      "risk": "recommendation-warning",
+      "nextAction": "profile-preview-not-saved",
+      "source": "preview"
+    },
+    {
+      "slug": "renda",
+      "score": 0,
+      "risk": "profile-incomplete",
+      "nextAction": "profile-preview-not-saved",
+      "source": "preview"
+    },
+    {
+      "slug": "reserva-emergencia",
+      "score": 0,
+      "risk": "recommendation-warning",
+      "nextAction": "profile-preview-not-saved",
+      "source": "preview"
+    },
+    {
+      "slug": "poupanca-selic",
+      "score": 0,
+      "risk": "profile-incomplete",
+      "nextAction": "profile-preview-not-saved",
+      "source": "preview"
+    },
+    {
+      "slug": "renda-fixa",
+      "score": 0,
+      "risk": "profile-incomplete",
+      "nextAction": "profile-preview-not-saved",
+      "source": "preview"
+    },
+    {
+      "slug": "compra-vista-parcelado",
+      "score": 0,
+      "risk": "profile-incomplete",
+      "nextAction": "profile-preview-not-saved",
+      "source": "preview"
+    },
+    {
+      "slug": "pix-parcelado",
+      "score": 0,
+      "risk": "recommendation-warning",
+      "nextAction": "profile-preview-not-saved",
+      "source": "preview"
+    },
+    {
+      "slug": "alugar-financiar",
+      "score": 0,
+      "risk": "profile-incomplete",
+      "nextAction": "profile-preview-not-saved",
+      "source": "preview"
+    },
+    {
+      "slug": "cartoes",
+      "score": 0,
+      "risk": "profile-incomplete",
+      "nextAction": "profile-preview-not-saved",
+      "source": "preview"
+    },
+    {
+      "slug": "realidade-brasileira",
+      "score": 0,
+      "risk": "profile-incomplete",
+      "nextAction": "profile-preview-not-saved",
+      "source": "preview"
+    },
+    {
+      "slug": "rentabilidade",
+      "score": 0,
+      "risk": "profile-incomplete",
+      "nextAction": "profile-preview-not-saved",
+      "source": "preview"
+    },
+    {
+      "slug": "acoes",
+      "score": 0,
+      "risk": "profile-incomplete",
+      "nextAction": "profile-missing-renda",
+      "source": "preview"
+    },
+    {
+      "slug": "cdb",
+      "score": 0,
+      "risk": "profile-incomplete",
+      "nextAction": "profile-preview-not-saved",
+      "source": "preview"
+    },
+    {
+      "slug": "capacidade-credito",
+      "score": 0,
+      "risk": "profile-incomplete",
+      "nextAction": "profile-preview-not-saved",
+      "source": "preview"
+    },
+    {
+      "slug": "lance-consorcio",
+      "score": 0,
+      "risk": "recommendation-warning",
+      "nextAction": "profile-preview-not-saved",
+      "source": "preview"
+    },
+    {
+      "slug": "custos-fixos",
+      "score": 0,
+      "risk": "recommendation-warning",
+      "nextAction": "profile-preview-not-saved",
+      "source": "preview"
+    }
+  ],
+  "failures": []
+}

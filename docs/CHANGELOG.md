@@ -4,6 +4,27 @@
 
 ---
 
+## [v8.104.0] - 2026-05-22
+
+### Painel de impacto das calculadoras
+
+#### Adicionado
+- As 19 calculadoras passaram a renderizar um painel de impacto no resultado com score do perfil, risco/coerencia, origem `preview|saved`, memoria e proximo passo.
+- `BFCalculatorJourney` agora expoe `impactPanel` para QA e futuras integracoes.
+- Criado `tools/validate-calculator-impact-panel.mjs` com relatorio em `docs/test-reports/calculator-impact-panel-report.json`.
+
+#### Modificado
+- Contratos publicos, mapa completo, mapa funcional das calculadoras, plano de acao, README, protocolo de testes e validadores passaram a proteger os marcadores `data-calculator-impact-*`.
+
+#### Validacao
+- `node tools/validate-calculator-impact-panel.mjs`
+- `node tools/validate-calculator-journey.mjs`
+- `node tools/validate-calculadoras.mjs`
+- `node tools/validate-public-contracts.mjs`
+- `node tools/validate-design-system.mjs`
+
+---
+
 ## [v8.103.0] - 2026-05-22
 
 ### Schema e migrations versionadas

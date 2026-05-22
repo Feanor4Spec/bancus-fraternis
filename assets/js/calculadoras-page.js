@@ -1155,6 +1155,118 @@
     `;
   }
 
+  function buildCalculatorImpactPanel(result, mode = 'preview') {
+    if (!result) return null;
+    const recommendation = result.recommendation || {
+      title: 'Resultado em leitura',
+      message: 'Calcule o cenario para gerar impacto, risco e continuidade.',
+      tone: 'info',
+      next: 'Revisar campos.'
+    };
+    const continuity = buildCalculatorProfileContinuity(result);
+    const nextAction = buildCalculatorNextAction(result, recommendation, continuity);
+    const warnings = Array.isArray(result.coherenceWarnings) ? result.coherenceWarnings : [];
+    const comparison = buildSavedComparison(result);
+    const primary = Array.isArray(result.metrics) && result.metrics.length ? result.metrics[0] : { label: 'Resultado', value: 'Aguardando' };
+    const profileKeys = Object.keys(result.profilePatch || {});
+    const score = Math.max(0, Math.min(100, Number(continuity.score !== undefined ? continuity.score : result.readinessScore || 0)));
+    const saved = mode === 'saved' || Boolean(result.historyId);
+    let riskKind = 'decision-ready';
+    let riskTitle = 'Pronto para continuidade';
+    let riskMessage = 'Nao ha alerta critico neste cenario. A decisao pode seguir para a proxima etapa.';
+    let tone = 'stable';
+
+    if (warnings.length > 0) {
+      riskKind = 'coherence-warning';
+      riskTitle = `${warnings.length} alerta${warnings.length === 1 ? '' : 's'} de coerencia`;
+      riskMessage = warnings[0];
+      tone = 'warning';
+    } else if (recommendation.tone === 'warn') {
+      riskKind = 'recommendation-warning';
+      riskTitle = 'Revisao recomendada';
+      riskMessage = recommendation.message;
+      tone = 'warning';
+    } else if (score < 50) {
+      riskKind = 'profile-incomplete';
+      riskTitle = 'Perfil ainda incompleto';
+      riskMessage = continuity.message || 'Complete renda, custos e reserva para reduzir recomendacoes genericas.';
+      tone = 'info';
+    } else if (comparison && comparison.status === 'available') {
+      riskKind = 'iteration-available';
+      riskTitle = 'Iteracao comparavel';
+      riskMessage = 'Compare a variacao contra o ultimo salvo antes de decidir.';
+      tone = 'stable';
+    }
+
+    return {
+      kind: saved ? 'saved-impact' : 'preview-impact',
+      mode: saved ? 'saved' : 'preview',
+      sourceLabel: saved ? 'Cenario salvo' : 'Previa sem salvar',
+      score,
+      tone,
+      riskKind,
+      riskTitle,
+      riskMessage,
+      primary,
+      continuity,
+      nextAction,
+      comparison,
+      profileKeys
+    };
+  }
+
+  function renderCalculatorImpactPanel(result, mode) {
+    const impact = buildCalculatorImpactPanel(result, mode);
+    if (!impact) return '';
+    const profileDetail = impact.profileKeys.length
+      ? `${impact.profileKeys.slice(0, 3).join(', ')}${impact.profileKeys.length > 3 ? '...' : ''}`
+      : 'sem novos campos de perfil';
+    const comparisonDetail = impact.comparison && impact.comparison.status === 'available'
+      ? impact.comparison.items.length === 1
+        ? '1 variacao numerica'
+        : `${impact.comparison.items.length} variacoes numericas`
+      : 'primeiro cenario para comparacao';
+    const cardTone = impact.tone === 'warning' ? 'bf-v8-decision-card--warning' : impact.tone === 'stable' ? 'bf-v8-decision-card--stable' : 'bf-v8-decision-card--info';
+
+    return `
+      <section class="bf-calculator-impact-panel ${cardTone}" data-calculator-impact-panel="${escapeHtml(impact.kind)}" data-calculator-impact-source="${escapeHtml(impact.mode)}" data-calculator-impact-risk="${escapeHtml(impact.riskKind)}" data-calculator-impact-next-step="${escapeHtml(impact.nextAction.kind)}">
+        <div class="bf-calculator-impact-panel__head">
+          <span class="bf-badge bf-badge--gold">Impacto na jornada</span>
+          <div>
+            <h3>O que este calculo muda agora</h3>
+            <p>${escapeHtml(impact.primary.label)}: <strong>${escapeHtml(impact.primary.value)}</strong>. Use esta leitura para decidir se ajusta campos, salva o cenario ou avanca para trilha, comparador ou simulador.</p>
+          </div>
+        </div>
+        <div class="bf-calculator-impact-grid">
+          <article class="bf-v8-decision-card bf-v8-decision-card--info" data-calculator-impact-score="${escapeHtml(impact.score)}">
+            <span>Prontidao</span>
+            <strong>${impact.score}/100</strong>
+            <p>${escapeHtml(impact.continuity.title)}</p>
+            <small>${escapeHtml(impact.sourceLabel)}</small>
+          </article>
+          <article class="bf-v8-decision-card ${cardTone}">
+            <span>Risco</span>
+            <strong>${escapeHtml(impact.riskTitle)}</strong>
+            <p>${escapeHtml(impact.riskMessage)}</p>
+            <small>${escapeHtml(impact.riskKind)}</small>
+          </article>
+          <article class="bf-v8-decision-card bf-v8-decision-card--stable">
+            <span>Proximo passo</span>
+            <strong>${escapeHtml(impact.nextAction.primaryLabel)}</strong>
+            <p>${escapeHtml(impact.nextAction.message)}</p>
+            <small>${escapeHtml(impact.nextAction.title)}</small>
+          </article>
+          <article class="bf-v8-decision-card bf-v8-decision-card--info">
+            <span>Memoria</span>
+            <strong>${escapeHtml(comparisonDetail)}</strong>
+            <p>Perfil atualizado: ${escapeHtml(profileDetail)}.</p>
+            <small>${Array.isArray(result.memory) ? result.memory.length : 0} linha${Array.isArray(result.memory) && result.memory.length === 1 ? '' : 's'} de formula</small>
+          </article>
+        </div>
+      </section>
+    `;
+  }
+
   function renderResult(result, options = {}) {
     const target = qs('[data-calculator-result]');
     if (!target) return;
@@ -1173,6 +1285,7 @@
         ${result.metrics.map(renderMetric).join('')}
       </div>
       ${renderSavedComparison(result)}
+      ${renderCalculatorImpactPanel(result, mode)}
       <div class="bf-calculator-explain">
         <article class="bf-platform-alert bf-platform-alert--${alertTone(result.recommendation.tone)}">
           <strong>${escapeHtml(result.recommendation.title)}</strong><br>
@@ -1305,6 +1418,7 @@
     profileContinuity: buildCalculatorProfileContinuity,
     fieldSource: profileSourceForField,
     savedComparison: buildSavedComparison,
+    impactPanel: buildCalculatorImpactPanel,
     nextAction: buildCalculatorNextAction
   };
 

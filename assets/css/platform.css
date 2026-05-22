@@ -2719,6 +2719,40 @@
   grid-column: 1 / -1;
 }
 
+.bf-calculator-impact-panel {
+  display: grid;
+  gap: 14px;
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid var(--bf-line);
+  border-radius: 16px;
+  background: var(--bf-white);
+}
+
+.bf-calculator-impact-panel__head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.bf-calculator-impact-panel__head h3 {
+  margin: 0 0 6px;
+  color: var(--bf-navy-900);
+}
+
+.bf-calculator-impact-panel__head p {
+  margin: 0;
+  color: var(--bf-muted);
+  line-height: 1.5;
+}
+
+.bf-calculator-impact-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
 .bf-platform-metric.is-warn {
   border-color: var(--bf-warning-bd);
   background: var(--bf-warning-bg);
@@ -4033,6 +4067,9 @@
   .bf-calculator-profile__metrics,
   .bf-calculator-history,
   .bf-calculator-saved-comparison,
+  .bf-calculator-impact-panel,
+  .bf-calculator-impact-panel__head,
+  .bf-calculator-impact-grid,
   .bf-calculator-comparison-grid,
   .bf-calculator-explain,
   .bf-auth-shell,

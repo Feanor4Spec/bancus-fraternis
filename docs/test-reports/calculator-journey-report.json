@@ -21,6 +21,13 @@
       "data-calculator-saved-comparison",
       "data-calculator-saved-comparison-item"
     ],
+    "impactMarkers": [
+      "data-calculator-impact-panel",
+      "data-calculator-impact-score",
+      "data-calculator-impact-risk",
+      "data-calculator-impact-next-step",
+      "data-calculator-impact-source"
+    ],
     "nextActionMarkers": [
       "data-calculator-next-action",
       "data-calculator-next-action-card"
@@ -44,7 +51,7 @@
       "compra-vista-parcelado"
     ]
   },
-  "generatedAt": "2026-05-14T02:26:05.090Z",
+  "generatedAt": "2026-05-22T21:50:52.898Z",
   "previewReport": [
     {
       "slug": "juros-compostos",

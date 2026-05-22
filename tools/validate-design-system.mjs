@@ -271,6 +271,7 @@ const requiredFiles = [
   'docs/PROXIMAS_FASES_BANK_FRATERN.md',
   'tools/validate-calculadoras.mjs',
   'tools/validate-calculator-journey.mjs',
+  'tools/validate-calculator-impact-panel.mjs',
   'tools/validate-simulator-performance.mjs',
   'tools/validate-simulator-refactor.mjs',
   'tools/validate-simulator-shelf.mjs',
@@ -408,6 +409,9 @@ if (!calculatorsPageJs.includes('data-calculator-field-source')) fail('calculado
 if (!platformCss.includes('.bf-calculator-field-source')) fail('platform.css sem layout do selo de origem dos campos.');
 if (!calculatorsPageJs.includes('data-calculator-saved-comparison')) fail('calculadoras-page.js sem comparacao com ultimo salvo.');
 if (!platformCss.includes('.bf-calculator-saved-comparison')) fail('platform.css sem layout da comparacao com ultimo salvo.');
+if (!calculatorsPageJs.includes('data-calculator-impact-panel')) fail('calculadoras-page.js sem painel de impacto da jornada.');
+if (!calculatorsPageJs.includes('impactPanel: buildCalculatorImpactPanel')) fail('BFCalculatorJourney sem impactPanel publico.');
+if (!platformCss.includes('.bf-calculator-impact-panel')) fail('platform.css sem layout do painel de impacto da calculadora.');
 
 const simulatorHtml = await fs.readFile(path.join(root, 'pages/simulador.html'), 'utf8');
 const simulatorAppJs = await fs.readFile(path.join(root, 'js/app.js'), 'utf8');
