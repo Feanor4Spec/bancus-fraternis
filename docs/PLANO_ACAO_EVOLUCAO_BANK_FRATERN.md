@@ -1,6 +1,6 @@
 # Plano de Acao de Evolucao Bancus Fraternis
 
-Atualizado em 2026-05-22.
+Atualizado em 2026-06-12.
 
 Prioridade definida: produto e jornada.
 
@@ -56,6 +56,7 @@ Cada etapa deve responder quatro perguntas:
 | Calculadoras com origem dos campos | Concluido parcial | Campos preenchidos pelo perfil mostram origem visual, reduzindo duvida sobre valores reaproveitados entre calculadoras. |
 | Calculadoras com iteracao comparavel | Concluido parcial | Previa atual mostra diferencas numericas contra o ultimo salvo da mesma calculadora, facilitando ajustes antes de salvar. |
 | Calculadoras com impacto de jornada | Concluido parcial | Resultado agora mostra painel de impacto com score, risco, origem preview/saved, memoria e proximo passo para cada calculadora. |
+| Impacto das calculadoras no cliente e handoff | Concluido parcial | Dashboard Cliente prioriza impactos das calculadoras no cockpit, lista historico acionavel e cria handoff consultivo com origem `calculator`. |
 | Trilha Assistida contextual | Concluido parcial | Entrada reconhece Produtos/Calculadoras e saidas usam `from=journey` com `sourceFrom`. |
 | Proposta/PDF com lousa seletiva | Concluido | Etapa 9 usa `proposal-builder-board`, presets consultivo/tecnico, prontidao de exportacao, selecao por grupos, `builder` em `ProposalSummary` e `tools/validate-proposal-builder.mjs`. |
 | Versionamento de propostas | Concluido | Etapa 9 usa `data-proposal-version-panel`, `BFProposalVersions`, historico por proposta, comparacao entre versoes e travamento da versao antes do handoff. |
@@ -124,6 +125,7 @@ Cada etapa deve responder quatro perguntas:
 | 44 | UX com dados vivos | Concluido parcial | Dashboard Cliente mostra origem ativa e contadores vivos; Handoff Consultivo exibe uma fila consultiva com dados vivos, mescla leads SQLite com locais e sincroniza atualizacoes de atendimento. | `data-client-live-data-panel`, `data-handoff-live-data-panel`, `tools/validate-live-data-ux.mjs`. |
 | 45 | Schema e migrations versionadas | Concluido parcial | Criada baseline `001_bancus_fraternis_local_db.sql`, rollback, `schema-manifest.json` e validador que compara manifest, SQL e schema SQLite real. | `js/backend/migrations/*`, `tools/validate-database-migrations.mjs`. |
 | 46 | Impacto de jornada nas calculadoras | Concluido parcial | As 19 calculadoras mostram score, risco/coerencia, origem preview/saved, memoria e proximo passo em um painel unico de resultado. | `data-calculator-impact-panel`, `BFCalculatorJourney.impactPanel`, `tools/validate-calculator-impact-panel.mjs`. |
+| 47 | Impacto acionavel no cliente e handoff | Concluido parcial | Dashboard Cliente transforma calculos salvos em cards de impacto, prioriza revisao/simulacao e cria handoff consultivo por historico de calculadora. | `data-client-calculator-impact`, `data-client-create-calculator-handoff`, `BFHandoffConsultivoService.createFromCalculatorImpact`. |
 
 ## Proximos Passos Priorizados
 
@@ -141,6 +143,7 @@ Cada etapa deve responder quatro perguntas:
 | Concluido parcial | Mensagem de continuidade por perfil | Usa dados do perfil consolidado para ajustar texto do CTA e timeline: cliente sem renda, sem reserva, com capacidade pronta ou com lance sugerido. | `assets/js/calculadoras-page.js`, `assets/js/services/decision-context.service.js`, `tools/validate-calculator-journey.mjs`. | Ponte de calculadora conversa com o estado real do perfil, nao apenas com o slug atual. |
 | Concluido parcial | Origem dos campos reaproveitados | Mostrar quando renda, reserva, capacidade, patrimonio, credito ou lance vieram do perfil consolidado. | `assets/js/calculadoras-page.js`, `assets/css/platform.css`, `tools/validate-calculator-journey.mjs`. | Usuario entende quais valores foram herdados e pode ajustar manualmente sem perder contexto. |
 | Concluido parcial | Comparacao entre previa e ultimo salvo | Mostrar variacao das metricas principais da calculadora atual contra o ultimo historico salvo da mesma calculadora. | `assets/js/calculadoras-page.js`, `assets/css/platform.css`, `tools/validate-calculator-journey.mjs`. | Usuario enxerga se a alteracao mudou parcela, reserva, patrimonio ou comprometimento antes de salvar novo cenario. |
+| Concluido parcial | Impacto das calculadoras na continuidade | Levar score, risco e proximo passo das calculadoras para o Dashboard Cliente e permitir que o cliente abra um handoff consultivo dessa origem. | `assets/js/client-dashboard.js`, `assets/js/services/handoff-consultivo.service.js`, `assets/js/handoff-consultivo.js`, `pages/handoff-consultivo.html`. | Cliente entende qual calculo merece revisao; consultor recebe lead com origem, score, risco, checklist e filtro `calculator`. |
 | Concluido parcial | Painel admin de eventos do banco local | Exposta leitura de `/api/events` no Dashboard Admin quando houver sessao de API, mantendo fallback no estatico. | `pages/dashboard-admin.html`, `assets/js/admin-users.js`, `assets/js/services/backend-api.service.js`. | Admin ve ultimos eventos server-side sem expor senha, token, CPF ou telefone. |
 | Concluido parcial | Diagnostico do backend SQL local | Expor status tecnico do SQLite ativo e detectar se PostgreSQL, MySQL ou SQL Server estao instalados/escutando antes de trocar provider. | `server.js`, `js/backend/db.js`, `assets/js/admin-users.js`, `tools/inspect-local-sql-environment.mjs`. | Admin ve provider, tabelas e integridade; relatorio local mostra portas e ferramentas SQL disponiveis. |
 | Concluido parcial | Migracao guiada localStorage -> SQLite | Criar acao controlada para importar usuarios/eventos/snapshots locais para o banco local, com previsualizacao e relatorio. | `server.js`, `assets/js/admin-users.js`, `js/backend/db.js`, `tools/validate-local-database.mjs`. | Admin consegue consolidar dados locais no SQLite sem duplicar registros e atualizando snapshots pelo mesmo id. |

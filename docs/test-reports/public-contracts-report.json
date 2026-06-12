@@ -2,7 +2,7 @@
   "ok": true,
   "contracts": {
     "localStorageKeys": 18,
-    "dataMarkers": 106,
+    "dataMarkers": 111,
     "globals": 20,
     "deepLinks": 10,
     "validators": 27,

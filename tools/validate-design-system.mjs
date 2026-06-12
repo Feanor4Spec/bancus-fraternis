@@ -214,6 +214,7 @@ for (const pageName of files) {
   if (pageName === 'handoff-consultivo.html' && !html.includes('data-handoff-recovery-signals')) fail('handoff-consultivo.html sem sinais de retomada para handoff.');
   if (pageName === 'handoff-consultivo.html' && !html.includes('journey-recovery.service.js')) fail('handoff-consultivo.html sem servico de retomada da jornada.');
   if (pageName === 'handoff-consultivo.html' && !html.includes('data-handoff-live-data-panel')) fail('handoff-consultivo.html sem painel de dados vivos.');
+  if (pageName === 'handoff-consultivo.html' && !html.includes('value="calculator"')) fail('handoff-consultivo.html sem filtro de origem calculadora.');
   if (pageName === 'dashboard-admin.html' && !html.includes('data-admin-operational-strip')) fail('dashboard-admin.html sem resumo operacional.');
   if (pageName === 'dashboard-admin.html' && !html.includes('data-admin-journey-funnel')) fail('dashboard-admin.html sem funil administrativo de microconversoes.');
   if (pageName === 'dashboard-admin.html' && !html.includes('data-admin-operational-alerts')) fail('dashboard-admin.html sem alertas operacionais de SLA e abandono.');
@@ -387,10 +388,17 @@ if (!clientDashboardJs.includes('listSimulations(30)')) fail('client-dashboard.j
 if (!clientDashboardJs.includes('listProposals(30)')) fail('client-dashboard.js sem leitura de propostas materializadas.');
 if (!clientDashboardJs.includes('renderLiveDataPanel')) fail('client-dashboard.js sem painel de UX com dados vivos.');
 if (!clientDashboardJs.includes('clientLiveDataReady')) fail('client-dashboard.js sem readiness de dados vivos.');
+if (!clientDashboardJs.includes('calculatorImpactItems')) fail('client-dashboard.js sem classificacao de impacto das calculadoras.');
+if (!clientDashboardJs.includes('data-client-calculator-impact')) fail('client-dashboard.js sem marcador de impacto de calculadora.');
+if (!clientDashboardJs.includes('data-client-create-calculator-handoff')) fail('client-dashboard.js sem acao de criar handoff por calculadora.');
 if (!handoffJs.includes('loadBackendLeads')) fail('handoff-consultivo.js sem leitura de leads vivos.');
 if (!handoffJs.includes('mergeLiveHandoffs')) fail('handoff-consultivo.js sem merge local + backend.');
 if (!handoffJs.includes('syncBackendLead')) fail('handoff-consultivo.js sem sincronizacao de lead vivo.');
 if (!handoffJs.includes('data-handoff-live-refresh')) fail('handoff-consultivo.js sem atualizar fila viva.');
+if (!handoffServiceJs.includes('createFromCalculatorImpact')) fail('handoff-consultivo.service.js sem criacao de handoff por calculadora.');
+if (!handoffServiceJs.includes('findByCalculatorImpact')) fail('handoff-consultivo.service.js sem busca por impacto de calculadora.');
+if (!platformCss.includes('.bf-client-calculator-impact')) fail('platform.css sem layout de impacto das calculadoras no Dashboard Cliente.');
+if (!platformCss.includes('.bf-handoff-source--calculator')) fail('platform.css sem badge de origem calculadora no handoff.');
 if (!backendApiJs.includes('saveLead')) fail('BFBackendApi sem escrita direta de lead.');
 if (!backendApiJs.includes('updateLead')) fail('BFBackendApi sem atualizacao direta de lead.');
 if (!backendApiJs.includes('saveSimulation')) fail('BFBackendApi sem escrita direta de simulacao.');

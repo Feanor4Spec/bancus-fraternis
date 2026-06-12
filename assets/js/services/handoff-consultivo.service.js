@@ -28,6 +28,7 @@
   const sourceLabels = {
     journey: 'Trilha assistida',
     signal: 'Sinal de retomada',
+    calculator: 'Calculadora',
     proposal: 'Proposta revisada',
     imported: 'Pacote importado',
     manual: 'Origem local'
@@ -206,6 +207,14 @@
     }) || null;
   }
 
+  function findByCalculatorImpact(historyId, ownerEmail) {
+    return list().find((item) => {
+      const sameCalculator = item.sourceCalculatorHistoryId === historyId;
+      const sameOwner = !ownerEmail || item.ownerEmail === ownerEmail;
+      return sameCalculator && sameOwner;
+    }) || null;
+  }
+
   function findByProposal(proposalId, ownerEmail) {
     return list().find((item) => {
       const sameProposal = item.sourceProposalId === proposalId;
@@ -218,6 +227,7 @@
     if (!item) return 'manual';
     if (item.sourceType && sourceLabels[item.sourceType]) return item.sourceType;
     if (item.sourceProposalId) return 'proposal';
+    if (item.sourceCalculatorHistoryId) return 'calculator';
     if (item.sourceSignalType === 'imported-recovery-item') return 'imported';
     if (item.sourceSignalId) return 'signal';
     if (item.sourceJourneyId) return 'journey';
@@ -250,6 +260,17 @@
     ];
   }
 
+  function checklistFromCalculatorImpact(impact) {
+    const calculator = impact && impact.calculatorName ? impact.calculatorName : 'calculadora';
+    const risk = impact && impact.riskLabel ? impact.riskLabel : 'impacto da jornada';
+    return [
+      { id: 'revisar-calculo', label: `Revisar resultado da ${calculator}`, done: false, required: true },
+      { id: 'validar-risco', label: `Validar risco indicado: ${risk}`, done: false, required: true },
+      { id: 'confirmar-perfil', label: 'Confirmar renda, custos, reserva e capacidade antes de simular', done: false, required: true },
+      { id: 'definir-proximo-passo', label: 'Definir se cliente deve ajustar calculadora, simular ou seguir para proposta', done: false, required: true }
+    ];
+  }
+
   function checklistFromProposal(proposal, acceptance) {
     const checklist = acceptance && acceptance.checklist ? acceptance.checklist : {};
     const proposalId = proposal && proposal.id ? proposal.id : 'proposta';
@@ -277,6 +298,16 @@
     if (signal.priority === 'alta' || signal.severity === 'alta') return 'alta';
     if (signal.priority === 'baixa' || signal.severity === 'baixa') return 'baixa';
     return 'media';
+  }
+
+  function priorityFromCalculatorImpact(impact) {
+    if (!impact) return 'media';
+    if (impact.priority === 'alta') return 'alta';
+    if (impact.priority === 'baixa') return 'baixa';
+    if (impact.tone === 'warning' || impact.risk === 'review-required') return 'alta';
+    if (impact.risk === 'profile-incomplete') return Number(impact.score || 0) < 50 ? 'alta' : 'media';
+    if (impact.risk === 'simulation-ready') return 'media';
+    return 'baixa';
   }
 
   function priorityFromProposal(proposal, acceptance) {
@@ -758,6 +789,11 @@
     const commercialStale = open.filter((item) => item.commercialStage && item.commercialStage.stale);
     const commercialAudit = commercialStageAudit();
     const commercialMoved24 = commercialAudit.filter((event) => hoursSince(event.createdAt, now) <= 24).length;
+    const origins = enriched.reduce((acc, item) => {
+      const key = sourceType(item);
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
     const commercialRecent = commercialAudit.slice(0, 5).map((event) => ({
       id: event.id || '',
       handoffId: event.handoffId || '',
@@ -824,6 +860,8 @@
       proposalNeedsReview: proposalNeedsReview.length,
       commercialStale: commercialStale.length,
       commercialMoved24,
+      origins,
+      calculator: origins.calculator || 0,
       commercialRecent,
       nextActions
     };
@@ -882,6 +920,39 @@
       gapReserva: 0,
       urgencia: signal && signal.severity ? signal.severity : '',
       prioridade: signal && signal.priority ? signal.priority : ''
+    };
+  }
+
+  function extractCalculatorImpactSummary(impact) {
+    const metric = impact && impact.metric ? impact.metric : {};
+    const patch = impact && impact.profilePatch ? impact.profilePatch : {};
+    return {
+      objective: 'impacto_calculadora',
+      objectiveLabel: impact && impact.title ? impact.title : 'Impacto de calculadora',
+      productId: impact && impact.calculatorSlug ? impact.calculatorSlug : '',
+      productName: impact && impact.calculatorName ? impact.calculatorName : 'Calculadora',
+      modelId: impact && impact.risk ? impact.risk : 'calculator-impact',
+      modelName: impact && impact.riskLabel ? impact.riskLabel : 'Impacto de jornada',
+      nextActionType: impact && impact.action ? impact.action : 'calculator-impact',
+      nextActionTitle: impact && impact.cta ? impact.cta : 'Revisar calculadora',
+      nextActionHref: impact && impact.href ? impact.href : 'calculadoras.html',
+      rendaMensal: Number(patch.rendaMensal || 0),
+      gastoMensal: Number(patch.gastoMensal || 0),
+      dividasMensais: Number(patch.dividasMensais || 0),
+      reservaAtual: Number(patch.reservaAtual || 0),
+      reservaMeses: Number(patch.reservaMeses || patch.coberturaReservaPct || 0),
+      capacidadePagamento: Number(patch.capacidadePagamento || patch.capacidadeAporte || 0),
+      comprometimentoRenda: Number(patch.comprometimentoRenda || 0),
+      valorCredito: Number(patch.valorCarta || 0),
+      gapReserva: Number(patch.gapReserva || 0),
+      urgencia: priorityFromCalculatorImpact(impact),
+      prioridade: priorityFromCalculatorImpact(impact),
+      calculatorSlug: impact && impact.calculatorSlug ? impact.calculatorSlug : '',
+      calculatorHistoryId: impact && (impact.historyId || impact.id) ? (impact.historyId || impact.id) : '',
+      calculatorScore: Number(impact && impact.score ? impact.score : 0),
+      calculatorRisk: impact && impact.risk ? impact.risk : '',
+      primaryMetricLabel: metric.label || '',
+      primaryMetricValue: metric.value || ''
     };
   }
 
@@ -1073,6 +1144,93 @@
     saveList([handoff].concat(list()));
     recordAudit('signal-create', handoff, { sourceSignalId: signal.id });
     publishHandoffSnapshot(handoff, 'signal-create');
+    return handoff;
+  }
+
+  function createFromCalculatorImpact(impact, options) {
+    if (!impact || !(impact.historyId || impact.id)) throw new Error('Impacto de calculadora invalido para handoff consultivo.');
+    const actor = currentActor();
+    const historyId = impact.historyId || impact.id;
+    const ownerEmail = options && options.ownerEmail ? options.ownerEmail : (impact.ownerEmail || actor.email);
+    const existing = findByCalculatorImpact(historyId, ownerEmail);
+    const now = nowIso();
+    const summary = extractCalculatorImpactSummary(impact);
+    const assignedTo = options && options.assignedTo ? String(options.assignedTo || '').trim() : '';
+    const patch = {
+      schema: SCHEMA,
+      sourceType: 'calculator',
+      sourceLabel: sourceLabels.calculator,
+      sourceCalculatorHistoryId: historyId,
+      sourceCalculatorSlug: impact.calculatorSlug || '',
+      sourceCalculatorName: impact.calculatorName || '',
+      sourceCalculatorRisk: impact.risk || '',
+      sourceCalculatorScore: Number(impact.score || 0),
+      sourceCalculatorUpdatedAt: impact.createdAt || now,
+      ownerEmail,
+      ownerName: options && options.ownerName ? options.ownerName : (impact.ownerName || ownerEmail),
+      objective: 'impacto_calculadora',
+      objectiveLabel: impact.title || impact.calculatorName || 'Impacto de calculadora',
+      priority: priorityFromCalculatorImpact(impact),
+      assignedTo: assignedTo || (existing && existing.assignedTo ? existing.assignedTo : ''),
+      summary,
+      recommendation: {
+        title: impact.title || 'Impacto de calculadora',
+        message: impact.detail || 'Resultado salvo no diagnostico financeiro do cliente.',
+        tone: impact.tone === 'warning' ? 'warn' : impact.tone === 'stable' ? 'success' : 'info',
+        next: impact.cta || 'Revisar calculadora'
+      },
+      nextAction: {
+        type: impact.action || 'calculator-impact',
+        title: impact.riskLabel || impact.title || 'Revisar impacto',
+        label: impact.cta || 'Abrir calculadora',
+        href: impact.href || 'calculadoras.html'
+      },
+      updatedAt: now
+    };
+
+    if (existing && !(options && options.forceNew)) {
+      const next = {
+        ...existing,
+        ...patch,
+        checklist: checklistFromCalculatorImpact(impact),
+        timeline: [
+          {
+            id: `TL-${Date.now().toString(36).toUpperCase()}`,
+            type: 'calculator:refresh',
+            label: 'Handoff atualizado a partir de impacto de calculadora.',
+            actorEmail: actor.email,
+            createdAt: now
+          }
+        ].concat(existing.timeline || [])
+      };
+      saveList(list().map((item) => item.id === existing.id ? next : item));
+      recordAudit('calculator-refresh', next, { sourceCalculatorHistoryId: historyId, risk: impact.risk || '' });
+      publishHandoffSnapshot(next, 'calculator-refresh');
+      return next;
+    }
+
+    const handoff = {
+      id: `LEAD-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 5).toUpperCase()}`,
+      ...patch,
+      status: 'novo',
+      assignedTo: patch.assignedTo || '',
+      createdAt: now,
+      createdBy: actor.email,
+      checklist: checklistFromCalculatorImpact(impact),
+      notes: [],
+      timeline: [
+        {
+          id: `TL-${Date.now().toString(36).toUpperCase()}`,
+          type: 'calculator:create',
+          label: 'Handoff consultivo criado a partir de impacto de calculadora.',
+          actorEmail: actor.email,
+          createdAt: now
+        }
+      ]
+    };
+    saveList([handoff].concat(list()));
+    recordAudit('calculator-create', handoff, { sourceCalculatorHistoryId: historyId, risk: impact.risk || '' });
+    publishHandoffSnapshot(handoff, 'calculator-create');
     return handoff;
   }
 
@@ -1269,6 +1427,7 @@
       proposal: origins.proposal || 0,
       journey: origins.journey || 0,
       signal: origins.signal || 0,
+      calculator: origins.calculator || 0,
       imported: origins.imported || 0,
       completion
     };
@@ -1282,6 +1441,7 @@
     find,
     findByJourney,
     findBySignal,
+    findByCalculatorImpact,
     findByProposal,
     sourceType,
     sourceLabel,
@@ -1305,6 +1465,7 @@
     consultantBoard,
     createFromJourney,
     createFromSignal,
+    createFromCalculatorImpact,
     createFromProposal,
     setStatus,
     assign,

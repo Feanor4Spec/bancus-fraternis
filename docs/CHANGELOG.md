@@ -4,6 +4,28 @@
 
 ---
 
+## [v8.105.0] - 2026-06-12
+
+### Impacto das calculadoras no Dashboard Cliente e Handoff
+
+#### Adicionado
+- Dashboard Cliente passou a transformar historico de calculadoras em cards de impacto acionaveis, com score, risco, metrica principal e CTA contextual.
+- Cliente agora pode criar um handoff consultivo a partir de um impacto de calculadora, preservando `historyId`, slug, nome, risco e score.
+- Handoff Consultivo ganhou origem `calculator`, filtro dedicado e resumo de origem com nome da calculadora, risco, score e data do calculo.
+
+#### Modificado
+- `BFHandoffConsultivoService` passou a expor `createFromCalculatorImpact` e `findByCalculatorImpact`, atualizando o lead existente quando o mesmo historico de calculadora for reprocessado.
+- Contratos publicos, mapa completo, plano de acao e validadores passaram a proteger `data-client-calculator-impact`, `data-client-create-calculator-handoff` e `sourceCalculatorHistoryId`.
+
+#### Validacao
+- `node tools/validate-dashboard-continuity-flow.mjs`
+- `node tools/validate-handoff-consultant-operations.mjs`
+- `node tools/validate-calculator-impact-panel.mjs`
+- `node tools/validate-public-contracts.mjs`
+- `node tools/validate-design-system.mjs`
+
+---
+
 ## [v8.104.0] - 2026-05-22
 
 ### Painel de impacto das calculadoras

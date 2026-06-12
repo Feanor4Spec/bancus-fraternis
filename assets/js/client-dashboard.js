@@ -235,6 +235,20 @@
     return `calculadora-${slug}.html`;
   }
 
+  function calculatorPreset(slug) {
+    const map = {
+      'custos-fixos': 'comprar_bem',
+      'capacidade-credito': 'comprar_bem',
+      'lance-consorcio': 'comprar_bem',
+      'compra-vista-parcelado': 'comprar_bem',
+      'alugar-financiar': 'comprar_bem',
+      'reserva-emergencia': 'obter_liquidez',
+      'pix-parcelado': 'obter_liquidez',
+      cartoes: 'consumo_pontual'
+    };
+    return map[slug] || '';
+  }
+
   function appendQuery(href, params) {
     const [pathPart, hashPart] = String(href || '').split('#');
     const [base, query = ''] = pathPart.split('?');
@@ -259,6 +273,21 @@
 
   function dashboardHref(href, snapshot, extra = {}) {
     return appendQuery(href, dashboardContextParams(snapshot, extra));
+  }
+
+  function calculatorImpactHref(item, target = 'calculator') {
+    const slug = item && item.calculatorSlug ? item.calculatorSlug : '';
+    const historyId = item && item.id ? item.id : '';
+    const params = {
+      from: 'dashboard',
+      sourceFrom: 'calculator-impact',
+      calculatorSlug: slug,
+      historyId,
+      preset: calculatorPreset(slug)
+    };
+    if (target === 'simulator') return appendQuery('simulador.html', params);
+    if (target === 'journey') return appendQuery('trilha-decisao.html', params);
+    return appendQuery(calculatorPage(slug), params);
   }
 
   function latestSimulation(snapshot) {
@@ -300,6 +329,89 @@
       return window.BFCalculadoras.loadHistory() || [];
     }
     return readJson('bf_calculator_history_v1', []) || [];
+  }
+
+  function primaryMetric(item) {
+    const metrics = Array.isArray(item && item.metrics) ? item.metrics : [];
+    return metrics[0] || { label: 'Resultado', value: '-' };
+  }
+
+  function calculatorImpactItems(history, readiness) {
+    return sortByRecent((history || []).filter((item) => item && item.calculatorSlug !== 'simulador-consorcio')).map((item) => {
+      const recommendation = item.recommendation || {};
+      const metric = primaryMetric(item);
+      const metrics = Array.isArray(item.metrics) ? item.metrics : [];
+      const profilePatch = item.profilePatch || {};
+      const score = Math.max(0, Math.min(100, Number(item.readinessScore || profilePatch.readinessScore || (readiness && readiness.score) || 0)));
+      const hasWarnMetric = metrics.some((entry) => entry && entry.tone === 'warn');
+      const hasCapacity = Number(profilePatch.capacidadePagamento || profilePatch.capacidadeAporte || 0) > 0;
+      const hasBid = Number(profilePatch.lanceProprioSugerido || 0) > 0;
+      const slug = item.calculatorSlug || '';
+      let risk = 'monitor';
+      let riskLabel = 'Monitorar';
+      let tone = 'info';
+      let cta = 'Reabrir calculadora';
+      let href = calculatorImpactHref(item, 'calculator');
+      let action = 'review-calculator';
+
+      if (recommendation.tone === 'warn' || hasWarnMetric) {
+        risk = 'review-required';
+        riskLabel = 'Revisar risco';
+        tone = 'warning';
+        cta = 'Revisar calculo';
+      } else if (score < 60) {
+        risk = 'profile-incomplete';
+        riskLabel = 'Completar perfil';
+        tone = 'warning';
+        cta = 'Completar diagnostico';
+      } else if (hasBid || hasCapacity || ['capacidade-credito', 'lance-consorcio'].includes(slug)) {
+        risk = 'simulation-ready';
+        riskLabel = 'Pronto para simular';
+        tone = 'stable';
+        cta = 'Simular com contexto';
+        href = calculatorImpactHref(item, 'simulator');
+        action = 'simulate-from-calculator';
+      }
+
+      return {
+        id: item.id || `${slug}-${item.createdAt || ''}`,
+        calculatorSlug: slug,
+        calculatorName: item.calculatorName || slug || 'Calculadora',
+        historyId: item.id || '',
+        ownerEmail: currentUserEmail(),
+        title: recommendation.title || item.calculatorName || 'Calculo salvo',
+        detail: recommendation.message || `${metric.label}: ${metric.value}`,
+        risk,
+        riskLabel,
+        tone,
+        score,
+        metric,
+        recommendation,
+        metrics,
+        profilePatch,
+        createdAt: item.createdAt || item.updatedAt || '',
+        cta,
+        href,
+        action,
+        nextAction: {
+          type: action,
+          title: riskLabel,
+          label: cta,
+          href
+        }
+      };
+    });
+  }
+
+  function calculatorImpactSummary(snapshot) {
+    const impacts = snapshot && Array.isArray(snapshot.calculatorImpacts) ? snapshot.calculatorImpacts : [];
+    const top = impacts.find((item) => item.tone === 'warning') || impacts.find((item) => item.risk === 'simulation-ready') || impacts[0] || null;
+    return {
+      total: impacts.length,
+      warning: impacts.filter((item) => item.tone === 'warning').length,
+      ready: impacts.filter((item) => item.risk === 'simulation-ready').length,
+      top
+    };
   }
 
   function loadSimulations() {
@@ -362,6 +474,7 @@
     const readiness = window.BFDecisionContext && typeof window.BFDecisionContext.readiness === 'function'
       ? window.BFDecisionContext.readiness(profile)
       : { score: profile.readinessScore || 0, complete: false, missing: [] };
+    const calculatorImpacts = calculatorImpactItems(calculatorHistory, readiness);
     const rawHandoffs = window.BFHandoffConsultivoService && window.BFHandoffConsultivoService.list
       ? window.BFHandoffConsultivoService.list().filter((item) => !item.ownerEmail || item.ownerEmail === currentUserEmail())
       : [];
@@ -373,6 +486,7 @@
       hasProfile: Object.keys(profile || {}).length > 0,
       readiness,
       calculatorHistory,
+      calculatorImpacts,
       simulations,
       comparatorModels,
       journey: activeJourney,
@@ -533,6 +647,19 @@
         href: dashboardHref(snapshot.journey.nextAction.href || 'trilha-decisao.html', snapshot)
       };
     }
+    const impactSummary = calculatorImpactSummary(snapshot);
+    if (impactSummary.top) {
+      const impact = impactSummary.top;
+      return {
+        kind: `calculator-${impact.risk}`,
+        tone: impact.tone,
+        eyebrow: 'Impacto da calculadora',
+        title: impact.title,
+        detail: `${impact.riskLabel}: ${impact.detail}`,
+        cta: impact.cta,
+        href: impact.href
+      };
+    }
     if (topSignal) {
       return {
         kind: 'signal',
@@ -565,6 +692,7 @@
     const contextualSimulations = snapshot.simulations.filter((item) => item.decisionContext).length;
     const activeHandoff = snapshot.handoff || snapshot.handoffs[0] || null;
     const nextAction = snapshot.journey && snapshot.journey.nextAction ? snapshot.journey.nextAction : null;
+    const impactSummary = calculatorImpactSummary(snapshot);
     const service = window.BFHandoffConsultivoService;
     const handoffAge = activeHandoff ? ageLabel(activeHandoff.updatedAt || activeHandoff.createdAt) : '';
     const handoffSource = activeHandoff && service && service.sourceLabel ? service.sourceLabel(activeHandoff) : '';
@@ -589,11 +717,13 @@
       {
         tone: recoverySummary.open ? (recoverySummary.high ? 'warning' : 'info') : (totalHistory > 0 ? 'info' : 'warning'),
         eyebrow: 'Retomada',
-        title: recoverySummary.open ? `${recoverySummary.open} sinal${recoverySummary.open === 1 ? '' : 'is'} aberto${recoverySummary.open === 1 ? '' : 's'}` : `${totalHistory} registro${totalHistory === 1 ? '' : 's'} conectados`,
-        body: topSignal
+        title: impactSummary.warning ? `${impactSummary.warning} impacto${impactSummary.warning === 1 ? '' : 's'} a revisar` : recoverySummary.open ? `${recoverySummary.open} sinal${recoverySummary.open === 1 ? '' : 'is'} aberto${recoverySummary.open === 1 ? '' : 's'}` : `${totalHistory} registro${totalHistory === 1 ? '' : 's'} conectados`,
+        body: impactSummary.warning && impactSummary.top
+          ? `${impactSummary.top.calculatorName}: ${impactSummary.top.detail}`
+          : topSignal
           ? `${topSignal.title}: ${topSignal.reason}`
           : `${snapshot.simulations.length} simulacoes (${contextualSimulations} com contexto), ${snapshot.calculatorHistory.length} calculadoras e ${snapshot.comparatorModels.length} modelos locais.`,
-        action: topSignal ? topSignal.ctaLabel : (totalHistory > 0 ? 'Retomar atividade' : 'Criar primeira simulacao')
+        action: impactSummary.warning ? 'Revisar impacto' : topSignal ? topSignal.ctaLabel : (totalHistory > 0 ? 'Retomar atividade' : 'Criar primeira simulacao')
       },
       {
         tone: snapshot.journey ? 'stable' : 'info',
@@ -649,6 +779,8 @@
     const proposal = proposalDashboardState(snapshot, handoff);
     const simulation = simulationDashboardState(snapshot);
     const nextAction = nextClientAction(snapshot);
+    const impactSummary = calculatorImpactSummary(snapshot);
+    const topImpact = impactSummary.top;
     const statusLabel = handoff
       ? (service && service.statusLabels ? service.statusLabels[handoff.status] : handoffStatusLabels[handoff.status]) || handoff.status || 'Aberto'
       : 'Sem handoff';
@@ -697,6 +829,12 @@
               <p>${escapeHtml(`${simulation.detail} Aging ${simulation.age}.`)}</p>
               <a href="${escapeHtml(simulation.href)}">Abrir simulador</a>
             </article>
+            <article class="bf-client-signal bf-client-signal--${escapeHtml(topImpact ? topImpact.tone : 'info')}" data-client-calculator-impact="${escapeHtml(topImpact ? topImpact.risk : 'empty')}" data-client-calculator-impact-risk="${escapeHtml(topImpact ? topImpact.risk : 'empty')}">
+              <span>Calculadora</span>
+              <strong>${escapeHtml(topImpact ? topImpact.riskLabel : 'Sem impacto salvo')}</strong>
+              <p>${escapeHtml(topImpact ? `${topImpact.calculatorName}: ${topImpact.metric.label} ${topImpact.metric.value} - score ${topImpact.score}/100.` : 'Salve um calculo para gerar impacto de jornada.')}</p>
+              ${topImpact ? `<a href="${escapeHtml(topImpact.href)}">${escapeHtml(topImpact.cta)}</a>` : '<a href="calculadoras.html">Abrir hub</a>'}
+            </article>
             <article class="bf-client-signal bf-client-signal--${escapeHtml(stageTone)}" data-client-commercial-stage="${escapeHtml(stage ? stage.key || 'contato' : 'none')}">
               <span>Etapa comercial</span>
               <strong>${escapeHtml(stage ? stage.label || 'Contato' : 'Nao iniciada')}</strong>
@@ -709,6 +847,8 @@
     document.body.dataset.clientContinuityCockpitReady = 'true';
     document.body.dataset.clientNextAction = nextAction.kind || '';
     document.body.dataset.clientCommercialStage = stage ? stage.key || '' : '';
+    document.body.dataset.clientCalculatorImpactCount = String(impactSummary.total || 0);
+    document.body.dataset.clientCalculatorImpactRisk = topImpact ? topImpact.risk : 'empty';
   }
 
   function renderContinuityTimeline() {
@@ -1193,6 +1333,7 @@
     const snapshot = dashboardSnapshot();
     const profile = snapshot.profile || {};
     const history = snapshot.calculatorHistory.slice(0, 8);
+    const impacts = snapshot.calculatorImpacts.slice(0, 8);
     const readiness = snapshot.readiness || { score: profile.readinessScore || 0, complete: false };
     const hasProfile = Object.keys(profile).length > 0;
     const sourceLabel = snapshot.backendSnapshots.loaded ? 'SQLite local' : 'localStorage';
@@ -1222,17 +1363,21 @@
     }
 
     if (!historyTarget) return;
-    if (history.length === 0) {
+    if (history.length === 0 || impacts.length === 0) {
       historyTarget.innerHTML = '<div class="bf-empty-state">Nenhuma simulacao financeira salva ainda. Use o hub de calculadoras para criar historico.</div>';
       return;
     }
 
-    historyTarget.innerHTML = history.map((item) => `
-      <article class="bf-history-item">
-        <span>${escapeHtml(item.calculatorName)}</span>
-        <strong>${escapeHtml(item.recommendation ? item.recommendation.title : 'Simulacao salva')}</strong>
-        <small>${escapeHtml(formatDate(item.createdAt))}</small>
-        <a href="${calculatorPage(item.calculatorSlug)}">Reabrir calculadora</a>
+    historyTarget.innerHTML = impacts.map((impact) => `
+      <article class="bf-history-item bf-client-calculator-impact bf-client-calculator-impact--${escapeHtml(impact.tone)}" data-client-calculator-impact-item="${escapeHtml(impact.id)}" data-client-calculator-impact-risk="${escapeHtml(impact.risk)}" data-client-calculator-impact-action="${escapeHtml(impact.action)}">
+        <span>${escapeHtml(impact.calculatorName)} - ${escapeHtml(impact.riskLabel)}</span>
+        <strong>${escapeHtml(impact.title)}</strong>
+        <small>${escapeHtml(formatDate(impact.createdAt))} - ${escapeHtml(impact.metric.label)}: ${escapeHtml(impact.metric.value)} - prontidao ${escapeHtml(impact.score)}/100</small>
+        <div class="bf-inline-actions bf-inline-actions--compact">
+          <a href="${escapeHtml(calculatorImpactHref(impact, 'calculator'))}">Reabrir</a>
+          <a href="${escapeHtml(impact.href)}">${escapeHtml(impact.cta)}</a>
+          <button class="btn btn--ghost btn--sm" type="button" data-client-create-calculator-handoff="${escapeHtml(impact.id)}">Enviar para handoff</button>
+        </div>
       </article>
     `).join('');
   }
@@ -1344,6 +1489,25 @@
       }
 
       const button = event.target.closest('[data-client-create-handoff]');
+      const calculatorButton = event.target.closest('[data-client-create-calculator-handoff]');
+      if (calculatorButton && window.BFHandoffConsultivoService && window.BFHandoffConsultivoService.createFromCalculatorImpact) {
+        const snapshot = dashboardSnapshot();
+        const impact = (snapshot.calculatorImpacts || []).find((item) => item.id === calculatorButton.dataset.clientCreateCalculatorHandoff);
+        if (!impact) return;
+        const existing = window.BFHandoffConsultivoService.findByCalculatorImpact
+          ? window.BFHandoffConsultivoService.findByCalculatorImpact(impact.historyId || impact.id, user.email)
+          : null;
+        window.BFHandoffConsultivoService.createFromCalculatorImpact(impact, { ownerName: user.name, ownerEmail: user.email });
+        renderSnapshotAwareSections();
+        const nextButton = Array.from(document.querySelectorAll('[data-client-create-calculator-handoff]'))
+          .find((item) => item.dataset.clientCreateCalculatorHandoff === impact.id);
+        if (nextButton) {
+          nextButton.textContent = existing ? 'Handoff atualizado' : 'Handoff criado';
+          nextButton.disabled = true;
+        }
+        return;
+      }
+
       if (!button || !window.BFHandoffConsultivoService || !window.BFTrilhaDecisaoService) return;
       const journey = window.BFTrilhaDecisaoService.load();
       if (!journey) return;

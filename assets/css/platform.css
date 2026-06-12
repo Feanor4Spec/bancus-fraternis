@@ -2417,6 +2417,26 @@
   color: var(--bf-gold-700);
 }
 
+.bf-client-calculator-impact {
+  display: grid;
+  gap: 8px;
+}
+
+.bf-client-calculator-impact--warning {
+  border-color: var(--bf-warning-bd);
+  background: linear-gradient(180deg, var(--bf-white), var(--bf-warning-bg));
+}
+
+.bf-client-calculator-impact--stable {
+  border-color: var(--bf-success-bd);
+  background: linear-gradient(180deg, var(--bf-white), var(--bf-success-bg));
+}
+
+.bf-client-calculator-impact--info {
+  border-color: var(--bf-info-bd);
+  background: linear-gradient(180deg, var(--bf-white), var(--bf-info-bg));
+}
+
 .bf-admin-dedicated-queue {
   display: grid;
   gap: 14px;
@@ -3492,6 +3512,7 @@
 .bf-handoff-status--novo,
 .bf-handoff-priority--media,
 .bf-handoff-source--signal,
+.bf-handoff-source--calculator,
 .bf-handoff-aging--baixa,
 .bf-handoff-commercial-stage-tag--baixa {
   color: var(--bf-navy-900);

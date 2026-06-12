@@ -1,19 +1,19 @@
 # Bancus Fraternis - Plataforma de decisao financeira
 
-Atualizado em 2026-05-22.
+Atualizado em 2026-06-12.
 
 O Bancus Fraternis e uma plataforma estatica/progressiva para apoiar decisao financeira, simulacao de consorcio, comparacao de produtos, proposta consultiva e handoff comercial. O antigo ConsorcioPro permanece como nome legado do simulador de consorcio e de algumas chaves locais, mas a linguagem de produto atual e Bancus Fraternis.
 
 ## Estado Atual
 
 - 52 paginas navegaveis em `pages/`, com aliases curtos cobertos por `server.js`.
-- 19 calculadoras financeiras no catalogo ativo, com mapa funcional, validacao guiada, alertas de coerencia, proxima acao dinamica, previa sem persistencia e salvamento explicito por submit.
+- 19 calculadoras financeiras no catalogo ativo, com mapa funcional, validacao guiada, alertas de coerencia, proxima acao dinamica, painel de impacto, previa sem persistencia e salvamento explicito por submit.
 - Simulador conectado a base real com 17.396 grupos validos.
 - Simulador iniciou modularizacao tecnica com `BFSimulatorJourney`, `BFSimulatorState`, `BFSimulatorShelf`, `BFSimulatorCart`, `BFProposalBuilder` e `BFProposalGovernance` para contexto, proximas acoes, snapshots, retomada, prateleira, carrinho/projeto, lousa de proposta/PDF e governanca visual de versionamento/aceite.
 - Fluxo principal: Home -> Produtos -> Calculadoras -> Trilha Assistida -> Comparador -> Simulador -> Proposta -> Handoff -> Dashboards.
 - Lousa de navegacao em `pages/lousa-navegacao.html` para revisao do produto, roteiro ponta a ponta e checkpoints comerciais/online.
 - Lousa de proposta/PDF no simulador para o consultor selecionar blocos, graficos, conceitos e formulas, com presets consultivo/tecnico, prontidao e historico versionado antes da exportacao/handoff.
-- Dashboard Cliente, Handoff Consultivo e Dashboard Admin com cockpit de retomada, continuidade, origem, aging, prioridade, propostas versionadas/vencidas, etapa comercial, proximos passos, fila guiada executavel, produtividade, carteira por consultor, filtros comerciais, funil comercial movel por etapa, cadencia comercial e exportacoes sanitizadas de carteira e funil.
+- Dashboard Cliente, Handoff Consultivo e Dashboard Admin com cockpit de retomada, impacto de calculadoras, continuidade, origem, aging, prioridade, propostas versionadas/vencidas, etapa comercial, proximos passos, fila guiada executavel, produtividade, carteira por consultor, filtros comerciais, funil comercial movel por etapa, cadencia comercial e exportacoes sanitizadas de carteira e funil.
 - UX com dados vivos iniciada: Dashboard Cliente mostra fonte ativa e contadores server-side; Handoff Consultivo le `/api/leads`, mescla com a fila local e sincroniza status, responsavel, checklist e notas quando a API local esta ativa.
 - Publicacao em GitHub Pages com selo de ambiente demo/local, fallback estatico e validador de seguranca publica.
 - Backend local Node/SQLite preparado como ponte progressiva para backend produtivo futuro, com `BANCUS_DB_PROVIDER=sqlite`, plano de migracao preservando `localStorage`, `BFBackendApi`, contratos `/api/*`, escopo por `owner_email` e proximas fases produtivas detalhadas.
@@ -66,7 +66,7 @@ http://localhost:8080/dashboard-admin.html
 | Simulador | `pages/simulador.html`, `js/app.js`, `js/simulator-journey.js`, `js/simulator-state.js`, `js/simulator-shelf.js`, `js/simulator-cart.js`, `js/proposal-builder.js`, `js/proposal-governance.js`, `js/shelf-data.js`, `js/shelf-engine.js` |
 | Proposta/PDF | `js/proposal-summary.js`, `js/export.js`, `js/proposal-acceptance.js`, `js/proposal-versioning.js`, `js/proposal-governance.js` |
 | Handoff | `pages/handoff-consultivo.html`, `assets/js/services/handoff-consultivo.service.js` |
-| Dashboard Cliente | `pages/dashboard-cliente.html`, `assets/js/dashboard-cliente.js` |
+| Dashboard Cliente | `pages/dashboard-cliente.html`, `assets/js/client-dashboard.js` |
 | Dashboard Admin | `pages/dashboard-admin.html`, `assets/js/admin-users.js`, `assets/js/services/admin-recovery.service.js` |
 | Governanca | `docs/MAPA_COMPLETO_PROJETO_BANK_FRATERN.md`, `docs/PLANO_ACAO_EVOLUCAO_BANK_FRATERN.md`, `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md` |
 | Backend produtivo | `docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md`, `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md`, `docs/PROXIMAS_FASES_BANK_FRATERN.md`, `tools/validate-backend-production-plan.mjs` |

@@ -210,6 +210,11 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-client-live-source',
   'data-client-live-refresh',
   'data-client-next-action',
+  'data-client-calculator-impact',
+  'data-client-calculator-impact-item',
+  'data-client-calculator-impact-risk',
+  'data-client-calculator-impact-action',
+  'data-client-create-calculator-handoff',
   'data-client-handoff-status',
   'data-client-proposal-status',
   'data-client-simulation-context',
@@ -376,6 +381,12 @@ assert(clientDashboard.includes('data-client-live-data-panel'), 'Dashboard Clien
 assert(clientDashboard.includes('data-client-live-source'), 'Dashboard Cliente sem marcador de fonte viva.');
 assert(clientDashboard.includes('data-client-live-refresh'), 'Dashboard Cliente sem acao de atualizar dados vivos.');
 assert(clientDashboard.includes('clientLiveDataReady'), 'Dashboard Cliente sem readiness de dados vivos.');
+assert(clientDashboard.includes('calculatorImpactItems'), 'Dashboard Cliente sem classificacao de impacto das calculadoras.');
+assert(clientDashboard.includes('calculatorImpactSummary'), 'Dashboard Cliente sem resumo de impacto das calculadoras.');
+assert(clientDashboard.includes('data-client-calculator-impact'), 'Dashboard Cliente sem marcador de impacto de calculadora.');
+assert(clientDashboard.includes('data-client-calculator-impact-item'), 'Dashboard Cliente sem lista de impacto de calculadora.');
+assert(clientDashboard.includes('data-client-create-calculator-handoff'), 'Dashboard Cliente sem acao de criar handoff a partir de calculadora.');
+assert(clientDashboard.includes('createFromCalculatorImpact'), 'Dashboard Cliente nao chama criacao de handoff por calculadora.');
 assert(clientDashboard.includes('listSnapshots(100)'), 'Dashboard Cliente sem leitura de snapshots server-side.');
 assert(clientDashboard.includes('listJourneyEntities(100)'), 'Dashboard Cliente sem leitura de entidades relacionais server-side.');
 assert(clientDashboard.includes('listLeads(30)'), 'Dashboard Cliente sem leitura de leads materializados.');
@@ -545,6 +556,10 @@ assert(handoffJs.includes('api.updateLead'), 'Handoff Consultivo sem sincronizac
 assert(handoffJs.includes('data-handoff-live-source'), 'Handoff Consultivo sem marcador de fonte viva.');
 assert(handoffJs.includes('data-handoff-live-refresh'), 'Handoff Consultivo sem acao de atualizar fila viva.');
 assert(handoffJs.includes('handoffLiveDataReady'), 'Handoff Consultivo sem readiness de dados vivos.');
+assert(handoffService.includes('createFromCalculatorImpact'), 'Handoff Consultivo sem criacao por impacto de calculadora.');
+assert(handoffService.includes('findByCalculatorImpact'), 'Handoff Consultivo sem busca por historico de calculadora.');
+assert(handoffService.includes('sourceCalculatorHistoryId'), 'Handoff Consultivo sem contrato sourceCalculatorHistoryId.');
+assert(handoffPage.includes('value="calculator"'), 'Handoff Consultivo sem filtro de origem Calculadora.');
 assert(lousa.includes('data-lousa-journey-checklist'), 'lousa-navegacao.html sem checklist de jornada navegavel.');
 assert(lousa.includes('data-lousa-journey-acceptance'), 'lousa-navegacao.html sem criterios de aceite da jornada navegavel.');
 assert(lousa.includes('data-lousa-commercial-qa'), 'lousa-navegacao.html sem QA comercial navegavel.');
@@ -594,7 +609,7 @@ const report = {
   ok: failures.length === 0,
   contracts: {
     localStorageKeys: 18,
-    dataMarkers: 106,
+    dataMarkers: 111,
     globals: 20,
     deepLinks: 10,
     validators: 27,

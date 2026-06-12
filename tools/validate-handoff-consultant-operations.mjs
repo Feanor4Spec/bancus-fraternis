@@ -44,6 +44,7 @@ const [pageHtml, uiSource, cssSource, serviceSource, designValidator, contractsD
   'data-handoff-consultant-cockpit',
   'data-handoff-assignee-filter',
   'data-handoff-aging-filter',
+  'value="calculator"',
   '#painel-consultor'
 ].forEach((marker) => assert(pageHtml.includes(marker), `handoff-consultivo.html sem ${marker}.`));
 
@@ -68,6 +69,10 @@ const [pageHtml, uiSource, cssSource, serviceSource, designValidator, contractsD
   'matchesAging',
   'hydrateAssigneeOptions',
   'data-handoff-next-step',
+  'sourceCalculatorHistoryId',
+  'Handoff criado por calculadora',
+  'calculator:create',
+  'calculator:refresh',
   'Etapas paradas',
   'Movidos 24h',
   'Cadencia comercial'
@@ -98,7 +103,14 @@ const [pageHtml, uiSource, cssSource, serviceSource, designValidator, contractsD
   'overdue',
   'unassigned',
   'proposalExpired',
-  'proposalUnversioned'
+  'proposalUnversioned',
+  "calculator: 'Calculadora'",
+  'findByCalculatorImpact',
+  'createFromCalculatorImpact',
+  'priorityFromCalculatorImpact',
+  'checklistFromCalculatorImpact',
+  'extractCalculatorImpactSummary',
+  'sourceCalculatorHistoryId'
 ].forEach((marker) => assert(serviceSource.includes(marker), `handoff-consultivo.service.js sem ${marker}.`));
 
 [
@@ -152,6 +164,8 @@ assert(service && typeof service.actionPlan === 'function', 'actionPlan indispon
 assert(service && typeof service.setActionExecution === 'function', 'setActionExecution indisponivel.');
 assert(service && typeof service.commercialStageState === 'function', 'commercialStageState indisponivel.');
 assert(service && typeof service.commercialStageAudit === 'function', 'commercialStageAudit indisponivel.');
+assert(service && typeof service.createFromCalculatorImpact === 'function', 'createFromCalculatorImpact indisponivel.');
+assert(service && typeof service.findByCalculatorImpact === 'function', 'findByCalculatorImpact indisponivel.');
 
 context.localStorage.setItem('bf_admin_commercial_stage_states_v1', JSON.stringify({
   'LEAD-WAIT': {
@@ -250,6 +264,37 @@ const executedState = service.actionExecution(expiredProposalAction);
 const executedHistory = service.actionHistory(expiredProposalAction);
 const board = service.consultantBoard([overdueLead, waitingLead, qualifiedLead], referenceNow);
 const proposalBoard = service.consultantBoard([overdueLead, expiredProposalLead], referenceNow);
+const calculatorImpact = {
+  id: 'HIST-CALC-1',
+  historyId: 'HIST-CALC-1',
+  calculatorSlug: 'capacidade-credito',
+  calculatorName: 'Capacidade de Credito',
+  title: 'Parcela segura calculada',
+  detail: 'Use ate R$ 1.500 como referencia para a proxima proposta.',
+  risk: 'review-required',
+  riskLabel: 'Revisar risco',
+  tone: 'warning',
+  score: 58,
+  cta: 'Revisar calculo',
+  href: 'calculadora-capacidade-credito.html?historyId=HIST-CALC-1',
+  action: 'review-calculator',
+  metric: { label: 'Parcela segura', value: 'R$ 1.500,00' },
+  profilePatch: {
+    rendaMensal: 8000,
+    gastoMensal: 5000,
+    capacidadePagamento: 1500,
+    comprometimentoRenda: 62
+  },
+  createdAt: '2026-05-08T09:00:00.000Z',
+  ownerEmail: 'cliente-calc@bankfratern.local'
+};
+const calculatorHandoff = service.createFromCalculatorImpact(calculatorImpact, { ownerName: 'Cliente Calc' });
+const calculatorLookup = service.findByCalculatorImpact('HIST-CALC-1', 'cliente-calc@bankfratern.local');
+const calculatorRefresh = service.createFromCalculatorImpact(
+  { ...calculatorImpact, score: 82, risk: 'ready-to-simulate', tone: 'stable' },
+  { ownerName: 'Cliente Calc' }
+);
+const calculatorBoard = service.consultantBoard(service.list(), referenceNow);
 
 assert(overdueState.slaOverdue === true, 'Lead alta prioridade nao marcou SLA vencido.');
 assert(overdueState.unassigned === true, 'Lead sem responsavel nao marcou unassigned.');
@@ -281,6 +326,16 @@ assert(board.nextActions[0].deadlineLabel, 'Proxima acao nao trouxe prazo operac
 assert(board.nextActions[0].actionOwner, 'Proxima acao nao trouxe dono operacional.');
 assert(proposalBoard.proposalExpired === 1, `Board deveria ter 1 proposta vencida; recebeu ${proposalBoard.proposalExpired}.`);
 assert(proposalBoard.proposalUnversioned === 1, `Board deveria ter 1 proposta sem snapshot; recebeu ${proposalBoard.proposalUnversioned}.`);
+assert(calculatorHandoff.sourceType === 'calculator', `Handoff de calculadora deveria ter sourceType calculator; recebeu ${calculatorHandoff.sourceType}.`);
+assert(calculatorHandoff.sourceCalculatorHistoryId === 'HIST-CALC-1', 'Handoff de calculadora nao preservou historyId.');
+assert(calculatorHandoff.sourceCalculatorSlug === 'capacidade-credito', 'Handoff de calculadora nao preservou slug.');
+assert(calculatorHandoff.priority === 'alta', `Impacto warning deveria gerar prioridade alta; recebeu ${calculatorHandoff.priority}.`);
+assert(calculatorHandoff.summary.calculatorHistoryId === 'HIST-CALC-1', 'Resumo do handoff de calculadora nao preservou historyId.');
+assert(calculatorHandoff.checklist.some((item) => item.id === 'revisar-calculo'), 'Checklist de calculadora nao trouxe revisao do impacto.');
+assert(calculatorLookup && calculatorLookup.id === calculatorHandoff.id, 'findByCalculatorImpact nao encontrou o handoff criado.');
+assert(calculatorRefresh.id === calculatorHandoff.id, 'createFromCalculatorImpact deveria atualizar handoff existente da calculadora.');
+assert(calculatorRefresh.sourceCalculatorScore === 82, 'Atualizacao do handoff de calculadora nao preservou novo score.');
+assert(calculatorBoard.origins.calculator === 1, `Board consultivo deveria contar 1 origem calculadora; recebeu ${calculatorBoard.origins.calculator}.`);
 
 const report = {
   ok: failures.length === 0,
@@ -306,6 +361,12 @@ const report = {
     history: commercialStage.historyLabel,
     boardStale: commercialBoard.commercialStale,
     moved24: commercialBoard.commercialMoved24
+  },
+  calculator: {
+    sourceType: calculatorHandoff.sourceType,
+    priority: calculatorHandoff.priority,
+    refreshedScore: calculatorRefresh.sourceCalculatorScore,
+    originCount: calculatorBoard.origins.calculator
   },
   failures
 };

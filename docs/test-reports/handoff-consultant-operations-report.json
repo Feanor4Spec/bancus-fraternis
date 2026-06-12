@@ -23,5 +23,11 @@
     "boardStale": 1,
     "moved24": 0
   },
+  "calculator": {
+    "sourceType": "calculator",
+    "priority": "alta",
+    "refreshedScore": 82,
+    "originCount": 1
+  },
   "failures": []
 }

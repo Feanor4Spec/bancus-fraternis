@@ -17,6 +17,7 @@
     "cockpit": true,
     "nextAction": true,
     "commercialStage": true,
+    "calculatorImpact": true,
     "liveData": true
   },
   "failures": []

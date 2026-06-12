@@ -59,6 +59,14 @@ assert(clientJs.includes('data-client-handoff-status'), 'Dashboard Cliente sem m
 assert(clientJs.includes('data-client-proposal-status'), 'Dashboard Cliente sem marcador data-client-proposal-status.');
 assert(clientJs.includes('data-client-simulation-context'), 'Dashboard Cliente sem marcador data-client-simulation-context.');
 assert(clientJs.includes('data-client-commercial-stage'), 'Dashboard Cliente sem marcador data-client-commercial-stage.');
+assert(clientJs.includes('calculatorImpactItems'), 'Dashboard Cliente nao classifica impactos das calculadoras.');
+assert(clientJs.includes('calculatorImpactSummary'), 'Dashboard Cliente nao resume impactos das calculadoras.');
+assert(clientJs.includes('data-client-calculator-impact'), 'Dashboard Cliente sem marcador de impacto de calculadora.');
+assert(clientJs.includes('data-client-calculator-impact-item'), 'Dashboard Cliente sem item de impacto de calculadora.');
+assert(clientJs.includes('data-client-calculator-impact-risk'), 'Dashboard Cliente sem risco de impacto de calculadora.');
+assert(clientJs.includes('data-client-calculator-impact-action'), 'Dashboard Cliente sem acao de impacto de calculadora.');
+assert(clientJs.includes('data-client-create-calculator-handoff'), 'Dashboard Cliente sem acao para criar handoff a partir de calculadora.');
+assert(clientJs.includes('createFromCalculatorImpact'), 'Dashboard Cliente nao cria handoff a partir de impacto de calculadora.');
 assert(clientJs.includes('clientContinuityCockpitReady'), 'Dashboard Cliente nao marca readiness do cockpit.');
 assert(clientJs.includes('BFHandoffConsultivoService') && clientJs.includes('commercialStageState'), 'Dashboard Cliente nao reutiliza etapa comercial do handoff.');
 assert(clientJs.includes('handoff-consultivo.html#fila-handoff'), 'Dashboard Cliente nao aponta handoff para fila.');
@@ -81,6 +89,7 @@ const summary = {
     cockpit: dashboardHtml.includes('data-client-continuity-cockpit'),
     nextAction: clientJs.includes('data-client-next-action'),
     commercialStage: clientJs.includes('data-client-commercial-stage'),
+    calculatorImpact: clientJs.includes('data-client-calculator-impact'),
     liveData: clientJs.includes('clientLiveDataReady')
   },
   failures

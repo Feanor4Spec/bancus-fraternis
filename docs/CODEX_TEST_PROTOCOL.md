@@ -1,6 +1,6 @@
 # Protocolo de testes preferencial - Codex
 
-Atualizado em 2026-05-22 para o projeto Bancus Fraternis.
+Atualizado em 2026-06-12 para o projeto Bancus Fraternis.
 
 ## Caminho base
 
@@ -594,6 +594,9 @@ Validacoes obrigatorias:
 - `pages/simulador.html?from=journey&journeyId=<id>` deve aplicar contexto sem sobrescrever campos preenchidos manualmente.
 - Ao salvar simulacao, `bf_calculator_history_v1` deve receber `calculatorSlug='simulador-consorcio'`.
 - `pages/dashboard-cliente.html` deve exibir a continuidade `diagnostico -> calculadora -> simulacao -> carteira/handoff`.
+- `pages/dashboard-cliente.html` deve expor `data-client-calculator-impact`, `data-client-calculator-impact-item` e `data-client-create-calculator-handoff` quando houver historico de calculadora acionavel.
+- `BFHandoffConsultivoService.createFromCalculatorImpact()` deve criar ou atualizar um lead com origem `calculator`, preservando `sourceCalculatorHistoryId`, risco, score e checklist de revisao.
+- `pages/handoff-consultivo.html` deve oferecer filtro de origem `calculator` e exibir resumo da calculadora no detalhe do lead.
 
 Comandos:
 
@@ -605,9 +608,13 @@ $node='<node-runtime>'
 & $node --check js\app.js
 & $node --check js\storage.js
 & $node --check assets\js\client-dashboard.js
+& $node --check assets\js\services\handoff-consultivo.service.js
+& $node --check assets\js\handoff-consultivo.js
 & $node tools\validate-calculadoras.mjs
 & $node tools\validate-calculator-journey.mjs
 & $node tools\validate-calculator-impact-panel.mjs
+& $node tools\validate-dashboard-continuity-flow.mjs
+& $node tools\validate-handoff-consultant-operations.mjs
 & $node tools\validate-design-system.mjs
 ```
 

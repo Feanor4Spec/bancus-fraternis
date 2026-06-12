@@ -625,6 +625,7 @@
   function sourceType(item) {
     return service().sourceType ? service().sourceType(item) : (
       item && item.sourceProposalId ? 'proposal'
+        : item && item.sourceCalculatorHistoryId ? 'calculator'
         : item && item.sourceSignalType === 'imported-recovery-item' ? 'imported'
           : item && item.sourceSignalId ? 'signal'
             : item && item.sourceJourneyId ? 'journey'
@@ -653,6 +654,14 @@
     }
     if (type === 'journey') {
       return item.sourceJourneyUpdatedAt ? `Trilha atualizada em ${date(item.sourceJourneyUpdatedAt)}.` : 'Trilha assistida salva localmente.';
+    }
+    if (type === 'calculator') {
+      return [
+        item.sourceCalculatorName || item.sourceCalculatorSlug ? `${item.sourceCalculatorName || item.sourceCalculatorSlug}` : '',
+        item.sourceCalculatorRisk ? `risco ${item.sourceCalculatorRisk}` : '',
+        item.sourceCalculatorScore ? `score ${item.sourceCalculatorScore}/100` : '',
+        item.sourceCalculatorUpdatedAt ? `salvo em ${date(item.sourceCalculatorUpdatedAt)}` : ''
+      ].filter(Boolean).join(' - ') || 'Impacto de calculadora salvo no dashboard cliente.';
     }
     if (type === 'imported') {
       return item.sourceSignalUpdatedAt ? `Pacote importado em ${date(item.sourceSignalUpdatedAt)}.` : 'Item recebido por pacote administrativo.';
@@ -862,6 +871,8 @@
     const labels = {
       create: 'Handoff criado pela trilha',
       refresh: 'Handoff atualizado pela trilha',
+      'calculator:create': 'Handoff criado por calculadora',
+      'calculator:refresh': 'Handoff atualizado por calculadora',
       'signal:create': 'Handoff criado por sinal',
       'signal:refresh': 'Handoff atualizado por sinal',
       'proposal:create': 'Handoff criado por proposta',

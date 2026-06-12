@@ -1,6 +1,6 @@
 # Mapa Completo do Projeto Bancus Fraternis
 
-Atualizado em 2026-05-22.
+Atualizado em 2026-06-12.
 
 Este mapa foi recriado a partir da leitura real do workspace. Ele documenta o Bancus Fraternis como plataforma de decisao financeira, nao apenas como simulador de consorcio. O objetivo e permitir que uma pessoa ou agente entenda a superficie atual do produto antes de evoluir Home, produtos, calculadoras, trilha assistida, comparador, simulador, proposta, handoff, dashboard cliente e dashboard admin.
 
@@ -127,7 +127,7 @@ Contrato confirmado:
 | --- | --- | --- |
 | `pages/login.html` | Ativa | Login local com perfis demo. |
 | `pages/configuracoes.html` | Ativa | Preferencias locais do simulador e plataforma. |
-| `pages/dashboard-cliente.html` | Ativa | Historico, perfil, modelos, trilha, sinais e handoff do usuario, lendo snapshots, entidades relacionais e tabelas dedicadas server-side quando a API local esta ativa, com painel de dados vivos e fallback em `localStorage`. |
+| `pages/dashboard-cliente.html` | Ativa | Historico, perfil, modelos, trilha, sinais, impactos de calculadoras e handoff do usuario, lendo snapshots, entidades relacionais e tabelas dedicadas server-side quando a API local esta ativa, com painel de dados vivos e fallback em `localStorage`. |
 | `pages/dashboard-admin.html` | Ativa | Usuarios, recuperacao, pacotes, SLA, roteamento, metas, auditoria, funil, fila guiada executavel, produtividade, carteira por consultor, funil comercial movel, cadencia por etapa, eventos, snapshots, entidades, fila dedicada filtravel e operacao inline das tabelas dedicadas SQLite. |
 
 ### Produto, Decisao e Modelos
@@ -186,7 +186,7 @@ Todas usam o mesmo padrao de pagina, o motor de render `assets/js/calculadoras-p
 | --- | --- | --- |
 | `pages/carteira.html` | Ativa | Carteira de clientes, oportunidades, agenda e insights. |
 | `pages/assembleias.html` | Ativa | Acompanhamento de assembleias. |
-| `pages/handoff-consultivo.html` | Ativa | Painel consultivo de leads locais e vivos, mesclando `/api/leads` com `localStorage`, com plano de acao executavel por lead e sincronizacao de atendimento quando ha API local. |
+| `pages/handoff-consultivo.html` | Ativa | Painel consultivo de leads locais e vivos, incluindo origem `calculator`, mesclando `/api/leads` com `localStorage`, com plano de acao executavel por lead e sincronizacao de atendimento quando ha API local. |
 | `pages/consorcio_user_journey_map_v2.html` | Legado controlado | Mapa visual antigo da jornada do consorciado. |
 | `pages/index_2.html` | Legado controlado | Portal de operacoes anterior. |
 | `pages/index_v4_paginas.html` | Legado controlado | Navegacao/portal anterior. |
@@ -205,6 +205,18 @@ Home contextual
 ```
 
 Contratos principais: `data-home-hero-contextual`, `data-home-continuity-cockpit`, `BFHome`, `BFDecisionContext`, `BFTrilhaDecisaoService`, `bf_financial_profile_v1`, `bf_calculator_history_v1`, `bf_decision_journey_v1:<owner>`.
+
+### Jornada de calculadora para continuidade
+
+```text
+Calculadora salva
+  -> painel de impacto com score, risco e proximo passo
+  -> Dashboard Cliente prioriza revisao, simulacao ou comparacao
+  -> cliente cria handoff consultivo quando precisa de apoio
+  -> Handoff Consultivo recebe origem calculator, score, risco e checklist
+```
+
+Contratos principais: `data-calculator-impact-panel`, `data-client-calculator-impact`, `data-client-calculator-impact-item`, `data-client-create-calculator-handoff`, `BFHandoffConsultivoService.createFromCalculatorImpact`, `sourceCalculatorHistoryId`, `bf_calculator_history_v1`, `bf_consultive_handoffs_v1`.
 
 ### Jornada de produto e comparacao
 
