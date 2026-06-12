@@ -119,7 +119,7 @@ Contrato confirmado:
 | `pages/dados-abertos.html` | Ativa | Datasets locais e explicacao de origem/uso. |
 | `pages/api-docs.html` | Ativa | Contratos futuros de API baseados nos services atuais. |
 | `pages/componentes-v8.html` | Ativa | Catalogo visual do design system v8. |
-| `pages/lousa-navegacao.html` | Ativa | Lousa navegavel da jornada, status, roteiro de QA ponta a ponta, checkpoints comerciais/online e proximos ciclos. |
+| `pages/lousa-navegacao.html` | Ativa | Lousa navegavel da jornada, status, roteiro de QA ponta a ponta, mapa online GitHub/Pages, checkpoints comerciais/online e proximos ciclos. |
 
 ### Autenticacao, Configuracoes e Operacao
 

@@ -64,6 +64,7 @@ Cada etapa deve responder quatro perguntas:
 | Dashboards por funil/aging | Concluido parcial | Dashboard Cliente tem timeline, deep links e cockpit de retomada com proximo passo, handoff, proposta, simulacao e etapa comercial; Dashboard Admin agora tem proximas acoes, fila guiada executavel com dono/prazo/alvo/status/motivo, produtividade, carteira por consultor, funil comercial movel com historico local, cadencia por etapa, exportacao sanitizada do funil, funil por origem, aging, prioridade, responsavel sugerido, gargalos e alertas de proposta alterada apos handoff. |
 | Navegacao autenticada | Concluido parcial | Login local tem acesso rapido por perfil, redirect preservado e validador dedicado. |
 | Teste navegavel ponta a ponta | Concluido | `pages/lousa-navegacao.html` ganhou roteiro de Auth, Home, Produtos, Calculadoras, Trilha, Comparador, Simulador, Proposta, Handoff e Dashboards, alem de checkpoints de QA comercial para cliente, consultor, funil, cadencia, exportacao e online. |
+| Mapa GitHub online na lousa | Concluido | Lousa ganhou bloco `data-lousa-github-map` com site publicado, repositorio, docs e links diretos da jornada no GitHub Pages. |
 | Publicacao segura em GitHub Pages | Concluido parcial | Selo demo/local, fallback `404.html`, CI em `.github/workflows/validate.yml` e `tools/validate-public-release-safety.mjs`. |
 | QA online da jornada publicada | Concluido | `tools/validate-online-journey-smoke.mjs` valida no GitHub Pages as 10 etapas da lousa, anchors, marcadores e fallback estatico; `docs/test-reports/online-journey-browser-report.json` registra a checagem renderizada. |
 | Performance do simulador online | Concluido parcial | Simulador passou a carregar `Tab_Grupos_Consorcio.compact.json` primeiro, preservando fallback para o JSON canonico e todos os 17.396 grupos validos. |
@@ -126,6 +127,7 @@ Cada etapa deve responder quatro perguntas:
 | 45 | Schema e migrations versionadas | Concluido parcial | Criada baseline `001_bancus_fraternis_local_db.sql`, rollback, `schema-manifest.json` e validador que compara manifest, SQL e schema SQLite real. | `js/backend/migrations/*`, `tools/validate-database-migrations.mjs`. |
 | 46 | Impacto de jornada nas calculadoras | Concluido parcial | As 19 calculadoras mostram score, risco/coerencia, origem preview/saved, memoria e proximo passo em um painel unico de resultado. | `data-calculator-impact-panel`, `BFCalculatorJourney.impactPanel`, `tools/validate-calculator-impact-panel.mjs`. |
 | 47 | Impacto acionavel no cliente e handoff | Concluido parcial | Dashboard Cliente transforma calculos salvos em cards de impacto, prioriza revisao/simulacao e cria handoff consultivo por historico de calculadora. | `data-client-calculator-impact`, `data-client-create-calculator-handoff`, `BFHandoffConsultivoService.createFromCalculatorImpact`. |
+| 48 | Mapa online GitHub na lousa | Concluido | A lousa publicada agora expõe site, repositorio, mapa completo, plano de evolucao e links diretos da jornada online. | `data-lousa-github-map`, `data-lousa-github-journey`, `tools/validate-navigable-journey.mjs`. |
 
 ## Proximos Passos Priorizados
 

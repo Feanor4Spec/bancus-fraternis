@@ -4,6 +4,25 @@
 
 ---
 
+## [v8.106.0] - 2026-06-12
+
+### Mapa GitHub online na lousa
+
+#### Adicionado
+- A lousa navegavel ganhou o bloco `data-lousa-github-map` com links para o site publicado, repositorio GitHub, mapa completo e plano de evolucao.
+- Criada a jornada online `data-lousa-github-journey` com atalhos diretos para Home, Produtos, Calculadoras, Poupanca x Selic, Trilha, Comparador, Simulador, Dashboard Cliente, Handoff e Admin no GitHub Pages.
+
+#### Modificado
+- Contratos publicos, mapa completo, plano de acao e validadores passaram a proteger o mapa online publicado.
+
+#### Validacao
+- `node tools/validate-navigable-journey.mjs`
+- `node tools/validate-public-contracts.mjs`
+- `node tools/validate-design-system.mjs`
+- `node tools/validate-public-release-safety.mjs`
+
+---
+
 ## [v8.105.0] - 2026-06-12
 
 ### Impacto das calculadoras no Dashboard Cliente e Handoff

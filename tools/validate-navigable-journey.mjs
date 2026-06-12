@@ -96,8 +96,12 @@ assert(lousa.includes('data-lousa-journey-acceptance'), 'Lousa sem criterios de 
 assert(lousa.includes('data-lousa-commercial-qa'), 'Lousa sem marcador data-lousa-commercial-qa.');
 assert(lousa.includes('id="roteiro-navegavel"'), 'Lousa sem ancora #roteiro-navegavel.');
 assert(lousa.includes('id="qa-comercial"'), 'Lousa sem ancora #qa-comercial.');
+assert(lousa.includes('id="mapa-github"'), 'Lousa sem ancora #mapa-github.');
 assert(lousa.includes('href="#roteiro-navegavel"'), 'Stagebar/atalho da lousa nao aponta para o roteiro navegavel.');
 assert(lousa.includes('href="#qa-comercial"'), 'Stagebar/atalho da lousa nao aponta para QA comercial.');
+assert(lousa.includes('href="#mapa-github"'), 'Stagebar/atalho da lousa nao aponta para mapa GitHub.');
+assert(lousa.includes('data-lousa-github-map'), 'Lousa sem marcador data-lousa-github-map.');
+assert(lousa.includes('data-lousa-github-journey'), 'Lousa sem jornada online do GitHub Pages.');
 assert(lousa.includes('27 validadores'), 'Lousa nao registra o total esperado de 27 validadores.');
 
 for (const step of expectedSteps) {
@@ -126,8 +130,25 @@ for (const checkpoint of expectedCheckpoints) {
   'handoff-consultivo.html?from=lousa#painel-consultor',
   'dashboard-admin.html?from=lousa#admin-funil-comercial',
   'dashboard-admin.html?from=lousa&qa=funil-comercial#admin-funil-comercial',
-  'https://feanor4spec.github.io/bancus-fraternis/pages/lousa-navegacao.html#roteiro-navegavel'
+  'https://feanor4spec.github.io/bancus-fraternis/pages/lousa-navegacao.html#roteiro-navegavel',
+  'https://feanor4spec.github.io/bancus-fraternis/',
+  'https://github.com/Feanor4Spec/bancus-fraternis',
+  'https://github.com/Feanor4Spec/bancus-fraternis/blob/main/docs/MAPA_COMPLETO_PROJETO_BANK_FRATERN.md',
+  'https://github.com/Feanor4Spec/bancus-fraternis/blob/main/docs/PLANO_ACAO_EVOLUCAO_BANK_FRATERN.md'
 ].forEach((href) => assert(lousa.includes(`href="${href}"`), `QA comercial sem link ${href}.`));
+
+[
+  'https://feanor4spec.github.io/bancus-fraternis/pages/index.html',
+  'https://feanor4spec.github.io/bancus-fraternis/pages/produtos.html',
+  'https://feanor4spec.github.io/bancus-fraternis/pages/calculadoras.html',
+  'https://feanor4spec.github.io/bancus-fraternis/pages/calculadora-poupanca-selic.html',
+  'https://feanor4spec.github.io/bancus-fraternis/pages/trilha-decisao.html',
+  'https://feanor4spec.github.io/bancus-fraternis/pages/comparador.html',
+  'https://feanor4spec.github.io/bancus-fraternis/pages/simulador.html',
+  'https://feanor4spec.github.io/bancus-fraternis/pages/dashboard-cliente.html',
+  'https://feanor4spec.github.io/bancus-fraternis/pages/handoff-consultivo.html',
+  'https://feanor4spec.github.io/bancus-fraternis/pages/dashboard-admin.html'
+].forEach((href) => assert(lousa.includes(`href="${href}"`), `Mapa GitHub sem link online ${href}.`));
 
 [
   'data-client-continuity-cockpit',
@@ -220,12 +241,16 @@ for (const contract of pageContracts) {
   '.bf-lousa-test-card',
   '.bf-lousa-checkpoint-grid',
   '.bf-lousa-checkpoint-card',
+  '.bf-lousa-online-map',
+  '.bf-lousa-online-card',
+  '.bf-lousa-online-journey',
   '.bf-lousa-acceptance'
 ].forEach((selector) => assert(platformCss.includes(selector), `platform.css sem estilo ${selector}.`));
 
 [
   'data-lousa-journey-checklist',
   'data-lousa-journey-acceptance',
+  'data-lousa-github-map',
   'data-lousa-commercial-qa',
   'data-lousa-qa-checkpoint',
   'tools/validate-navigable-journey.mjs'

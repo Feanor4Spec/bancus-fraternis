@@ -247,6 +247,8 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'data-shelf-recommendation',
   'data-shelf-recommendation-reason',
   'data-lousa-commercial-qa',
+  'data-lousa-github-map',
+  'data-lousa-github-journey',
   'data-lousa-qa-checkpoint',
   'data-lousa-journey-checklist',
   'data-lousa-journey-acceptance'
@@ -564,6 +566,8 @@ assert(lousa.includes('data-lousa-journey-checklist'), 'lousa-navegacao.html sem
 assert(lousa.includes('data-lousa-journey-acceptance'), 'lousa-navegacao.html sem criterios de aceite da jornada navegavel.');
 assert(lousa.includes('data-lousa-commercial-qa'), 'lousa-navegacao.html sem QA comercial navegavel.');
 assert(lousa.includes('data-lousa-qa-checkpoint'), 'lousa-navegacao.html sem checkpoints de QA comercial.');
+assert(lousa.includes('data-lousa-github-map'), 'lousa-navegacao.html sem mapa online do GitHub.');
+assert(lousa.includes('data-lousa-github-journey'), 'lousa-navegacao.html sem jornada online do GitHub Pages.');
 
 const calculators = JSON.parse(calculatorsJson);
 const calculatorCount = Array.isArray(calculators) ? calculators.length : 0;
@@ -609,7 +613,7 @@ const report = {
   ok: failures.length === 0,
   contracts: {
     localStorageKeys: 18,
-    dataMarkers: 111,
+    dataMarkers: 113,
     globals: 20,
     deepLinks: 10,
     validators: 27,

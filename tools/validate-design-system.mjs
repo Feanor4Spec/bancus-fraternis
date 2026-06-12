@@ -242,6 +242,7 @@ for (const pageName of files) {
   if (pageName === 'componentes-v8.html' && !html.includes('data-component-decision-strip')) fail('componentes-v8.html sem resumo de componentes.');
   if (pageName === 'componentes-v8.html' && !html.includes('data-component-timeline')) fail('componentes-v8.html sem timeline de componentes.');
   if (pageName === 'componentes-v8.html' && !html.includes('bf-component-swatch-grid')) fail('componentes-v8.html sem amostra de tokens visuais.');
+  if (pageName === 'lousa-navegacao.html' && !html.includes('data-lousa-github-map')) fail('lousa-navegacao.html sem mapa online GitHub.');
 
   await validateRefs(pageName, html);
 }
@@ -420,6 +421,7 @@ if (!platformCss.includes('.bf-calculator-saved-comparison')) fail('platform.css
 if (!calculatorsPageJs.includes('data-calculator-impact-panel')) fail('calculadoras-page.js sem painel de impacto da jornada.');
 if (!calculatorsPageJs.includes('impactPanel: buildCalculatorImpactPanel')) fail('BFCalculatorJourney sem impactPanel publico.');
 if (!platformCss.includes('.bf-calculator-impact-panel')) fail('platform.css sem layout do painel de impacto da calculadora.');
+if (!platformCss.includes('.bf-lousa-online-map')) fail('platform.css sem layout do mapa online da lousa.');
 
 const simulatorHtml = await fs.readFile(path.join(root, 'pages/simulador.html'), 'utf8');
 const simulatorAppJs = await fs.readFile(path.join(root, 'js/app.js'), 'utf8');
