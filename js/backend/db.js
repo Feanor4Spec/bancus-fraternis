@@ -7,8 +7,13 @@ const DEFAULT_DB_PROVIDER = 'sqlite';
 const DEFAULT_DB_PATH = path.join(__dirname, '..', '..', '.runtime', 'bancus-fraternis.sqlite');
 const SCHEMA_MIGRATIONS_DIR = path.join(__dirname, 'migrations');
 const SCHEMA_MANIFEST_PATH = path.join(SCHEMA_MIGRATIONS_DIR, 'schema-manifest.json');
-const SESSION_TTL_MS = 1000 * 60 * 60 * 8;
-const PASSWORD_ALGORITHM = 'scrypt-sha256';
+const DEFAULT_SESSION_TTL_MINUTES = 8 * 60;
+const MIN_SESSION_TTL_MINUTES = 15;
+const MAX_SESSION_TTL_MINUTES = 24 * 60;
+const SESSION_TTL_MS = resolveSessionTtlMs(process.env.BANCUS_SESSION_TTL_MINUTES);
+const PASSWORD_HASH_ALGORITHM = 'scrypt-sha256';
+const CURRENT_PASSWORD_POLICY_VERSION = 'scrypt-sha256-v2';
+const LEGACY_PASSWORD_POLICY_VERSIONS = Object.freeze(['scrypt-sha256']);
 const MAX_EVENT_PAYLOAD_CHARS = 50000;
 const MAX_PERSISTED_PAYLOAD_CHARS = 4 * 1024 * 1024;
 const IMPORT_TEMP_PASSWORD = 'Temp@123';
@@ -25,6 +30,34 @@ const DB_PROVIDER_ALIASES = {
   postgresql: 'postgresql',
   pg: 'postgresql'
 };
+
+function resolveSessionTtlMinutes(value) {
+  if (value === undefined || value === null || String(value).trim() === '') return DEFAULT_SESSION_TTL_MINUTES;
+  const parsed = Number(value);
+  return Number.isFinite(parsed)
+    ? Math.max(MIN_SESSION_TTL_MINUTES, Math.min(MAX_SESSION_TTL_MINUTES, Math.trunc(parsed)))
+    : DEFAULT_SESSION_TTL_MINUTES;
+}
+
+function resolveSessionTtlMs(value) {
+  return resolveSessionTtlMinutes(value) * 60 * 1000;
+}
+
+function resolveAuthMode(value, provider = DEFAULT_DB_PROVIDER) {
+  const raw = String(value === undefined || value === null ? '' : value).trim().toLowerCase();
+  if (!raw) return provider === 'postgresql' ? 'production' : 'demo';
+  if (!['demo', 'production'].includes(raw)) throw new Error('BANCUS_AUTH_MODE invalido. Use demo ou production.');
+  return raw;
+}
+
+function booleanOption(value, fallback = false) {
+  if (value === undefined || value === null || String(value).trim() === '') return Boolean(fallback);
+  if (value === true || value === false) return value;
+  const normalized = String(value).trim().toLowerCase();
+  if (['1', 'true', 'on', 'yes'].includes(normalized)) return true;
+  if (['0', 'false', 'off', 'no'].includes(normalized)) return false;
+  throw new Error('Opcao booleana invalida. Use true ou false.');
+}
 
 const ROLE_LABELS = {
   admin: 'Administrador',
@@ -100,6 +133,7 @@ function normalizeEmail(email) {
 const OWNER_CONFLICT_CODE = 'BANCUS_OWNER_CONFLICT';
 const USER_EMAIL_CONFLICT_CODE = 'BANCUS_USER_EMAIL_CONFLICT';
 const USER_DELETE_CONFLICT_CODE = 'BANCUS_USER_HAS_RELATED_RECORDS';
+const LAST_ACTIVE_ADMIN_CODE = 'LAST_ACTIVE_ADMIN';
 const IDENTITY_OWNERSHIP_TABLES = Object.freeze([
   'events',
   'snapshots',
@@ -136,6 +170,24 @@ function linkedUserDeleteResponse() {
   };
 }
 
+function lastActiveAdminResponse() {
+  return {
+    ok: false,
+    status: 409,
+    code: LAST_ACTIVE_ADMIN_CODE,
+    message: 'Mantenha ao menos um administrador ativo.'
+  };
+}
+
+function removesActiveAdminAccess(current, nextRole, nextStatus) {
+  return Boolean(
+    current
+    && current.role === 'admin'
+    && current.status === 'active'
+    && (nextRole !== 'admin' || nextStatus !== 'active')
+  );
+}
+
 function normalizeRole(role) {
   return ROLE_LABELS[role] ? role : 'cliente';
 }
@@ -168,7 +220,7 @@ function normalizeText(value, fallback = '') {
 
 function hashPassword(password, salt = crypto.randomBytes(16).toString('hex')) {
   const hash = crypto.scryptSync(String(password || ''), salt, 64).toString('hex');
-  return { hash, salt, algorithm: PASSWORD_ALGORITHM };
+  return { hash, salt, algorithm: PASSWORD_HASH_ALGORITHM };
 }
 
 function verifyPassword(password, salt, expectedHash) {
@@ -176,6 +228,43 @@ function verifyPassword(password, salt, expectedHash) {
   const actual = crypto.scryptSync(String(password || ''), salt, 64);
   const expected = Buffer.from(String(expectedHash), 'hex');
   return actual.length === expected.length && crypto.timingSafeEqual(actual, expected);
+}
+
+function storedPasswordAlgorithm(authMode) {
+  return authMode === 'production' ? CURRENT_PASSWORD_POLICY_VERSION : PASSWORD_HASH_ALGORITHM;
+}
+
+const DUMMY_PASSWORD_CREDENTIALS = hashPassword(crypto.randomBytes(32).toString('hex'));
+
+function verifyLoginPassword(user, password) {
+  const candidate = user || {};
+  const salt = candidate.password_salt || DUMMY_PASSWORD_CREDENTIALS.salt;
+  const expectedHash = candidate.password_hash || DUMMY_PASSWORD_CREDENTIALS.hash;
+  const valid = verifyPassword(password, salt, expectedHash);
+  return Boolean(user) && valid;
+}
+
+function validateProductivePassword(password, identity = {}) {
+  const value = String(password === undefined || password === null ? '' : password);
+  const length = value.length;
+  const identityParts = [identity.email, identity.name]
+    .flatMap((entry) => String(entry || '').toLowerCase().split(/[^a-z0-9]+/i))
+    .filter((entry) => entry.length >= 4);
+  const commonPattern = /(senha|password|qwerty|123456|temp@123|admin@123|bancus|fraternis)/i;
+
+  if (value !== value.trim()) {
+    return { ok: false, status: 400, code: 'PASSWORD_POLICY', message: 'A senha nao pode comecar ou terminar com espacos.' };
+  }
+  if (length < 12 || length > 128) {
+    return { ok: false, status: 400, code: 'PASSWORD_POLICY', message: 'Crie uma senha entre 12 e 128 caracteres.' };
+  }
+  if (!/[a-z]/.test(value) || !/[A-Z]/.test(value) || !/[0-9]/.test(value) || !/[^A-Za-z0-9]/.test(value)) {
+    return { ok: false, status: 400, code: 'PASSWORD_POLICY', message: 'Combine letras maiusculas e minusculas, numero e simbolo.' };
+  }
+  if (commonPattern.test(value) || identityParts.some((part) => value.toLowerCase().includes(part))) {
+    return { ok: false, status: 400, code: 'PASSWORD_POLICY', message: 'Escolha uma senha sem nome, e-mail ou termos previsiveis.' };
+  }
+  return { ok: true, status: 200 };
 }
 
 function tokenHash(token) {
@@ -281,7 +370,7 @@ function sanitizePersistedPayload(value, depth = 0, seen = new WeakSet()) {
   return value;
 }
 
-function publicUser(row) {
+function publicUser(row, options = {}) {
   if (!row) return null;
   return {
     id: row.id,
@@ -295,7 +384,9 @@ function publicUser(row) {
     phone: row.phone || '',
     createdAt: row.created_at || '',
     updatedAt: row.updated_at || '',
-    lastLoginAt: row.last_login_at || ''
+    lastLoginAt: row.last_login_at || '',
+    mustChangePassword: !String(row.password_updated_at || '').trim()
+      || (options.requireCurrentPasswordPolicy === true && row.password_algorithm !== CURRENT_PASSWORD_POLICY_VERSION)
   };
 }
 
@@ -474,32 +565,40 @@ function buildJourneyEntity(snapshot = {}) {
 }
 
 function validateUserPayload(payload, options = {}) {
-  const data = payload || {};
-  const name = normalizeText(data.name);
-  const email = normalizeEmail(data.email);
-  const role = normalizeRole(data.role);
-  const status = normalizeStatus(data.status);
-  const password = normalizeText(data.password);
+  const data = payload && typeof payload === 'object' ? payload : {};
+  const current = options.current && typeof options.current === 'object' ? options.current : {};
+  const editing = options.editing === true;
+  const owns = (key) => Object.prototype.hasOwnProperty.call(data, key);
+  const valueFor = (key, fallback = '') => owns(key) ? data[key] : (editing ? current[key] : fallback);
+  const name = normalizeText(valueFor('name'));
+  const email = normalizeEmail(valueFor('email'));
+  const role = normalizeText(valueFor('role', 'cliente'));
+  const status = normalizeText(valueFor('status', 'active'));
+  const passwordValue = owns('password') ? data.password : '';
+  const password = String(passwordValue === undefined || passwordValue === null ? '' : passwordValue);
 
   if (!name) return { ok: false, status: 400, message: 'Informe o nome do usuario.' };
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return { ok: false, status: 400, message: 'Informe um e-mail valido.' };
   }
-  if (!options.editing && (!password || password.length < 6)) {
+  if (!ROLE_LABELS[role]) return { ok: false, status: 400, message: 'Informe um papel de usuario valido.' };
+  if (!STATUS_LABELS[status]) return { ok: false, status: 400, message: 'Informe um status de usuario valido.' };
+  if (!editing && (!password || password.length < 6)) {
     return { ok: false, status: 400, message: 'Informe uma senha com pelo menos 6 caracteres.' };
   }
 
   return {
     ok: true,
     data: {
-      id: normalizeText(data.id),
+      id: normalizeText(valueFor('id')),
       name,
       email,
       role,
       status,
-      department: normalizeText(data.department),
-      phone: normalizeText(data.phone),
-      password
+      department: normalizeText(valueFor('department')),
+      phone: normalizeText(valueFor('phone')),
+      password,
+      mustChangePassword: owns('mustChangePassword') ? data.mustChangePassword === true : false
     }
   };
 }
@@ -519,7 +618,7 @@ function initializeSchema(db) {
       phone TEXT DEFAULT '',
       password_hash TEXT NOT NULL,
       password_salt TEXT NOT NULL,
-      password_algorithm TEXT NOT NULL DEFAULT '${PASSWORD_ALGORITHM}',
+      password_algorithm TEXT NOT NULL DEFAULT '${PASSWORD_HASH_ALGORITHM}',
       password_updated_at TEXT NOT NULL,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
@@ -670,7 +769,11 @@ class BancusDatabase {
     this.dbPath = dbPath;
     this.provider = normalizeDbProvider(options.provider);
     this.schemaVersion = SCHEMA_VERSION;
-    this.seedUsers();
+    this.authMode = options.authMode === 'production' ? 'production' : 'demo';
+    if (this.authMode === 'production' && options.seedUsers !== false) {
+      throw new Error('Contas demonstrativas nao podem ser semeadas em modo production.');
+    }
+    if (options.seedUsers !== false) this.seedUsers();
     this.rebuildJourneyEntities();
   }
 
@@ -679,6 +782,7 @@ class BancusDatabase {
   }
 
   seedUsers() {
+    if (this.authMode === 'production') throw new Error('Contas demonstrativas nao podem ser semeadas em modo production.');
     SEED_USERS.forEach((seed) => {
       const exists = this.db.prepare('SELECT id FROM users WHERE email = ?').get(seed.email);
       if (exists) return;
@@ -701,7 +805,7 @@ class BancusDatabase {
         seed.phone,
         credentials.hash,
         credentials.salt,
-        credentials.algorithm,
+        storedPasswordAlgorithm(this.authMode),
         timestamp,
         timestamp,
         timestamp,
@@ -712,7 +816,9 @@ class BancusDatabase {
 
   listUsers() {
     const rows = this.db.prepare('SELECT * FROM users ORDER BY name COLLATE NOCASE ASC').all();
-    return rows.map(publicUser);
+    return rows.map((row) => publicUser(row, {
+      requireCurrentPasswordPolicy: this.authMode === 'production'
+    }));
   }
 
   hasEvent(id) {
@@ -734,7 +840,7 @@ class BancusDatabase {
   }
 
   findPublicUser(id) {
-    return publicUser(this.getUserById(id));
+    return publicUser(this.getUserById(id), { requireCurrentPasswordPolicy: this.authMode === 'production' });
   }
 
   createUser(payload) {
@@ -742,11 +848,19 @@ class BancusDatabase {
     if (!validation.ok) return validation;
 
     const data = validation.data;
+    if (this.authMode === 'production') {
+      if (data.email.endsWith('@bankfratern.local')) {
+        return { ok: false, status: 400, code: 'DEMO_IDENTITY_FORBIDDEN', message: 'Use um e-mail individual para este acesso.' };
+      }
+      const policy = validateProductivePassword(data.password, data);
+      if (!policy.ok) return policy;
+    }
     if (this.getUserByEmail(data.email)) {
       return { ok: false, status: 409, message: 'Ja existe um usuario com este e-mail.' };
     }
 
     const timestamp = nowIso();
+    const passwordUpdatedAt = data.mustChangePassword ? '' : timestamp;
     const credentials = hashPassword(data.password);
     const id = data.id && /^[A-Za-z0-9_-]{3,80}$/.test(data.id) ? data.id : makeId('USR');
 
@@ -767,8 +881,8 @@ class BancusDatabase {
       data.phone,
       credentials.hash,
       credentials.salt,
-      credentials.algorithm,
-      timestamp,
+      storedPasswordAlgorithm(this.authMode),
+      passwordUpdatedAt,
       timestamp,
       timestamp,
       ''
@@ -778,20 +892,49 @@ class BancusDatabase {
   }
 
   updateUser(id, payload) {
-    const current = this.getUserById(id);
-    if (!current) return { ok: false, status: 404, message: 'Usuario nao encontrado.' };
-
-    const validation = validateUserPayload(payload, { editing: true });
-    if (!validation.ok) return validation;
-    const data = validation.data;
-    const currentEmail = normalizeEmail(current.email);
-    const nextEmail = normalizeEmail(data.email);
-    const timestamp = nowIso();
-
     this.db.exec('SAVEPOINT bancus_user_identity_update');
     try {
-      // Adquire o lock de escrita antes de verificar colisoes em tabelas sem FK.
-      this.db.prepare('UPDATE users SET updated_at = updated_at WHERE id = ?').run(current.id);
+      // O no-op adquire o lock de escrita antes da leitura que governa a
+      // invariavel de administracao. Assim duas mutacoes concorrentes nao
+      // conseguem decidir sobre a mesma contagem fora da transacao.
+      const lockResult = this.db.prepare('UPDATE users SET updated_at = updated_at WHERE id = ?').run(String(id || ''));
+      if (Number(lockResult && lockResult.changes || 0) === 0) {
+        this.db.exec('RELEASE bancus_user_identity_update');
+        return { ok: false, status: 404, message: 'Usuario nao encontrado.' };
+      }
+
+      const current = this.getUserById(id);
+      const validation = validateUserPayload(payload, { editing: true, current });
+      if (!validation.ok) {
+        this.db.exec('RELEASE bancus_user_identity_update');
+        return validation;
+      }
+      const data = validation.data;
+      if (this.authMode === 'production') {
+        if (data.email.endsWith('@bankfratern.local')) {
+          this.db.exec('RELEASE bancus_user_identity_update');
+          return { ok: false, status: 400, code: 'DEMO_IDENTITY_FORBIDDEN', message: 'Use um e-mail individual para este acesso.' };
+        }
+        if (data.password) {
+          const policy = validateProductivePassword(data.password, data);
+          if (!policy.ok) {
+            this.db.exec('RELEASE bancus_user_identity_update');
+            return policy;
+          }
+        }
+      }
+
+      if (removesActiveAdminAccess(current, data.role, data.status)) {
+        const activeAdmins = this.db.prepare("SELECT COUNT(*) AS total FROM users WHERE role = 'admin' AND status = 'active'").get();
+        if (Number(activeAdmins && activeAdmins.total || 0) <= 1) {
+          this.db.exec('RELEASE bancus_user_identity_update');
+          return lastActiveAdminResponse();
+        }
+      }
+
+      const currentEmail = normalizeEmail(current.email);
+      const nextEmail = normalizeEmail(data.email);
+      const timestamp = nowIso();
       if (nextEmail !== currentEmail) {
         const duplicated = this.db.prepare('SELECT id FROM users WHERE email = ? AND id <> ? LIMIT 1').get(nextEmail, current.id);
         if (duplicated) {
@@ -828,12 +971,16 @@ class BancusDatabase {
       `).run(data.name, nextEmail, data.role, data.status, data.department, data.phone, timestamp, current.id);
 
       if (data.password) {
-        const passwordResult = this.setPassword(current.id, data.password);
+        const passwordResult = this.setPassword(current.id, data.password, {
+          mustChangePassword: data.mustChangePassword
+        });
         if (!passwordResult.ok) {
           this.db.exec('ROLLBACK TO bancus_user_identity_update');
           this.db.exec('RELEASE bancus_user_identity_update');
           return passwordResult;
         }
+      } else if (nextEmail !== currentEmail || data.role !== current.role || data.status !== current.status) {
+        this.db.prepare("UPDATE sessions SET revoked_at = ? WHERE user_id = ? AND revoked_at = ''").run(timestamp, current.id);
       }
       this.db.exec('RELEASE bancus_user_identity_update');
       return { ok: true, status: 200, user: this.findPublicUser(current.id), message: 'Usuario atualizado com sucesso.' };
@@ -852,55 +999,102 @@ class BancusDatabase {
   }
 
   deleteUser(id) {
-    const current = this.getUserById(id);
-    if (!current) return { ok: false, status: 404, message: 'Usuario nao encontrado.' };
-    const deleteResult = this.db.prepare(`
-      DELETE FROM users
-      WHERE id = ?
-        AND NOT EXISTS (SELECT 1 FROM sessions WHERE user_id = users.id)
-        AND NOT EXISTS (
-          SELECT 1 FROM events
-          WHERE LOWER(TRIM(owner_email)) = LOWER(TRIM(users.email))
-             OR LOWER(TRIM(actor_email)) = LOWER(TRIM(users.email))
-        )
-        AND NOT EXISTS (
-          SELECT 1 FROM snapshots
-          WHERE LOWER(TRIM(owner_email)) = LOWER(TRIM(users.email))
-             OR LOWER(TRIM(actor_email)) = LOWER(TRIM(users.email))
-        )
-        AND NOT EXISTS (
-          SELECT 1 FROM journey_entities
-          WHERE LOWER(TRIM(owner_email)) = LOWER(TRIM(users.email))
-             OR LOWER(TRIM(actor_email)) = LOWER(TRIM(users.email))
-        )
-        AND NOT EXISTS (
-          SELECT 1 FROM journey_leads
-          WHERE LOWER(TRIM(owner_email)) = LOWER(TRIM(users.email))
-             OR LOWER(TRIM(actor_email)) = LOWER(TRIM(users.email))
-        )
-        AND NOT EXISTS (
-          SELECT 1 FROM journey_simulations
-          WHERE LOWER(TRIM(owner_email)) = LOWER(TRIM(users.email))
-             OR LOWER(TRIM(actor_email)) = LOWER(TRIM(users.email))
-        )
-        AND NOT EXISTS (
-          SELECT 1 FROM journey_proposals
-          WHERE LOWER(TRIM(owner_email)) = LOWER(TRIM(users.email))
-             OR LOWER(TRIM(actor_email)) = LOWER(TRIM(users.email))
-        )
-    `).run(current.id);
-    if (Number(deleteResult && deleteResult.changes || 0) === 0) return linkedUserDeleteResponse();
-    return { ok: true, status: 200, message: 'Usuario removido.' };
+    this.db.exec('SAVEPOINT bancus_user_delete');
+    try {
+      const lockResult = this.db.prepare('UPDATE users SET updated_at = updated_at WHERE id = ?').run(String(id || ''));
+      if (Number(lockResult && lockResult.changes || 0) === 0) {
+        this.db.exec('RELEASE bancus_user_delete');
+        return { ok: false, status: 404, message: 'Usuario nao encontrado.' };
+      }
+
+      const current = this.getUserById(id);
+      const linkedRecord = this.db.prepare(`
+        SELECT 1 AS linked
+        WHERE EXISTS (SELECT 1 FROM sessions WHERE user_id = @userId)
+           OR EXISTS (SELECT 1 FROM events WHERE LOWER(TRIM(owner_email)) = @email OR LOWER(TRIM(actor_email)) = @email)
+           OR EXISTS (SELECT 1 FROM snapshots WHERE LOWER(TRIM(owner_email)) = @email OR LOWER(TRIM(actor_email)) = @email)
+           OR EXISTS (SELECT 1 FROM journey_entities WHERE LOWER(TRIM(owner_email)) = @email OR LOWER(TRIM(actor_email)) = @email)
+           OR EXISTS (SELECT 1 FROM journey_leads WHERE LOWER(TRIM(owner_email)) = @email OR LOWER(TRIM(actor_email)) = @email)
+           OR EXISTS (SELECT 1 FROM journey_simulations WHERE LOWER(TRIM(owner_email)) = @email OR LOWER(TRIM(actor_email)) = @email)
+           OR EXISTS (SELECT 1 FROM journey_proposals WHERE LOWER(TRIM(owner_email)) = @email OR LOWER(TRIM(actor_email)) = @email)
+      `).get({ userId: current.id, email: normalizeEmail(current.email) });
+      if (linkedRecord) {
+        this.db.exec('RELEASE bancus_user_delete');
+        return linkedUserDeleteResponse();
+      }
+
+      if (removesActiveAdminAccess(current, null, null)) {
+        const activeAdmins = this.db.prepare("SELECT COUNT(*) AS total FROM users WHERE role = 'admin' AND status = 'active'").get();
+        if (Number(activeAdmins && activeAdmins.total || 0) <= 1) {
+          this.db.exec('RELEASE bancus_user_delete');
+          return lastActiveAdminResponse();
+        }
+      }
+
+      const deleteResult = this.db.prepare(`
+        DELETE FROM users
+        WHERE id = ?
+          AND NOT EXISTS (SELECT 1 FROM sessions WHERE user_id = users.id)
+          AND NOT EXISTS (
+            SELECT 1 FROM events
+            WHERE LOWER(TRIM(owner_email)) = LOWER(TRIM(users.email))
+               OR LOWER(TRIM(actor_email)) = LOWER(TRIM(users.email))
+          )
+          AND NOT EXISTS (
+            SELECT 1 FROM snapshots
+            WHERE LOWER(TRIM(owner_email)) = LOWER(TRIM(users.email))
+               OR LOWER(TRIM(actor_email)) = LOWER(TRIM(users.email))
+          )
+          AND NOT EXISTS (
+            SELECT 1 FROM journey_entities
+            WHERE LOWER(TRIM(owner_email)) = LOWER(TRIM(users.email))
+               OR LOWER(TRIM(actor_email)) = LOWER(TRIM(users.email))
+          )
+          AND NOT EXISTS (
+            SELECT 1 FROM journey_leads
+            WHERE LOWER(TRIM(owner_email)) = LOWER(TRIM(users.email))
+               OR LOWER(TRIM(actor_email)) = LOWER(TRIM(users.email))
+          )
+          AND NOT EXISTS (
+            SELECT 1 FROM journey_simulations
+            WHERE LOWER(TRIM(owner_email)) = LOWER(TRIM(users.email))
+               OR LOWER(TRIM(actor_email)) = LOWER(TRIM(users.email))
+          )
+          AND NOT EXISTS (
+            SELECT 1 FROM journey_proposals
+            WHERE LOWER(TRIM(owner_email)) = LOWER(TRIM(users.email))
+               OR LOWER(TRIM(actor_email)) = LOWER(TRIM(users.email))
+          )
+      `).run(current.id);
+      if (Number(deleteResult && deleteResult.changes || 0) === 0) {
+        this.db.exec('RELEASE bancus_user_delete');
+        return linkedUserDeleteResponse();
+      }
+      this.db.exec('RELEASE bancus_user_delete');
+      return { ok: true, status: 200, message: 'Usuario removido.' };
+    } catch (error) {
+      try {
+        this.db.exec('ROLLBACK TO bancus_user_delete');
+        this.db.exec('RELEASE bancus_user_delete');
+      } catch (rollbackError) {
+        // Mantem o erro original.
+      }
+      throw error;
+    }
   }
 
-  setPassword(id, password) {
-    const nextPassword = normalizeText(password);
-    if (nextPassword.length < 6) {
-      return { ok: false, status: 400, message: 'A senha temporaria precisa ter pelo menos 6 caracteres.' };
-    }
+  setPassword(id, password, options = {}) {
+    const nextPassword = String(password === undefined || password === null ? '' : password);
     const current = this.getUserById(id);
     if (!current) return { ok: false, status: 404, message: 'Usuario nao encontrado.' };
+    if (this.authMode === 'production') {
+      const policy = validateProductivePassword(nextPassword, current);
+      if (!policy.ok) return policy;
+    } else if (nextPassword.length < 6) {
+      return { ok: false, status: 400, message: 'A senha temporaria precisa ter pelo menos 6 caracteres.' };
+    }
     const timestamp = nowIso();
+    const passwordUpdatedAt = options.mustChangePassword === true ? '' : timestamp;
     const credentials = hashPassword(nextPassword);
     this.db.exec('SAVEPOINT bancus_password_reset');
     try {
@@ -908,7 +1102,7 @@ class BancusDatabase {
         UPDATE users
         SET password_hash = ?, password_salt = ?, password_algorithm = ?, password_updated_at = ?, updated_at = ?
         WHERE id = ?
-      `).run(credentials.hash, credentials.salt, credentials.algorithm, timestamp, timestamp, current.id);
+      `).run(credentials.hash, credentials.salt, storedPasswordAlgorithm(this.authMode), passwordUpdatedAt, timestamp, current.id);
       this.db.prepare("UPDATE sessions SET revoked_at = ? WHERE user_id = ? AND revoked_at = ''").run(timestamp, current.id);
       this.db.exec('RELEASE bancus_password_reset');
       return { ok: true, status: 200, message: 'Senha atualizada com seguranca.' };
@@ -923,13 +1117,76 @@ class BancusDatabase {
     }
   }
 
-  setUserStatus(id, status) {
+  changePassword(id, currentPassword, nextPassword) {
     const current = this.getUserById(id);
-    if (!current) return { ok: false, status: 404, message: 'Usuario nao encontrado.' };
-    const nextStatus = normalizeStatus(status || (current.status === 'active' ? 'inactive' : 'active'));
+    if (!current || !verifyLoginPassword(current, currentPassword)) {
+      return { ok: false, status: 401, code: 'CURRENT_PASSWORD_INVALID', message: 'A senha atual nao confere.' };
+    }
+    if (verifyPassword(nextPassword, current.password_salt, current.password_hash)) {
+      return { ok: false, status: 400, code: 'PASSWORD_REUSE', message: 'A nova senha precisa ser diferente da atual.' };
+    }
+    const policy = validateProductivePassword(nextPassword, current);
+    if (!policy.ok) return policy;
+
     const timestamp = nowIso();
+    const credentials = hashPassword(nextPassword);
+    this.db.exec('SAVEPOINT bancus_password_change');
+    try {
+      this.db.prepare(`
+        UPDATE users
+        SET password_hash = ?, password_salt = ?, password_algorithm = ?, password_updated_at = ?, updated_at = ?
+        WHERE id = ?
+      `).run(credentials.hash, credentials.salt, storedPasswordAlgorithm(this.authMode), timestamp, timestamp, current.id);
+      this.db.prepare("UPDATE sessions SET revoked_at = ? WHERE user_id = ? AND revoked_at = ''").run(timestamp, current.id);
+      const updated = this.getUserById(current.id);
+      const session = this.createSession(updated);
+      this.db.exec('RELEASE bancus_password_change');
+      return {
+        ok: true,
+        status: 200,
+        user: publicUser(updated, { requireCurrentPasswordPolicy: this.authMode === 'production' }),
+        session,
+        message: 'Senha atualizada. Seu acesso esta pronto.'
+      };
+    } catch (error) {
+      try {
+        this.db.exec('ROLLBACK TO bancus_password_change');
+        this.db.exec('RELEASE bancus_password_change');
+      } catch (rollbackError) {
+        // Mantem o erro original.
+      }
+      throw error;
+    }
+  }
+
+  revokeUserSessions(id) {
+    const result = this.db.prepare("UPDATE sessions SET revoked_at = ? WHERE user_id = ? AND revoked_at = ''")
+      .run(nowIso(), String(id || ''));
+    return Number(result.changes || 0);
+  }
+
+  setUserStatus(id, status) {
     this.db.exec('SAVEPOINT bancus_user_status_update');
     try {
+      const lockResult = this.db.prepare('UPDATE users SET updated_at = updated_at WHERE id = ?').run(String(id || ''));
+      if (Number(lockResult && lockResult.changes || 0) === 0) {
+        this.db.exec('RELEASE bancus_user_status_update');
+        return { ok: false, status: 404, message: 'Usuario nao encontrado.' };
+      }
+      const current = this.getUserById(id);
+      const nextStatus = normalizeText(status);
+      if (!STATUS_LABELS[nextStatus]) {
+        this.db.exec('RELEASE bancus_user_status_update');
+        return { ok: false, status: 400, message: 'Informe um status de usuario valido.' };
+      }
+      if (removesActiveAdminAccess(current, current.role, nextStatus)) {
+        const activeAdmins = this.db.prepare("SELECT COUNT(*) AS total FROM users WHERE role = 'admin' AND status = 'active'").get();
+        if (Number(activeAdmins && activeAdmins.total || 0) <= 1) {
+          this.db.exec('RELEASE bancus_user_status_update');
+          return lastActiveAdminResponse();
+        }
+      }
+      const timestamp = nowIso();
       this.db.prepare('UPDATE users SET status = ?, updated_at = ? WHERE id = ?').run(nextStatus, timestamp, current.id);
       if (nextStatus !== 'active') {
         this.db.prepare("UPDATE sessions SET revoked_at = ? WHERE user_id = ? AND revoked_at = ''").run(timestamp, current.id);
@@ -955,18 +1212,15 @@ class BancusDatabase {
 
   login(email, password) {
     const user = this.getUserByEmail(email);
-    if (!user || !verifyPassword(password, user.password_salt, user.password_hash)) {
+    if (!verifyLoginPassword(user, password) || user.status !== 'active') {
       return { ok: false, status: 401, message: 'E-mail ou senha invalidos.' };
-    }
-    if (user.status !== 'active') {
-      return { ok: false, status: 403, message: 'Usuario inativo. Solicite reativacao ao administrador.' };
     }
 
     const timestamp = nowIso();
     this.db.prepare('UPDATE users SET last_login_at = ?, updated_at = ? WHERE id = ?').run(timestamp, timestamp, user.id);
     const updated = this.getUserById(user.id);
     const session = this.createSession(updated);
-    return { ok: true, status: 200, user: publicUser(updated), session };
+    return { ok: true, status: 200, user: publicUser(updated, { requireCurrentPasswordPolicy: this.authMode === 'production' }), session };
   }
 
   createSession(user) {
@@ -1007,7 +1261,7 @@ class BancusDatabase {
         createdAt: row.session_created_at,
         expiresAt: row.session_expires_at
       },
-      user: publicUser(row)
+      user: publicUser(row, { requireCurrentPasswordPolicy: this.authMode === 'production' })
     };
   }
 
@@ -1590,7 +1844,7 @@ class BancusDatabase {
       ok: true,
       dryRun,
       source: normalizeText(input.source, 'localStorage'),
-      temporaryPassword: IMPORT_TEMP_PASSWORD,
+      passwordProvisioning: 'required',
       users: {
         total: users.length,
         importable: 0,
@@ -1615,6 +1869,15 @@ class BancusDatabase {
         byType: {}
       }
     };
+    if (this.authMode === 'production' && !dryRun && users.length > 0) {
+      return {
+        ...summary,
+        ok: false,
+        status: 409,
+        code: 'PRODUCTIVE_USER_MIGRATION_REQUIRES_PROVISIONING',
+        message: 'O provisionamento de acessos produtivos exige credenciais individuais.'
+      };
+    }
 
     users.forEach((item) => {
       const validation = validateUserPayload({
@@ -1718,8 +1981,8 @@ class BancusDatabase {
           data.phone,
           credentials.hash,
           credentials.salt,
-          credentials.algorithm,
-          timestamp,
+          storedPasswordAlgorithm(this.authMode),
+          '',
           timestamp,
           timestamp,
           ''
@@ -1818,6 +2081,9 @@ function createPostgresqlContext() {
   return Object.freeze({
     SCHEMA_VERSION,
     SESSION_TTL_MS,
+    PASSWORD_HASH_ALGORITHM,
+    CURRENT_PASSWORD_POLICY_VERSION,
+    LEGACY_PASSWORD_POLICY_VERSIONS,
     MAX_EVENT_PAYLOAD_CHARS,
     MAX_PERSISTED_PAYLOAD_CHARS,
     IMPORT_TEMP_PASSWORD,
@@ -1830,7 +2096,10 @@ function createPostgresqlContext() {
     normalizeStatus,
     normalizeText,
     hashPassword,
+    storedPasswordAlgorithm,
     verifyPassword,
+    verifyLoginPassword,
+    validateProductivePassword,
     tokenHash,
     safeJson,
     sanitizeEventPayload,
@@ -1852,6 +2121,13 @@ function createPostgresqlContext() {
 
 function createDatabase(options = {}) {
   const provider = assertSupportedDbProvider(options.provider);
+  const requestedAuthMode = options.authMode !== undefined ? options.authMode : process.env.BANCUS_AUTH_MODE;
+  const authMode = resolveAuthMode(requestedAuthMode, provider);
+  const requestedSeedOption = options.seedUsers !== undefined ? options.seedUsers : process.env.BANCUS_DB_SEED_USERS;
+  const shouldSeed = booleanOption(requestedSeedOption, authMode === 'demo');
+  if (authMode === 'production' && shouldSeed) {
+    throw new Error('Contas demonstrativas nao podem ser semeadas em modo production.');
+  }
   if (provider === 'sqlite') {
     const { createSqliteProvider } = require('./providers/sqlite');
     const adapter = createSqliteProvider({
@@ -1859,7 +2135,11 @@ function createDatabase(options = {}) {
       DatabaseSync: options.DatabaseSync,
       initializeSchema
     });
-    return new BancusDatabase(adapter.db, adapter.dbPath, { provider: adapter.provider });
+    return new BancusDatabase(adapter.db, adapter.dbPath, {
+      provider: adapter.provider,
+      authMode,
+      seedUsers: shouldSeed
+    });
   }
 
   // O driver PostgreSQL e carregado somente quando este provider e escolhido.
@@ -1870,7 +2150,9 @@ function createDatabase(options = {}) {
   return createPostgresqlProvider({
     ...options,
     provider,
+    authMode,
     databaseUrl,
+    seedUsers: shouldSeed,
     schemaManifestPath: options.schemaManifestPath || SCHEMA_MANIFEST_PATH
   }, createPostgresqlContext());
 }
@@ -1881,6 +2163,10 @@ module.exports = {
   DEFAULT_DB_PATH,
   SCHEMA_MIGRATIONS_DIR,
   SCHEMA_MANIFEST_PATH,
+  PASSWORD_HASH_ALGORITHM,
+  CURRENT_PASSWORD_POLICY_VERSION,
+  LEGACY_PASSWORD_POLICY_VERSIONS,
+  LAST_ACTIVE_ADMIN_CODE,
   MAX_EVENT_PAYLOAD_CHARS,
   MAX_PERSISTED_PAYLOAD_CHARS,
   SUPPORTED_DB_PROVIDERS,
@@ -1893,8 +2179,13 @@ module.exports = {
   isSupportedDbProvider,
   assertSupportedDbProvider,
   createDatabase,
+  resolveAuthMode,
+  resolveSessionTtlMinutes,
+  resolveSessionTtlMs,
   hashPassword,
   verifyPassword,
+  verifyLoginPassword,
+  validateProductivePassword,
   sanitizeEventPayload,
   sanitizePersistedPayload
 };

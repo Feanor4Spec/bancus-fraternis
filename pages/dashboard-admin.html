@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Administracao - Bancus Fraternis</title>
+  <title>Administração - Bancus Fraternis</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -18,9 +18,9 @@
   <main class="bf-platform-shell">
     <section class="bf-platform-hero">
       <div class="bf-platform-hero__content">
-        <span class="bf-badge bf-badge--gold">Administracao</span>
-        <h1>Usuarios, papeis e controle de acesso.</h1>
-        <p>Painel local para criar usuarios, ativar ou inativar acessos, redefinir senha temporaria e separar operacao entre administrador, consultor e cliente.</p>
+        <span class="bf-badge bf-badge--gold">Administração</span>
+        <h1>Acessos e responsabilidades</h1>
+        <p>Crie usuários, defina perfis e mantenha cada acesso sob controle.</p>
       </div>
       <aside class="bf-platform-hero__rail">
         <a href="dashboard-cliente.html">Area cliente <span>CL</span></a>
@@ -106,7 +106,7 @@
     <section class="bf-platform-panel bf-platform-section" id="admin-handoffs" data-admin-handoff-summary></section>
     <section class="bf-platform-panel bf-platform-section" id="admin-auditoria" data-admin-comparator-audit></section>
     <section class="bf-platform-panel bf-platform-section" id="admin-banco-eventos" data-admin-backend-events data-admin-backend-database-provider=""></section>
-    <div class="bf-platform-alert" data-admin-message>Base local pronta. As contas seed sao recriadas quando faltarem na base.</div>
+    <div class="bf-platform-alert" data-admin-message>Pronto para administrar os acessos.</div>
 
     <section class="bf-admin-grid bf-platform-section" id="admin-usuarios">
       <article class="bf-platform-panel">
@@ -123,7 +123,7 @@
             <input name="name" type="text" placeholder="Nome completo" required>
           </label>
           <label>E-mail
-            <input name="email" type="email" placeholder="usuario@bankfratern.local" required>
+            <input name="email" type="email" placeholder="nome@example.com" autocomplete="off" required>
           </label>
           <label>Papel
             <select name="role">
@@ -145,7 +145,7 @@
             <input name="phone" type="tel" placeholder="(00) 00000-0000">
           </label>
           <label class="bf-admin-form__wide">Senha
-            <input name="password" type="password" placeholder="Obrigatoria ao criar; opcional ao editar">
+            <input name="password" type="password" placeholder="Senha temporária; opcional ao editar" autocomplete="new-password">
           </label>
           <button class="btn btn--primary" type="submit" data-user-submit>Criar usuario</button>
         </form>
@@ -155,14 +155,14 @@
         <div class="bf-admin-panel-heading">
           <div>
             <span class="bf-badge bf-badge--ok">Governanca</span>
-            <h2>Regras implementadas</h2>
+            <h2>Como os acessos funcionam</h2>
           </div>
         </div>
         <div class="bf-admin-rules">
-          <div><strong>Login</strong><span>Cria sessao local de 8 horas.</span></div>
-          <div><strong>Papeis</strong><span>Admin acessa administracao; consultor e cliente ficam no dashboard.</span></div>
-          <div><strong>Seguranca</strong><span>Prototipo estatico com espelho SQLite local quando roda em Node.</span></div>
-          <div><strong>Auditoria</strong><span>Ultimo acesso, atualizacao e eventos podem ser salvos por usuario.</span></div>
+          <div><strong>Sessão</strong><span>O acesso termina automaticamente no prazo definido pelo ambiente.</span></div>
+          <div><strong>Perfis</strong><span>Administrador, consultor e cliente recebem permissões próprias.</span></div>
+          <div><strong>Primeiro acesso</strong><span>Uma senha temporária precisa ser substituída antes de continuar.</span></div>
+          <div><strong>Auditoria</strong><span>Entradas, saídas e mudanças de acesso ficam registradas.</span></div>
           <div><strong>Calculadoras</strong><span>Premissas e formulas agora possuem painel de governanca e golden tests.</span></div>
         </div>
       </article>

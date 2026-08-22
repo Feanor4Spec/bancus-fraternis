@@ -3577,6 +3577,10 @@
       return `<div class="bf-empty-state" data-admin-local-import-result><strong>Importacao indisponivel</strong><p>${escapeHtml(result.message || 'Nao foi possivel processar o snapshot local.')}</p></div>`;
     }
     const mode = result.dryRun ? 'Previsualizacao' : 'Importacao executada';
+    const productionMode = window.BFAuth && window.BFAuth.authMode && window.BFAuth.authMode() === 'production';
+    const passwordNote = productionMode
+      ? 'Acessos produtivos precisam ser provisionados individualmente.'
+      : 'Novos usuários recebem uma senha temporária de demonstração.';
     return `
       <div class="bf-empty-state" data-admin-local-import-result>
         <strong>${mode}</strong>
@@ -3591,7 +3595,7 @@
           ${Number(result.snapshots && result.snapshots.created || 0)} criados,
           ${Number(result.snapshots && result.snapshots.updated || 0)} atualizados.
         </p>
-        <small>Novos usuarios recebem senha temporaria ${escapeHtml(result.temporaryPassword || window.BFAuth.DEFAULT_PASSWORD || 'Temp@123')}.</small>
+        <small>${passwordNote}</small>
       </div>
     `;
   }
@@ -4021,12 +4025,12 @@
     const form = qs('[data-user-form]');
     if (!form) return;
 
-    form.addEventListener('submit', (event) => {
+    form.addEventListener('submit', async (event) => {
       event.preventDefault();
       const payload = Object.fromEntries(new FormData(form).entries());
-      const result = editingId
+      const result = await Promise.resolve(editingId
         ? window.BFAuth.updateUser(editingId, payload)
-        : window.BFAuth.createUser(payload);
+        : window.BFAuth.createUser(payload));
 
       setMessage(result.message, result.ok ? 'success' : 'error');
       if (result.ok) {
@@ -4049,7 +4053,7 @@
   }
 
   function bindActions() {
-    qs('[data-users-table]')?.addEventListener('click', (event) => {
+    qs('[data-users-table]')?.addEventListener('click', async (event) => {
       const button = event.target.closest('[data-user-action]');
       if (!button) return;
       const userId = button.dataset.userId;
@@ -4063,24 +4067,25 @@
       }
 
       if (action === 'toggle') {
-        const result = window.BFAuth.toggleStatus(userId);
+        const result = await Promise.resolve(window.BFAuth.toggleStatus(userId));
         setMessage(result.message, result.ok ? 'success' : 'error');
         renderAll();
         return;
       }
 
       if (action === 'reset') {
-        const nextPassword = window.prompt('Nova senha temporaria', window.BFAuth.DEFAULT_PASSWORD);
+        const demoMode = !window.BFAuth.authMode || window.BFAuth.authMode() === 'demo';
+        const nextPassword = window.prompt('Nova senha temporária', demoMode ? window.BFAuth.DEFAULT_PASSWORD : '');
         if (nextPassword === null) return;
-        const result = window.BFAuth.resetPassword(userId, nextPassword);
+        const result = await Promise.resolve(window.BFAuth.resetPassword(userId, nextPassword));
         setMessage(result.message, result.ok ? 'success' : 'error');
         renderAll();
         return;
       }
 
       if (action === 'delete') {
-        if (!window.confirm('Remover este usuario da base local?')) return;
-        const result = window.BFAuth.deleteUser(userId);
+        if (!window.confirm('Remover este usuário?')) return;
+        const result = await Promise.resolve(window.BFAuth.deleteUser(userId));
         setMessage(result.message, result.ok ? 'success' : 'error');
         renderAll();
       }
@@ -4274,9 +4279,11 @@
     });
   }
 
-  document.addEventListener('DOMContentLoaded', function () {
+  document.addEventListener('DOMContentLoaded', async function () {
+    if (window.BFAuth && window.BFAuth.ready) await window.BFAuth.ready;
     const user = window.BFAuth.requireRole(['admin'], { redirect: true });
     if (!user) return;
+    if (window.BFAuth.refreshUsers) await window.BFAuth.refreshUsers();
     bindForm();
     bindFilters();
     bindActions();

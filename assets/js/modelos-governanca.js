@@ -253,7 +253,8 @@
     });
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
+    if (window.BFAuth && window.BFAuth.ready) await window.BFAuth.ready;
     const user = window.BFAuth.requireRole(['admin', 'consultor'], { redirect: true });
     if (!user) return;
     bindFilters();

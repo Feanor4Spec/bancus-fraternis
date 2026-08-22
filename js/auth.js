@@ -8,8 +8,11 @@
 
   const USERS_KEY = 'bf_auth_users_v1';
   const SESSION_KEY = 'bf_auth_session_v1';
+  const AUTH_CONFIG_KEY = 'bf_auth_mode_v1';
   const SESSION_TTL_MS = 1000 * 60 * 60 * 8;
   const DEFAULT_PASSWORD = 'Temp@123';
+  let productionUsers = [];
+  let authInitialization = null;
 
   const ROLE_LABELS = {
     admin: 'Administrador',
@@ -95,6 +98,85 @@
     return window.BFBackendApi && typeof window.BFBackendApi === 'object' ? window.BFBackendApi : null;
   }
 
+  function readModeConfig() {
+    const declaredMode = document.body && document.body.dataset
+      ? document.body.dataset.authMode
+      : '';
+    if (declaredMode === 'production') {
+      return { mode: 'production', transport: 'cookie', demoAccounts: false, declared: true };
+    }
+    const api = backendApi();
+    if (api && typeof api.readAuthConfig === 'function') return api.readAuthConfig();
+    const storage = getStorage();
+    try {
+      const parsed = storage ? JSON.parse(storage.getItem(AUTH_CONFIG_KEY) || 'null') : null;
+      if (parsed && ['demo', 'production'].includes(parsed.mode)) return parsed;
+    } catch (error) {
+      // Configuracao ausente mantem o fallback demonstrativo.
+    }
+    return { mode: api ? 'pending' : 'demo', demoAccounts: !api };
+  }
+
+  function authMode() {
+    return readModeConfig().mode || 'demo';
+  }
+
+  function isProduction() {
+    return authMode() === 'production';
+  }
+
+  function setMode(mode) {
+    const nextMode = mode === 'production' ? 'production' : 'demo';
+    const storage = getStorage();
+    if (storage) {
+      let existing = {};
+      try {
+        existing = JSON.parse(storage.getItem(AUTH_CONFIG_KEY) || '{}') || {};
+      } catch (error) {
+        existing = {};
+      }
+      storage.setItem(AUTH_CONFIG_KEY, JSON.stringify({
+        ...existing,
+        mode: nextMode,
+        transport: nextMode === 'production' ? 'cookie' : 'bearer',
+        demoAccounts: nextMode === 'demo'
+      }));
+      if (nextMode === 'production') storage.removeItem(USERS_KEY);
+    }
+    if (nextMode === 'production') productionUsers = [];
+    return nextMode;
+  }
+
+  async function configureMode() {
+    const previous = readModeConfig();
+    const api = backendApi();
+    if (!api || typeof api.authConfig !== 'function') {
+      if (previous.mode === 'production') return { ...previous, fallback: true, unavailable: true };
+      setMode('demo');
+      ensureUsers();
+      return { mode: 'demo', demoAccounts: true, fallback: true };
+    }
+    const result = await api.authConfig();
+    if (result && result.ok && ['demo', 'production'].includes(result.mode)) {
+      setMode(result.mode);
+      if (result.mode === 'demo') ensureUsers();
+      return result;
+    }
+    if (previous.mode === 'production') return { ...previous, fallback: true, unavailable: true };
+    setMode('demo');
+    ensureUsers();
+    return { mode: 'demo', demoAccounts: true, fallback: true };
+  }
+
+  function sessionStorageForMode() {
+    if (!isProduction()) return getStorage();
+    try {
+      return window.sessionStorage || getStorage();
+    } catch (error) {
+      return getStorage();
+    }
+  }
+
   function mirrorBackend(promise) {
     if (!promise || typeof promise.catch !== 'function') return;
     promise.catch((error) => {
@@ -177,7 +259,8 @@
       phone: user.phone || '',
       createdAt: user.createdAt || '',
       updatedAt: user.updatedAt || '',
-      lastLoginAt: user.lastLoginAt || ''
+      lastLoginAt: user.lastLoginAt || '',
+      mustChangePassword: user.mustChangePassword === true
     };
   }
 
@@ -219,6 +302,11 @@
   }
 
   function ensureUsers() {
+    if (authMode() !== 'demo') {
+      const storage = getStorage();
+      if (storage) storage.removeItem(USERS_KEY);
+      return [];
+    }
     const users = readUsersRaw();
     let changed = false;
 
@@ -250,9 +338,21 @@
   }
 
   function listUsers() {
+    if (isProduction()) return productionUsers.slice();
     return ensureUsers()
       .map(publicUser)
       .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+  }
+
+  async function refreshUsers() {
+    if (!isProduction()) return listUsers();
+    const api = backendApi();
+    if (!api || typeof api.listUsers !== 'function') return [];
+    const result = await api.listUsers();
+    if (result && result.ok && Array.isArray(result.users)) {
+      productionUsers = result.users.map(publicUser).filter(Boolean);
+    }
+    return productionUsers.slice();
   }
 
   function findUserByEmail(email) {
@@ -265,11 +365,11 @@
   }
 
   function readSession() {
-    const storage = getStorage();
+    const storage = sessionStorageForMode();
     if (!storage) return null;
     try {
       const session = JSON.parse(storage.getItem(SESSION_KEY) || 'null');
-      if (!session || !session.userId) return null;
+      if (!session || (!session.userId && !session.user)) return null;
       if (session.expiresAt && Date.now() > Number(session.expiresAt)) {
         logout();
         return null;
@@ -281,16 +381,17 @@
     }
   }
 
-  function writeSession(user) {
-    const storage = getStorage();
+  function writeSession(user, backendSession) {
+    const storage = sessionStorageForMode();
     if (!storage) return false;
     const startedAt = Date.now();
     storage.setItem(SESSION_KEY, JSON.stringify({
-      id: makeId('SES'),
+      id: backendSession && backendSession.id ? backendSession.id : makeId('SES'),
       userId: user.id,
       role: user.role,
-      startedAt,
-      expiresAt: startedAt + SESSION_TTL_MS
+      ...(isProduction() ? { user: publicUser(user), backend: true } : {}),
+      startedAt: backendSession && backendSession.createdAt ? new Date(backendSession.createdAt).getTime() : startedAt,
+      expiresAt: backendSession && backendSession.expiresAt ? new Date(backendSession.expiresAt).getTime() : startedAt + SESSION_TTL_MS
     }));
     return true;
   }
@@ -298,6 +399,17 @@
   function getCurrentUser() {
     const session = readSession();
     if (!session) return null;
+    if (isProduction()) {
+      const backendSession = backendApi() && typeof backendApi().readSession === 'function'
+        ? backendApi().readSession()
+        : null;
+      const user = session.user || (backendSession && backendSession.user);
+      if (!user || user.status !== 'active') {
+        logout();
+        return null;
+      }
+      return publicUser(user);
+    }
     const user = findUserById(session.userId);
     if (!user || user.status !== 'active') {
       logout();
@@ -307,6 +419,19 @@
   }
 
   function login(email, password) {
+    if (authMode() === 'production') {
+      const api = backendApi();
+      if (!api || typeof api.authLogin !== 'function') {
+        return Promise.resolve({ ok: false, message: 'Nao foi possivel acessar sua conta agora.' });
+      }
+      return api.authLogin(email, password).then((result) => {
+        if (!result || !result.ok || !result.user) {
+          return result || { ok: false, message: 'Nao foi possivel entrar.' };
+        }
+        writeSession(result.user, result.session);
+        return { ...result, user: publicUser(result.user) };
+      });
+    }
     const user = findUserByEmail(email);
     if (!user || user.passwordHash !== hashPassword(password)) {
       return { ok: false, message: 'E-mail ou senha invalidos.' };
@@ -329,9 +454,12 @@
   }
 
   function logout() {
-    syncBackendLogout();
-    const storage = getStorage();
+    const api = backendApi();
+    const backendLogout = api && typeof api.authLogout === 'function' ? api.authLogout() : Promise.resolve({ ok: true });
+    if (!isProduction()) mirrorBackend(backendLogout);
+    const storage = sessionStorageForMode();
     if (storage) storage.removeItem(SESSION_KEY);
+    return backendLogout;
   }
 
   function validateUserPayload(payload, options) {
@@ -363,6 +491,14 @@
   }
 
   function createUser(payload) {
+    if (isProduction()) {
+      const api = backendApi();
+      if (!api || typeof api.createUser !== 'function') return Promise.resolve({ ok: false, message: 'Cadastro indisponivel.' });
+      return api.createUser(payload || {}).then(async (result) => {
+        if (result && result.ok) await refreshUsers();
+        return result;
+      });
+    }
     const validation = validateUserPayload(payload, { editing: false });
     if (!validation.ok) return validation;
 
@@ -394,6 +530,14 @@
   }
 
   function updateUser(id, payload) {
+    if (isProduction()) {
+      const api = backendApi();
+      if (!api || typeof api.updateUser !== 'function') return Promise.resolve({ ok: false, message: 'Atualizacao indisponivel.' });
+      return api.updateUser(id, payload || {}).then(async (result) => {
+        if (result && result.ok) await refreshUsers();
+        return result;
+      });
+    }
     const validation = validateUserPayload(payload, { editing: true });
     if (!validation.ok) return validation;
 
@@ -424,6 +568,14 @@
   }
 
   function deleteUser(id) {
+    if (isProduction()) {
+      const api = backendApi();
+      if (!api || typeof api.deleteUser !== 'function') return Promise.resolve({ ok: false, message: 'Remocao indisponivel.' });
+      return api.deleteUser(id).then(async (result) => {
+        if (result && result.ok) await refreshUsers();
+        return result;
+      });
+    }
     const current = getCurrentUser();
     if (current && current.id === id) {
       return { ok: false, message: 'Nao e possivel excluir o usuario em sessao.' };
@@ -438,6 +590,14 @@
   }
 
   function resetPassword(id, password) {
+    if (isProduction()) {
+      const api = backendApi();
+      if (!api || typeof api.resetPassword !== 'function') return Promise.resolve({ ok: false, message: 'Redefinicao indisponivel.' });
+      return api.resetPassword(id, password).then(async (result) => {
+        if (result && result.ok) await refreshUsers();
+        return result;
+      });
+    }
     const nextPassword = String(password || DEFAULT_PASSWORD).trim();
     if (nextPassword.length < 6) return { ok: false, message: 'A senha temporaria precisa ter pelo menos 6 caracteres.' };
 
@@ -448,10 +608,20 @@
     users[index].updatedAt = nowIso();
     saveUsers(users);
     syncBackendPassword(id, nextPassword);
-    return { ok: true, message: `Senha temporaria definida: ${nextPassword}` };
+    return { ok: true, message: 'Senha temporaria atualizada.' };
   }
 
   function toggleStatus(id) {
+    if (isProduction()) {
+      const api = backendApi();
+      const user = productionUsers.find((item) => item.id === id);
+      const status = user && user.status === 'active' ? 'inactive' : 'active';
+      if (!api || typeof api.toggleStatus !== 'function') return Promise.resolve({ ok: false, message: 'Alteracao indisponivel.' });
+      return api.toggleStatus(id, status).then(async (result) => {
+        if (result && result.ok) await refreshUsers();
+        return result;
+      });
+    }
     const current = getCurrentUser();
     if (current && current.id === id) {
       return { ok: false, message: 'Nao e possivel inativar o usuario em sessao.' };
@@ -465,6 +635,16 @@
     saveUsers(users);
     syncBackendStatus(id, users[index].status);
     return { ok: true, user: publicUser(users[index]), message: `Usuario ${STATUS_LABELS[users[index].status].toLowerCase()}.` };
+  }
+
+  async function changePassword(currentPassword, newPassword) {
+    const api = backendApi();
+    if (!api || typeof api.authChangePassword !== 'function') {
+      return { ok: false, message: 'Troca de senha indisponivel.' };
+    }
+    const result = await api.authChangePassword(currentPassword, newPassword);
+    if (result && result.ok && result.user) writeSession(result.user, result.session);
+    return result;
   }
 
   function parseRoles(roles) {
@@ -497,6 +677,11 @@
       return null;
     }
 
+    if (user.mustChangePassword) {
+      if (shouldRedirect) location.replace(`${loginPageUrl()}&change=password`);
+      return null;
+    }
+
     if (required.length > 0 && !required.includes(user.role)) {
       if (shouldRedirect) location.replace('dashboard-cliente.html?auth=forbidden');
       return null;
@@ -514,6 +699,24 @@
     return !!requireRole(roles || '', { redirect: true });
   }
 
+  async function validateServerSession() {
+    if (!isProduction()) return { ok: true, user: getCurrentUser() };
+    const api = backendApi();
+    if (!api || typeof api.currentUser !== 'function') return { ok: false };
+    const result = await api.currentUser();
+    if (result && result.ok && result.user) {
+      writeSession(result.user, result.session);
+      const body = document.body;
+      const roles = body ? body.getAttribute('data-auth-roles') : '';
+      const required = parseRoles(roles || '');
+      if (required.length && !required.includes(result.user.role)) {
+        location.replace('dashboard-cliente.html?auth=forbidden');
+      }
+      return result;
+    }
+    return result || { ok: false };
+  }
+
   function roleLabel(role) {
     return ROLE_LABELS[role] || role || 'Usuario';
   }
@@ -528,6 +731,10 @@
     STATUS_LABELS: { ...STATUS_LABELS },
     seedUsers: ensureUsers,
     listUsers,
+    refreshUsers,
+    configureMode,
+    authMode,
+    validateServerSession,
     getCurrentUser,
     login,
     logout,
@@ -535,6 +742,7 @@
     updateUser,
     deleteUser,
     resetPassword,
+    changePassword,
     toggleStatus,
     hasRole,
     requireRole,
@@ -542,10 +750,49 @@
     statusLabel
   };
 
-  ensureUsers();
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', guardCurrentPage);
-  } else {
-    guardCurrentPage();
+  function startPageAuth() {
+    if (!authInitialization) {
+      authInitialization = Promise.resolve()
+        .then(initializePageAuth)
+        .catch(() => {
+          const body = document.body;
+          if (body && (body.getAttribute('data-auth-required') || body.getAttribute('data-auth-roles'))) {
+            location.replace(loginPageUrl());
+          }
+          return false;
+        });
+    }
+    return authInitialization;
   }
+
+  window.BFAuth.ready = new Promise((resolve) => {
+    const begin = () => startPageAuth().then(resolve);
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', begin, { once: true });
+    else begin();
+  });
+
+  if (authMode() === 'demo') ensureUsers();
+  window.addEventListener && window.addEventListener('bf:auth-expired', () => {
+    const storage = sessionStorageForMode();
+    if (storage) storage.removeItem(SESSION_KEY);
+    const body = document.body;
+    if (body && (body.getAttribute('data-auth-required') || body.getAttribute('data-auth-roles'))) {
+      location.replace(`${loginPageUrl()}&auth=expired`);
+    }
+  });
+  async function initializePageAuth() {
+    await configureMode();
+    const body = document.body;
+    const protectedPage = body && (body.getAttribute('data-auth-required') || body.getAttribute('data-auth-roles'));
+    if (!protectedPage) return true;
+    if (isProduction()) {
+      const result = await validateServerSession();
+      if (!result || !result.ok || !result.user) {
+        location.replace(loginPageUrl());
+        return false;
+      }
+    }
+    return guardCurrentPage();
+  }
+
 })();

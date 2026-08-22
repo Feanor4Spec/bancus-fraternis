@@ -25,7 +25,14 @@
     "sqlite": "002_proposal_secure_share.rollback.sql",
     "postgresql": "postgresql/002_proposal_secure_share.rollback.sql"
   },
-  "passwordAlgorithm": "scrypt-sha256",
+  "passwordCredentials": {
+    "hashAlgorithm": "scrypt-sha256",
+    "storageColumn": "users.password_algorithm",
+    "baselineDefault": "scrypt-sha256",
+    "currentPolicyVersion": "scrypt-sha256-v2",
+    "legacyPolicyVersions": ["scrypt-sha256"],
+    "unknownPolicyRequiresChange": true
+  },
   "sensitiveFields": [
     "password_hash",
     "password_salt",

@@ -36,6 +36,11 @@ const PROPOSAL_SNAPSHOT_TRIGGERS = Object.freeze({
   proposal_snapshots_prevent_update: 'UPDATE',
   proposal_snapshots_prevent_delete: 'DELETE'
 });
+// Chave de advisory lock compartilhada por todas as mutacoes de usuario. O
+// lock e transacional e, portanto, funciona entre processos sem exigir uma
+// tabela sentinela ou alterar o schema existente.
+const USER_ADMIN_LOCK_NAMESPACE = 1111577667;
+const USER_ADMIN_LOCK_KEY = 1;
 const ERROR_CODES = Object.freeze({
   URL_REQUIRED: 'BANCUS_DATABASE_URL_REQUIRED',
   DRIVER_MISSING: 'BANCUS_POSTGRESQL_DRIVER_MISSING',
@@ -43,9 +48,11 @@ const ERROR_CODES = Object.freeze({
   SSL_REQUIRED: 'BANCUS_POSTGRESQL_SSL_REQUIRED',
   SCHEMA_MISMATCH: 'BANCUS_POSTGRESQL_SCHEMA_MISMATCH',
   MANIFEST_INVALID: 'BANCUS_POSTGRESQL_MIGRATION_MANIFEST_INVALID',
+  AUTH_CONFIG_INVALID: 'BANCUS_POSTGRESQL_AUTH_CONFIG_INVALID',
   OWNER_CONFLICT: 'BANCUS_OWNER_CONFLICT',
   USER_EMAIL_CONFLICT: 'BANCUS_USER_EMAIL_CONFLICT',
-  USER_HAS_RELATED_RECORDS: 'BANCUS_USER_HAS_RELATED_RECORDS'
+  USER_HAS_RELATED_RECORDS: 'BANCUS_USER_HAS_RELATED_RECORDS',
+  LAST_ACTIVE_ADMIN: 'LAST_ACTIVE_ADMIN'
 });
 const IDENTITY_OWNERSHIP_TABLES = Object.freeze([
   'events',
@@ -81,6 +88,24 @@ function linkedUserDeleteResponse() {
     code: ERROR_CODES.USER_HAS_RELATED_RECORDS,
     message: 'Este usuario possui historico vinculado. Inative o acesso em vez de excluir.'
   };
+}
+
+function lastActiveAdminResponse() {
+  return {
+    ok: false,
+    status: 409,
+    code: ERROR_CODES.LAST_ACTIVE_ADMIN,
+    message: 'Mantenha ao menos um administrador ativo.'
+  };
+}
+
+function removesActiveAdminAccess(current, nextRole, nextStatus) {
+  return Boolean(
+    current
+    && current.role === 'admin'
+    && current.status === 'active'
+    && (nextRole !== 'admin' || nextStatus !== 'active')
+  );
 }
 
 function writeChanged(result) {
@@ -642,6 +667,7 @@ class PostgresqlBancusDatabase {
     this.provider = PROVIDER;
     this.driver = DRIVER;
     this.schemaVersion = context.SCHEMA_VERSION;
+    this.authMode = metadata.authMode === 'demo' ? 'demo' : 'production';
     this.schema = metadata.schema;
     this.ownsPool = Boolean(metadata.ownsPool);
     this.helpers = context;
@@ -697,7 +723,41 @@ class PostgresqlBancusDatabase {
     }
   }
 
+  async lockUserAdministration() {
+    await this.query(
+      'SELECT pg_advisory_xact_lock($1, $2)',
+      [USER_ADMIN_LOCK_NAMESPACE, USER_ADMIN_LOCK_KEY]
+    );
+  }
+
+  async guardLastActiveAdmin(current, nextRole, nextStatus) {
+    if (!removesActiveAdminAccess(current, nextRole, nextStatus)) return null;
+    const result = await this.query(`
+      SELECT COUNT(*)::integer AS active_admins
+      FROM users
+      WHERE role = 'admin' AND status = 'active'
+    `);
+    const total = Number(result.rows[0] && result.rows[0].active_admins || 0);
+    return total <= 1 ? lastActiveAdminResponse() : null;
+  }
+
+  async userHasRelatedRecords(current) {
+    const result = await this.query(`
+      SELECT /* bancus_user_has_related_records */ (
+        EXISTS (SELECT 1 FROM sessions WHERE user_id = $1)
+        OR EXISTS (SELECT 1 FROM events WHERE LOWER(BTRIM(owner_email)) = $2 OR LOWER(BTRIM(actor_email)) = $2)
+        OR EXISTS (SELECT 1 FROM snapshots WHERE LOWER(BTRIM(owner_email)) = $2 OR LOWER(BTRIM(actor_email)) = $2)
+        OR EXISTS (SELECT 1 FROM journey_entities WHERE LOWER(BTRIM(owner_email)) = $2 OR LOWER(BTRIM(actor_email)) = $2)
+        OR EXISTS (SELECT 1 FROM journey_leads WHERE LOWER(BTRIM(owner_email)) = $2 OR LOWER(BTRIM(actor_email)) = $2)
+        OR EXISTS (SELECT 1 FROM journey_simulations WHERE LOWER(BTRIM(owner_email)) = $2 OR LOWER(BTRIM(actor_email)) = $2)
+        OR EXISTS (SELECT 1 FROM journey_proposals WHERE LOWER(BTRIM(owner_email)) = $2 OR LOWER(BTRIM(actor_email)) = $2)
+      ) AS has_related
+    `, [current.id, this.helpers.normalizeEmail(current.email)]);
+    return Boolean(result.rows[0] && result.rows[0].has_related);
+  }
+
   async seedUsers() {
+    if (this.authMode === 'production') throw new Error('Contas demonstrativas nao podem ser semeadas em modo production.');
     const h = this.helpers;
     for (const seed of h.SEED_USERS) {
       const exists = await this.getUserByEmail(seed.email);
@@ -713,14 +773,14 @@ class PostgresqlBancusDatabase {
         ON CONFLICT(email) DO NOTHING
       `, [
         seed.id, seed.name, seed.email, seed.role, seed.status, seed.department, seed.phone,
-        credentials.hash, credentials.salt, credentials.algorithm, timestamp, timestamp, timestamp, ''
+        credentials.hash, credentials.salt, h.storedPasswordAlgorithm(this.authMode), timestamp, timestamp, timestamp, ''
       ]);
     }
   }
 
   async listUsers() {
     const result = await this.query('SELECT * FROM users ORDER BY LOWER(name) ASC, name ASC');
-    return result.rows.map(this.helpers.publicUser);
+    return result.rows.map((row) => this.helpers.publicUser(row, { requireCurrentPasswordPolicy: this.authMode === 'production' }));
   }
 
   async hasEvent(id) {
@@ -746,7 +806,7 @@ class PostgresqlBancusDatabase {
   }
 
   async findPublicUser(id) {
-    return this.helpers.publicUser(await this.getUserById(id));
+    return this.helpers.publicUser(await this.getUserById(id), { requireCurrentPasswordPolicy: this.authMode === 'production' });
   }
 
   async createUser(payload) {
@@ -754,10 +814,18 @@ class PostgresqlBancusDatabase {
     const validation = h.validateUserPayload(payload);
     if (!validation.ok) return validation;
     const data = validation.data;
+    if (this.authMode === 'production') {
+      if (data.email.endsWith('@bankfratern.local')) {
+        return { ok: false, status: 400, code: 'DEMO_IDENTITY_FORBIDDEN', message: 'Use um e-mail individual para este acesso.' };
+      }
+      const policy = h.validateProductivePassword(data.password, data);
+      if (!policy.ok) return policy;
+    }
     if (await this.getUserByEmail(data.email)) {
       return { ok: false, status: 409, message: 'Ja existe um usuario com este e-mail.' };
     }
     const timestamp = h.nowIso();
+    const passwordUpdatedAt = data.mustChangePassword ? '' : timestamp;
     const credentials = h.hashPassword(data.password);
     const id = data.id && /^[A-Za-z0-9_-]{3,80}$/.test(data.id) ? data.id : h.makeId('USR');
     await this.query(`
@@ -768,24 +836,35 @@ class PostgresqlBancusDatabase {
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
     `, [
       id, data.name, data.email, data.role, data.status, data.department, data.phone,
-      credentials.hash, credentials.salt, credentials.algorithm, timestamp, timestamp, timestamp, ''
+      credentials.hash, credentials.salt, h.storedPasswordAlgorithm(this.authMode), passwordUpdatedAt, timestamp, timestamp, ''
     ]);
     return { ok: true, status: 201, user: await this.findPublicUser(id), message: 'Usuario criado com sucesso.' };
   }
 
   async updateUser(id, payload) {
     const h = this.helpers;
-    const validation = h.validateUserPayload(payload, { editing: true });
-    if (!validation.ok) return validation;
-    const data = validation.data;
-    if (data.password && h.normalizeText(data.password).length < 6) {
-      return { ok: false, status: 400, message: 'A senha temporaria precisa ter pelo menos 6 caracteres.' };
-    }
     try {
       return await this.withTransaction(async () => {
+        await this.lockUserAdministration();
         const currentResult = await this.query('SELECT * FROM users WHERE id = $1 FOR UPDATE', [String(id || '')]);
         const current = currentResult.rows[0];
         if (!current) return { ok: false, status: 404, message: 'Usuario nao encontrado.' };
+        const validation = h.validateUserPayload(payload, { editing: true, current });
+        if (!validation.ok) return validation;
+        const data = validation.data;
+        if (this.authMode === 'production' && data.email.endsWith('@bankfratern.local')) {
+          return { ok: false, status: 400, code: 'DEMO_IDENTITY_FORBIDDEN', message: 'Use um e-mail individual para este acesso.' };
+        }
+        if (data.password) {
+          if (this.authMode === 'production') {
+            const policy = h.validateProductivePassword(data.password, data);
+            if (!policy.ok) return policy;
+          } else if (String(data.password).length < 6) {
+            return { ok: false, status: 400, message: 'A senha temporaria precisa ter pelo menos 6 caracteres.' };
+          }
+        }
+        const adminGuard = await this.guardLastActiveAdmin(current, data.role, data.status);
+        if (adminGuard) return adminGuard;
         const currentEmail = h.normalizeEmail(current.email);
         const nextEmail = h.normalizeEmail(data.email);
 
@@ -819,8 +898,12 @@ class PostgresqlBancusDatabase {
           WHERE id = $8
         `, [data.name, nextEmail, data.role, data.status, data.department, data.phone, timestamp, current.id]);
         if (data.password) {
-          const passwordResult = await this.setPassword(current.id, data.password);
+          const passwordResult = await this.setPassword(current.id, data.password, {
+            mustChangePassword: data.mustChangePassword
+          });
           if (!passwordResult.ok) return passwordResult;
+        } else if (nextEmail !== currentEmail || data.role !== current.role || data.status !== current.status) {
+          await this.query("UPDATE sessions SET revoked_at = $1 WHERE user_id = $2 AND revoked_at = ''", [timestamp, current.id]);
         }
         return { ok: true, status: 200, user: await this.findPublicUser(current.id), message: 'Usuario atualizado com sucesso.' };
       });
@@ -831,77 +914,134 @@ class PostgresqlBancusDatabase {
   }
 
   async deleteUser(id) {
-    const current = await this.getUserById(id);
-    if (!current) return { ok: false, status: 404, message: 'Usuario nao encontrado.' };
-    const deleteResult = await this.query(`
-      DELETE FROM users
-      WHERE id = $1
-        AND NOT EXISTS (SELECT 1 FROM sessions WHERE user_id = users.id)
-        AND NOT EXISTS (
-          SELECT 1 FROM events
-          WHERE LOWER(BTRIM(owner_email)) = LOWER(BTRIM(users.email))
-             OR LOWER(BTRIM(actor_email)) = LOWER(BTRIM(users.email))
-        )
-        AND NOT EXISTS (
-          SELECT 1 FROM snapshots
-          WHERE LOWER(BTRIM(owner_email)) = LOWER(BTRIM(users.email))
-             OR LOWER(BTRIM(actor_email)) = LOWER(BTRIM(users.email))
-        )
-        AND NOT EXISTS (
-          SELECT 1 FROM journey_entities
-          WHERE LOWER(BTRIM(owner_email)) = LOWER(BTRIM(users.email))
-             OR LOWER(BTRIM(actor_email)) = LOWER(BTRIM(users.email))
-        )
-        AND NOT EXISTS (
-          SELECT 1 FROM journey_leads
-          WHERE LOWER(BTRIM(owner_email)) = LOWER(BTRIM(users.email))
-             OR LOWER(BTRIM(actor_email)) = LOWER(BTRIM(users.email))
-        )
-        AND NOT EXISTS (
-          SELECT 1 FROM journey_simulations
-          WHERE LOWER(BTRIM(owner_email)) = LOWER(BTRIM(users.email))
-             OR LOWER(BTRIM(actor_email)) = LOWER(BTRIM(users.email))
-        )
-        AND NOT EXISTS (
-          SELECT 1 FROM journey_proposals
-          WHERE LOWER(BTRIM(owner_email)) = LOWER(BTRIM(users.email))
-             OR LOWER(BTRIM(actor_email)) = LOWER(BTRIM(users.email))
-        )
-      RETURNING id
-    `, [current.id]);
-    if (!writeChanged(deleteResult)) return linkedUserDeleteResponse();
-    return { ok: true, status: 200, message: 'Usuario removido.' };
+    return this.withTransaction(async () => {
+      await this.lockUserAdministration();
+      const currentResult = await this.query('SELECT * FROM users WHERE id = $1 FOR UPDATE', [String(id || '')]);
+      const current = currentResult.rows[0];
+      if (!current) return { ok: false, status: 404, message: 'Usuario nao encontrado.' };
+      if (await this.userHasRelatedRecords(current)) return linkedUserDeleteResponse();
+      const adminGuard = await this.guardLastActiveAdmin(current, null, null);
+      if (adminGuard) return adminGuard;
+
+      const deleteResult = await this.query(`
+        DELETE FROM users
+        WHERE id = $1
+          AND NOT EXISTS (SELECT 1 FROM sessions WHERE user_id = users.id)
+          AND NOT EXISTS (
+            SELECT 1 FROM events
+            WHERE LOWER(BTRIM(owner_email)) = LOWER(BTRIM(users.email))
+               OR LOWER(BTRIM(actor_email)) = LOWER(BTRIM(users.email))
+          )
+          AND NOT EXISTS (
+            SELECT 1 FROM snapshots
+            WHERE LOWER(BTRIM(owner_email)) = LOWER(BTRIM(users.email))
+               OR LOWER(BTRIM(actor_email)) = LOWER(BTRIM(users.email))
+          )
+          AND NOT EXISTS (
+            SELECT 1 FROM journey_entities
+            WHERE LOWER(BTRIM(owner_email)) = LOWER(BTRIM(users.email))
+               OR LOWER(BTRIM(actor_email)) = LOWER(BTRIM(users.email))
+          )
+          AND NOT EXISTS (
+            SELECT 1 FROM journey_leads
+            WHERE LOWER(BTRIM(owner_email)) = LOWER(BTRIM(users.email))
+               OR LOWER(BTRIM(actor_email)) = LOWER(BTRIM(users.email))
+          )
+          AND NOT EXISTS (
+            SELECT 1 FROM journey_simulations
+            WHERE LOWER(BTRIM(owner_email)) = LOWER(BTRIM(users.email))
+               OR LOWER(BTRIM(actor_email)) = LOWER(BTRIM(users.email))
+          )
+          AND NOT EXISTS (
+            SELECT 1 FROM journey_proposals
+            WHERE LOWER(BTRIM(owner_email)) = LOWER(BTRIM(users.email))
+               OR LOWER(BTRIM(actor_email)) = LOWER(BTRIM(users.email))
+          )
+        RETURNING id
+      `, [current.id]);
+      if (!writeChanged(deleteResult)) return linkedUserDeleteResponse();
+      return { ok: true, status: 200, message: 'Usuario removido.' };
+    });
   }
 
-  async setPassword(id, password) {
+  async setPassword(id, password, options = {}) {
     const h = this.helpers;
-    const nextPassword = h.normalizeText(password);
-    if (nextPassword.length < 6) {
-      return { ok: false, status: 400, message: 'A senha temporaria precisa ter pelo menos 6 caracteres.' };
-    }
+    const nextPassword = String(password === undefined || password === null ? '' : password);
     return this.withTransaction(async () => {
       const currentResult = await this.query('SELECT * FROM users WHERE id = $1 FOR UPDATE', [String(id || '')]);
       const current = currentResult.rows[0];
       if (!current) return { ok: false, status: 404, message: 'Usuario nao encontrado.' };
+      if (this.authMode === 'production') {
+        const policy = h.validateProductivePassword(nextPassword, current);
+        if (!policy.ok) return policy;
+      } else if (nextPassword.length < 6) {
+        return { ok: false, status: 400, message: 'A senha temporaria precisa ter pelo menos 6 caracteres.' };
+      }
+      const timestamp = h.nowIso();
+      const passwordUpdatedAt = options.mustChangePassword === true ? '' : timestamp;
+      const credentials = h.hashPassword(nextPassword);
+      await this.query(`
+        UPDATE users
+        SET password_hash = $1, password_salt = $2, password_algorithm = $3, password_updated_at = $4, updated_at = $5
+        WHERE id = $6
+      `, [credentials.hash, credentials.salt, h.storedPasswordAlgorithm(this.authMode), passwordUpdatedAt, timestamp, current.id]);
+      await this.query("UPDATE sessions SET revoked_at = $1 WHERE user_id = $2 AND revoked_at = ''", [timestamp, current.id]);
+      return { ok: true, status: 200, message: 'Senha atualizada com seguranca.' };
+    });
+  }
+
+  async changePassword(id, currentPassword, nextPassword) {
+    const h = this.helpers;
+    return this.withTransaction(async () => {
+      const currentResult = await this.query('SELECT * FROM users WHERE id = $1 FOR UPDATE', [String(id || '')]);
+      const current = currentResult.rows[0];
+      if (!current || !h.verifyLoginPassword(current, currentPassword)) {
+        return { ok: false, status: 401, code: 'CURRENT_PASSWORD_INVALID', message: 'A senha atual nao confere.' };
+      }
+      if (h.verifyPassword(nextPassword, current.password_salt, current.password_hash)) {
+        return { ok: false, status: 400, code: 'PASSWORD_REUSE', message: 'A nova senha precisa ser diferente da atual.' };
+      }
+      const policy = h.validateProductivePassword(nextPassword, current);
+      if (!policy.ok) return policy;
+
       const timestamp = h.nowIso();
       const credentials = h.hashPassword(nextPassword);
       await this.query(`
         UPDATE users
         SET password_hash = $1, password_salt = $2, password_algorithm = $3, password_updated_at = $4, updated_at = $5
         WHERE id = $6
-      `, [credentials.hash, credentials.salt, credentials.algorithm, timestamp, timestamp, current.id]);
+      `, [credentials.hash, credentials.salt, h.storedPasswordAlgorithm(this.authMode), timestamp, timestamp, current.id]);
       await this.query("UPDATE sessions SET revoked_at = $1 WHERE user_id = $2 AND revoked_at = ''", [timestamp, current.id]);
-      return { ok: true, status: 200, message: 'Senha atualizada com seguranca.' };
+      const updated = await this.getUserById(current.id);
+      return {
+        ok: true,
+        status: 200,
+        user: h.publicUser(updated, { requireCurrentPasswordPolicy: this.authMode === 'production' }),
+        session: await this.createSession(updated),
+        message: 'Senha atualizada. Seu acesso esta pronto.'
+      };
     });
+  }
+
+  async revokeUserSessions(id) {
+    const result = await this.query(
+      "UPDATE sessions SET revoked_at = $1 WHERE user_id = $2 AND revoked_at = ''",
+      [this.helpers.nowIso(), String(id || '')]
+    );
+    return Number(result.rowCount || 0);
   }
 
   async setUserStatus(id, status) {
     const h = this.helpers;
     return this.withTransaction(async () => {
+      await this.lockUserAdministration();
       const currentResult = await this.query('SELECT * FROM users WHERE id = $1 FOR UPDATE', [String(id || '')]);
       const current = currentResult.rows[0];
       if (!current) return { ok: false, status: 404, message: 'Usuario nao encontrado.' };
-      const nextStatus = h.normalizeStatus(status || (current.status === 'active' ? 'inactive' : 'active'));
+      const nextStatus = h.normalizeText(status);
+      if (!h.STATUS_LABELS[nextStatus]) return { ok: false, status: 400, message: 'Informe um status de usuario valido.' };
+      const adminGuard = await this.guardLastActiveAdmin(current, current.role, nextStatus);
+      if (adminGuard) return adminGuard;
       const timestamp = h.nowIso();
       await this.query('UPDATE users SET status = $1, updated_at = $2 WHERE id = $3', [nextStatus, timestamp, current.id]);
       if (nextStatus !== 'active') {
@@ -919,16 +1059,13 @@ class PostgresqlBancusDatabase {
   async login(email, password) {
     const h = this.helpers;
     const user = await this.getUserByEmail(email);
-    if (!user || !h.verifyPassword(password, user.password_salt, user.password_hash)) {
+    if (!h.verifyLoginPassword(user, password) || user.status !== 'active') {
       return { ok: false, status: 401, message: 'E-mail ou senha invalidos.' };
-    }
-    if (user.status !== 'active') {
-      return { ok: false, status: 403, message: 'Usuario inativo. Solicite reativacao ao administrador.' };
     }
     const timestamp = h.nowIso();
     await this.query('UPDATE users SET last_login_at = $1, updated_at = $2 WHERE id = $3', [timestamp, timestamp, user.id]);
     const updated = await this.getUserById(user.id);
-    return { ok: true, status: 200, user: h.publicUser(updated), session: await this.createSession(updated) };
+    return { ok: true, status: 200, user: h.publicUser(updated, { requireCurrentPasswordPolicy: this.authMode === 'production' }), session: await this.createSession(updated) };
   }
 
   async createSession(user) {
@@ -965,7 +1102,7 @@ class PostgresqlBancusDatabase {
         createdAt: row.session_created_at,
         expiresAt: row.session_expires_at
       },
-      user: h.publicUser(row)
+      user: h.publicUser(row, { requireCurrentPasswordPolicy: this.authMode === 'production' })
     };
   }
 
@@ -1455,11 +1592,20 @@ class PostgresqlBancusDatabase {
       ok: true,
       dryRun,
       source: h.normalizeText(input.source, 'localStorage'),
-      temporaryPassword: h.IMPORT_TEMP_PASSWORD,
+      passwordProvisioning: 'required',
       users: { total: users.length, importable: 0, imported: 0, skippedExisting: 0, invalid: 0 },
       events: { total: events.length, importable: 0, imported: 0, skippedExisting: 0, invalid: 0, bySource: {} },
       snapshots: { total: snapshots.length, importable: 0, created: 0, updated: 0, invalid: 0, byType: {} }
     };
+    if (this.authMode === 'production' && !dryRun && users.length > 0) {
+      return {
+        ...summary,
+        ok: false,
+        status: 409,
+        code: 'PRODUCTIVE_USER_MIGRATION_REQUIRES_PROVISIONING',
+        message: 'O provisionamento de acessos produtivos exige credenciais individuais.'
+      };
+    }
 
     for (const item of users) {
       const validation = h.validateUserPayload({
@@ -1551,7 +1697,7 @@ class PostgresqlBancusDatabase {
           ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
         `, [
           data.id, data.name, data.email, data.role, data.status, data.department, data.phone,
-          credentials.hash, credentials.salt, credentials.algorithm, timestamp, timestamp, timestamp, ''
+          credentials.hash, credentials.salt, h.storedPasswordAlgorithm(this.authMode), '', timestamp, timestamp, ''
         ]);
         summary.users.imported += 1;
       }
@@ -1634,6 +1780,13 @@ class PostgresqlBancusDatabase {
 
 async function createPostgresqlProvider(options = {}, context = {}) {
   const databaseUrl = requireDatabaseUrl(options);
+  const rawAuthMode = String(options.authMode === undefined ? 'production' : options.authMode).trim().toLowerCase();
+  if (!['demo', 'production'].includes(rawAuthMode)) {
+    throw providerError(ERROR_CODES.AUTH_CONFIG_INVALID, 'Auth mode invalido para PostgreSQL.', null, databaseUrl);
+  }
+  if (rawAuthMode === 'production' && shouldSeedUsers(options)) {
+    throw providerError(ERROR_CODES.AUTH_CONFIG_INVALID, 'Contas demonstrativas nao podem ser semeadas em modo production.', null, databaseUrl);
+  }
   const resolved = resolvePool(options, databaseUrl);
   attachPoolErrorListener(resolved.pool, {
     databaseUrl,
@@ -1658,7 +1811,8 @@ async function createPostgresqlProvider(options = {}, context = {}) {
     });
     const database = new PostgresqlBancusDatabase(resolved.pool, context, {
       ownsPool: resolved.owned,
-      schema: verifiedSchema
+      schema: verifiedSchema,
+      authMode: rawAuthMode
     });
     if (shouldSeedUsers(options)) await database.seedUsers();
     return database;

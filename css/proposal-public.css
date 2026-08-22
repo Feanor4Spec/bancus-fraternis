@@ -18,6 +18,23 @@
   font-family: Inter, "Segoe UI", Arial, sans-serif;
 }
 
+.proposal-public-skip-link {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 100;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--public-navy);
+  font-weight: 700;
+  transform: translateY(-160%);
+}
+
+.proposal-public-skip-link:focus {
+  transform: translateY(0);
+}
+
 .proposal-public-header {
   position: sticky;
   top: 0;
@@ -116,7 +133,14 @@
 }
 
 .proposal-public-state[hidden] { display: none; }
-.proposal-public-state img { width: 30px; height: 30px; }
+.proposal-public-state__icon {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  background: center / contain no-repeat;
+}
+.proposal-public-state__icon--lock { background-image: url('../assets/icons/ui/ui-lock.svg'); }
+.proposal-public-state__icon--shield { background-image: url('../assets/icons/ui/ui-shield.svg'); }
 .proposal-public-state div { display: grid; gap: 4px; }
 .proposal-public-state span { color: var(--public-muted); font-size: .84rem; }
 .proposal-public-state--error { border-color: #e5b8b8; background: #fff8f8; }

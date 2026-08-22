@@ -12,61 +12,83 @@
   <link rel="stylesheet" href="../assets/css/platform.css">
 </head>
 <body class="bf-platform-body" data-bf-page="login">
-  <div data-shell-header></div>
+  <a class="bf-skip-link skip-main-content" href="#main">Ir para o acesso</a>
+  <header class="bf-auth-topbar">
+    <a class="bf-auth-brand" href="../index.html" aria-label="Bancus Fraternis — início">
+      <img src="../assets/logos/logo-bank-fratern-portal.svg" alt="Bancus Fraternis">
+    </a>
+    <nav aria-label="Acesso rápido">
+      <a class="bf-auth-topbar__link" href="simulador.html">Ir para a simulação</a>
+    </nav>
+  </header>
 
-  <main class="bf-platform-shell">
+  <main class="bf-platform-shell" id="main">
     <section class="bf-auth-shell">
       <article class="bf-auth-card">
-        <span class="bf-badge bf-badge--gold">Acesso seguro local</span>
-        <h1>Entrar no Bancus Fraternis</h1>
-        <p>Autenticacao de prototipo para validar funcoes de cliente, consultor e administracao dentro da plataforma.</p>
-        <div class="bf-public-demo-note" data-public-demo-notice>
-          Ambiente publico de demonstracao. As contas abaixo sao seeds locais; em localhost a sessao tambem pode ser espelhada no SQLite, mas nenhum dado deve ser tratado como cadastro produtivo.
+        <div data-login-view>
+          <span class="bf-badge bf-badge--gold" data-login-badge>Área segura</span>
+          <h1>Entre para continuar</h1>
+          <p>Acesse sua conta para continuar sua simulação ou acompanhar suas propostas.</p>
+
+          <form class="bf-platform-form bf-auth-form" data-login-form novalidate>
+            <label for="login-email">E-mail</label>
+            <input id="login-email" type="email" data-login-email name="email" autocomplete="username" aria-describedby="login-status login-error" required>
+            <label for="login-password">Senha</label>
+            <input id="login-password" type="password" data-login-password name="password" autocomplete="current-password" aria-describedby="login-status login-error" required>
+            <button class="btn btn--primary" data-login-submit type="submit">Entrar</button>
+          </form>
         </div>
 
-        <form class="bf-platform-form bf-auth-form" data-login-form>
-          <label>E-mail
-            <input type="email" data-login-email name="email" autocomplete="username" placeholder="admin@bankfratern.local" required>
-          </label>
-          <label>Senha
-            <input type="password" data-login-password name="password" autocomplete="current-password" placeholder="Use uma conta seed abaixo" required>
-          </label>
-          <button class="btn btn--primary" type="submit">Entrar</button>
-        </form>
-
-        <div class="bf-auth-progress" aria-label="Progresso do login">
-          <div><i data-login-progress-bar></i></div>
-          <span data-login-progress-label>Pronto para autenticar</span>
+        <div data-password-change-view hidden>
+          <span class="bf-badge bf-badge--gold">Atualização de senha</span>
+          <h2 data-password-change-title tabindex="-1">Crie sua nova senha</h2>
+          <p id="password-guidance">Use de 12 a 128 caracteres, combinando letras maiúsculas e minúsculas, número e símbolo.</p>
+          <form class="bf-platform-form bf-auth-form" data-password-change-form novalidate>
+            <label for="change-current">Senha temporária</label>
+            <input id="change-current" type="password" data-change-current autocomplete="current-password" aria-describedby="login-status login-error" required>
+            <label for="change-new">Nova senha</label>
+            <input id="change-new" type="password" data-change-new autocomplete="new-password" minlength="12" maxlength="128" aria-describedby="password-guidance login-status login-error" required>
+            <label for="change-confirm">Confirme a nova senha</label>
+            <input id="change-confirm" type="password" data-change-confirm autocomplete="new-password" minlength="12" maxlength="128" aria-describedby="password-guidance login-status login-error" required>
+            <button class="btn btn--primary" data-change-submit type="submit">Salvar e continuar</button>
+            <button class="bf-auth-secondary" data-change-cancel type="button">Usar outra conta</button>
+          </form>
         </div>
 
-        <div class="bf-auth-message bf-auth-message--info" data-login-status>Use uma conta de demonstracao ou informe um usuario criado no painel admin.</div>
+        <div class="bf-auth-message bf-auth-message--info" id="login-status" data-login-status role="status" aria-live="polite">Informe seu e-mail e sua senha.</div>
+        <div class="bf-auth-message bf-auth-message--error" id="login-error" data-login-error role="alert" aria-live="assertive"></div>
         <div class="bf-auth-active" data-active-session></div>
       </article>
 
-      <aside class="bf-auth-panel">
-        <span class="bf-badge bf-badge--navy">Contas seed</span>
-        <h2>Perfis para teste</h2>
-        <p>Estas credenciais entram direto no prototipo publico. Elas existem apenas para navegacao e validacao da jornada antes da API real.</p>
+      <!-- AUTH_DEMO_START -->
+      <aside class="bf-auth-panel" data-demo-panel data-public-demo-notice hidden>
+        <span class="bf-badge bf-badge--navy">Demonstração</span>
+        <h2>Escolha um perfil</h2>
+        <p>Use um dos acessos abaixo para conhecer a jornada.</p>
 
         <div class="bf-demo-logins">
           <button type="button" data-demo-login data-email="admin@bankfratern.local" data-password="Admin@123">
             <strong>Administrador</strong>
-            <span>Entrar como admin@bankfratern.local</span>
+            <span>Explorar a gestão</span>
           </button>
           <button type="button" data-demo-login data-email="consultor@bankfratern.local" data-password="Consultor@123">
             <strong>Consultor</strong>
-            <span>Entrar como consultor@bankfratern.local</span>
+            <span>Explorar o atendimento</span>
           </button>
           <button type="button" data-demo-login data-email="cliente@bankfratern.local" data-password="Cliente@123">
             <strong>Cliente</strong>
-            <span>Entrar como cliente@bankfratern.local</span>
+            <span>Explorar simulações e propostas</span>
           </button>
         </div>
       </aside>
+      <!-- AUTH_DEMO_END -->
     </section>
   </main>
 
-  <div data-shell-footer></div>
+  <footer class="bf-auth-footer">
+    <span>© 2026 Bancus Fraternis</span>
+    <a href="compliance.html">Privacidade e segurança</a>
+  </footer>
   <script src="../assets/js/services/backend-api.service.js"></script><script src="../js/auth.js"></script>
   <script src="../js/shared-layout.js"></script>
   <script src="../assets/js/login.js"></script>

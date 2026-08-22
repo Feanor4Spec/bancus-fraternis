@@ -1965,6 +1965,89 @@
   align-items: stretch;
 }
 
+[data-auth-controls] {
+  display: contents;
+}
+
+body[data-bf-page="login"] {
+  display: flex;
+  flex-direction: column;
+}
+
+.bf-auth-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  min-height: 82px;
+  padding: 14px max(24px, calc((100vw - 1120px) / 2));
+  border-bottom: 1px solid var(--bf-line);
+  background: rgba(255, 255, 255, .94);
+}
+
+.bf-auth-brand img {
+  display: block;
+  width: 174px;
+  max-width: 44vw;
+  height: auto;
+}
+
+.bf-auth-topbar__link,
+.bf-auth-footer a {
+  color: var(--bf-navy-900);
+  font-size: 13px;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+body[data-bf-page="login"] .bf-platform-shell {
+  flex: 1 0 auto;
+  padding-top: clamp(52px, 8vh, 96px);
+  padding-bottom: clamp(52px, 8vh, 96px);
+}
+
+body[data-bf-page="login"][data-auth-mode="production"] .bf-platform-shell {
+  width: min(720px, calc(100% - 32px));
+}
+
+.bf-auth-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  width: min(1120px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 22px 0 28px;
+  border-top: 1px solid var(--bf-line);
+  color: var(--bf-muted);
+  font-size: 13px;
+}
+
+.bf-auth-shell--single {
+  grid-template-columns: minmax(0, 720px);
+  justify-content: center;
+}
+
+.bf-auth-shell [hidden] {
+  display: none !important;
+}
+
+.bf-skip-link {
+  position: fixed;
+  z-index: 1000;
+  top: 12px;
+  left: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  color: var(--bf-white);
+  background: var(--bf-navy-950);
+  transform: translateY(-160%);
+}
+
+.bf-skip-link:focus {
+  transform: translateY(0);
+}
+
 .bf-auth-card,
 .bf-auth-panel {
   min-width: 0;
@@ -1975,7 +2058,8 @@
   box-shadow: var(--bf-shadow-sm);
 }
 
-.bf-auth-card h1 {
+.bf-auth-card h1,
+.bf-auth-card h2 {
   margin: 14px 0 10px;
   color: var(--bf-navy-900);
   font-size: clamp(34px, 4vw, 56px);
@@ -2004,6 +2088,44 @@
 .bf-auth-form {
   grid-template-columns: 1fr;
   margin-top: 24px;
+}
+
+body[data-bf-page="login"] .bf-auth-form {
+  display: grid;
+}
+
+.bf-auth-form label {
+  margin-bottom: -6px;
+}
+
+.bf-auth-form [aria-invalid="true"] {
+  border-color: var(--bf-danger, #b42318);
+  box-shadow: 0 0 0 3px rgba(180, 35, 24, .12);
+}
+
+.bf-auth-form button:disabled {
+  cursor: wait;
+  opacity: .72;
+}
+
+.bf-auth-secondary {
+  min-height: 44px;
+  border: 0;
+  color: var(--bf-navy-900);
+  background: transparent;
+  font: inherit;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.bf-auth-topbar__link:focus-visible,
+.bf-auth-footer a:focus-visible,
+.bf-auth-form input:focus-visible,
+.bf-auth-form button:focus-visible,
+.bf-demo-logins button:focus-visible,
+.bf-auth-active a:focus-visible {
+  outline: 3px solid var(--bf-gold-500);
+  outline-offset: 3px;
 }
 
 .bf-auth-progress {
@@ -2056,6 +2178,63 @@
 .bf-auth-message--error {
   border-color: var(--bf-danger-bd, #fecaca);
   background: var(--bf-danger-bg, #fff1f2);
+}
+
+.bf-auth-active {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.bf-auth-active a {
+  color: var(--bf-navy-900);
+  font-weight: 900;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bf-skip-link,
+  .bf-auth-progress i {
+    transition: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .bf-auth-topbar {
+    min-height: 72px;
+    padding: 12px 16px;
+  }
+
+  .bf-auth-topbar__link {
+    max-width: 112px;
+    text-align: right;
+  }
+
+  body[data-bf-page="login"][data-auth-mode="production"] .bf-platform-shell,
+  body[data-bf-page="login"] .bf-platform-shell {
+    width: 100%;
+    max-width: 100%;
+    padding: 28px 12px 40px;
+  }
+
+  body[data-bf-page="login"] .bf-auth-card,
+  body[data-bf-page="login"] .bf-auth-panel {
+    width: 100%;
+    max-width: 100%;
+    margin-top: 0;
+    padding: 22px 18px;
+  }
+
+  .bf-auth-card h1,
+  .bf-auth-card h2 {
+    font-size: clamp(32px, 11vw, 42px);
+  }
+
+  .bf-auth-footer {
+    align-items: flex-start;
+    flex-direction: column;
+    width: calc(100% - 32px);
+  }
 }
 
 .bf-demo-logins {
@@ -4146,9 +4325,7 @@
   .bf-platform-hero__rail,
   .bf-platform-card,
   .bf-platform-hero__content,
-  .bf-platform-panel,
-  .bf-auth-card,
-  .bf-auth-panel {
+  .bf-platform-panel {
     width: calc(100vw - 96px);
     max-width: calc(100vw - 96px);
     margin-top: 18px;

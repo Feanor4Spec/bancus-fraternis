@@ -12,9 +12,10 @@
   <link rel="stylesheet" href="../css/bank-fratern-design-system.css">
   <link rel="stylesheet" href="../assets/css/bf-design-system-v8.css">
   <link rel="stylesheet" href="../css/proposal-public.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="../assets/vendor/chart.js/4.4.0/chart.umd.min.js"></script>
 </head>
 <body class="proposal-public-body" data-bf-page="proposta-publica">
+  <a class="proposal-public-skip-link skip-main-content" href="#main">Ir para a proposta</a>
   <header class="proposal-public-header" data-shell-header>
     <a href="index.html" class="proposal-public-brand" aria-label="Bancus Fraternis">
       <img src="../assets/logos/logo-bank-fratern-09.svg" alt="Bancus Fraternis">
@@ -23,12 +24,12 @@
       <span>Consulta somente leitura</span>
       <strong id="public-proposal-status">Abrindo proposta</strong>
     </div>
-    <div class="proposal-public-header__actions" hidden id="public-proposal-actions">
+    <nav class="proposal-public-header__actions" hidden id="public-proposal-actions" aria-label="Ações da proposta">
       <button type="button" class="btn btn--primary" id="public-proposal-print">Imprimir ou salvar em PDF</button>
-    </div>
+    </nav>
   </header>
 
-  <main class="proposal-public-main">
+  <main class="proposal-public-main" id="main">
     <section class="proposal-public-hero" aria-labelledby="public-proposal-title">
       <div>
         <span class="proposal-public-eyebrow">Bancus Fraternis</span>
@@ -44,15 +45,15 @@
     </section>
 
     <section class="proposal-public-state" id="public-proposal-loading" role="status" aria-live="polite">
-      <img src="../assets/icons/ui/ui-lock.svg" alt="">
+      <span class="proposal-public-state__icon proposal-public-state__icon--lock" aria-hidden="true"></span>
       <div>
         <strong>Abrindo sua proposta</strong>
         <span>Aguarde um instante.</span>
       </div>
     </section>
 
-    <section class="proposal-public-state proposal-public-state--error" id="public-proposal-error" role="alert" hidden>
-      <img src="../assets/icons/ui/ui-shield.svg" alt="">
+    <section class="proposal-public-state proposal-public-state--error" id="public-proposal-error" role="alert" aria-live="assertive" hidden>
+      <span class="proposal-public-state__icon proposal-public-state__icon--shield" aria-hidden="true"></span>
       <div>
         <strong>Esta proposta não está disponível</strong>
         <span id="public-proposal-error-message">O acesso pode ter expirado ou sido revogado.</span>

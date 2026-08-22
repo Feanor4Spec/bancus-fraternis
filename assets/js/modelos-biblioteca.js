@@ -290,6 +290,7 @@
   }
 
   async function init() {
+    if (window.BFAuth && window.BFAuth.ready) await window.BFAuth.ready;
     const user = window.BFAuth.requireRole(['admin', 'consultor', 'cliente'], { redirect: true });
     if (!user) return;
 

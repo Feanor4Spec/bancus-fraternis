@@ -151,6 +151,7 @@
   }
 
   function demoChip() {
+    if (window.BFAuth && window.BFAuth.authMode() === 'production') return '';
     return '<span class="bf-demo-chip" title="Ambiente publico de demonstracao: dados e sessoes ficam somente no navegador.">Demo local</span>';
   }
 
@@ -173,7 +174,7 @@
           ${navLink(`${pageDir}dashboard-cliente.html`, 'Dashboard')}
           ${navLink(`${pageDir}simulador.html`, 'Simulacao')}
           ${demoChip()}
-          ${accountControls()}
+          <span data-auth-controls>${accountControls()}</span>
         </nav>
       </div>
     </header>
@@ -227,13 +228,24 @@
   const footerSlot = document.querySelector('[data-shell-footer]');
   if (footerSlot) footerSlot.outerHTML = FOOTER_HTML;
 
+  if (window.BFAuth && window.BFAuth.ready) {
+    window.BFAuth.ready.then(() => {
+      const controls = document.querySelector('[data-auth-controls]');
+      if (controls) controls.innerHTML = accountControls();
+    });
+  }
+
   applySharedSettings();
 
-  document.addEventListener('click', function (e) {
+  document.addEventListener('click', async function (e) {
     const logoutButton = e.target.closest('[data-auth-logout]');
     if (logoutButton && window.BFAuth) {
-      window.BFAuth.logout();
-      location.href = `${pageDir}login.html`;
+      logoutButton.disabled = true;
+      try {
+        await Promise.resolve(window.BFAuth.logout());
+      } finally {
+        location.href = `${pageDir}login.html?auth=logout`;
+      }
       return;
     }
 

@@ -1,12 +1,15 @@
 {
   "name": "bancus-fraternis",
-  "version": "9.1.0",
+  "version": "9.2.0",
   "private": true,
   "description": "Plataforma local e piloto produtivo do Bancus Fraternis.",
   "packageManager": "pnpm@11.19.0",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "bootstrap:admin": "node tools/bootstrap-production-admin.mjs",
+    "validate:auth-browser": "node tools/validate-auth-browser.mjs",
+    "validate:auth-production": "node tools/validate-auth-production.mjs",
     "validate:database-provider": "node tools/validate-database-provider.mjs",
     "validate:database-local": "node tools/validate-local-database.mjs"
   },

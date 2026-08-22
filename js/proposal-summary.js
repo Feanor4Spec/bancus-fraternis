@@ -232,6 +232,13 @@ const ProposalSummary = (() => {
     return !data.builder || !data.builder.sections || data.builder.sections[key] !== false;
   }
 
+  const PRESENTATION_STATUSES = new Set(['done', 'current', 'upcoming']);
+
+  function presentationStatus(value, fallback = 'upcoming') {
+    const normalized = String(value || '').trim().toLowerCase();
+    return PRESENTATION_STATUSES.has(normalized) ? normalized : fallback;
+  }
+
   function isChartEnabled(data, key) {
     return isSectionEnabled(data, chartSectionMap[key] || key)
       && (!data.builder || !data.builder.charts || data.builder.charts[key] !== false);
@@ -1048,7 +1055,7 @@ const ProposalSummary = (() => {
         </div>
         <div class="ps-journey">
           ${data.journey.map((step, idx) => `
-            <article class="ps-journey-step ps-journey-step--${step.status}">
+            <article class="ps-journey-step ps-journey-step--${presentationStatus(step.status)}">
               <div class="ps-journey-step__index">${idx + 1}</div>
               <strong>${escapeHTML(step.label)}</strong>
               <span>${escapeHTML(step.value || step.date || '')}</span>
@@ -1169,7 +1176,7 @@ const ProposalSummary = (() => {
         </div>
         <div class="ps-phase-grid">
           ${phases.map((phase, index) => `
-            <article class="ps-phase-card ps-phase-card--${phase.status}">
+            <article class="ps-phase-card ps-phase-card--${presentationStatus(phase.status)}">
               <div class="ps-phase-card__index">${index + 1}</div>
               <div>
                 <strong>${escapeHTML(phase.title)}</strong>
@@ -1702,6 +1709,7 @@ const ProposalSummary = (() => {
     mapSimulationToProposal,
     buildResultDecision,
     createMockData,
+    presentationStatus,
     normalizeProposalBuilder,
     proposalBuilderDefaults
   };

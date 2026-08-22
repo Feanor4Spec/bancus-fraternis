@@ -2,6 +2,8 @@
   'use strict';
 
   const SESSION_KEY = 'bf_backend_session_v1';
+  const PUBLIC_SESSION_KEY = 'bf_auth_public_session_v1';
+  const AUTH_CONFIG_KEY = 'bf_auth_mode_v1';
   // Maior que o orcamento maximo documentado de conexao + query do provider.
   // Evita declarar fallback local enquanto uma escrita hospedada ainda pode confirmar.
   const REQUEST_TIMEOUT_MS = 20000;
@@ -19,32 +21,43 @@
   }
 
   function readSession() {
-    const store = storage();
+    const config = readAuthConfig();
+    const store = config.mode === 'production' ? temporaryStorage() : storage();
     if (!store) return null;
     try {
-      const session = JSON.parse(store.getItem(SESSION_KEY) || 'null');
-      if (!session || !session.token) return null;
+      const key = config.mode === 'production' ? PUBLIC_SESSION_KEY : SESSION_KEY;
+      const session = JSON.parse(store.getItem(key) || 'null');
+      if (!session || (config.mode !== 'production' && !session.token)) return null;
       if (session.expiresAt && new Date(session.expiresAt).getTime() <= Date.now()) {
-        store.removeItem(SESSION_KEY);
+        store.removeItem(key);
         return null;
       }
       return session;
     } catch (error) {
-      store.removeItem(SESSION_KEY);
+      store.removeItem(config.mode === 'production' ? PUBLIC_SESSION_KEY : SESSION_KEY);
       return null;
     }
   }
 
-  function writeSession(session) {
-    const store = storage();
-    if (!store || !session || !session.token) return false;
-    store.setItem(SESSION_KEY, JSON.stringify(session));
+  function writeSession(session, user) {
+    const config = readAuthConfig();
+    const production = config.mode === 'production';
+    const store = production ? temporaryStorage() : storage();
+    if (!store || !session || (!production && !session.token)) return false;
+    const key = production ? PUBLIC_SESSION_KEY : SESSION_KEY;
+    store.setItem(key, JSON.stringify(production ? { ...session, user: user || null, mode: 'production' } : session));
+    if (production) {
+      const persistent = storage();
+      if (persistent) persistent.removeItem(SESSION_KEY);
+    }
     return true;
   }
 
   function clearSession() {
     const store = storage();
     if (store) store.removeItem(SESSION_KEY);
+    const temporary = temporaryStorage();
+    if (temporary) temporary.removeItem(PUBLIC_SESSION_KEY);
   }
 
   function pageSource() {
@@ -81,7 +94,17 @@
       } catch (error) {
         data = { ok: false, message: 'Resposta da API nao e JSON.' };
       }
-      if (!response.ok) return { ok: false, status: response.status, ...data };
+      if (!response.ok) {
+        if (response.status === 401) {
+          clearSession();
+          try {
+            window.dispatchEvent(new CustomEvent('bf:auth-expired', { detail: { path } }));
+          } catch (error) {
+            // Ambientes sem CustomEvent continuam com a limpeza de sessao.
+          }
+        }
+        return { ok: false, status: response.status, ...data };
+      }
       return data && typeof data === 'object' ? data : { ok: true, data };
     } catch (error) {
       return { ok: false, fallback: true, message: 'API local indisponivel.', error: error && error.name ? error.name : 'request-error' };
@@ -94,23 +117,51 @@
     return request('/api/health');
   }
 
+  async function authConfig() {
+    const result = await request('/api/auth/config');
+    if (result && result.ok && ['demo', 'production'].includes(result.mode)) writeAuthConfig(result);
+    return result;
+  }
+
   async function authLogin(email, password) {
+    await authConfig();
     const result = await request('/api/auth/login', {
       method: 'POST',
       body: { email, password }
     });
-    if (result.ok && result.session) writeSession(result.session);
+    if (result.ok && result.session) writeSession(result.session, result.user);
     return result;
   }
 
   async function authLogout() {
-    const result = await request('/api/auth/logout', { method: 'POST' });
-    clearSession();
+    try {
+      return await request('/api/auth/logout', { method: 'POST' });
+    } finally {
+      clearSession();
+    }
+  }
+
+  async function authChangePassword(currentPassword, newPassword) {
+    const result = await request('/api/auth/change-password', {
+      method: 'POST',
+      body: { currentPassword, newPassword }
+    });
+    if (result.ok && result.session) writeSession(result.session, result.user);
     return result;
   }
 
-  function currentUser() {
-    return request('/api/auth/me');
+  async function authLogoutAll() {
+    try {
+      return await request('/api/auth/logout-all', { method: 'POST' });
+    } finally {
+      clearSession();
+    }
+  }
+
+  async function currentUser() {
+    const result = await request('/api/auth/me');
+    if (result.ok && result.session) writeSession(result.session, result.user);
+    return result;
   }
 
   function databaseStatus() {
@@ -265,6 +316,40 @@
     return request(`/api/proposals/${encodeURIComponent(id)}`, { method: 'PATCH', body: payload || {} });
   }
 
+  function temporaryStorage() {
+    try {
+      return window.sessionStorage || storage();
+    } catch (error) {
+      return storage();
+    }
+  }
+
+  function readAuthConfig() {
+    const store = storage();
+    if (!store) return { mode: 'pending', transport: '', demoAccounts: false };
+    try {
+      const parsed = JSON.parse(store.getItem(AUTH_CONFIG_KEY) || 'null');
+      return parsed && ['demo', 'production'].includes(parsed.mode)
+        ? parsed
+        : { mode: 'pending', transport: '', demoAccounts: false };
+    } catch (error) {
+      return { mode: 'pending', transport: '', demoAccounts: false };
+    }
+  }
+
+  function writeAuthConfig(config) {
+    const store = storage();
+    if (!store || !config || !['demo', 'production'].includes(config.mode)) return false;
+    store.setItem(AUTH_CONFIG_KEY, JSON.stringify({
+      mode: config.mode,
+      transport: config.transport || (config.mode === 'production' ? 'cookie' : 'bearer'),
+      demoAccounts: config.demoAccounts === true,
+      sessionMinutes: Number(config.sessionMinutes || 0),
+      passwordPolicy: config.passwordPolicy || null
+    }));
+    return true;
+  }
+
   function createProposalSnapshot(payload) {
     return request('/api/proposal-snapshots', { method: 'POST', body: payload || {} });
   }
@@ -305,13 +390,19 @@
 
   window.BFBackendApi = {
     SESSION_KEY,
+    PUBLIC_SESSION_KEY,
+    AUTH_CONFIG_KEY,
     available: canUseApi,
+    readAuthConfig,
+    authConfig,
     readSession,
     clearSession,
     request,
     health,
     authLogin,
     authLogout,
+    authChangePassword,
+    authLogoutAll,
     currentUser,
     databaseStatus,
     importLocalSnapshot,

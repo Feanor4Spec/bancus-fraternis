@@ -1,6 +1,9 @@
 const http = require('http');
+const crypto = require('crypto');
 const fs = require('fs');
+const net = require('net');
 const path = require('path');
+const databaseContract = require('./js/backend/db');
 
 const PORT = Number(process.env.PORT) || 8080;
 const DEFAULT_HOST = '127.0.0.1';
@@ -11,6 +14,42 @@ let SCHEMA_VERSION = 'bancus-fraternis.local-db.v1';
 let databaseReady = Promise.resolve(null);
 let databaseStartupError = null;
 let requestedDatabaseProvider = String(process.env.BANCUS_DB_PROVIDER || 'sqlite').trim().toLowerCase() || 'sqlite';
+const requestedAuthMode = String(process.env.BANCUS_AUTH_MODE || '').trim().toLowerCase();
+if (requestedAuthMode && !['demo', 'production'].includes(requestedAuthMode)) {
+  throw new Error('BANCUS_AUTH_MODE invalido. Use demo ou production.');
+}
+const AUTH_MODE = requestedAuthMode || (['postgres', 'postgresql', 'pg'].includes(requestedDatabaseProvider) ? 'production' : 'demo');
+const AUTH_SESSION_TTL_MINUTES = databaseContract.resolveSessionTtlMinutes(process.env.BANCUS_SESSION_TTL_MINUTES);
+const AUTH_LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const AUTH_LOGIN_LOCK_MS = 15 * 60 * 1000;
+const AUTH_LOGIN_MAX_FAILURES = 5;
+const AUTH_LOGIN_IP_MAX_FAILURES = 100;
+const rawLoginGuardMaxEntries = String(process.env.BANCUS_AUTH_LOGIN_GUARD_MAX_ENTRIES ?? '').trim();
+const requestedLoginGuardMaxEntries = rawLoginGuardMaxEntries ? Number(rawLoginGuardMaxEntries) : Number.NaN;
+const AUTH_LOGIN_GUARD_MAX_ENTRIES = Number.isInteger(requestedLoginGuardMaxEntries)
+  ? Math.max(32, Math.min(100000, requestedLoginGuardMaxEntries))
+  : 10000;
+const AUTH_LOGIN_MAX_EMAIL_CHARS = 254;
+const AUTH_LOGIN_MAX_PASSWORD_CHARS = 128;
+const AUTH_COOKIE_SECURE = process.env.BANCUS_AUTH_COOKIE_SECURE === undefined
+  ? AUTH_MODE === 'production'
+  : ['1', 'true', 'on', 'yes'].includes(String(process.env.BANCUS_AUTH_COOKIE_SECURE).trim().toLowerCase());
+const AUTH_COOKIE_NAME = AUTH_COOKIE_SECURE ? '__Host-bf_session' : 'bf_session';
+const AUTH_DEMO_EMAIL_SUFFIX = '@bankfratern.local';
+const AUTH_TRUST_PROXY = ['1', 'true', 'on', 'yes'].includes(String(process.env.BANCUS_TRUST_PROXY || '').trim().toLowerCase());
+const AUTH_TRUSTED_PROXY_IPS = new Set(String(process.env.BANCUS_TRUSTED_PROXY_IPS || '')
+  .split(',')
+  .map((value) => value.trim().replace(/^::ffff:/i, ''))
+  .filter((value) => net.isIP(value)));
+const AUTH_GUARD_HMAC_SECRET = String(process.env.BANCUS_AUTH_AUDIT_HMAC_SECRET || '') || crypto.randomBytes(32).toString('hex');
+const authLoginGuards = new Map();
+if (
+  AUTH_MODE === 'production'
+  && ['1', 'true', 'on', 'yes'].includes(String(process.env.BANCUS_DB_SEED_USERS || '').trim().toLowerCase())
+) {
+  throw new Error('BANCUS_DB_SEED_USERS nao pode ser habilitado com BANCUS_AUTH_MODE=production.');
+}
+let validateProductivePassword = () => ({ ok: false, status: 503, message: 'Politica de senha indisponivel.' });
 let proposalShareRepository = null;
 let proposalShareService = null;
 let proposalShareReady = Promise.resolve(null);
@@ -18,11 +57,15 @@ let proposalShareStartupError = null;
 let PROPOSAL_SHARE_SCHEMA = 'bancus.proposal-secure-share.v1';
 
 try {
-  const databaseModule = require('./js/backend/db');
+  const databaseModule = databaseContract;
   SCHEMA_VERSION = databaseModule.SCHEMA_VERSION;
   const { createDatabase } = databaseModule;
+  validateProductivePassword = databaseModule.validateProductivePassword;
   requestedDatabaseProvider = databaseModule.normalizeDbProvider(requestedDatabaseProvider);
-  databaseReady = Promise.resolve(createDatabase())
+  databaseReady = Promise.resolve(createDatabase({
+    authMode: AUTH_MODE,
+    seedUsers: AUTH_MODE === 'production' ? false : undefined
+  }))
     .then((database) => {
       localDatabase = database;
       databaseStartupError = null;
@@ -195,10 +238,13 @@ function resolveRequestPath(reqUrl) {
   return filePath;
 }
 
-function sendJson(res, status, data) {
+function sendJson(res, status, data, extraHeaders = {}) {
   res.writeHead(status, {
     'Content-Type': 'application/json; charset=utf-8',
-    'Cache-Control': 'no-store'
+    'Cache-Control': 'no-store',
+    'X-Content-Type-Options': 'nosniff',
+    'Referrer-Policy': 'no-referrer',
+    ...extraHeaders
   });
   res.end(JSON.stringify(data));
 }
@@ -224,7 +270,7 @@ function methodNotAllowed(res) {
   sendJson(res, 405, { ok: false, message: 'Metodo nao permitido.' });
 }
 
-function readRequestBody(req) {
+function readRequestBody(req, maxBytes = MAX_JSON_BODY_BYTES) {
   return new Promise((resolve, reject) => {
     const chunks = [];
     let receivedBytes = 0;
@@ -233,9 +279,9 @@ function readRequestBody(req) {
       if (settled) return;
       const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk), 'utf8');
       receivedBytes += buffer.length;
-      if (receivedBytes > MAX_JSON_BODY_BYTES) {
+      if (receivedBytes > maxBytes) {
         settled = true;
-        const payloadError = new Error('Payload excede o limite de 4 MiB.');
+        const payloadError = new Error(`Payload excede o limite de ${maxBytes} bytes.`);
         payloadError.code = 'BANCUS_HTTP_PAYLOAD_TOO_LARGE';
         payloadError.status = 413;
         req.removeListener('data', onData);
@@ -259,8 +305,8 @@ function readRequestBody(req) {
   });
 }
 
-async function readJsonBody(req) {
-  const body = await readRequestBody(req);
+async function readJsonBody(req, maxBytes = MAX_JSON_BODY_BYTES) {
+  const body = await readRequestBody(req, maxBytes);
   if (!body.trim()) return {};
   try {
     return JSON.parse(body);
@@ -271,8 +317,8 @@ async function readJsonBody(req) {
   }
 }
 
-async function readJsonObject(req) {
-  const body = await readJsonBody(req);
+async function readJsonObject(req, maxBytes = MAX_JSON_BODY_BYTES) {
+  const body = await readJsonBody(req, maxBytes);
   if (!body || typeof body !== 'object' || Array.isArray(body)) {
     const payloadError = new Error('O corpo JSON precisa ser um objeto.');
     payloadError.status = 400;
@@ -286,6 +332,200 @@ function bearerToken(req) {
   return header.toLowerCase().startsWith('bearer ') ? header.slice(7).trim() : '';
 }
 
+function cookieToken(req) {
+  const raw = String(req.headers.cookie || '');
+  if (!raw || raw.length > 8192) return '';
+  for (const part of raw.split(';')) {
+    const separator = part.indexOf('=');
+    if (separator < 0) continue;
+    const name = part.slice(0, separator).trim();
+    if (name !== AUTH_COOKIE_NAME) continue;
+    try {
+      return decodeURIComponent(part.slice(separator + 1).trim());
+    } catch (error) {
+      return '';
+    }
+  }
+  return '';
+}
+
+function sessionToken(req) {
+  return AUTH_MODE === 'production' ? cookieToken(req) : bearerToken(req);
+}
+
+function publicSession(session) {
+  if (!session) return null;
+  return {
+    id: session.id,
+    role: session.role,
+    createdAt: session.createdAt,
+    expiresAt: session.expiresAt
+  };
+}
+
+function authCookie(token) {
+  const parts = [
+    `${AUTH_COOKIE_NAME}=${encodeURIComponent(String(token || ''))}`,
+    'Path=/',
+    'HttpOnly',
+    'SameSite=Lax',
+    `Max-Age=${Math.max(1, Math.trunc(AUTH_SESSION_TTL_MINUTES * 60))}`
+  ];
+  if (AUTH_COOKIE_SECURE) parts.push('Secure');
+  return parts.join('; ');
+}
+
+function clearAuthCookie() {
+  const parts = [
+    `${AUTH_COOKIE_NAME}=`,
+    'Path=/',
+    'HttpOnly',
+    'SameSite=Lax',
+    'Max-Age=0'
+  ];
+  if (AUTH_COOKIE_SECURE) parts.push('Secure');
+  return parts.join('; ');
+}
+
+function normalizeOrigin(value) {
+  try {
+    return new URL(String(value || '')).origin;
+  } catch (error) {
+    return '';
+  }
+}
+
+function expectedRequestOrigin(req) {
+  const configured = normalizeOrigin(process.env.BANCUS_PUBLIC_ORIGIN);
+  if (configured) return configured;
+  const forwardedProto = String(req.headers['x-forwarded-proto'] || '').split(',')[0].trim().toLowerCase();
+  const protocol = forwardedProto === 'https' || AUTH_COOKIE_SECURE ? 'https' : 'http';
+  return normalizeOrigin(`${protocol}://${String(req.headers.host || '')}`);
+}
+
+function requireTrustedOrigin(req, res) {
+  if (AUTH_MODE !== 'production' || !['POST', 'PATCH', 'PUT', 'DELETE'].includes(req.method || '')) return true;
+  const origin = normalizeOrigin(req.headers.origin);
+  if (origin && origin === expectedRequestOrigin(req)) return true;
+  sendJson(res, 403, { ok: false, code: 'AUTH_ORIGIN_REJECTED', message: 'Origem da solicitacao nao autorizada.' });
+  return false;
+}
+
+function clientAddress(req) {
+  const remoteAddress = String(req.socket && req.socket.remoteAddress || 'unknown').slice(0, 128);
+  const normalizedRemote = remoteAddress.replace(/^::ffff:/i, '');
+  if (AUTH_TRUST_PROXY && AUTH_TRUSTED_PROXY_IPS.has(normalizedRemote)) {
+    const forwardedChain = String(req.headers['x-forwarded-for'] || '')
+      .split(',')
+      .map((value) => value.trim().replace(/^::ffff:/i, ''))
+      .filter((value) => net.isIP(value));
+    for (let index = forwardedChain.length - 1; index >= 0; index -= 1) {
+      const candidate = forwardedChain[index];
+      if (!AUTH_TRUSTED_PROXY_IPS.has(candidate)) return candidate;
+    }
+  }
+  return normalizedRemote;
+}
+
+function loginGuardKey(kind, value) {
+  return crypto.createHmac('sha256', AUTH_GUARD_HMAC_SECRET).update(`${kind}:${String(value || '')}`).digest('hex');
+}
+
+function loginGuardEntries(req, email) {
+  const address = clientAddress(req);
+  const account = String(email || '').toLowerCase();
+  return [
+    { kind: 'account', key: loginGuardKey('account', account), limit: AUTH_LOGIN_MAX_FAILURES },
+    { kind: 'pair', key: loginGuardKey('pair', `${address}|${account}`), limit: AUTH_LOGIN_MAX_FAILURES },
+    { kind: 'ip', key: loginGuardKey('ip', address), limit: AUTH_LOGIN_IP_MAX_FAILURES }
+  ];
+}
+
+function readLoginGuard(key, timestamp = Date.now()) {
+  const current = authLoginGuards.get(key);
+  if (!current) return { failures: 0, windowStartedAt: timestamp, lockedUntil: 0 };
+  if (current.lockedUntil > timestamp) return current;
+  if (timestamp - current.windowStartedAt >= AUTH_LOGIN_WINDOW_MS) {
+    authLoginGuards.delete(key);
+    return { failures: 0, windowStartedAt: timestamp, lockedUntil: 0 };
+  }
+  return current;
+}
+
+function pruneLoginGuards(timestamp = Date.now()) {
+  for (const [key, current] of authLoginGuards.entries()) {
+    if (current.lockedUntil <= timestamp && timestamp - current.windowStartedAt >= AUTH_LOGIN_WINDOW_MS) {
+      authLoginGuards.delete(key);
+    }
+  }
+}
+
+function uniqueLoginGuardEntries(entries) {
+  const seen = new Set();
+  return (entries || []).filter((entry) => {
+    if (!entry || !entry.key || seen.has(entry.key)) return false;
+    seen.add(entry.key);
+    return true;
+  });
+}
+
+function hasLoginGuardCapacity(entries) {
+  const missingEntries = uniqueLoginGuardEntries(entries)
+    .filter(({ key }) => !authLoginGuards.has(key))
+    .length;
+  return authLoginGuards.size + missingEntries <= AUTH_LOGIN_GUARD_MAX_ENTRIES;
+}
+
+function isLoginBlocked(entries) {
+  const timestamp = Date.now();
+  return uniqueLoginGuardEntries(entries)
+    .some(({ key }) => readLoginGuard(key, timestamp).lockedUntil > timestamp);
+}
+
+function registerLoginFailure(entries) {
+  const timestamp = Date.now();
+  pruneLoginGuards(timestamp);
+  const uniqueEntries = uniqueLoginGuardEntries(entries);
+  if (!hasLoginGuardCapacity(uniqueEntries)) return false;
+  uniqueEntries.forEach(({ key, limit }) => {
+    const current = readLoginGuard(key, timestamp);
+    const failures = current.failures + 1;
+    authLoginGuards.set(key, {
+      failures,
+      windowStartedAt: current.windowStartedAt,
+      lockedUntil: failures >= limit ? timestamp + AUTH_LOGIN_LOCK_MS : 0
+    });
+  });
+  return true;
+}
+
+function clearLoginFailure(entries) {
+  uniqueLoginGuardEntries(entries)
+    .filter(({ kind }) => kind !== 'ip')
+    .forEach(({ key }) => authLoginGuards.delete(key));
+}
+
+function authLoginGuardStats(timestamp = Date.now()) {
+  pruneLoginGuards(timestamp);
+  let lockedEntries = 0;
+  authLoginGuards.forEach((entry) => {
+    if (entry.lockedUntil > timestamp) lockedEntries += 1;
+  });
+  return {
+    size: authLoginGuards.size,
+    maxEntries: AUTH_LOGIN_GUARD_MAX_ENTRIES,
+    lockedEntries
+  };
+}
+
+function rejectLoginRateLimited(res, code = 'AUTH_RATE_LIMITED') {
+  sendJson(res, 429, {
+    ok: false,
+    code,
+    message: 'Muitas tentativas. Aguarde alguns minutos e tente novamente.'
+  }, { 'Retry-After': String(Math.trunc(AUTH_LOGIN_LOCK_MS / 1000)) });
+}
+
 function sanitizeInfrastructureError(error) {
   const rawCode = String(error && error.code ? error.code : 'DATABASE_STARTUP_FAILED').toUpperCase();
   const code = /^[A-Z0-9_:-]{3,80}$/.test(rawCode) ? rawCode : 'DATABASE_STARTUP_FAILED';
@@ -295,6 +535,39 @@ function sanitizeInfrastructureError(error) {
     .replace(/(password|senha|token|secret)\s*[=:]\s*[^\s,;]+/gi, '$1=[redacted]')
     .slice(0, 240);
   return { code, message };
+}
+
+function clientJourneyDefaults(kind, existing = {}) {
+  if (kind === 'simulation') {
+    return {
+      status: existing.status || 'saved',
+      stage: existing.stage || 'simulation',
+      priority: existing.priority || 'media'
+    };
+  }
+  return {
+    status: existing.status || 'draft',
+    stage: existing.stage || 'proposal',
+    priority: existing.priority || 'media'
+  };
+}
+
+function sanitizeClientJourneyPayload(kind, body = {}, existing = {}) {
+  return { ...body, ...clientJourneyDefaults(kind, existing) };
+}
+
+function sanitizeClientSnapshotPayload(body = {}) {
+  const type = String(body.type || '').trim().toLowerCase();
+  const payload = body.payload && typeof body.payload === 'object' ? { ...body.payload } : {};
+  if (type === 'simulation') {
+    Object.assign(payload, { status: 'saved', statusProposta: 'saved', stage: 'simulation', etapa: 'simulation', priority: 'media', prioridade: 'media' });
+    return { ...body, status: 'saved', payload };
+  }
+  if (['proposal-version', 'proposal-acceptance', 'proposal-builder'].includes(type)) {
+    Object.assign(payload, { status: type === 'proposal-acceptance' ? 'accepted' : 'draft', stage: 'proposal', priority: 'media' });
+    return { ...body, status: payload.status, payload };
+  }
+  return body;
 }
 
 async function getDatabase() {
@@ -308,13 +581,13 @@ async function getProposalShareService() {
 }
 
 async function authContext(req) {
-  const token = bearerToken(req);
+  const token = sessionToken(req);
   const database = await getDatabase();
   if (!token || !database) return null;
   return database.authenticateToken(token);
 }
 
-async function requireAuth(req, res, roles = []) {
+async function requireAuth(req, res, roles = [], options = {}) {
   const context = await authContext(req);
   if (!context || !context.user) {
     sendJson(res, 401, { ok: false, message: 'Sessao de API ausente ou expirada.' });
@@ -324,6 +597,15 @@ async function requireAuth(req, res, roles = []) {
   const allowed = Array.isArray(roles) ? roles : [roles];
   if (allowed.length && !allowed.includes(context.user.role)) {
     sendJson(res, 403, { ok: false, message: 'Perfil sem permissao para esta operacao.' });
+    return null;
+  }
+
+  if (context.user.mustChangePassword && options.allowPasswordChangePending !== true) {
+    sendJson(res, 403, {
+      ok: false,
+      code: 'PASSWORD_CHANGE_REQUIRED',
+      message: 'Defina sua nova senha para continuar.'
+    });
     return null;
   }
 
@@ -358,6 +640,23 @@ async function handleApiRequest(req, res) {
   const parsedUrl = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
   const pathname = parsedUrl.pathname;
   if (!pathname.startsWith('/api/')) return false;
+  if (!requireTrustedOrigin(req, res)) return true;
+
+  if (pathname === '/api/auth/config' && req.method === 'GET') {
+    sendJson(res, 200, {
+      ok: true,
+      mode: AUTH_MODE,
+      transport: AUTH_MODE === 'production' ? 'cookie' : 'bearer',
+      demoAccounts: AUTH_MODE === 'demo',
+      sessionMinutes: AUTH_SESSION_TTL_MINUTES,
+      passwordPolicy: {
+        minLength: 12,
+        maxLength: 128,
+        requiredGroups: ['lowercase', 'uppercase', 'number', 'symbol']
+      }
+    });
+    return true;
+  }
 
   if (pathname === '/api/health' && req.method === 'GET') {
     const database = await getDatabase();
@@ -367,6 +666,7 @@ async function handleApiRequest(req, res) {
     const readyOk = databaseOk && proposalShareOk;
     sendJson(res, readyOk ? 200 : 503, {
       ok: readyOk,
+      authMode: AUTH_MODE,
       database: databaseOk,
       provider: database ? database.provider : requestedDatabaseProvider,
       schema: SCHEMA_VERSION,
@@ -487,7 +787,7 @@ async function handleApiRequest(req, res) {
       methodNotAllowed(res);
       return true;
     }
-    const context = await requireAuth(req, res);
+    const context = await requireAuth(req, res, ['admin', 'consultor']);
     if (!context) return true;
     if (!proposalShareService) {
       sendJson(res, 503, { ok: false, message: 'Compartilhamento seguro indisponivel.' });
@@ -526,7 +826,7 @@ async function handleApiRequest(req, res) {
       methodNotAllowed(res);
       return true;
     }
-    const context = await requireAuth(req, res);
+    const context = await requireAuth(req, res, ['admin', 'consultor']);
     if (!context) return true;
     if (!proposalShareService) {
       sendJson(res, 503, { ok: false, message: 'Compartilhamento seguro indisponivel.' });
@@ -558,7 +858,7 @@ async function handleApiRequest(req, res) {
       methodNotAllowed(res);
       return true;
     }
-    const context = await requireAuth(req, res);
+    const context = await requireAuth(req, res, ['admin', 'consultor']);
     if (!context) return true;
     if (!proposalShareService) {
       sendJson(res, 503, { ok: false, message: 'Compartilhamento seguro indisponivel.' });
@@ -583,25 +883,71 @@ async function handleApiRequest(req, res) {
       methodNotAllowed(res);
       return true;
     }
-    const body = await readJsonBody(req);
-    const result = await localDatabase.login(body.email, body.password);
+    if (!/^application\/json(?:\s*;|\s*$)/i.test(String(req.headers['content-type'] || ''))) {
+      sendJson(res, 415, { ok: false, code: 'JSON_REQUIRED', message: 'Envie os dados de acesso em JSON.' });
+      return true;
+    }
+    const body = await readJsonObject(req, 4096);
+    const email = String(body.email || '').trim().toLowerCase();
+    const password = String(body.password === undefined || body.password === null ? '' : body.password);
+    const database = await getDatabase();
+    if (!database) {
+      sendJson(res, 503, { ok: false, message: 'Acesso temporariamente indisponivel.' });
+      return true;
+    }
+    pruneLoginGuards();
+    const guardEntries = loginGuardEntries(req, email);
+    if (isLoginBlocked(guardEntries)) {
+      rejectLoginRateLimited(res);
+      return true;
+    }
+    if (!hasLoginGuardCapacity(guardEntries)) {
+      rejectLoginRateLimited(res, 'AUTH_RATE_LIMIT_CAPACITY');
+      return true;
+    }
+
+    const payloadValid = email.length > 0
+      && email.length <= AUTH_LOGIN_MAX_EMAIL_CHARS
+      && password.length > 0
+      && password.length <= AUTH_LOGIN_MAX_PASSWORD_CHARS;
+    const demoIdentityBlocked = AUTH_MODE === 'production' && email.endsWith(AUTH_DEMO_EMAIL_SUFFIX);
+    const databaseResult = await database.login(
+      payloadValid && !demoIdentityBlocked ? email : '',
+      payloadValid ? password : ''
+    );
+    const result = demoIdentityBlocked
+      ? { ok: false, status: 401, message: 'E-mail ou senha invalidos.' }
+      : databaseResult;
     if (result.ok) {
+      clearLoginFailure(guardEntries);
       await recordApiEvent('auth-login', {
         ownerEmail: result.user.email,
         actorEmail: result.user.email,
         entityType: 'user',
         entityId: result.user.id,
-        payload: { role: result.user.role }
+        payload: { role: result.user.role, passwordChangeRequired: result.user.mustChangePassword === true }
       }, { user: result.user, session: result.session });
+      const response = {
+        ok: true,
+        status: 200,
+        user: result.user,
+        passwordChangeRequired: result.user.mustChangePassword === true,
+        session: AUTH_MODE === 'production' ? publicSession(result.session) : result.session
+      };
+      const headers = AUTH_MODE === 'production' ? { 'Set-Cookie': authCookie(result.session.token) } : {};
+      sendJson(res, 200, response, headers);
     } else {
+      if (!registerLoginFailure(guardEntries)) {
+        rejectLoginRateLimited(res, 'AUTH_RATE_LIMIT_CAPACITY');
+        return true;
+      }
       await recordApiEvent('auth-login-failed', {
-        ownerEmail: body.email,
-        actorEmail: body.email,
-        entityType: 'user',
-        payload: { reason: result.message }
-      });
+        entityType: 'authentication',
+        entityId: loginGuardKey('account', email).slice(0, 24),
+        payload: { reason: demoIdentityBlocked ? 'demo-identity-disabled' : 'credentials-rejected' }
+      }, null, database);
+      sendJson(res, 401, { ok: false, status: 401, message: 'E-mail ou senha invalidos.' });
     }
-    sendJson(res, statusFromResult(result, result.ok ? 200 : 401), result);
     return true;
   }
 
@@ -611,7 +957,8 @@ async function handleApiRequest(req, res) {
       return true;
     }
     const context = await authContext(req);
-    const revoked = await localDatabase.revokeToken(bearerToken(req));
+    const database = await getDatabase();
+    const revoked = database ? await database.revokeToken(sessionToken(req)) : false;
     if (context && context.user) {
       await recordApiEvent('auth-logout', {
         ownerEmail: context.user.email,
@@ -619,7 +966,8 @@ async function handleApiRequest(req, res) {
         entityId: context.user.id
       }, context);
     }
-    sendJson(res, 200, { ok: true, revoked });
+    const headers = AUTH_MODE === 'production' ? { 'Set-Cookie': clearAuthCookie() } : {};
+    sendJson(res, 200, { ok: true, revoked }, headers);
     return true;
   }
 
@@ -628,9 +976,78 @@ async function handleApiRequest(req, res) {
       methodNotAllowed(res);
       return true;
     }
-    const context = await requireAuth(req, res);
+    const context = await requireAuth(req, res, [], { allowPasswordChangePending: true });
     if (!context) return true;
-    sendJson(res, 200, { ok: true, user: context.user, session: context.session });
+    sendJson(res, 200, {
+      ok: true,
+      user: context.user,
+      passwordChangeRequired: context.user.mustChangePassword === true,
+      session: publicSession(context.session)
+    });
+    return true;
+  }
+
+  if (pathname === '/api/auth/change-password') {
+    if (req.method !== 'POST') {
+      methodNotAllowed(res);
+      return true;
+    }
+    if (!/^application\/json(?:\s*;|\s*$)/i.test(String(req.headers['content-type'] || ''))) {
+      sendJson(res, 415, { ok: false, code: 'JSON_REQUIRED', message: 'Envie a troca de senha em JSON.' });
+      return true;
+    }
+    const context = await requireAuth(req, res, [], { allowPasswordChangePending: true });
+    if (!context) return true;
+    const body = await readJsonObject(req, 4096);
+    const currentPassword = String(body.currentPassword === undefined || body.currentPassword === null ? '' : body.currentPassword);
+    const nextPassword = String(body.newPassword === undefined || body.newPassword === null ? '' : body.newPassword);
+    const policy = validateProductivePassword(nextPassword, context.user);
+    if (!policy.ok) {
+      sendJson(res, statusFromResult(policy, 400), policy);
+      return true;
+    }
+    const database = await getDatabase();
+    const result = await database.changePassword(context.user.id, currentPassword, nextPassword);
+    if (result.ok) {
+      await recordApiEvent('auth-password-changed', {
+        ownerEmail: result.user.email,
+        entityType: 'user',
+        entityId: result.user.id,
+        payload: { sessionsRotated: true }
+      }, { user: result.user, session: result.session }, database);
+      const response = {
+        ok: true,
+        status: 200,
+        user: result.user,
+        passwordChangeRequired: false,
+        session: AUTH_MODE === 'production' ? publicSession(result.session) : result.session,
+        message: result.message
+      };
+      const headers = AUTH_MODE === 'production' ? { 'Set-Cookie': authCookie(result.session.token) } : {};
+      sendJson(res, 200, response, headers);
+    } else {
+      sendJson(res, statusFromResult(result, 400), result);
+    }
+    return true;
+  }
+
+  if (pathname === '/api/auth/logout-all') {
+    if (req.method !== 'POST') {
+      methodNotAllowed(res);
+      return true;
+    }
+    const context = await requireAuth(req, res, [], { allowPasswordChangePending: true });
+    if (!context) return true;
+    const database = await getDatabase();
+    const revoked = await database.revokeUserSessions(context.user.id);
+    await recordApiEvent('auth-logout-all', {
+      ownerEmail: context.user.email,
+      entityType: 'user',
+      entityId: context.user.id,
+      payload: { revokedSessions: revoked }
+    }, context, database);
+    const headers = AUTH_MODE === 'production' ? { 'Set-Cookie': clearAuthCookie() } : {};
+    sendJson(res, 200, { ok: true, revoked }, headers);
     return true;
   }
 
@@ -653,6 +1070,14 @@ async function handleApiRequest(req, res) {
     const context = await requireAuth(req, res, ['admin']);
     if (!context) return true;
     const body = await readJsonBody(req);
+    if (AUTH_MODE === 'production' && body.dryRun === false && Array.isArray(body.users) && body.users.length > 0) {
+      sendJson(res, 409, {
+        ok: false,
+        code: 'PRODUCTIVE_USER_MIGRATION_REQUIRES_PROVISIONING',
+        message: 'Migre os dados da jornada sem usuarios. O provisionamento de acessos produtivos exige credenciais individuais.'
+      });
+      return true;
+    }
     const result = await localDatabase.importLocalSnapshot(body, {
       dryRun: body.dryRun !== false,
       actorEmail: context.user.email
@@ -673,6 +1098,10 @@ async function handleApiRequest(req, res) {
         }
       }, context);
     }
+    if (AUTH_MODE === 'production') {
+      delete result.temporaryPassword;
+      result.users.passwordProvisioning = 'required';
+    }
     sendJson(res, 200, result);
     return true;
   }
@@ -681,7 +1110,14 @@ async function handleApiRequest(req, res) {
     if (req.method === 'POST') {
       const context = await requireAuth(req, res);
       if (!context) return true;
-      const body = await readJsonBody(req);
+      const requestedBody = await readJsonBody(req);
+      if (context.user.role === 'cliente' && String(requestedBody.type || '').trim().toLowerCase() === 'handoff') {
+        sendJson(res, 403, { ok: false, message: 'Perfil sem permissao para operar o atendimento consultivo.' });
+        return true;
+      }
+      const body = context.user.role === 'cliente'
+        ? sanitizeClientSnapshotPayload(requestedBody)
+        : requestedBody;
       const ownerEmail = context.user.role === 'admin'
         ? body.ownerEmail
         : context.user.email;
@@ -774,6 +1210,10 @@ async function handleApiRequest(req, res) {
     if (!context) return true;
     const route = materializedRoutes[pathname];
     const isAdmin = context.user.role === 'admin';
+    if (route.kind === 'lead' && req.method === 'POST' && context.user.role === 'cliente') {
+      sendJson(res, 403, { ok: false, message: 'Perfil sem permissao para operar leads.' });
+      return true;
+    }
 
     if (req.method === 'GET') {
       const limit = Number(parsedUrl.searchParams.get('limit') || 100);
@@ -791,7 +1231,10 @@ async function handleApiRequest(req, res) {
     }
 
     if (req.method === 'POST') {
-      const body = await readJsonBody(req);
+      const requestedBody = await readJsonBody(req);
+      const body = context.user.role === 'cliente' && ['simulation', 'proposal'].includes(route.kind)
+        ? sanitizeClientJourneyPayload(route.kind, requestedBody)
+        : requestedBody;
       const ownerEmail = isAdmin
         ? (body.ownerEmail || body.owner_email || context.user.email)
         : context.user.email;
@@ -851,7 +1294,14 @@ async function handleApiRequest(req, res) {
     }
 
     if (req.method === 'PATCH') {
-      const body = await readJsonBody(req);
+      if (route.kind === 'lead' && context.user.role === 'cliente') {
+        sendJson(res, 403, { ok: false, message: 'Perfil sem permissao para operar leads.' });
+        return true;
+      }
+      const requestedBody = await readJsonBody(req);
+      const body = context.user.role === 'cliente' && ['simulation', 'proposal'].includes(route.kind)
+        ? sanitizeClientJourneyPayload(route.kind, requestedBody, existing)
+        : requestedBody;
       const ownerEmail = isAdmin
         ? (body.ownerEmail || body.owner_email || existing.ownerEmail || context.user.email)
         : context.user.email;
@@ -895,6 +1345,14 @@ async function handleApiRequest(req, res) {
 
     if (req.method === 'POST') {
       const body = await readJsonBody(req);
+      if (AUTH_MODE === 'production') {
+        const policy = validateProductivePassword(body.password, body);
+        if (!policy.ok) {
+          sendJson(res, statusFromResult(policy, 400), policy);
+          return true;
+        }
+        body.mustChangePassword = true;
+      }
       const result = await localDatabase.createUser(body);
       if (result.ok) {
         await recordApiEvent('user-created', {
@@ -921,6 +1379,25 @@ async function handleApiRequest(req, res) {
 
     if (!action && req.method === 'PATCH') {
       const body = await readJsonBody(req);
+      const currentUserRecord = await localDatabase.findPublicUser(id);
+      const nextRole = String(body.role || (currentUserRecord && currentUserRecord.role) || '');
+      const nextStatus = String(body.status || (currentUserRecord && currentUserRecord.status) || '');
+      const removesAdminAccess = currentUserRecord
+        && currentUserRecord.role === 'admin'
+        && currentUserRecord.status === 'active'
+        && (nextRole !== 'admin' || nextStatus !== 'active');
+      if (context.user.id === id && removesAdminAccess) {
+        sendJson(res, 400, { ok: false, message: 'Mantenha seu acesso administrador ativo nesta sessao.' });
+        return true;
+      }
+      if (AUTH_MODE === 'production' && body.password) {
+        const policy = validateProductivePassword(body.password, { ...currentUserRecord, ...body });
+        if (!policy.ok) {
+          sendJson(res, statusFromResult(policy, 400), policy);
+          return true;
+        }
+        body.mustChangePassword = true;
+      }
       const result = await localDatabase.updateUser(id, body);
       if (result.ok) {
         await recordApiEvent('user-updated', {
@@ -967,7 +1444,16 @@ async function handleApiRequest(req, res) {
     if (action === 'password' && req.method === 'POST') {
       const body = await readJsonBody(req);
       const publicUser = await localDatabase.findPublicUser(id);
-      const result = await localDatabase.setPassword(id, body.password);
+      if (AUTH_MODE === 'production') {
+        const policy = validateProductivePassword(body.password, publicUser || {});
+        if (!policy.ok) {
+          sendJson(res, statusFromResult(policy, 400), policy);
+          return true;
+        }
+      }
+      const result = await localDatabase.setPassword(id, body.password, {
+        mustChangePassword: AUTH_MODE === 'production'
+      });
       if (result.ok) {
         await recordApiEvent('user-password-reset', {
           ownerEmail: publicUser ? publicUser.email : '',
@@ -985,7 +1471,12 @@ async function handleApiRequest(req, res) {
         return true;
       }
       const body = await readJsonBody(req);
-      const result = await localDatabase.setUserStatus(id, body.status);
+      const requestedStatus = String(body.status === undefined || body.status === null ? '' : body.status).trim();
+      if (!databaseContract.STATUS_LABELS[requestedStatus]) {
+        sendJson(res, 400, { ok: false, message: 'Informe um status de usuario valido.' });
+        return true;
+      }
+      const result = await localDatabase.setUserStatus(id, requestedStatus);
       if (result.ok) {
         await recordApiEvent('user-status-changed', {
           ownerEmail: result.user.email,
@@ -1007,19 +1498,24 @@ async function handleApiRequest(req, res) {
       const context = await requireAuth(req, res);
       if (!context) return true;
       const body = await readJsonBody(req);
+      const requestedType = String(body.type || '').trim().toLowerCase();
+      const reservedEvent = /^(auth|user|database|server|proposal(?:-share)?)(?:$|[:_-])/.test(requestedType);
+      if (!requestedType || requestedType.length > 80 || !/^[a-z0-9][a-z0-9:_-]*$/.test(requestedType) || reservedEvent) {
+        sendJson(res, 400, { ok: false, code: 'EVENT_TYPE_REJECTED', message: 'Tipo de evento nao autorizado.' });
+        return true;
+      }
       const ownerEmail = context.user.role === 'admin'
         ? (body.ownerEmail || context.user.email)
         : context.user.email;
       const event = await localDatabase.recordEvent({
-        type: body.type,
-        source: body.source || 'browser',
+        type: requestedType,
+        source: 'browser',
         ownerEmail,
         actorEmail: context.user.email,
         sessionId: context.session.id,
         entityType: body.entityType,
         entityId: body.entityId,
-        payload: body.payload || body.details || {},
-        createdAt: body.createdAt
+        payload: body.payload || body.details || {}
       });
       sendJson(res, 201, { ok: true, event });
       return true;
@@ -1070,7 +1566,33 @@ async function handleRequest(req, res) {
     const extname = path.extname(filePath).toLowerCase();
     const relativePath = path.relative(ROOT_DIR, filePath).replace(/\\/g, '/').toLowerCase();
     const publicProposalPage = relativePath === 'pages/proposta.html';
-    const headers = { 'Content-Type': MIME_TYPES[extname] || 'application/octet-stream' };
+    const loginPage = relativePath === 'pages/login.html';
+    let responseContent = content;
+    if (loginPage && AUTH_MODE === 'production') {
+      responseContent = Buffer.from(
+        responseContent.toString('utf8').replace(/\s*<!-- AUTH_DEMO_START -->[\s\S]*?<!-- AUTH_DEMO_END -->\s*/g, '\n'),
+        'utf8'
+      );
+    }
+    if (extname === '.html' && AUTH_MODE === 'production') {
+      responseContent = Buffer.from(
+        responseContent.toString('utf8').replace(/<body(?![^>]*\bdata-auth-mode=)/i, '<body data-auth-mode="production"'),
+        'utf8'
+      );
+    }
+    const headers = {
+      'Content-Type': MIME_TYPES[extname] || 'application/octet-stream',
+      'X-Content-Type-Options': 'nosniff',
+      'Referrer-Policy': 'same-origin'
+    };
+    if (extname === '.html') headers['X-Frame-Options'] = 'DENY';
+    if (loginPage) {
+      Object.assign(headers, {
+        'Cache-Control': 'no-store, max-age=0',
+        'Referrer-Policy': 'no-referrer',
+        'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+      });
+    }
     if (publicProposalPage) {
       Object.assign(headers, {
         'Cache-Control': 'no-store, max-age=0',
@@ -1079,11 +1601,11 @@ async function handleRequest(req, res) {
         'Referrer-Policy': 'no-referrer',
         'X-Content-Type-Options': 'nosniff',
         'X-Frame-Options': 'DENY',
-        'Content-Security-Policy': "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"
+        'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"
       });
     }
     res.writeHead(200, headers);
-    res.end(content);
+    res.end(responseContent);
   });
 }
 
@@ -1111,12 +1633,20 @@ function startServer(options = {}) {
   const requestedPort = options.port === 0 ? 0 : Number(options.port);
   const port = Number.isFinite(requestedPort) ? requestedPort : PORT;
   const host = String(options.host || process.env.BANCUS_HOST || DEFAULT_HOST).trim() || DEFAULT_HOST;
+  const loopbackHost = ['127.0.0.1', '::1', 'localhost'].includes(host.toLowerCase());
+  if (AUTH_MODE === 'demo' && !loopbackHost) {
+    throw new Error('O modo demo so pode escutar em loopback. Use BANCUS_AUTH_MODE=production para outro host.');
+  }
+  if (AUTH_MODE === 'production' && !AUTH_COOKIE_SECURE && !loopbackHost) {
+    throw new Error('Cookie de autenticacao sem Secure so e permitido em loopback.');
+  }
   if (server.listening) return server;
   server.listen(port, host, () => {
     const address = server.address();
     const activePort = address && typeof address === 'object' ? address.port : port;
     const displayHost = ['127.0.0.1', '::1'].includes(host) ? 'localhost' : host;
     console.log(`Bancus Fraternis server running at http://${displayHost}:${activePort}/pages/index.html`);
+    console.log(`Authentication mode: ${AUTH_MODE} (${AUTH_MODE === 'production' ? 'httpOnly cookie' : 'local demo'})`);
     databaseReady.then((database) => {
       if (database) console.log(`Database ready: ${SCHEMA_VERSION} (${database.provider})`);
     });
@@ -1153,5 +1683,6 @@ module.exports = {
   handleApiRequest,
   sendPublicShareJson,
   recordApiEvent,
+  authLoginGuardStats,
   closeInfrastructure
 };

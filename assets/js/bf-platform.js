@@ -2351,6 +2351,14 @@
 
   async function init() {
     const page = document.body.dataset.bfPage || '';
+    const protectedPage = document.body.hasAttribute('data-auth-required')
+      || document.body.hasAttribute('data-auth-roles');
+    if (protectedPage) {
+      if (!window.BFAuth || !window.BFAuth.ready) return;
+      const authorized = await window.BFAuth.ready;
+      if (!authorized) return;
+    }
+
     let data = { produtos: [], glossario: [], indices: [], instituicoes: [], formulas: [], regras: {} };
     try {
       data = await window.BFDadosService.all();

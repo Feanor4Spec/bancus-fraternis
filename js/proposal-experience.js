@@ -394,6 +394,13 @@
     }
   }
 
+  function hasPublicationSession(session) {
+    return Boolean(session && (
+      session.token
+      || (session.mode === 'production' && session.user && session.user.id)
+    ));
+  }
+
   function syncSharePanel() {
     const panel = byId('proposal-share-panel');
     if (!panel || !publication) return;
@@ -422,7 +429,7 @@
 
     const api = window.BFBackendApi;
     const session = api?.readSession?.();
-    if (!api?.createProposalSnapshot || !session?.token) {
+    if (!api?.createProposalSnapshot || !hasPublicationSession(session)) {
       publicationMessage('Entre no portal com um usuário autorizado para publicar e revogar propostas.');
       window.App?.showToast?.('Autenticação necessária para publicar a proposta.', 'error');
       return;
@@ -618,6 +625,7 @@
     refresh: scheduleRefresh,
     setClientMode,
     validationState,
+    hasPublicationSession,
     publishSecureProposal
   });
 
