@@ -9,7 +9,7 @@
     },
     "dashboardCliente": {
       "primaryNavigationItems": 5,
-      "proposalDeepLink": "simulador.html?from=dashboard&proposalId=PROP-2026-0100-0XQE3A&simulationId=SIM-MT4LKE3O&proposalVersionId=PV-MT4LKE4L-1&proposalView=client#proposta",
+      "proposalDeepLink": "simulador.html?from=dashboard&proposalId=PROP-2026-0100-0XQE3A&simulationId=SIM-PV-MT4NKH4M-VEWP2J&proposalVersionId=PV-MT4NKH75-2&proposalView=client#proposta",
       "proposalDeepLinkExact": true,
       "forbiddenVisibleTerms": []
     },
@@ -40,13 +40,31 @@
       "proposalResume": {
         "activeStep": 10,
         "readOnly": true,
+        "roleDerivedReadOnly": true,
+        "queryTamperProtected": true,
+        "proposalOnlyMismatchBlockedBeforeRender": true,
+        "historicalVersionSnapshots": true,
+        "historicalAcceptanceBoundToSnapshot": true,
+        "acceptedSnapshotNeverRecalculated": true,
         "status": "Pronta para conferir",
         "clientLabel": "Dados protegidos",
         "visibleControls": [
           "Voltar ao painel"
         ],
         "comparisonCards": 10,
-        "recalculatedOnOpen": false
+        "recalculatedOnOpen": false,
+        "returnToDashboardWorks": true,
+        "currentViewConsoleErrors": 0
+      },
+      "deliveryGates": {
+        "pdfIndependentFromReview": true,
+        "pdfRequiresCurrentCalculationScheduleAndStructure": true,
+        "shareRequiresComparisonChecklistAndCurrentValidity": true,
+        "shareUsesPersistedReviewValidity": true,
+        "staleCalculationBlocked": true,
+        "staleComparisonBlocked": true,
+        "acceptanceRestoredFromSimulationFallback": true,
+        "staleAcceptanceBlockedAfterRecalculation": true
       },
       "pdfActionVisible": true,
       "forbiddenVisibleTerms": []

@@ -1,0 +1,75 @@
+{
+  "ok": true,
+  "guard": {
+    "exact": {
+      "ok": true,
+      "reason": "",
+      "simulationId": "SIM-100"
+    },
+    "mismatch": {
+      "ok": false,
+      "reason": "simulation-mismatch",
+      "simulationId": ""
+    },
+    "missingVersionProposal": {
+      "ok": false,
+      "reason": "version-without-proposal",
+      "simulationId": ""
+    }
+  },
+  "integrity": {
+    "protectedFingerprint": "fp-af5cd379",
+    "privateFingerprint": "fp-af5cd379",
+    "editedFingerprint": "fp-db2c9914",
+    "comparisonFingerprint": "fp-a66e9e07",
+    "changedComparisonFingerprint": "fp-70c206ee",
+    "acceptedContentFingerprint": "fp-32a5e025",
+    "redactedContentFingerprint": "fp-32a5e025",
+    "changedContentFingerprint": "fp-603813b6"
+  },
+  "storage": {
+    "proposalId": "PROP-ROUNDTRIP",
+    "privacy": {
+      "localPIIStored": false,
+      "notice": "Dados protegidos."
+    },
+    "comparison": {
+      "winner": "A",
+      "delta": 1200
+    },
+    "acceptance": {
+      "id": "REV-ROUNDTRIP-1",
+      "proposalId": "PROP-ROUNDTRIP",
+      "status": "reviewed",
+      "version": 1,
+      "sourceHash": "fp-32a5e025",
+      "validUntil": "2026-12-31",
+      "checklist": {
+        "premissas": true,
+        "cliente": true,
+        "documentacao": true
+      }
+    },
+    "historicalSnapshotIds": [
+      "SIM-PV-HISTORY-1",
+      "SIM-PV-HISTORY-2"
+    ],
+    "historicalSnapshotsPrivate": true,
+    "legacyConsultantIdentifiersPurged": true,
+    "commercialDataPreserved": true
+  },
+  "versioning": {
+    "firstSimulationId": "SIM-PV-HISTORY-1",
+    "secondSimulationId": "SIM-PV-HISTORY-2",
+    "contentHashStableAcrossStorageIds": true
+  },
+  "readonly": {
+    "divergentSnapshotRecalculated": false
+  },
+  "gates": {
+    "pdfIndependentFromAcceptance": true,
+    "pdfRequiresScheduleAndBuilder": true,
+    "sendRequiresAcceptance": true
+  },
+  "failures": []
+}

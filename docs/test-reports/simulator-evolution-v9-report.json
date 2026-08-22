@@ -304,10 +304,10 @@
           "await api.publishProposalSnapshot(reviewed.snapshot.id"
         ],
         "indexes": [
-          1317,
-          1518,
-          1841,
-          2182
+          1342,
+          1543,
+          1866,
+          2207
         ]
       }
     },
@@ -448,6 +448,7 @@
           "assets/js/services/handoff-consultivo.service.js",
           "assets/vendor/chart.js/4.4.0/chart.umd.min.js",
           "js/app.js",
+          "js/auth.js",
           "js/charts.js",
           "js/comparator.js",
           "js/data.js",
@@ -459,7 +460,9 @@
           "js/proposal-builder.js",
           "js/proposal-experience.js",
           "js/proposal-governance.js",
+          "js/proposal-integrity.js",
           "js/proposal-public.js",
+          "js/proposal-resume-guard.js",
           "js/proposal-summary.js",
           "js/proposal-versioning.js",
           "js/settings.js",

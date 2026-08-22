@@ -226,7 +226,12 @@
     {
       "id": "simulator.resume-identity",
       "ok": true,
-      "evidence": "Links divergentes falham sem abrir outra proposta."
+      "evidence": "Links divergentes falham antes de restaurar outra proposta."
+    },
+    {
+      "id": "simulator.historical-version-snapshot",
+      "ok": true,
+      "evidence": "Cada versão preserva um snapshot próprio e sanitizado."
     },
     {
       "id": "simulator.unique-proposal",
@@ -241,7 +246,7 @@
     {
       "id": "simulator.client-readonly",
       "ok": true,
-      "evidence": "Retomada do cliente usa linguagem de consulta e bloqueia edição ou envio sem alterar o gate comercial."
+      "evidence": "Retomada do cliente deriva o bloqueio do papel e usa linguagem de consulta."
     },
     {
       "id": "simulator.client-readonly-state",
@@ -254,42 +259,85 @@
       "evidence": "Conferência usa o resultado salvo sem recalcular, reabrir edição ou exibir alertas de bastidor."
     },
     {
+      "id": "simulator.current-comparison",
+      "ok": true,
+      "evidence": "Envio exige comparação correspondente aos grupos e condições atuais."
+    },
+    {
+      "id": "simulator.acceptance-resume",
+      "ok": true,
+      "evidence": "Retomada preserva revisão e validade sem deslocamento de fuso."
+    },
+    {
+      "id": "simulator.pdf-send-gates",
+      "ok": true,
+      "evidence": "PDF depende de cálculo, cronograma e estrutura; envio acrescenta comparação, conferência e validade."
+    },
+    {
       "id": "evidence.screenshots",
       "ok": true,
       "evidence": [
         {
           "path": "docs/test-prints/commercial-ux-v10/09-login-after.png",
           "bytes": 64230,
+          "format": "jpeg",
+          "width": 1272,
+          "height": 716,
+          "sha256": "1d7430dd5a0ddcd7d8437b977563378fc84f55e96bb8e2d2de7b43b783e0ef17",
           "ok": true
         },
         {
           "path": "docs/test-prints/commercial-ux-v10/10-atendimento-after.png",
           "bytes": 78878,
+          "format": "jpeg",
+          "width": 1272,
+          "height": 716,
+          "sha256": "e45dbbbd4394876cb2f8501021cca3b8baaf814e486f76728aa98c68dd7ad3d4",
           "ok": true
         },
         {
           "path": "docs/test-prints/commercial-ux-v10/11-simulador-inicio-after.png",
           "bytes": 56252,
+          "format": "jpeg",
+          "width": 1272,
+          "height": 716,
+          "sha256": "1f3b8a91ace27f286942289fb6adcbf2542555577074d1b23df1a5ab43857069",
           "ok": true
         },
         {
           "path": "docs/test-prints/commercial-ux-v10/12-multigrupos-after.png",
           "bytes": 73608,
+          "format": "jpeg",
+          "width": 1272,
+          "height": 716,
+          "sha256": "eda26497bb72cc0e0abb0eb5fbaa511c2fa0fed37ded1452ed9279a3d972a53b",
           "ok": true
         },
         {
           "path": "docs/test-prints/commercial-ux-v10/13-proposta-final-after.png",
           "bytes": 82303,
+          "format": "jpeg",
+          "width": 1272,
+          "height": 716,
+          "sha256": "bb8102e24f493d445f284b5fd120986176d81f3c759d8e77e8b4bb6ec2c23a2c",
           "ok": true
         },
         {
           "path": "docs/test-prints/commercial-ux-v10/14-dashboard-cliente-after.png",
           "bytes": 74438,
+          "format": "jpeg",
+          "width": 1272,
+          "height": 716,
+          "sha256": "9ad564eb7dbc6f30cd13ec14b5b1e6eeb5db4456b5e26750f0d4852150e2265b",
           "ok": true
         },
         {
           "path": "docs/test-prints/commercial-ux-v10/15-proposta-retomada-after.png",
           "bytes": 62756,
+          "format": "jpeg",
+          "width": 1272,
+          "height": 716,
+          "sha256": "e282dc3b6bd3ac8272ceee86a7aeaccec584b166ed6e8f701c4650f4c11233cc",
           "ok": true
         }
       ]
@@ -391,36 +439,64 @@
       {
         "path": "docs/test-prints/commercial-ux-v10/09-login-after.png",
         "bytes": 64230,
+        "format": "jpeg",
+        "width": 1272,
+        "height": 716,
+        "sha256": "1d7430dd5a0ddcd7d8437b977563378fc84f55e96bb8e2d2de7b43b783e0ef17",
         "ok": true
       },
       {
         "path": "docs/test-prints/commercial-ux-v10/10-atendimento-after.png",
         "bytes": 78878,
+        "format": "jpeg",
+        "width": 1272,
+        "height": 716,
+        "sha256": "e45dbbbd4394876cb2f8501021cca3b8baaf814e486f76728aa98c68dd7ad3d4",
         "ok": true
       },
       {
         "path": "docs/test-prints/commercial-ux-v10/11-simulador-inicio-after.png",
         "bytes": 56252,
+        "format": "jpeg",
+        "width": 1272,
+        "height": 716,
+        "sha256": "1f3b8a91ace27f286942289fb6adcbf2542555577074d1b23df1a5ab43857069",
         "ok": true
       },
       {
         "path": "docs/test-prints/commercial-ux-v10/12-multigrupos-after.png",
         "bytes": 73608,
+        "format": "jpeg",
+        "width": 1272,
+        "height": 716,
+        "sha256": "eda26497bb72cc0e0abb0eb5fbaa511c2fa0fed37ded1452ed9279a3d972a53b",
         "ok": true
       },
       {
         "path": "docs/test-prints/commercial-ux-v10/13-proposta-final-after.png",
         "bytes": 82303,
+        "format": "jpeg",
+        "width": 1272,
+        "height": 716,
+        "sha256": "bb8102e24f493d445f284b5fd120986176d81f3c759d8e77e8b4bb6ec2c23a2c",
         "ok": true
       },
       {
         "path": "docs/test-prints/commercial-ux-v10/14-dashboard-cliente-after.png",
         "bytes": 74438,
+        "format": "jpeg",
+        "width": 1272,
+        "height": 716,
+        "sha256": "9ad564eb7dbc6f30cd13ec14b5b1e6eeb5db4456b5e26750f0d4852150e2265b",
         "ok": true
       },
       {
         "path": "docs/test-prints/commercial-ux-v10/15-proposta-retomada-after.png",
         "bytes": 62756,
+        "format": "jpeg",
+        "width": 1272,
+        "height": 716,
+        "sha256": "e282dc3b6bd3ac8272ceee86a7aeaccec584b166ed6e8f701c4650f4c11233cc",
         "ok": true
       }
     ]

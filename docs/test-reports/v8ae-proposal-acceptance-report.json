@@ -14,6 +14,9 @@
     "partialStatus": "partial",
     "reviewedStatus": "reviewed",
     "reviewedVersion": 2,
+    "reviewedSourceHash": "fp-contentv1",
+    "todayValidityPreserved": true,
+    "invalidValidityRejected": true,
     "liveDetailsPreserved": true,
     "localStoragePIIFree": true,
     "legacyPIIPurged": true

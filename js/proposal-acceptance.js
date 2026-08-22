@@ -22,14 +22,39 @@ const BFProposalAcceptance = (() => {
     return text;
   }
 
+  function parseLocalDate(value) {
+    const text = cleanText(value, 20);
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(text);
+    if (!match) return null;
+
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    const date = new Date(year, month - 1, day);
+    if (
+      !Number.isFinite(date.getTime())
+      || date.getFullYear() !== year
+      || date.getMonth() !== month - 1
+      || date.getDate() !== day
+    ) return null;
+
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }
+
   function cleanDate(value) {
     const text = cleanText(value, 20);
-    return /^\d{4}-\d{2}-\d{2}$/.test(text) ? text : '';
+    return parseLocalDate(text) ? text : '';
   }
 
   function cleanTimestamp(value) {
     const text = cleanText(value, 40);
     return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(text) ? text : '';
+  }
+
+  function cleanSourceHash(value) {
+    const text = cleanText(value, 100);
+    return /^fp-[a-z0-9]+$/i.test(text) ? text : '';
   }
 
   function safeNumber(value) {
@@ -55,6 +80,7 @@ const BFProposalAcceptance = (() => {
       id: cleanSystemId(source.id, 'REV'),
       proposalId: cleanSystemId(source.proposalId || 'PROP-PENDENTE', 'PROP', 'PROP-PENDENTE'),
       status,
+      sourceHash: cleanSourceHash(source.sourceHash),
       validUntil: cleanDate(source.validUntil),
       checklist: sanitizeChecklist(source.checklist),
       version: Math.max(0, parseInt(source.version, 10) || 0),
@@ -208,9 +234,8 @@ const BFProposalAcceptance = (() => {
     if (!record || !record.validUntil) return false;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const valid = new Date(record.validUntil);
-    valid.setHours(0, 0, 0, 0);
-    return Number.isFinite(valid.getTime()) && valid < today;
+    const valid = parseLocalDate(record.validUntil);
+    return Boolean(valid && valid < today);
   }
 
   function decorate(record) {
@@ -242,6 +267,7 @@ const BFProposalAcceptance = (() => {
       id: '',
       proposalId: proposal.id || 'PROP-PENDENTE',
       status: 'pending',
+      sourceHash: '',
       reviewer: proposal.consultor || 'Consultor Bancus Fraternis',
       reviewerRole: 'Consultor responsável',
       validUntil: valid.toISOString().slice(0, 10),
@@ -282,7 +308,7 @@ const BFProposalAcceptance = (() => {
       .map(decorate);
   }
 
-  function saveReview({ proposal, reviewer, reviewerRole, validUntil, notes, checklist }) {
+  function saveReview({ proposal, reviewer, reviewerRole, validUntil, notes, checklist, sourceHash }) {
     const base = proposal || {};
     const safeChecklist = sanitizeChecklist(checklist);
     const proposalId = cleanSystemId(base.id || 'PROP-PENDENTE', 'PROP', 'PROP-PENDENTE');
@@ -294,6 +320,7 @@ const BFProposalAcceptance = (() => {
       id: `REV-${Date.now().toString(36).toUpperCase()}-${version}`,
       proposalId,
       status: statusFromChecklist(safeChecklist),
+      sourceHash: cleanSourceHash(sourceHash),
       reviewer: cleanText(reviewer || base.consultor || 'Consultor Bancus Fraternis', 120),
       reviewerRole: cleanText(reviewerRole || 'Consultor responsável', 90),
       validUntil: cleanDate(validUntil),

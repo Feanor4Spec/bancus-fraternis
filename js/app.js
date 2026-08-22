@@ -19,6 +19,8 @@ const App = (() => {
   let compResult = null; // V2: resultado da comparação
   let currentProposalId = '';
   let projectSimulation = null;
+  let clientProposalReadOnly = false;
+  let resumedProposalAcceptance = null;
   const visitedSteps = new Set([1]);
   const STEP_LABELS = Object.freeze([
     'Consultor',
@@ -76,6 +78,9 @@ const App = (() => {
   // ─── Navegação entre Etapas ───
   function goToStep(step, options = {}) {
     if (step < 1 || step > TOTAL_STEPS) return;
+    if (step === 9 && compResult && !clientProposalReadOnly && !proposalComparisonIsCurrent()) {
+      invalidateComparison();
+    }
     // Valida toda a trilha anterior para impedir saltos sobre dados obrigatorios.
     if (step > currentStep && !options.skipValidation) {
       for (let candidate = 1; candidate < step; candidate++) {
@@ -289,7 +294,7 @@ const App = (() => {
       }
     }
 
-    if (step === 9 && !compResult) return byId('btn-comparar') || byId('compGrupoA');
+    if (step === 9 && !proposalComparisonIsCurrent()) return byId('btn-comparar') || byId('compGrupoA');
 
     const section = document.getElementById(`step-${step}`);
     return Array.from(section?.querySelectorAll('input, select, textarea') || [])
@@ -1039,8 +1044,10 @@ const App = (() => {
       errors.push('O cronograma mensal ainda não está disponível.');
     }
     const section = document.getElementById(`step-${step}`);
-    if (section && section.querySelector('#compGrupoA') && !compResult) {
-      errors.push('Compare ao menos dois grupos ou cenários do projeto antes de preparar a proposta.');
+    if (section && section.querySelector('#compGrupoA') && !proposalComparisonIsCurrent()) {
+      errors.push(compResult
+        ? 'Atualize a comparação para refletir os grupos e condições atuais.'
+        : 'Compare ao menos dois grupos ou cenários do projeto antes de preparar a proposta.');
     }
     return errors;
   }
@@ -1068,6 +1075,19 @@ const App = (() => {
     }
     const integrity = window.BFSimulatorResult.validateProjectResult(resultado, projetoEstruturado);
     if (integrity.reconciled) return true;
+    const shouldRecalculate = window.BFProposalResumeGuard?.shouldRecalculateProject
+      ? window.BFProposalResumeGuard.shouldRecalculateProject({
+          clientReadOnly: clientProposalReadOnly,
+          reconciled: integrity.reconciled
+        })
+      : !clientProposalReadOnly;
+    if (!shouldRecalculate) {
+      if (clientProposalReadOnly) {
+        document.body.dataset.proposalSnapshotIntegrity = 'preserved';
+        return true;
+      }
+      return false;
+    }
     resultado = null;
     cenarios = null;
     projectSimulation = null;
@@ -1076,6 +1096,7 @@ const App = (() => {
   }
 
   function calcular() {
+    if (!clientProposalReadOnly) resumedProposalAcceptance = null;
     const params = getParams();
     currentParams = params;
     if (typeof ShelfEngine !== 'undefined' && projetoEstruturado.itens.length > 0) {
@@ -1447,7 +1468,7 @@ const App = (() => {
       cenarios,
       project: projetoEstruturado,
       decisionContext: getDecisionContextSnapshot(),
-      comparison: compResult
+      comparison: proposalComparisonForPresentation()
     });
     if (!currentProposalId) {
       let suffix = '';
@@ -1496,6 +1517,60 @@ const App = (() => {
       ? 'Tab_Grupos_Consorcio.compact.json'
       : 'Base local de grupos';
     return (Array.from(labels).join(', ') || fallback).slice(0, 80);
+  }
+
+  function proposalCalculationMatchesCurrentForm() {
+    if (!currentParams) return false;
+    try {
+      if (window.BFProposalIntegrity?.calculationFingerprint) {
+        return window.BFProposalIntegrity.calculationFingerprint(getParams())
+          === window.BFProposalIntegrity.calculationFingerprint(currentParams);
+      }
+      const live = jsonSnapshot(getParams());
+      const calculated = jsonSnapshot(currentParams);
+      if (String(live.nomeCliente || '').toLowerCase() === 'dados protegidos') live.nomeCliente = '';
+      if (String(calculated.nomeCliente || '').toLowerCase() === 'dados protegidos') calculated.nomeCliente = '';
+      return JSON.stringify(live) === JSON.stringify(calculated);
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function currentProposalAcceptanceSourceHash() {
+    if (!currentProposalId || !currentParams || !resultado) return '';
+    if (!window.BFProposalIntegrity?.proposalContentFingerprint) return '';
+    try {
+      return window.BFProposalIntegrity.proposalContentFingerprint({
+        proposalId: currentProposalId,
+        params: currentParams,
+        project: projetoEstruturado,
+        result: resultado,
+        comparison: proposalComparisonForPresentation(),
+        builder: getProposalBuilderConfig()
+      });
+    } catch (error) {
+      return '';
+    }
+  }
+
+  function acceptanceMatchesCurrentProposal(acceptance) {
+    const sourceHash = currentProposalAcceptanceSourceHash();
+    if (window.BFProposalIntegrity?.acceptanceMatchesContent) {
+      return window.BFProposalIntegrity.acceptanceMatchesContent(acceptance, sourceHash);
+    }
+    return Boolean(sourceHash && acceptance?.sourceHash === sourceHash);
+  }
+
+  function pendingAcceptanceForChangedProposal(proposal) {
+    const draft = BFProposalAcceptance.createDraft(proposal);
+    return {
+      ...draft,
+      sourceHash: currentProposalAcceptanceSourceHash(),
+      stale: true,
+      status: 'pending',
+      statusLabel: BFProposalAcceptance.statusLabel('pending'),
+      checklist: { premissas: false, cliente: false, documentacao: false }
+    };
   }
 
   function getProposalPublicationPayload() {
@@ -1565,6 +1640,7 @@ const App = (() => {
           review: {
             status: 'reviewed',
             reviewedAt: acceptance.reviewedAt || acceptance.updatedAt || new Date().toISOString(),
+            validUntil: acceptance.validUntil,
             checklist,
             validation: 'human-reviewed',
             approved: true,
@@ -1587,7 +1663,36 @@ const App = (() => {
   function getCurrentProposalAcceptance() {
     const proposal = getCurrentProposalData();
     if (!proposal || typeof BFProposalAcceptance === 'undefined') return null;
-    return BFProposalAcceptance.latest(proposal.id) || BFProposalAcceptance.createDraft(proposal);
+    const fallback = resumedProposalAcceptance;
+    const resumed = fallback && fallback.proposalId === proposal.id
+      ? (() => {
+        const draft = BFProposalAcceptance.createDraft(proposal);
+        let status = ['reviewed', 'partial', 'pending', 'expired'].includes(fallback.status)
+          ? fallback.status
+          : 'pending';
+        if (status === 'reviewed' && !proposalAcceptanceHasCurrentValidity(fallback)) status = 'expired';
+        return {
+          ...draft,
+          ...fallback,
+          status,
+          statusLabel: BFProposalAcceptance.statusLabel(status),
+          checklist: {
+            premissas: fallback.checklist?.premissas === true,
+            cliente: fallback.checklist?.cliente === true,
+            documentacao: fallback.checklist?.documentacao === true
+          }
+        };
+      })()
+      : null;
+    const historicalResume = Boolean(getRequestedProposalVersionId());
+    const latest = BFProposalAcceptance.latest(proposal.id);
+    const selected = historicalResume && resumed ? resumed : (latest || resumed);
+    if (selected) {
+      return acceptanceMatchesCurrentProposal(selected)
+        ? selected
+        : pendingAcceptanceForChangedProposal(proposal);
+    }
+    return BFProposalAcceptance.createDraft(proposal);
   }
 
   function getCurrentSimulationId() {
@@ -1617,13 +1722,49 @@ const App = (() => {
     }
   }
 
-  function isClientProposalResume(params = null) {
+  function currentUserRole() {
+    try {
+      return window.BFAuth?.getCurrentUser?.()?.role || '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function isClientProposalResume(params = null, targetStep = 0) {
     try {
       const search = params || new URLSearchParams(window.location.search || '');
-      return search.get('from') === 'dashboard' && search.get('proposalView') === 'client';
+      const input = {
+        role: currentUserRole(),
+        proposalView: search.get('proposalView') || '',
+        proposalId: search.get('proposalId') || '',
+        proposalVersionId: search.get('proposalVersionId') || '',
+        hash: window.location.hash || '',
+        targetStep
+      };
+      if (window.BFProposalResumeGuard?.isClientReadOnly) {
+        return window.BFProposalResumeGuard.isClientReadOnly(input);
+      }
+      return input.role === 'cliente' && Boolean(
+        input.proposalId || input.proposalVersionId || ['#proposta', '#step-10'].includes(input.hash)
+      );
     } catch (e) {
       return false;
     }
+  }
+
+  function resolveProposalSimulationLink(input) {
+    if (window.BFProposalResumeGuard?.resolveLink) {
+      return window.BFProposalResumeGuard.resolveLink(input);
+    }
+    const proposalId = input.proposalId || '';
+    const explicitSimulationId = input.explicitSimulationId || '';
+    const linkedSimulationId = input.linkedSimulationId || '';
+    if (proposalId && !linkedSimulationId) return { ok: false, reason: 'proposal-not-linked', simulationId: '' };
+    if (explicitSimulationId && linkedSimulationId && explicitSimulationId !== linkedSimulationId) {
+      return { ok: false, reason: 'simulation-mismatch', simulationId: '' };
+    }
+    const simulationId = explicitSimulationId || linkedSimulationId;
+    return { ok: Boolean(simulationId), reason: simulationId ? '' : 'simulation-not-found', simulationId };
   }
 
   function storedSimulationsWithDetails() {
@@ -1691,21 +1832,41 @@ const App = (() => {
     }
   }
 
-  function persistCurrentSimulationForProposal(proposal, acceptance) {
+  function createProposalVersionSimulationId() {
+    let suffix = '';
+    try {
+      if (window.crypto?.getRandomValues) {
+        const value = new Uint32Array(1);
+        window.crypto.getRandomValues(value);
+        suffix = value[0].toString(36).toUpperCase().padStart(6, '0').slice(-6);
+      }
+    } catch (e) {
+      suffix = '';
+    }
+    if (!suffix) suffix = Math.random().toString(36).slice(2, 8).toUpperCase().padEnd(6, '0');
+    return `SIM-PV-${Date.now().toString(36).toUpperCase()}-${suffix}`;
+  }
+
+  function persistCurrentSimulationForProposal(proposal, acceptance, options = {}) {
     if (!proposal?.id || typeof Storage === 'undefined' || !Storage.saveSimulation) return '';
     const currentId = getCurrentSimulationId();
     const existing = currentId && Storage.loadSimulation ? Storage.loadSimulation(currentId) : null;
-    const simulationId = existing?.id || currentId || `SIM-${Date.now().toString(36).toUpperCase()}`;
-    const name = existing?.nome || `Proposta ${proposal.id}`;
+    const immutable = options.immutable === true;
+    const simulationId = options.simulationId
+      || (immutable ? createProposalVersionSimulationId() : (existing?.id || currentId || `SIM-${Date.now().toString(36).toUpperCase()}`));
+    const name = immutable ? `Snapshot ${proposal.id}` : (existing?.nome || `Proposta ${proposal.id}`);
     const payload = buildSimulationPayload(name, {
       id: simulationId,
       proposalId: proposal.id,
       proposalAcceptance: acceptance,
       currentStep: 10
     });
-    const saved = Storage.saveSimulation(name, payload);
+    const saveSnapshot = immutable && Storage.saveProposalVersionSnapshot
+      ? Storage.saveProposalVersionSnapshot.bind(Storage)
+      : Storage.saveSimulation.bind(Storage);
+    const saved = saveSnapshot(name, payload);
     if (!saved?.id) return '';
-    replaceCurrentSimulationId(saved.id);
+    if (!immutable) replaceCurrentSimulationId(saved.id);
     return saved.id;
   }
 
@@ -1790,16 +1951,48 @@ const App = (() => {
     }
     const acceptance = options.acceptance || getCurrentProposalAcceptance();
     const builder = getProposalBuilderConfig();
-    const simulationId = persistCurrentSimulationForProposal(proposal, acceptance);
+    const context = getCurrentProposalVersionContext(acceptance, builder);
+    const candidate = BFProposalVersions.snapshot(proposal, context);
+    const latest = BFProposalVersions.latest(proposal.id);
+    const contentUnchanged = Boolean(
+      !options.forceNew
+      && latest
+      && candidate
+      && latest.sourceHash === candidate.sourceHash
+    );
+    let simulationId = '';
+    let disposableSnapshotId = '';
+    let forceNew = !!options.forceNew;
+
+    if (contentUnchanged && latest.simulationId) {
+      const existingSnapshot = Storage.loadSimulation?.(latest.simulationId);
+      simulationId = existingSnapshot?.id || persistCurrentSimulationForProposal(proposal, acceptance, {
+        immutable: true,
+        simulationId: latest.simulationId
+      });
+    } else {
+      simulationId = persistCurrentSimulationForProposal(proposal, acceptance, { immutable: true });
+      disposableSnapshotId = simulationId;
+      if (contentUnchanged && !latest?.simulationId) forceNew = true;
+    }
+
+    if (!simulationId) {
+      if (!options.silent) showToast('Não foi possível preservar o snapshot desta versão.', 'error');
+      return null;
+    }
     const record = BFProposalVersions.save(proposal, {
-      ...getCurrentProposalVersionContext(acceptance, builder),
+      ...context,
       simulationId,
-      forceNew: !!options.forceNew,
+      forceNew,
       label: options.label || ''
     });
     if (!record) {
+      if (disposableSnapshotId) Storage.deleteProposalVersionSnapshot?.(disposableSnapshotId);
       if (!options.silent) showToast('Não foi possível salvar a versão da proposta.', 'error');
       return null;
+    }
+    if (record.unchanged && disposableSnapshotId && record.simulationId !== disposableSnapshotId) {
+      Storage.deleteProposalVersionSnapshot?.(disposableSnapshotId);
     }
     replaceCurrentProposalLink({
       proposalId: record.proposalId,
@@ -1817,7 +2010,13 @@ const App = (() => {
     const proposal = getCurrentProposalData();
     if (!proposal || typeof BFProposalVersions === 'undefined') return;
     if (!confirm('Limpar o historico versionado desta proposta?')) return;
-    BFProposalVersions.clear(proposal.id);
+    const snapshots = BFProposalVersions.history(proposal.id, 120)
+      .map((item) => item.simulationId)
+      .filter(Boolean);
+    const cleared = BFProposalVersions.clear(proposal.id);
+    if (cleared && Storage.deleteProposalVersionSnapshot) {
+      Array.from(new Set(snapshots)).forEach((id) => Storage.deleteProposalVersionSnapshot(id));
+    }
     renderProposalVersionPanel();
     showToast('Versoes locais desta proposta foram limpas.', 'warning');
   }
@@ -1907,7 +2106,8 @@ const App = (() => {
       reviewerRole: form.reviewerRole || 'Consultor responsável',
       validUntil: form.validUntil,
       notes: form.notes,
-      checklist: form.checklist
+      checklist: form.checklist,
+      sourceHash: currentProposalAcceptanceSourceHash()
     });
 
     if (!record) {
@@ -2190,6 +2390,9 @@ const App = (() => {
     currentParams = null;
     compResult = null;
     currentProposalId = '';
+    clientProposalReadOnly = false;
+    resumedProposalAcceptance = null;
+    delete document.body.dataset.proposalSnapshotIntegrity;
     clearCurrentProposalLink();
     projectSimulation = null;
     projetoEstruturado.itens = [];
@@ -2256,12 +2459,15 @@ const App = (() => {
   }
 
   // ─── Exportar Proposta ───
-  function proposalReleaseIssues() {
+  function proposalDocumentIssues() {
     const issues = [];
-    for (let step = 1; step <= 9; step += 1) {
-      collectStepErrors(step).forEach((message) => issues.push(message));
-    }
     if (!resultado || !currentParams) issues.push('Calcule a simulação antes de gerar a proposta.');
+    if (resultado && currentParams && !proposalCalculationMatchesCurrentForm()) {
+      issues.push('Atualize o cálculo para aplicar as alterações feitas na simulação.');
+    }
+    if (resultado && (!Array.isArray(resultado.cronograma) || !resultado.cronograma.length)) {
+      issues.push('Gere o cronograma de parcelas antes de criar o documento.');
+    }
     if (resultado && resultado.diagnostics?.reconciled !== true) {
       issues.push('Confira o cálculo financeiro antes de gerar a proposta.');
     }
@@ -2269,18 +2475,55 @@ const App = (() => {
       const integrity = window.BFSimulatorResult.validateProjectResult(resultado, projetoEstruturado);
       if (!integrity.reconciled) issues.push('Recalcule todos os grupos selecionados antes de gerar a proposta.');
     }
-    if (!compResult) issues.push('Conclua a comparacao das alternativas do projeto.');
+    proposalBuilderReadinessIssues(getProposalBuilderConfig()).forEach((message) => issues.push(message));
+    return Array.from(new Set(issues));
+  }
+
+  function proposalAcceptanceHasCurrentValidity(acceptance) {
+    const value = String(acceptance?.validUntil || '').trim();
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+    if (!match) return false;
+    const validUntil = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+    if (!Number.isFinite(validUntil.getTime())) return false;
+    if (
+      validUntil.getFullYear() !== Number(match[1])
+      || validUntil.getMonth() !== Number(match[2]) - 1
+      || validUntil.getDate() !== Number(match[3])
+    ) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    validUntil.setHours(0, 0, 0, 0);
+    return validUntil >= today;
+  }
+
+  function proposalReleaseIssues() {
+    const issues = proposalDocumentIssues();
+    for (let step = 1; step <= 9; step += 1) {
+      collectStepErrors(step).forEach((message) => issues.push(message));
+    }
+    if (!compResult) issues.push('Conclua a comparação das alternativas do projeto.');
+    else if (!proposalComparisonIsCurrent()) issues.push('Atualize a comparação antes de compartilhar a proposta.');
     const acceptance = getCurrentProposalAcceptance();
-    if (!acceptance || acceptance.status !== 'reviewed') {
-      issues.push('Conclua a conferência dos dados antes de compartilhar ou salvar.');
+    if (acceptance?.stale) {
+      issues.push('Revise novamente a proposta depois das alterações realizadas.');
+    } else if (!acceptance || acceptance.status !== 'reviewed') {
+      issues.push(
+        acceptance?.status === 'expired'
+          ? 'Atualize a validade da proposta antes de compartilhar.'
+          : 'Conclua a conferência dos dados antes de compartilhar.'
+      );
+    } else if (!['premissas', 'cliente', 'documentacao'].every((key) => acceptance.checklist?.[key] === true)) {
+      issues.push('Conclua todos os itens da conferência antes de compartilhar.');
+    } else if (!proposalAcceptanceHasCurrentValidity(acceptance)) {
+      issues.push('Defina uma validade vigente antes de compartilhar.');
     }
     return Array.from(new Set(issues));
   }
 
   async function exportarPDF() {
-    const releaseIssues = proposalReleaseIssues();
-    if (releaseIssues.length) {
-      showToast(releaseIssues.join('\n'), 'error');
+    const documentIssues = proposalDocumentIssues();
+    if (documentIssues.length) {
+      showToast(documentIssues.join('\n'), 'error');
       return;
     }
     showToast('Abrindo as opções de impressão...', 'info');
@@ -2296,9 +2539,9 @@ const App = (() => {
   }
 
   function imprimirProposta() {
-    const releaseIssues = proposalReleaseIssues();
-    if (releaseIssues.length) {
-      showToast(releaseIssues.join('\n'), 'error');
+    const documentIssues = proposalDocumentIssues();
+    if (documentIssues.length) {
+      showToast(documentIssues.join('\n'), 'error');
       return;
     }
     salvarVersaoProposta({ silent: true });
@@ -2367,7 +2610,7 @@ const App = (() => {
       populateShelfFilters();
     }
 
-    carregarSimulacaoDaUrl();
+    carregarSimulacaoDaUrlAposAutenticacao();
   }
 
   // ═══════════════════════════════════
@@ -2406,11 +2649,6 @@ const App = (() => {
     if (sourceGroups.length >= 2) { selectA.value = '0'; selectB.value = '1'; }
   }
 
-  /** Callback quando usuário troca grupo nos selects. */
-  function onCompGrupoChange() {
-    // Poderia auto-comparar, mas esperamos o clique em "Comparar Agora"
-  }
-
   /** Coleta o cenário de comparação do formulário. */
   function getCompScenario() {
     return {
@@ -2434,6 +2672,101 @@ const App = (() => {
       multaPct: 2,
       jurosPct: 1
     };
+  }
+
+  function comparisonGroupInput(group) {
+    if (!group) return null;
+    return {
+      groupKey: group.groupKey || '',
+      codigoGrupo: group.codigoGrupo || '',
+      valorCarta: Number(group.valorCarta || 0),
+      prazoMeses: Number(group.prazoMeses || 0),
+      taxaAdmTotalPct: Number(group.taxaAdmTotalPct || 0),
+      fundoReservaPct: Number(group.fundoReservaPct || 0),
+      seguroPct: Number(group.seguroPct || 0),
+      indiceReajuste: group.indiceReajuste || '',
+      mesAniversario: Number(group.mesAniversario || 0),
+      lanceEmbutidoMaxPct: Number(group.lanceEmbutidoMaxPct || 0),
+      lanceFixoPct: Number(group.lanceFixoPct || 0),
+      parcelaReduzidaDisponivel: group.parcelaReduzidaDisponivel === true,
+      reducaoMaxParcelaPct: Number(group.reducaoMaxParcelaPct || 0),
+      quantidadeCotas: Number(group.quantidadeCotas || 0)
+    };
+  }
+
+  function buildComparisonSource(valA, valB, scenario, groupA, groupB) {
+    return {
+      selection: { a: String(valA || ''), b: String(valB || '') },
+      scenario: jsonSnapshot(scenario || {}),
+      groups: [comparisonGroupInput(groupA), comparisonGroupInput(groupB)]
+    };
+  }
+
+  function comparisonSourceFingerprint(source) {
+    if (window.BFProposalIntegrity?.comparisonFingerprint) {
+      return window.BFProposalIntegrity.comparisonFingerprint(source || {});
+    }
+    return JSON.stringify(source || {});
+  }
+
+  function currentComparisonSource() {
+    const valA = document.getElementById('compGrupoA')?.value || '';
+    const valB = document.getElementById('compGrupoB')?.value || '';
+    return buildComparisonSource(
+      valA,
+      valB,
+      getCompScenario(),
+      _resolveCompGroup(valA),
+      _resolveCompGroup(valB)
+    );
+  }
+
+  function proposalComparisonIsCurrent() {
+    if (!compResult || compResult.erro || !compResult._sourceFingerprint) return false;
+    return compResult._sourceFingerprint === comparisonSourceFingerprint(currentComparisonSource());
+  }
+
+  function proposalComparisonForPresentation() {
+    if (clientProposalReadOnly) return compResult;
+    return proposalComparisonIsCurrent() ? compResult : null;
+  }
+
+  function setComparisonOutputsVisible(visible) {
+    ['comp-cards-container', 'comp-winners-container', 'comp-charts-container', 'comp-narrativa-container']
+      .forEach((id) => {
+        const element = document.getElementById(id);
+        if (element) element.style.display = visible ? '' : 'none';
+      });
+  }
+
+  function invalidateComparison() {
+    compResult = null;
+    setComparisonOutputsVisible(false);
+    renderSimulatorDecision();
+  }
+
+  function restoreComparisonSource(result) {
+    const source = result && result._source;
+    if (!source) return false;
+    const setValue = (id, value) => {
+      const element = document.getElementById(id);
+      if (element && value !== undefined && value !== null) element.value = String(value);
+    };
+    setValue('compGrupoA', source.selection?.a);
+    setValue('compGrupoB', source.selection?.b);
+    setValue('compPoliticaSaldo', source.scenario?.saldoInicialMode);
+    setValue('compIndiceReajuste', source.scenario?.indiceReajustePct);
+    setValue('compMesContemplacao', source.scenario?.mesContemplacao);
+    setValue('compLanceProprio', source.scenario?.lanceProprioPct);
+    setValue('compLanceEmbutido', source.scenario?.lanceEmbutidoPct);
+    const reduced = document.getElementById('compParcelaReduzida');
+    if (reduced) reduced.checked = source.scenario?.parcelaReduzida === true;
+    return proposalComparisonIsCurrent();
+  }
+
+  /** Qualquer mudança exige uma nova comparação antes do envio. */
+  function onCompGrupoChange() {
+    invalidateComparison();
   }
 
   /** V7: Resolve o grupo selecionado no comparador. */
@@ -2496,7 +2829,13 @@ const App = (() => {
     }
 
     const scenario = getCompScenario();
-    compResult = Comparator.compareGroups(groupA, groupB, scenario);
+    const comparisonSource = buildComparisonSource(valA, valB, scenario, groupA, groupB);
+    const compared = Comparator.compareGroups(groupA, groupB, scenario);
+    compResult = {
+      ...compared,
+      _source: comparisonSource,
+      _sourceFingerprint: comparisonSourceFingerprint(comparisonSource)
+    };
 
     if (compResult.erro) {
       showToast(`Erro na simulação do Grupo ${compResult.grupo}: ${compResult.mensagens.join(', ')}`, 'error');
@@ -2509,10 +2848,7 @@ const App = (() => {
     setTimeout(() => ChartManager.renderAllComparison(compResult), 150);
 
     // Exibir containers
-    document.getElementById('comp-cards-container').style.display = '';
-    document.getElementById('comp-winners-container').style.display = '';
-    document.getElementById('comp-charts-container').style.display = '';
-    document.getElementById('comp-narrativa-container').style.display = '';
+    setComparisonOutputsVisible(true);
 
     showToast('Comparação calculada com sucesso!', 'success');
   }
@@ -3851,7 +4187,32 @@ const App = (() => {
     const sim = Storage.loadSimulation(id);
     if (!sim) { showToast('Simulação não encontrada.', 'error'); return; }
 
-    if (!options.clientReadOnly) showToast(`Carregando "${sim.nome}"...`, 'info');
+    const requestedProposalId = getRequestedProposalId();
+    const requestedProposalVersionId = getRequestedProposalVersionId();
+    if (requestedProposalId || requestedProposalVersionId) {
+      const linked = requestedProposalId
+        ? findSimulationForProposal(requestedProposalId, requestedProposalVersionId)
+        : null;
+      const resolution = resolveProposalSimulationLink({
+        proposalId: requestedProposalId,
+        proposalVersionId: requestedProposalVersionId,
+        explicitSimulationId: id,
+        linkedSimulationId: linked?.id || ''
+      });
+      const identityMatches = requestedProposalVersionId
+        ? resolution.simulationId === sim.id
+        : simulationMatchesProposal(sim, requestedProposalId);
+      if (!resolution.ok || resolution.simulationId !== sim.id || !identityMatches) {
+        showToast('Este link de proposta não corresponde a uma simulação salva.', 'warning');
+        return;
+      }
+    }
+
+    const targetStep = options.targetStep === 10 ? 10 : getResumeStep(sim);
+    const clientReadOnly = Boolean(options.clientReadOnly || isClientProposalResume(null, targetStep));
+    clientProposalReadOnly = clientReadOnly;
+    delete document.body.dataset.proposalSnapshotIntegrity;
+    if (!clientReadOnly) showToast(`Carregando "${sim.nome}"...`, 'info');
     const resumeModal = document.getElementById('shelf-detail-modal');
     if (resumeModal) resumeModal.style.display = 'none';
 
@@ -3874,9 +4235,30 @@ const App = (() => {
     cenarios = null;
     // O carrinho restaurado é a fonte atual. Recalcular evita combinar uma
     // seleção multigrupo com um resultado antigo ou parcial salvo localmente.
-    if (currentParams && (sim.carrinho || []).length && !options.clientReadOnly) calcular();
+    if (currentParams && (sim.carrinho || []).length && !clientReadOnly) calcular();
+    resumedProposalAcceptance = sim.proposalAcceptance && sim.proposalAcceptance.proposalId === currentProposalId
+      ? jsonSnapshot(sim.proposalAcceptance)
+      : null;
+    if (compResult) {
+      const comparisonRestored = restoreComparisonSource(compResult);
+      if (comparisonRestored) setComparisonOutputsVisible(true);
+      else invalidateComparison();
+    } else {
+      setComparisonOutputsVisible(false);
+    }
     if (privacyProtected && currentParams && !currentParams.nomeCliente) {
       currentParams = { ...currentParams, nomeCliente: 'Dados protegidos' };
+    }
+    if (resumedProposalAcceptance) {
+      const requestedVersionId = getRequestedProposalVersionId();
+      const requestedVersion = requestedVersionId && typeof BFProposalVersions !== 'undefined'
+        ? BFProposalVersions.history(currentProposalId, 120).find((item) => item.id === requestedVersionId)
+        : null;
+      resumedProposalAcceptance = {
+        ...resumedProposalAcceptance,
+        version: Number(resumedProposalAcceptance.version || requestedVersion?.acceptanceVersion || 0),
+        reviewedAt: resumedProposalAcceptance.reviewedAt || requestedVersion?.createdAt || null
+      };
     }
 
     if (resultado) {
@@ -3892,21 +4274,13 @@ const App = (() => {
     }
 
     renderSimulatorDecision();
-    const requestedProposalId = getRequestedProposalId();
-    const restoredProposal = getCurrentProposalData();
-    const proposalMatches = !requestedProposalId || !restoredProposal || restoredProposal.id === requestedProposalId;
-    const targetStep = options.targetStep === 10 && proposalMatches ? 10 : getResumeStep(sim);
     goToStep(targetStep, { skipValidation: true, skipAutoCalculate: true, skipAutoSearch: true });
     replaceCurrentSimulationId(sim.id);
-    if (!proposalMatches) {
-      showToast('A proposta solicitada não corresponde a esta simulação.', 'warning');
-      return;
-    }
-    if (options.clientReadOnly && targetStep === 10) {
+    if (clientReadOnly && targetStep === 10) {
       window.ProposalExperience?.setClientMode?.(true, { locked: true });
       window.ProposalExperience?.refresh?.();
     }
-    if (!options.clientReadOnly) {
+    if (!clientReadOnly) {
       showToast(
         privacyProtected
           ? 'Proposta retomada. Seus dados pessoais continuam protegidos.'
@@ -3921,14 +4295,19 @@ const App = (() => {
     const params = new URLSearchParams(window.location.search);
     const proposalId = getRequestedProposalId();
     const proposalVersionId = getRequestedProposalVersionId();
-    const clientReadOnly = isClientProposalResume(params);
     const linked = proposalId ? findSimulationForProposal(proposalId, proposalVersionId) : null;
     const explicitId = params.get('simulationId') || params.get('simulacaoId') || '';
-    if (proposalVersionId && (!linked || (explicitId && explicitId !== linked.id))) {
+    const resolution = resolveProposalSimulationLink({
+      proposalId,
+      proposalVersionId,
+      explicitSimulationId: explicitId,
+      linkedSimulationId: linked?.id || ''
+    });
+    if ((proposalId || proposalVersionId) && !resolution.ok) {
       window.setTimeout(() => showToast('Este link de proposta não corresponde a uma simulação salva.', 'warning'), 300);
       return;
     }
-    const id = explicitId || linked?.id || '';
+    const id = resolution.ok ? resolution.simulationId : explicitId;
     if (!id) {
       if (proposalId) {
         window.setTimeout(() => showToast('Não foi possível retomar esta proposta. Abra uma simulação salva ou crie uma nova proposta.', 'warning'), 300);
@@ -3936,10 +4315,34 @@ const App = (() => {
       return;
     }
     const proposalTarget = ['#proposta', '#step-10'].includes(window.location.hash) || !!proposalId;
+    const clientReadOnly = isClientProposalResume(params, proposalTarget ? 10 : 0);
     window.setTimeout(() => _carregarSimulacao(id, {
       targetStep: proposalTarget ? 10 : null,
       clientReadOnly
     }), 300);
+  }
+
+  function carregarSimulacaoDaUrlAposAutenticacao() {
+    let params;
+    try {
+      params = new URLSearchParams(window.location.search || '');
+    } catch (e) {
+      carregarSimulacaoDaUrl();
+      return;
+    }
+    const proposalIntent = Boolean(
+      params.get('proposalId')
+      || params.get('proposalVersionId')
+      || params.get('proposalView') === 'client'
+      || ['#proposta', '#step-10'].includes(window.location.hash)
+    );
+    if (proposalIntent && window.BFAuth?.ready) {
+      Promise.resolve(window.BFAuth.ready)
+        .then(() => carregarSimulacaoDaUrl())
+        .catch(() => carregarSimulacaoDaUrl());
+      return;
+    }
+    carregarSimulacaoDaUrl();
   }
 
   function _excluirSimulacao(id) {
@@ -3966,6 +4369,7 @@ const App = (() => {
     renderProposalVersionPanel,
     getCurrentProposalData,
     getProposalPublicationPayload,
+    getProposalDocumentIssues: proposalDocumentIssues,
     getProposalReleaseIssues: proposalReleaseIssues,
     toggleProposalBuilderOption,
     setProposalBuilderGroup,

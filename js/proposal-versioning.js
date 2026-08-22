@@ -332,7 +332,6 @@ const BFProposalVersions = (() => {
     const status = cleanText(acceptance.status || context.status || 'draft', 40);
     const source = {
       proposalId,
-      simulationId: cleanSystemId(context.simulationId || proposal.simulationId || '', 'SIM'),
       status,
       acceptanceVersion: number(acceptance.version),
       validUntil: cleanDate(acceptance.validUntil),
@@ -350,7 +349,7 @@ const BFProposalVersions = (() => {
     return {
       schema: SCHEMA,
       proposalId,
-      simulationId: source.simulationId,
+      simulationId: cleanSystemId(context.simulationId || proposal.simulationId || '', 'SIM'),
       cliente: cleanText(proposal.cliente || context.cliente || 'Cliente em analise', 120),
       consultor: cleanText(proposal.consultor || context.consultor || '', 120),
       status,

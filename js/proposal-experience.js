@@ -371,14 +371,28 @@
   function isDashboardProposalContext() {
     try {
       const params = new URLSearchParams(window.location.search || '');
-      const fromDashboard = params.get('from') === 'dashboard';
-      const proposalId = params.get('proposalId') || '';
-      const simulationId = params.get('simulationId') || params.get('simulacaoId') || '';
-      return Boolean(
-        fromDashboard
-        && params.get('proposalView') === 'client'
-        && (proposalId || simulationId)
+      const input = {
+        role: window.BFAuth?.getCurrentUser?.()?.role || '',
+        proposalView: params.get('proposalView') || '',
+        proposalId: params.get('proposalId') || '',
+        proposalVersionId: params.get('proposalVersionId') || '',
+        hash: window.location.hash || '',
+        targetStep: Number(document.body.dataset.activeStep || 0)
+      };
+      if (window.BFProposalResumeGuard?.isClientReadOnly) {
+        return window.BFProposalResumeGuard.isClientReadOnly(input);
+      }
+      return input.role === 'cliente' && Boolean(
+        input.proposalId || input.proposalVersionId || ['#proposta', '#step-10'].includes(input.hash)
       );
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function currentUserIsClient() {
+    try {
+      return window.BFAuth?.getCurrentUser?.()?.role === 'cliente';
     } catch (error) {
       return false;
     }
@@ -418,8 +432,7 @@
     );
   }
 
-  function publicationDays() {
-    const validUntil = valueOf('proposalValidUntil');
+  function publicationDays(validUntil) {
     if (!validUntil) return 30;
     const target = new Date(`${validUntil}T23:59:59`);
     if (!Number.isFinite(target.getTime())) return 30;
@@ -465,7 +478,7 @@
   }
 
   async function publishSecureProposal() {
-    if (clientModeLocked) {
+    if (clientModeLocked || currentUserIsClient()) {
       publicationMessage('Esta proposta está disponível apenas para conferência.');
       window.App?.showToast?.('Esta proposta está disponível apenas para conferência.', 'info');
       return;
@@ -512,7 +525,7 @@
       });
       if (!reviewed?.ok || !reviewed.snapshot?.id) throw new Error(reviewed?.message || 'Não foi possível concluir a conferência.');
 
-      const published = await api.publishProposalSnapshot(reviewed.snapshot.id, publicationDays());
+      const published = await api.publishProposalSnapshot(reviewed.snapshot.id, publicationDays(prepared.payload.review.validUntil));
       if (!published?.ok || !published.token || !published.share?.id) {
         throw new Error(published?.message || 'Não foi possível criar o link da proposta.');
       }

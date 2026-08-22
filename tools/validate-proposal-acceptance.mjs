@@ -2,6 +2,8 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import vm from 'node:vm';
 
+process.env.TZ = 'America/Sao_Paulo';
+
 const root = process.cwd();
 const failures = [];
 
@@ -29,6 +31,13 @@ class LocalStorageMock {
 
 async function readText(relativePath) {
   return fs.readFile(path.join(root, relativePath), 'utf8');
+}
+
+function localDateValue(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 const html = await readText('pages/simulador.html');
@@ -99,7 +108,8 @@ const partial = context.BFProposalAcceptance.saveReview({
   reviewerRole: 'Mesa de revisao',
   validUntil,
   notes: 'Validar com cliente.teste@example.com e telefone 11999998888.',
-  checklist: { premissas: true, cliente: false, documentacao: false }
+  checklist: { premissas: true, cliente: false, documentacao: false },
+  sourceHash: 'fp-contentv0'
 });
 assert(partial && partial.status === 'partial', `Checklist parcial deveria gerar partial, recebeu ${partial && partial.status}.`);
 
@@ -109,7 +119,8 @@ const reviewed = context.BFProposalAcceptance.saveReview({
   reviewerRole: 'Mesa de revisao',
   validUntil,
   notes: 'Premissas revisadas para o CPF 52998224725.',
-  checklist: { premissas: true, cliente: true, documentacao: true }
+  checklist: { premissas: true, cliente: true, documentacao: true },
+  sourceHash: 'fp-contentv1'
 });
 assert(reviewed && reviewed.status === 'reviewed', `Checklist completo deveria gerar reviewed, recebeu ${reviewed && reviewed.status}.`);
 assert(reviewed && reviewed.version === 2, `Segunda revisao deveria ser versao 2, recebeu ${reviewed && reviewed.version}.`);
@@ -120,6 +131,30 @@ assert(context.BFProposalAcceptance.history(proposal.id, 5).length === 2, 'histo
 assert(latest && latest.reviewer === 'Analista Teste', 'Detalhe de revisor deveria permanecer disponivel em memoria na sessao.');
 assert(latest && latest.notes.includes('52998224725'), 'Nota deveria permanecer disponivel em memoria na sessao.');
 assert(latest && latest.snapshot.cliente === 'Cliente Teste', 'Nome do cliente deveria permanecer disponivel em memoria na sessao.');
+assert(latest && latest.sourceHash === 'fp-contentv1', 'Fingerprint do conteudo revisado nao sobreviveu ao round-trip local.');
+
+const todayValidUntil = localDateValue();
+const todayReview = context.BFProposalAcceptance.saveReview({
+  proposal: { ...proposal, id: 'PROP-VALIDADE-HOJE' },
+  reviewer: 'Analista Teste',
+  reviewerRole: 'Mesa de revisao',
+  validUntil: todayValidUntil,
+  notes: 'Validade termina hoje.',
+  checklist: { premissas: true, cliente: true, documentacao: true }
+});
+assert(todayReview && todayReview.status === 'reviewed', `Validade de hoje nao deveria estar vencida, recebeu ${todayReview && todayReview.status}.`);
+assert(todayReview && todayReview.validUntil === todayValidUntil, 'Validade de hoje nao foi preservada como data local.');
+
+const invalidReview = context.BFProposalAcceptance.saveReview({
+  proposal: { ...proposal, id: 'PROP-VALIDADE-INVALIDA' },
+  reviewer: 'Analista Teste',
+  reviewerRole: 'Mesa de revisao',
+  validUntil: '2026-02-31',
+  notes: 'Data de validade invalida.',
+  checklist: { premissas: true, cliente: true, documentacao: true }
+});
+assert(invalidReview && invalidReview.validUntil === '', 'Data de calendario invalida deveria ser descartada.');
+assert(invalidReview && invalidReview.status === 'reviewed', `Data invalida nao deveria ser normalizada como vencida, recebeu ${invalidReview && invalidReview.status}.`);
 
 const acceptanceStorageKey = 'bank_fratern_proposal_acceptances_v1';
 const rawAcceptance = context.localStorage.getItem(acceptanceStorageKey) || '';
@@ -141,6 +176,8 @@ assert(!hasForbiddenAcceptanceShape(persistedAcceptance), 'localStorage de aceit
 
 assert(context.BFProposalAcceptance.clear(proposal.id), 'clear() retornou falso.');
 assert(context.BFProposalAcceptance.history(proposal.id, 5).length === 0, 'clear() nao removeu revisoes.');
+context.BFProposalAcceptance.clear('PROP-VALIDADE-HOJE');
+context.BFProposalAcceptance.clear('PROP-VALIDADE-INVALIDA');
 
 context.localStorage.setItem(acceptanceStorageKey, JSON.stringify([{
   schema: 'bank-fratern.proposal-acceptance.v1',
@@ -183,6 +220,9 @@ const report = {
     partialStatus: partial && partial.status,
     reviewedStatus: reviewed && reviewed.status,
     reviewedVersion: reviewed && reviewed.version,
+    reviewedSourceHash: latest && latest.sourceHash,
+    todayValidityPreserved: todayReview && todayReview.status === 'reviewed' && todayReview.validUntil === todayValidUntil,
+    invalidValidityRejected: invalidReview && invalidReview.validUntil === '',
     liveDetailsPreserved: latest && latest.reviewer === 'Analista Teste' && latest.snapshot.cliente === 'Cliente Teste',
     localStoragePIIFree: !hasForbiddenAcceptanceShape(persistedAcceptance),
     legacyPIIPurged: !/Revisor Legado|Cliente Legado|Consultor Legado/.test(migratedAcceptanceRaw)

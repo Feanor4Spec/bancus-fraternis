@@ -50,10 +50,19 @@
     const proposalId = /^PROP-[A-Za-z0-9._:-]+$/i.test(String(acceptance.proposalId || ''))
       ? String(acceptance.proposalId)
       : '';
+    const id = /^REV-[A-Za-z0-9._:-]+$/i.test(String(acceptance.id || ''))
+      ? String(acceptance.id)
+      : '';
+    const sourceHash = /^fp-[a-z0-9]+$/i.test(String(acceptance.sourceHash || ''))
+      ? String(acceptance.sourceHash)
+      : '';
     return {
+      id,
       proposalId,
       status: acceptance.status || 'draft',
-      reviewedAt: acceptance.reviewedAt || null,
+      version: Math.max(0, parseInt(acceptance.version, 10) || 0),
+      sourceHash,
+      reviewedAt: acceptance.reviewedAt || acceptance.updatedAt || null,
       validUntil: acceptance.validUntil || null,
       checklist: acceptance.checklist ? { ...acceptance.checklist } : null
     };

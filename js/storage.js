@@ -7,8 +7,32 @@ const Storage = (() => {
   'use strict';
 
   const STORAGE_KEY = 'consorciopro_simulations';
+  const PROPOSAL_VERSION_SNAPSHOT_STORAGE_KEY = 'consorciopro_proposal_version_snapshots';
   const MAX_SIMULATIONS = 50;
+  const MAX_PROPOSAL_VERSION_SNAPSHOTS = 120;
   const CURRENT_SCHEMA = 3;
+  const PRIVATE_SNAPSHOT_FIELDS = new Set([
+    'consultor', 'consultorEmail', 'consultorTelefone',
+    'consultorEmpresa', 'empresaConsultor', 'consultorCodigo', 'codigoConsultor',
+    'consultant', 'consultantEmail', 'consultantPhone',
+    'consultantCompany', 'companyConsultant', 'consultantCode', 'codeConsultant',
+    'advisor', 'advisorEmail', 'advisorPhone', 'advisorCompany', 'advisorCode',
+    'cliente', 'nomeCliente', 'clienteCpf', 'clienteEmail', 'clienteTelefone',
+    'cpf', 'email', 'phone', 'telefone', 'reviewer', 'notes',
+    'ownerEmail', 'actorEmail', 'observacoes', 'proposalReviewer', 'proposalReviewNotes'
+  ].map(_normalizeSnapshotFieldKey));
+
+  function _normalizeSnapshotFieldKey(value) {
+    return String(value == null ? '' : value)
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9]/g, '')
+      .toLowerCase();
+  }
+
+  function _isPrivateSnapshotField(key) {
+    return PRIVATE_SNAPSHOT_FIELDS.has(_normalizeSnapshotFieldKey(key));
+  }
 
   function _getLocalStorage() {
     try {
@@ -39,6 +63,42 @@ const Storage = (() => {
       return true;
     } catch (e) {
       console.error('Storage: erro ao salvar simulacoes', e);
+      return false;
+    }
+  }
+
+  function _loadProposalVersionSnapshots() {
+    try {
+      const storage = _getLocalStorage();
+      if (!storage) return [];
+      const raw = storage.getItem(PROPOSAL_VERSION_SNAPSHOT_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      const sanitized = (Array.isArray(parsed) ? parsed : [])
+        .map(_sanitizeProposalVersionSnapshotEntry);
+      const serialized = JSON.stringify(sanitized);
+      if (raw && serialized !== raw) {
+        storage.setItem(PROPOSAL_VERSION_SNAPSHOT_STORAGE_KEY, serialized);
+      }
+      return sanitized;
+    } catch (e) {
+      console.warn('Storage: erro ao carregar snapshots de versoes', e);
+      return [];
+    }
+  }
+
+  function _saveProposalVersionSnapshots(list) {
+    try {
+      const storage = _getLocalStorage();
+      if (!storage) return false;
+      const sanitized = (Array.isArray(list) ? list : [])
+        .map(_sanitizeProposalVersionSnapshotEntry);
+      storage.setItem(
+        PROPOSAL_VERSION_SNAPSHOT_STORAGE_KEY,
+        JSON.stringify(sanitized)
+      );
+      return true;
+    } catch (e) {
+      console.error('Storage: erro ao salvar snapshots de versoes', e);
       return false;
     }
   }
@@ -152,20 +212,13 @@ const Storage = (() => {
     };
   }
 
-  function saveSimulation(nome, data) {
-    if (nome && typeof nome === 'object' && data === undefined) {
-      data = nome;
-      nome = data.nome || data.name || '';
-    }
-    data = data || {};
-
-    const list = _loadAll();
+  function _buildEntry(nome, data, listLength = 0) {
     const now = new Date().toISOString();
     const id = data.id || 'SIM-' + Date.now().toString(36).toUpperCase();
-    const entry = {
+    return {
       id,
       schemaVersion: CURRENT_SCHEMA,
-      nome: nome || `Simulação ${list.length + 1}`,
+      nome: nome || `Simulação ${listLength + 1}`,
       criadoEm: data.criadoEm || now,
       atualizadoEm: now,
       origem: data.origem || 'simulador-consorcio',
@@ -196,6 +249,89 @@ const Storage = (() => {
       proposalAcceptance: data.proposalAcceptance || null,
       decisionContext: data.decisionContext || null
     };
+  }
+
+  function _withoutPrivateFields(value) {
+    const source = value && typeof value === 'object' ? value : {};
+    return Object.keys(source).reduce((result, key) => {
+      if (!_isPrivateSnapshotField(key)) result[key] = source[key];
+      return result;
+    }, {});
+  }
+
+  function _redactPrivateSnapshotValue(value) {
+    if (Array.isArray(value)) return value.map(_redactPrivateSnapshotValue);
+    if (!value || typeof value !== 'object') return value;
+    return Object.keys(value).reduce((result, key) => {
+      if (_isPrivateSnapshotField(key)) return result;
+      result[key] = _redactPrivateSnapshotValue(value[key]);
+      return result;
+    }, {});
+  }
+
+  function _sanitizeProposalAcceptance(acceptance) {
+    if (!acceptance || typeof acceptance !== 'object') return null;
+    const id = /^REV-[A-Za-z0-9._:-]+$/i.test(String(acceptance.id || ''))
+      ? String(acceptance.id)
+      : '';
+    const sourceHash = /^fp-[A-Za-z0-9]+$/i.test(String(acceptance.sourceHash || ''))
+      ? String(acceptance.sourceHash)
+      : '';
+    return {
+      id,
+      proposalId: acceptance.proposalId || '',
+      status: acceptance.status || 'draft',
+      sourceHash,
+      version: Math.max(0, parseInt(acceptance.version, 10) || 0),
+      createdAt: acceptance.createdAt || null,
+      updatedAt: acceptance.updatedAt || null,
+      reviewedAt: acceptance.reviewedAt || null,
+      validUntil: acceptance.validUntil || null,
+      checklist: acceptance.checklist ? { ...acceptance.checklist } : null
+    };
+  }
+
+  function _sanitizeProposalVersionSnapshotData(data) {
+    const source = data && typeof data === 'object' ? data : {};
+    const redacted = _redactPrivateSnapshotValue(source);
+    return {
+      ...redacted,
+      origem: 'proposal-version-snapshot',
+      privacy: {
+        localPIIStored: false,
+        notice: 'Dados identificadores nao sao persistidos no armazenamento local.'
+      },
+      consultor: '',
+      consultorEmail: '',
+      consultorTelefone: '',
+      cliente: 'Dados protegidos',
+      clienteCpf: '',
+      clienteEmail: '',
+      clienteTelefone: '',
+      params: _withoutPrivateFields(redacted.params),
+      formSnapshot: _withoutPrivateFields(redacted.formSnapshot),
+      proposalAcceptance: _sanitizeProposalAcceptance(source.proposalAcceptance)
+    };
+  }
+
+  function _sanitizeProposalVersionSnapshotEntry(entry) {
+    return {
+      ..._sanitizeProposalVersionSnapshotData(entry),
+      ownerEmail: '',
+      actorEmail: ''
+    };
+  }
+
+  function saveSimulation(nome, data) {
+    if (nome && typeof nome === 'object' && data === undefined) {
+      data = nome;
+      nome = data.nome || data.name || '';
+    }
+    data = data || {};
+
+    const list = _loadAll();
+    const entry = _buildEntry(nome, data, list.length);
+    const id = entry.id;
 
     const existingIndex = list.findIndex(s => s.id === id);
     if (existingIndex >= 0) list.splice(existingIndex, 1);
@@ -211,6 +347,27 @@ const Storage = (() => {
     return entry;
   }
 
+  function saveProposalVersionSnapshot(nome, data) {
+    if (nome && typeof nome === 'object' && data === undefined) {
+      data = nome;
+      nome = data.nome || data.name || '';
+    }
+    const sanitized = _sanitizeProposalVersionSnapshotData(data);
+    const list = _loadProposalVersionSnapshots();
+    const entry = {
+      ..._buildEntry(nome, sanitized, list.length),
+      ownerEmail: '',
+      actorEmail: ''
+    };
+    const existingIndex = list.findIndex(item => item.id === entry.id);
+    if (existingIndex >= 0) list.splice(existingIndex, 1);
+    list.unshift(entry);
+    if (list.length > MAX_PROPOSAL_VERSION_SNAPSHOTS) {
+      list.splice(MAX_PROPOSAL_VERSION_SNAPSHOTS);
+    }
+    return _saveProposalVersionSnapshots(list) ? entry : null;
+  }
+
   function loadSimulations(options = {}) {
     return _loadAll().map(entry => _summary(entry, !!options.includeDetails));
   }
@@ -220,8 +377,14 @@ const Storage = (() => {
   }
 
   function loadSimulation(id) {
-    const entry = _loadAll().find(s => s.id === id);
+    const entry = _loadAll().find(s => s.id === id)
+      || _loadProposalVersionSnapshots().find(s => s.id === id);
     return entry ? _summary(entry, true) : null;
+  }
+
+  function deleteProposalVersionSnapshot(id) {
+    const list = _loadProposalVersionSnapshots().filter(item => item.id !== id);
+    return _saveProposalVersionSnapshots(list);
   }
 
   function deleteSimulation(id) {
@@ -230,7 +393,9 @@ const Storage = (() => {
   }
 
   function clearAll() {
-    return _saveAll([]);
+    const simulationsCleared = _saveAll([]);
+    const snapshotsCleared = _saveProposalVersionSnapshots([]);
+    return simulationsCleared && snapshotsCleared;
   }
 
   function getPortfolioStats() {
@@ -260,10 +425,12 @@ const Storage = (() => {
 
   return {
     saveSimulation,
+    saveProposalVersionSnapshot,
     listSimulations,
     loadSimulations,
     loadSimulation,
     deleteSimulation,
+    deleteProposalVersionSnapshot,
     clearAll,
     getPortfolioStats
   };

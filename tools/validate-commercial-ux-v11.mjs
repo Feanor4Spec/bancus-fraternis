@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import crypto from 'node:crypto';
 
 const root = process.cwd();
 const checks = [];
@@ -9,6 +10,37 @@ function check(id, condition, evidence) {
   const ok = Boolean(condition);
   checks.push({ id, ok, evidence });
   if (!ok) failures.push(id);
+}
+
+function imageMetadata(buffer) {
+  if (buffer.length > 24 && buffer.toString('ascii', 1, 4) === 'PNG') {
+    return { format: 'png', width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20) };
+  }
+  if (buffer.length > 4 && buffer[0] === 0xff && buffer[1] === 0xd8) {
+    const frameMarkers = new Set([0xc0, 0xc1, 0xc2, 0xc3, 0xc5, 0xc6, 0xc7, 0xc9, 0xca, 0xcb, 0xcd, 0xce, 0xcf]);
+    let offset = 2;
+    while (offset + 8 < buffer.length) {
+      if (buffer[offset] !== 0xff) {
+        offset += 1;
+        continue;
+      }
+      const marker = buffer[offset + 1];
+      offset += 2;
+      if (marker === 0xd8 || marker === 0xd9) continue;
+      if (offset + 2 > buffer.length) break;
+      const segmentLength = buffer.readUInt16BE(offset);
+      if (segmentLength < 2 || offset + segmentLength > buffer.length) break;
+      if (frameMarkers.has(marker) && segmentLength >= 7) {
+        return {
+          format: 'jpeg',
+          height: buffer.readUInt16BE(offset + 3),
+          width: buffer.readUInt16BE(offset + 5)
+        };
+      }
+      offset += segmentLength;
+    }
+  }
+  return { format: 'unknown', width: 0, height: 0 };
 }
 
 async function read(relativePath) {
@@ -36,7 +68,10 @@ const [
   handoffServiceJs,
   platformJs,
   platformCss,
-  simulatorCss
+  simulatorCss,
+  proposalResumeGuardJs,
+  proposalIntegrityJs,
+  proposalAcceptanceJs
 ] = await Promise.all([
   read('js/shared-layout.js'),
   read('pages/dashboard-cliente.html'),
@@ -53,7 +88,10 @@ const [
   read('assets/js/services/handoff-consultivo.service.js'),
   read('assets/js/bf-platform.js'),
   read('assets/css/platform.css'),
-  read('css/simulator-evolution.css')
+  read('css/simulator-evolution.css'),
+  read('js/proposal-resume-guard.js'),
+  read('js/proposal-integrity.js'),
+  read('js/proposal-acceptance.js')
 ]);
 
 const roles = ['public', 'cliente', 'consultor', 'admin'];
@@ -89,12 +127,23 @@ check('simulator.pdf-action', simulatorHtml.includes('Imprimir ou salvar em PDF'
 check('simulator.share-language', proposalJs.includes('Pronta para enviar') && proposalJs.includes('Link disponível') && !proposalJs.includes("status = 'Publicada'"), 'Geração de link sem vocabulário de implantação.');
 check('simulator.bottom-bar-flow', /\.proposal-bottom-bar\s*\{[\s\S]*?position:\s*static;/.test(simulatorCss), 'Barra final não cobre a proposta.');
 check('simulator.proposal-resume', ['getRequestedProposalVersionId', 'findSimulationForProposal', "['#proposta', '#step-10']", 'persistCurrentSimulationForProposal'].every((term) => appJs.includes(term)), 'Retomada valida o vínculo e abre a etapa 10.');
-check('simulator.resume-identity', appJs.includes("explicitId !== linked.id") && appJs.includes('A proposta solicitada não corresponde a esta simulação.'), 'Links divergentes falham sem abrir outra proposta.');
+check('simulator.resume-identity', proposalResumeGuardJs.includes("reason: 'simulation-mismatch'") && appJs.includes('resolveProposalSimulationLink') && appJs.includes('if (!resolution.ok || resolution.simulationId !== sim.id || !identityMatches)'), 'Links divergentes falham antes de restaurar outra proposta.');
+check('simulator.historical-version-snapshot', storageJs.includes('saveProposalVersionSnapshot') && appJs.includes('createProposalVersionSimulationId') && appJs.includes('immutable: true'), 'Cada versão preserva um snapshot próprio e sanitizado.');
 check('simulator.unique-proposal', appJs.includes('currentProposalId') && appJs.includes('window.crypto?.getRandomValues') && appJs.includes('`${proposal.id}-${suffix}`'), 'Cada jornada recebe uma identidade própria, mesmo com o mesmo valor de crédito.');
 check('simulator.resume-payload', ['proposalId', 'comparison', 'proposalSnapshotRef', 'privacy'].every((term) => storageJs.includes(term)) && simulatorStateJs.includes('proposalAcceptance?.proposalId'), 'Simulação preserva identidade, comparação, privacidade e referência da proposta.');
-check('simulator.client-readonly', proposalJs.includes("params.get('proposalView') === 'client'") && proposalJs.includes('clientModeLocked') && proposalJs.includes('apenas para conferência') && proposalJs.includes('Confira sua proposta.'), 'Retomada do cliente usa linguagem de consulta e bloqueia edição ou envio sem alterar o gate comercial.');
+check('simulator.client-readonly', proposalResumeGuardJs.includes("role === 'cliente'") && proposalJs.includes('currentUserIsClient()') && proposalJs.includes('clientModeLocked') && proposalJs.includes('apenas para conferência') && proposalJs.includes('Confira sua proposta.'), 'Retomada do cliente deriva o bloqueio do papel e usa linguagem de consulta.');
 check('simulator.client-readonly-state', simulatorCss.includes('body.proposal-client-readonly .proposal-command-bar__state') && simulatorCss.includes('body.proposal-client-mode .proposal-evolution-feedback') && simulatorCss.includes('body.proposal-client-mode .proposal-share-panel'), 'Modo cliente mostra somente situação, proposta e retorno ao painel.');
-check('simulator.client-readonly-snapshot', (appJs.match(/!options\.clientReadOnly/g) || []).length >= 3 && appJs.includes('isClientProposalResume(params)') && appJs.includes('setClientMode?.(true, { locked: true })'), 'Conferência usa o resultado salvo sem recalcular, reabrir edição ou exibir alertas de bastidor.');
+check('simulator.client-readonly-snapshot', (appJs.match(/!clientReadOnly/g) || []).length >= 3 && appJs.includes('isClientProposalResume(params, proposalTarget ? 10 : 0)') && appJs.includes('setClientMode?.(true, { locked: true })'), 'Conferência usa o resultado salvo sem recalcular, reabrir edição ou exibir alertas de bastidor.');
+check('simulator.current-comparison', proposalIntegrityJs.includes('comparisonFingerprint') && appJs.includes('proposalComparisonIsCurrent()') && appJs.includes('restoreComparisonSource(compResult)'), 'Envio exige comparação correspondente aos grupos e condições atuais.');
+check('simulator.acceptance-resume', appJs.includes('resumedProposalAcceptance') && proposalAcceptanceJs.includes('parseLocalDate') && proposalAcceptanceJs.includes('valid < today'), 'Retomada preserva revisão e validade sem deslocamento de fuso.');
+check('simulator.pdf-send-gates', appJs.includes('function proposalDocumentIssues()')
+  && appJs.includes('proposalBuilderReadinessIssues(getProposalBuilderConfig())')
+  && appJs.includes('proposalCalculationMatchesCurrentForm()')
+  && appJs.includes("['premissas', 'cliente', 'documentacao']")
+  && appJs.includes('proposalAcceptanceHasCurrentValidity(acceptance)')
+  && proposalJs.includes('publicationDays(prepared.payload.review.validUntil)')
+  && appJs.includes('const issues = proposalDocumentIssues();')
+  && /async function exportarPDF\(\)[\s\S]*?proposalDocumentIssues\(\)/.test(appJs), 'PDF depende de cálculo, cronograma e estrutura; envio acrescenta comparação, conferência e validade.');
 
 const screenshotPaths = [
   'docs/test-prints/commercial-ux-v10/09-login-after.png',
@@ -107,8 +156,11 @@ const screenshotPaths = [
 ];
 const screenshotPresence = await Promise.all(screenshotPaths.map(async (relativePath) => {
   try {
-    const stat = await fs.stat(path.join(root, relativePath));
-    return { path: relativePath, bytes: stat.size, ok: stat.size > 0 };
+    const absolutePath = path.join(root, relativePath);
+    const buffer = await fs.readFile(absolutePath);
+    const { format, width, height } = imageMetadata(buffer);
+    const sha256 = crypto.createHash('sha256').update(buffer).digest('hex');
+    return { path: relativePath, bytes: buffer.length, format, width, height, sha256, ok: buffer.length > 0 && width >= 800 && height >= 500 };
   } catch (error) {
     return { path: relativePath, bytes: 0, ok: false };
   }

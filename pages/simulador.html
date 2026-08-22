@@ -979,34 +979,34 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
           <div class="form-grid">
             <div class="form-group">
               <label class="form-label" for="compPoliticaSaldo">Política de Saldo</label>
-              <select id="compPoliticaSaldo" class="form-select">
+              <select id="compPoliticaSaldo" class="form-select" onchange="App.onCompGrupoChange()">
                 <option value="carta">Política A: Saldo = Carta</option>
                 <option value="com_custos">Política B: Saldo = Carta + Custos</option>
               </select>
             </div>
             <div class="form-group">
               <label class="form-label" for="compIndiceReajuste">Índice de Reajuste Anual (%)</label>
-              <input type="number" id="compIndiceReajuste" class="form-input" min="0" max="50" step="0.1" value="5"
+              <input type="number" id="compIndiceReajuste" class="form-input" min="0" max="50" step="0.1" value="5" onchange="App.onCompGrupoChange()"
                 placeholder="5">
             </div>
             <div class="form-group">
               <label class="form-label" for="compMesContemplacao">Mês de Contemplação</label>
-              <input type="number" id="compMesContemplacao" class="form-input" min="1" value="18" placeholder="18">
+              <input type="number" id="compMesContemplacao" class="form-input" min="1" value="18" placeholder="18" onchange="App.onCompGrupoChange()">
             </div>
             <div class="form-group">
               <label class="form-label" for="compLanceProprio">Lance Próprio (%)</label>
-              <input type="number" id="compLanceProprio" class="form-input" min="0" max="100" step="0.1" value="20"
+              <input type="number" id="compLanceProprio" class="form-input" min="0" max="100" step="0.1" value="20" onchange="App.onCompGrupoChange()"
                 placeholder="20">
             </div>
             <div class="form-group">
               <label class="form-label" for="compLanceEmbutido">Lance Embutido (%)</label>
-              <input type="number" id="compLanceEmbutido" class="form-input" min="0" max="100" step="0.1" value="20"
+              <input type="number" id="compLanceEmbutido" class="form-input" min="0" max="100" step="0.1" value="20" onchange="App.onCompGrupoChange()"
                 placeholder="20">
             </div>
             <div class="form-group">
               <label class="form-label">Parcela Reduzida?</label>
               <label class="form-switch">
-                <input type="checkbox" id="compParcelaReduzida">
+                <input type="checkbox" id="compParcelaReduzida" onchange="App.onCompGrupoChange()">
                 <span class="form-switch__track"></span>
                 <span class="form-switch__label">Sim</span>
               </label>
@@ -1402,11 +1402,14 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
   <script src="../js/proposal-governance.js"></script>
   <script src="../js/settings.js"></script>
   <script src="../assets/js/services/backend-api.service.js"></script>
+  <script src="../js/auth.js"></script>
   <script src="../assets/js/services/decision-context.service.js"></script>
   <script src="../assets/js/services/handoff-consultivo.service.js"></script>
   <script src="../js/simulator-journey.js"></script>
   <script src="../js/simulator-state.js"></script>
   <script src="../js/storage.js"></script>
+  <script src="../js/proposal-resume-guard.js"></script>
+  <script src="../js/proposal-integrity.js"></script>
   <script src="../js/app.js"></script>
   <script src="../js/proposal-experience.js"></script>
   <script>
