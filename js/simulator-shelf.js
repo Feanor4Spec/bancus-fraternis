@@ -194,8 +194,8 @@
     return {
       display: hasPages ? 'flex' : 'none',
       info: safe.totalGroups === 0
-        ? 'Sem paginas'
-        : `Pagina ${safe.currentPage || 1} de ${safe.totalPages || 1} (${safe.startIdx || 1}-${safe.endIdx || safe.totalGroups} de ${safe.totalGroups})`,
+        ? 'Sem páginas'
+        : `Página ${safe.currentPage || 1} de ${safe.totalPages || 1} (${safe.startIdx || 1}-${safe.endIdx || safe.totalGroups} de ${safe.totalGroups})`,
       prevDisabled: !hasPages || safe.currentPage <= 1,
       nextDisabled: !hasPages || safe.currentPage >= safe.totalPages,
       jumpValue: String(safe.currentPage || 1),
@@ -262,6 +262,7 @@
 
   function explainGroupRecommendation(group, options = {}) {
     const filters = options.filters || {};
+    const profile = options.profile || {};
     const score = Number(group && group.scoreShelf || 0);
     const letter = String((group && ((group._classificacao && group._classificacao.letra) || group.classificacaoExecutiva)) || '').charAt(0);
     const taxa = Number(group && group.taxaAdmPct || 0);
@@ -269,13 +270,8 @@
     const carta = Number(group && group.valorCartaRef || 0);
     const reasons = [];
     const risks = [];
-
-    if (score >= 70) addUnique(reasons, `Score ${score}/100 indica boa aderencia inicial.`);
-    else if (score >= 40) addUnique(reasons, `Score ${score}/100 pede comparacao com alternativas.`);
-    else addUnique(risks, `Score ${score}/100 exige revisao antes da proposta.`);
-
-    if (letter === 'A') addUnique(reasons, 'Classificacao A prioriza expansao e saude comercial.');
-    if (letter === 'C' || letter === 'D') addUnique(risks, `Classificacao ${letter} pede justificativa consultiva.`);
+    let profileSignals = 0;
+    let profileChecks = 0;
 
     if (filters.taxaMax && taxa <= Number(filters.taxaMax)) addUnique(reasons, `Taxa dentro do teto de ${filters.taxaMax}%.`);
     else if (taxa > 22) addUnique(risks, `Taxa de ${taxa.toFixed(2)}% merece comparacao de custo.`);
@@ -284,28 +280,79 @@
     if (filters.cartaMin && carta >= Number(filters.cartaMin)) addUnique(reasons, 'Carta acima do minimo definido.');
     if (filters.cartaMax && carta <= Number(filters.cartaMax)) addUnique(reasons, 'Carta dentro do teto definido.');
 
-    if (filters.fgts && group && group.fgtsPermitido) addUnique(reasons, 'Permite FGTS para compor a estrategia.');
+    if (filters.fgts && group && group.fgtsPermitido) addUnique(reasons, 'Permite uso de FGTS, sujeito às regras vigentes.');
     if (filters.fgts && group && !group.fgtsPermitido) addUnique(risks, 'Filtro pede FGTS, mas o grupo nao sinaliza permissao.');
-    if (group && group.parcelaReduzidaDisponivel) addUnique(reasons, 'Parcela reduzida disponivel como alavanca de entrada.');
+    if (group && group.parcelaReduzidaDisponivel) addUnique(reasons, 'Parcela reduzida disponível no início do plano.');
 
-    const saude = normalizeText(group && (group.saudeCarteira || (group._heuristica && group._heuristica.classificacoes && group._heuristica.classificacoes.saude && group._heuristica.classificacoes.saude.classe)));
-    if (saude.includes('controlada') || saude.includes('baixa')) addUnique(reasons, 'Saude da carteira favorece conversa com o cliente.');
-    if (saude.includes('critica') || saude.includes('atencao')) addUnique(risks, 'Saude da carteira precisa ser explicada.');
+    const valorObjetivo = Number(profile.valorObjetivo || 0);
+    if (valorObjetivo > 0) {
+      profileChecks += 1;
+      const deviation = Math.abs(carta - valorObjetivo) / valorObjetivo;
+      if (deviation <= 0.2) {
+        profileSignals += 1;
+        addUnique(reasons, 'Carta de referencia dentro de 20% do valor objetivo informado.');
+      } else {
+        addUnique(risks, 'Carta de referencia se distancia do valor objetivo informado.');
+      }
+    }
 
-    if (group && group._papel && group._papel.tag) addUnique(reasons, `Papel sugerido: ${group._papel.tag}.`);
+    const prazoDesejado = Number(profile.prazoDesejado || 0);
+    if (prazoDesejado > 0) {
+      profileChecks += 1;
+      if (prazo <= prazoDesejado) {
+        profileSignals += 1;
+        addUnique(reasons, 'Prazo dentro do horizonte informado pelo cliente.');
+      } else {
+        addUnique(risks, 'Prazo excede o horizonte informado pelo cliente.');
+      }
+    }
 
-    const tone = risks.length && score < 70 ? 'warning' : score >= 70 ? 'stable' : 'info';
+    const parcelaConfortavel = Number(profile.parcelaConfortavel || 0);
+    if (parcelaConfortavel > 0 && prazo > 0) {
+      profileChecks += 1;
+      const parcelaIndicativa = (carta * (1 + ((taxa + Number(group && group.fundoReservaPct || 0)) / 100))) / prazo;
+      if (parcelaIndicativa <= parcelaConfortavel * 1.1) {
+        profileSignals += 1;
+        addUnique(reasons, 'Parcela indicativa cabe na faixa mensal informada, antes dos demais eventos.');
+      } else {
+        addUnique(risks, 'Parcela indicativa supera a faixa mensal informada.');
+      }
+    }
+
+    if (group && group._commercialVerification !== 'verified') {
+      addUnique(risks, 'Confirme no contrato os limites de lance, fundo, seguro e redução de parcela.');
+    }
+
+    const profileRatio = profileChecks > 0 ? profileSignals / profileChecks : null;
+    const label = profileRatio == null
+      ? 'Confira carta, prazo e taxa'
+      : profileRatio >= 0.75
+        ? 'Dentro dos valores informados'
+        : profileRatio >= 0.4
+          ? 'Atende parte dos filtros'
+          : 'Fora de alguns limites';
+    const tone = profileRatio != null && profileRatio >= 0.75 && risks.length <= 1
+      ? 'stable'
+      : risks.length ? 'warning' : 'info';
     return {
       tone,
-      label: score >= 70 ? 'Recomendado' : score >= 40 ? 'Comparar' : 'Revisar',
-      reasons: reasons.slice(0, 4),
-      risks: risks.slice(0, 3)
+      label,
+      reasons: reasons.slice(0, 6),
+      risks: risks.slice(0, 4),
+      profileSignals,
+      profileChecks,
+      mainAdvantage: reasons[0] || 'Compare carta, taxa e prazo antes de adicionar.',
+      mainRisk: risks[0] || 'Nenhum ponto de atenção adicional com os dados disponíveis.',
+      needsConfirmation: group && group._commercialVerification !== 'verified'
+        ? 'Condicoes comerciais e contratuais do grupo.'
+        : 'Nenhuma pendência comercial sinalizada.',
+      sourceDate: group && group.dataBase ? String(group.dataBase) : 'Data-base nao informada'
     };
   }
 
   function renderRecommendation(group, options = {}) {
     const insight = explainGroupRecommendation(group, options);
-    const primary = insight.reasons[0] || insight.risks[0] || 'Compare premissas antes da proposta.';
+    const primary = insight.mainAdvantage || insight.reasons[0] || insight.risks[0] || 'Compare premissas antes da proposta.';
     return `
       <small class="shelf-recommendation shelf-recommendation--${escapeText(insight.tone)}" data-shelf-recommendation="${escapeText(insight.label)}">
         <strong>${escapeText(insight.label)}</strong>
@@ -326,6 +373,12 @@
       <div class="shelf-detail-section shelf-detail-section--recommendation" data-shelf-recommendation="${escapeText(insight.label)}">
         <h4>Por que este grupo apareceu</h4>
         <ul>${reasons}</ul>
+        <dl class="shelf-explanation-facts">
+          <div><dt>Principal vantagem</dt><dd>${escapeText(insight.mainAdvantage)}</dd></div>
+          <div><dt>Principal risco</dt><dd>${escapeText(insight.mainRisk)}</dd></div>
+          <div><dt>Confirmar</dt><dd>${escapeText(insight.needsConfirmation)}</dd></div>
+          <div><dt>Data-base</dt><dd>${escapeText(insight.sourceDate)}</dd></div>
+        </dl>
         <strong>Pontos de atencao</strong>
         ${risks}
       </div>
@@ -389,37 +442,7 @@
   }
 
   function renderHeuristicDetail(group, options = {}) {
-    const heuristicEngine = options.heuristicEngine || global.HeuristicEngine;
-    if (!heuristicEngine || !group) return '';
-    const analise = group._heuristica || heuristicEngine.analisar(group);
-    if (!analise || !analise.classificacoes || !analise.metricas) return '';
-    const c = analise.classificacoes;
-    const m = analise.metricas;
-    const fmt = (value) => `${(Number(value || 0) * 100).toFixed(1)}%`;
-    const color = escapeText(c.classificacaoFinal.cor || '#94a3b8');
-    const papelColor = escapeText((analise.papel && analise.papel.cor) || '#64748b');
-    const sinopse = Array.isArray(analise.sinopse) ? analise.sinopse : [];
-    return `
-          <div class="shelf-detail-section" style="grid-column:1/-1;border:2px solid ${color};border-radius:12px;padding:20px;background:rgba(0,0,0,0.02);">
-            <h4>Analise Heuristica V7</h4>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;">
-              <span class="heur-badge" style="background:${color};color:#fff;padding:4px 12px;border-radius:6px;font-weight:700;">${escapeText(c.classificacaoFinal.icon || '')} ${escapeText(c.classificacaoFinal.classe || '')}</span>
-              <span class="heur-badge" style="background:${papelColor};color:#fff;padding:4px 12px;border-radius:6px;font-weight:700;">${escapeText(analise.papel.tag || '')} ${escapeText(analise.papel.papel || '')}</span>
-            </div>
-            <table class="detail-mini-table" style="margin-top:12px;">
-              <tr><td>${escapeText(c.porte.icon || '')} Porte</td><td><strong>${escapeText(c.porte.classe || '')}</strong></td></tr>
-              <tr><td>${escapeText(c.maturidade.icon || '')} Maturidade</td><td><strong>${escapeText(c.maturidade.classe || '')}</strong> (${fmt(m.indiceMaturidade)})</td></tr>
-              <tr><td>${escapeText(c.saude.icon || '')} Saude</td><td><strong>${escapeText(c.saude.classe || '')}</strong> (inadimpl. ${fmt(m.taxaInadimplencia)})</td></tr>
-              <tr><td>${escapeText(c.ticket.icon || '')} Ticket</td><td><strong>${escapeText(c.ticket.classe || '')}</strong></td></tr>
-              <tr><td>${escapeText(c.dinamismo.icon || '')} Dinamismo</td><td><strong>${escapeText(c.dinamismo.classe || '')}</strong> (${fmt(m.taxaContemplacao)}/mes)</td></tr>
-              <tr><td>${escapeText(c.ociosidade.icon || '')} Ociosidade</td><td><strong>${escapeText(c.ociosidade.classe || '')}</strong></td></tr>
-              <tr><td>${escapeText(c.pressaoExclusao.icon || '')} Pressao Exclusao</td><td><strong>${escapeText(c.pressaoExclusao.classe || '')}</strong> (${fmt(m.intensidadeExclusao)})</td></tr>
-            </table>
-            <div style="margin-top:14px;padding:12px;background:rgba(0,0,0,0.03);border-radius:8px;font-size:13px;line-height:1.7;">
-              <strong>Sinopse:</strong><br>
-              ${sinopse.map((line) => `- ${escapeText(line)}`).join('<br>')}
-            </div>
-          </div>`;
+    return '';
   }
 
   function renderDetail(group, options = {}) {
@@ -447,9 +470,9 @@
             <table class="detail-mini-table">
               <tr><td>Carta de Referencia</td><td><strong>${money(group.valorCartaRef, options)}</strong></td></tr>
               <tr><td>Prazo</td><td><strong>${escapeText(group.prazoMeses)} meses</strong></td></tr>
-              <tr><td>Taxa de Administracao</td><td>${(Number(group.taxaAdmPct || 0)).toFixed(2)}%</td></tr>
+              <tr><td>Taxa de administração</td><td>${(Number(group.taxaAdmPct || 0)).toFixed(2)}%</td></tr>
               <tr><td>Fundo de Reserva</td><td>${escapeText(group.fundoReservaPct)}%</td></tr>
-              <tr><td>Indice de Correcao</td><td>${escapeText(group.indiceCorrecaoNome || 'N/A')}</td></tr>
+              <tr><td>Índice de correção</td><td>${escapeText(group.indiceCorrecaoNome || 'N/A')}</td></tr>
               <tr><td>Seguro Comercial</td><td>${escapeText(group.seguroPctComercial || 0)}%</td></tr>
             </table>
           </div>
@@ -457,11 +480,10 @@
             <h4>Cotas e Saude do Grupo</h4>
             <table class="detail-mini-table">
               <tr><td>Cotas Ativas em Dia</td><td><strong>${number(group.qtdAtivasEmDia || 0, 0, options)}</strong></td></tr>
-              <tr><td>Contempladas no Mes</td><td>${escapeText(group.qtdContempladasNoMes)}</td></tr>
+              <tr><td>Contempladas no mês</td><td>${escapeText(group.qtdContempladasNoMes)}</td></tr>
               <tr><td>Cotas Excluidas</td><td>${escapeText(group.qtdExcluidas)}</td></tr>
               <tr><td>Cotas Quitadas</td><td>${escapeText(group.qtdQuitadas)}</td></tr>
-              <tr><td>Credito Pendente</td><td>${escapeText(group.qtdCreditoPendente)}</td></tr>
-              <tr><td>Score Prateleira</td><td><strong>${escapeText(group.scoreShelf)}</strong>/100</td></tr>
+              <tr><td>Crédito pendente</td><td>${escapeText(group.qtdCreditoPendente)}</td></tr>
             </table>
           </div>
           <div class="shelf-detail-section">

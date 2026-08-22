@@ -36,6 +36,14 @@
     return project && Array.isArray(project.itens) ? project.itens : [];
   }
 
+  function normalizeBidMode(value) {
+    const mode = String(value || 'sem_lance');
+    if (mode === 'proprio') return 'livre';
+    return ['sem_lance', 'livre', 'embutido', 'fixo', 'fgts', 'combinado'].includes(mode)
+      ? mode
+      : 'sem_lance';
+  }
+
   function cartTotals(sourceItems) {
     const list = Array.isArray(sourceItems) ? sourceItems : [];
     return {
@@ -54,7 +62,8 @@
     const getLimit = options.getEffectiveLanceEmbutidoMax || (() => 0);
     item.mesContemplacaoAlvo = numberSetting('defaultMesContemplacao', item.mesContemplacaoAlvo || 18);
     const limite = Number(getLimit(group) || 0);
-    item.lanceEmbutidoPct = Math.min(limite, item.lanceEmbutidoPct || limite);
+    item.modalidadeLance = normalizeBidMode(item.modalidadeLance);
+    item.lanceEmbutidoPct = Math.max(0, Math.min(limite, Number(item.lanceEmbutidoPct || 0)));
     return item;
   }
 
@@ -88,12 +97,12 @@
     if (n <= 0) {
       return {
         disabled: true,
-        text: 'Adicione pelo menos 1 grupo para avancar ->'
+        text: 'Adicione pelo menos 1 grupo para avançar'
       };
     }
     return {
       disabled: false,
-      text: `Simular ${n} grupo${n !== 1 ? 's' : ''} selecionado${n !== 1 ? 's' : ''} ->`
+      text: `Continuar com ${n} grupo${n !== 1 ? 's' : ''}`
     };
   }
 
@@ -124,7 +133,7 @@
         <td><span class="shelf-segment-badge">${escapeText(item.iconSegmento)} ${escapeText(item.nomeSegmento)}</span></td>
         <td>
           <div class="campo-input-usuario">
-            <label class="campo-label--usuario">Editavel</label>
+            <label class="campo-label--usuario">Por cota</label>
             <input
               type="text"
               class="input-usuario"
@@ -139,7 +148,7 @@
         </td>
         <td>
           <div class="campo-input-usuario">
-            <label class="campo-label--usuario">Editavel</label>
+            <label class="campo-label--usuario">Cotas</label>
             <input
               type="number"
               class="input-usuario input-usuario--qtd"
@@ -155,7 +164,7 @@
         </td>
         <td>
           <div class="campo-calculado">
-            <label class="campo-label--calculado">Calculado</label>
+            <label class="campo-label--calculado">Total</label>
             <div class="campo-calculado__valor sg-total-carta">${money(item.valorCartaTotal, helpers)}</div>
           </div>
         </td>
@@ -203,9 +212,9 @@
 
   function normalizeEditValue(campo, rawValue, item, helpers = {}) {
     if (!item || !campo) return { ok: false, value: undefined };
-    if (campo === 'valorCartaUnitario') {
+    if (campo === 'valorCartaUnitario' || campo === 'valorFgts') {
       const value = parseMoney(rawValue, helpers);
-      if (value <= 0) {
+      if (campo === 'valorCartaUnitario' && value <= 0) {
         return {
           ok: false,
           value: item.valorCartaUnitario || 0,
@@ -214,28 +223,32 @@
           tone: 'error'
         };
       }
-      return { ok: true, value };
+      return { ok: true, value: Math.max(0, value) };
     }
 
-    if (campo === 'quantidadeCotas' || campo === 'prazoMeses' || campo === 'mesContemplacaoAlvo') {
+    if (campo === 'quantidadeCotas' || campo === 'prazoMeses' || campo === 'mesContemplacaoAlvo' || campo === 'mesAniversario') {
       let value = parseInt(rawValue, 10) || 1;
       if (value < 1) value = 1;
+      if (campo === 'mesAniversario' && value > 12) value = 12;
       if (campo === 'mesContemplacaoAlvo' && value > (item.prazoMeses || 1)) {
         value = item.prazoMeses || 1;
         return {
           ok: true,
           value,
           displayValue: String(value),
-          message: 'Mes de contemplacao ajustado ao prazo do grupo.',
+          message: 'Mês de contemplação ajustado ao prazo do grupo.',
           tone: 'warning'
         };
       }
       return { ok: true, value, displayValue: String(value) };
     }
 
-    if (campo === 'taxaAdmPct' || campo === 'fundoReservaPct' || campo === 'lanceProprioPct' || campo === 'lanceEmbutidoPct') {
+    if (campo === 'taxaAdmPct' || campo === 'fundoReservaPct' || campo === 'seguroPct'
+      || campo === 'indiceReajuste' || campo === 'lanceProprioPct' || campo === 'lanceEmbutidoPct'
+      || campo === 'lanceFixoPct' || campo === 'percentualReducao') {
       let value = parseFloat(rawValue) || 0;
       if (value < 0) value = 0;
+      if (value > 100) value = 100;
       if (campo === 'lanceEmbutidoPct') {
         const getLimit = helpers.getEffectiveLanceEmbutidoMax || (() => 0);
         const limite = Number(getLimit(item._group) || 0);
@@ -250,7 +263,30 @@
           };
         }
       }
+      if (campo === 'percentualReducao') {
+        const maxReduction = Number(item._group && item._group.reducaoMaxParcelaPct || 0);
+        if (maxReduction > 0 && value > maxReduction) {
+          value = maxReduction;
+          return {
+            ok: true,
+            value,
+            displayValue: String(value),
+            message: `Redução ajustada ao limite do grupo (${maxReduction.toFixed(1)}%).`,
+            tone: 'warning'
+          };
+        }
+      }
       return { ok: true, value, displayValue: String(value) };
+    }
+
+    if (campo === 'parcelaReduzidaAtiva') return { ok: true, value: !!rawValue };
+
+    if (campo === 'modalidadeLance') {
+      return { ok: true, value: normalizeBidMode(rawValue) };
+    }
+
+    if (['indiceCorrecaoNome', 'politicaSaldo', 'reduzirParcelaOuPrazo'].includes(campo)) {
+      return { ok: true, value: String(rawValue || '') };
     }
 
     return { ok: false, value: undefined };
@@ -258,16 +294,16 @@
 
   function renderDashboardKpis(consolidado = {}, helpers = {}) {
     return [
-      { label: 'Valor Credito Contratado', val: money(consolidado.totalCarta, helpers), cls: '' },
-      { label: 'Valor Receber (Credito - L. Embutido)', val: money(consolidado.cartaLiquida, helpers), cls: 'kpi-row--green' },
-      { label: 'Taxa Administracao Media', val: `${(Number(consolidado.taxaAdmMedia || 0)).toFixed(2)}%`, cls: '' },
-      { label: 'Quantidade de Grupos', val: consolidado.totalGrupos, cls: '' },
-      { label: 'Total de Cotas', val: consolidado.totalCotas || 0, cls: '' },
-      { label: 'Prazo Medio', val: `${(Number(consolidado.prazoMedio || 0)).toFixed(0)} meses`, cls: '' },
-      { label: 'Lance Proprio', val: money(consolidado.totalLanceProprioR, helpers) || 'R$ 0,00', cls: 'kpi-row--green' },
-      { label: 'Lance Embutido', val: money(consolidado.totalLanceEmbutidoR, helpers) || 'R$ 0,00', cls: 'kpi-row--green' },
-      { label: 'Parcela Inicial do Projeto', val: money(consolidado.parcelaInicialTotal, helpers), cls: 'kpi-row--red' },
-      { label: 'Custo Efetivo Estimado', val: `${(Number(consolidado.custoEfetivoMedio || 0)).toFixed(2)}%`, cls: 'kpi-row--red' }
+      { label: 'Crédito total', val: money(consolidado.totalCarta, helpers), cls: '' },
+      { label: 'Crédito disponível após lance', val: money(consolidado.cartaLiquida, helpers), cls: 'kpi-row--green' },
+      { label: 'Taxa de administração média', val: `${(Number(consolidado.taxaAdmMedia || 0)).toFixed(2)}%`, cls: '' },
+      { label: 'Grupos', val: consolidado.totalGrupos, cls: '' },
+      { label: 'Cotas', val: consolidado.totalCotas || 0, cls: '' },
+      { label: 'Prazo médio', val: `${(Number(consolidado.prazoMedio || 0)).toFixed(0)} meses`, cls: '' },
+      { label: 'Lance próprio', val: money(consolidado.totalLanceProprioR, helpers) || 'R$ 0,00', cls: 'kpi-row--green' },
+      { label: 'Lance embutido', val: money(consolidado.totalLanceEmbutidoR, helpers) || 'R$ 0,00', cls: 'kpi-row--green' },
+      { label: 'Parcela inicial do projeto', val: money(consolidado.parcelaInicialTotal, helpers), cls: 'kpi-row--red' },
+      { label: 'Custo efetivo estimado', val: `${(Number(consolidado.custoEfetivoMedio || 0)).toFixed(2)}%`, cls: 'kpi-row--red' }
     ];
   }
 
@@ -286,9 +322,26 @@
       const pctEmbutido = Number(item.lanceEmbutidoPct || 0);
       const pctProprio = Number(item.lanceProprioPct || 0);
       const limiteEmbutido = Number(getLimit(item._group) || 0);
-      const calcValEmb = valCarta * (pctEmbutido / 100) * qtde;
-      const calcValPro = valCarta * (pctProprio / 100) * qtde;
-      const calcLanceTot = calcValEmb + calcValPro;
+      const seguroPct = Number(item.seguroPct || 0);
+      const indiceReajuste = Number(item.indiceReajuste || 0);
+      const mesAniversario = Number(item.mesAniversario || 12);
+      const percentualReducao = Number(item.percentualReducao || 0);
+      const valorFgts = Number(item.valorFgts || 0);
+      const modalidadeLance = normalizeBidMode(item.modalidadeLance);
+      const politicaSaldo = item.politicaSaldo || 'carta';
+      const efeitoLance = item.reduzirParcelaOuPrazo || 'reduzir_saldo';
+      const indiceNome = String(item.indiceCorrecaoNome || 'fixo').toLowerCase();
+      const selected = (actual, expected) => actual === expected ? ' selected' : '';
+      const appliesOwn = modalidadeLance === 'livre' || modalidadeLance === 'combinado';
+      const appliesEmbedded = modalidadeLance === 'embutido' || modalidadeLance === 'combinado';
+      const appliesFgts = modalidadeLance === 'fgts' || modalidadeLance === 'combinado';
+      const calcValEmb = appliesEmbedded ? valCarta * (pctEmbutido / 100) * qtde : 0;
+      const calcValPro = appliesOwn ? valCarta * (pctProprio / 100) * qtde : 0;
+      const calcValFixo = modalidadeLance === 'fixo'
+        ? valCarta * (Number(item.lanceFixoPct || 0) / 100) * qtde
+        : 0;
+      const calcValFgts = appliesFgts ? valorFgts * qtde : 0;
+      const calcLanceTot = calcValEmb + calcValPro + calcValFixo + calcValFgts;
 
       return `
         <div class="cart-item-card" data-item-id="${escapeText(item.itemId)}">
@@ -302,54 +355,123 @@
           <div class="cart-item-body">
             <div class="cart-grid-container">
               <div class="cart-field">
-                <label>Qtd. Cotas</label>
+                <label>Quantidade de cotas</label>
                 <input type="number" class="cart-input" data-campo="quantidadeCotas" value="${qtde}" min="1" max="999" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
               </div>
               <div class="cart-field">
-                <label>Valor da Carta Unit. (R$)</label>
+                <label>Valor da carta por cota (R$)</label>
                 <input type="text" class="cart-input" data-money="true" data-campo="valorCartaUnitario" value="${number(valCarta, 2, helpers)}" onblur="App.onEditarItemProjeto(this); App.recalcularProjeto()">
               </div>
               <div class="cart-field">
-                <label>Prazo Restante</label>
+                <label>Prazo do grupo</label>
                 <input type="number" class="cart-input" data-campo="prazoMeses" value="${prazo}" min="1" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
               </div>
               <div class="cart-field">
-                <label>Taxa Adm (%)</label>
+                <label>Taxa de administração (%)</label>
                 <input type="number" class="cart-input" data-campo="taxaAdmPct" value="${taxa.toFixed(2)}" step="0.01" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
               </div>
               <div class="cart-field">
-                <label>Fundo Reserva (%)</label>
+                <label>Fundo de reserva (%)</label>
                 <input type="number" class="cart-input" data-campo="fundoReservaPct" value="${fundo.toFixed(2)}" step="0.01" min="0" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
               </div>
               <div class="cart-field">
-                <label>MOB Contemplacao (Mes)</label>
+                <label>Mês estimado de contemplação</label>
                 <input type="number" class="cart-input" data-campo="mesContemplacaoAlvo" value="${mob}" min="1" max="${prazo}" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
               </div>
               <div class="cart-field">
-                <label>Lance R.P (%)</label>
+                <label>Lance próprio (%)</label>
                 <input type="number" class="cart-input" data-campo="lanceProprioPct" value="${pctProprio}" step="0.1" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
               </div>
               <div class="cart-field">
-                <label>Lance Embutido (%)${limiteEmbutido ? ` max. ${limiteEmbutido}%` : ''}</label>
+                <label>Lance embutido (%)${limiteEmbutido ? ` — máximo ${limiteEmbutido}%` : ''}</label>
                 <input type="number" class="cart-input" data-campo="lanceEmbutidoPct" value="${pctEmbutido}" step="0.1" min="0" ${limiteEmbutido ? `max="${limiteEmbutido}"` : ''} onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
               </div>
               <div class="cart-field">
-                <label>Lance R.P (R$)</label>
+                <label>Lance próprio (R$)</label>
                 <div class="cart-calc dyn-val-proprio">${money(calcValPro, helpers)}</div>
               </div>
               <div class="cart-field">
-                <label>Lance Embutido (R$)</label>
+                <label>Lance embutido (R$)</label>
                 <div class="cart-calc dyn-val-embutido">${money(calcValEmb, helpers)}</div>
               </div>
               <div class="cart-field">
-                <label>Lance Total (R$)</label>
+                <label>Lance total (R$)</label>
                 <div class="cart-calc dyn-val-lancetot">${money(calcLanceTot, helpers)}</div>
               </div>
               <div class="cart-field">
-                <label>Credito Liquido</label>
+                <label>Crédito líquido</label>
                 <div class="cart-calc dyn-val-liq">${money((valCarta * qtde) - calcValEmb, helpers)}</div>
               </div>
             </div>
+            <details class="cart-item-advanced">
+              <summary>Parâmetros do grupo</summary>
+              <p class="text-muted">Taxas e regras locais permanecem como premissas até a confirmação contratual.</p>
+              <div class="cart-grid-container">
+                <div class="cart-field">
+                  <label>Seguro (%)</label>
+                  <input type="number" class="cart-input" data-campo="seguroPct" value="${seguroPct.toFixed(2)}" min="0" max="100" step="0.01" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
+                </div>
+                <div class="cart-field">
+                  <label>Índice de correção</label>
+                  <select class="cart-input" data-campo="indiceCorrecaoNome" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
+                    <option value="fixo"${selected(indiceNome, 'fixo')}>Sem reajuste</option>
+                    <option value="ipca"${selected(indiceNome, 'ipca')}>IPCA</option>
+                    <option value="incc"${selected(indiceNome, 'incc')}>INCC</option>
+                    <option value="igpm"${selected(indiceNome, 'igpm')}>IGP-M</option>
+                  </select>
+                </div>
+                <div class="cart-field">
+                  <label>Reajuste anual assumido (%)</label>
+                  <input type="number" class="cart-input" data-campo="indiceReajuste" value="${indiceReajuste.toFixed(2)}" min="0" max="100" step="0.01" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
+                </div>
+                <div class="cart-field">
+                  <label>Mês de aniversário</label>
+                  <input type="number" class="cart-input" data-campo="mesAniversario" value="${mesAniversario}" min="1" max="12" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
+                </div>
+                <div class="cart-field">
+                  <label>Modalidade de lance</label>
+                  <select class="cart-input" data-campo="modalidadeLance" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
+                    <option value="sem_lance"${selected(modalidadeLance, 'sem_lance')}>Sem lance</option>
+                    <option value="livre"${selected(modalidadeLance, 'livre')}>Próprio</option>
+                    <option value="embutido"${selected(modalidadeLance, 'embutido')}>Embutido</option>
+                    <option value="fixo"${selected(modalidadeLance, 'fixo')}>Fixo</option>
+                    <option value="fgts"${selected(modalidadeLance, 'fgts')}>FGTS</option>
+                    <option value="combinado"${selected(modalidadeLance, 'combinado')}>Combinado</option>
+                  </select>
+                </div>
+                <div class="cart-field">
+                  <label>FGTS informado (R$)</label>
+                  <input type="text" class="cart-input" data-money="true" data-campo="valorFgts" value="${number(valorFgts, 2, helpers)}" onblur="App.onEditarItemProjeto(this); App.recalcularProjeto()">
+                </div>
+                <div class="cart-field">
+                  <label>Parcela reduzida</label>
+                  <label class="form-switch">
+                    <input type="checkbox" data-campo="parcelaReduzidaAtiva" ${item.parcelaReduzidaAtiva ? 'checked' : ''} onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
+                    <span class="form-switch__track"></span>
+                    <span class="form-switch__label">Aplicar antes da contemplação</span>
+                  </label>
+                </div>
+                <div class="cart-field">
+                  <label>Redução da parcela (%)</label>
+                  <input type="number" class="cart-input" data-campo="percentualReducao" value="${percentualReducao.toFixed(2)}" min="0" max="100" step="0.01" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
+                </div>
+                <div class="cart-field">
+                  <label>Efeito do lance/antecipação</label>
+                  <select class="cart-input" data-campo="reduzirParcelaOuPrazo" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
+                    <option value="reduzir_saldo"${selected(efeitoLance, 'reduzir_saldo')}>Reduzir saldo</option>
+                    <option value="reduzir_prazo"${selected(efeitoLance, 'reduzir_prazo')}>Reduzir prazo</option>
+                    <option value="reduzir_parcela"${selected(efeitoLance, 'reduzir_parcela')}>Reduzir parcela</option>
+                  </select>
+                </div>
+                <div class="cart-field">
+                  <label>Política do saldo</label>
+                  <select class="cart-input" data-campo="politicaSaldo" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
+                    <option value="carta"${selected(politicaSaldo, 'carta')}>Carta como principal</option>
+                    <option value="carta_mais_custos"${selected(politicaSaldo, 'carta_mais_custos')}>Carta mais custos</option>
+                  </select>
+                </div>
+              </div>
+            </details>
           </div>
         </div>
       `;
@@ -369,7 +491,7 @@
       const fields = [
         ['.dyn-val-proprio', money(propR, options)],
         ['.dyn-val-embutido', money(embR, options)],
-        ['.dyn-val-lancetot', money(propR + embR, options)],
+        ['.dyn-val-lancetot', money(Number.isFinite(Number(result.lanceTotalR)) ? result.lanceTotalR : propR + embR, options)],
         ['.dyn-val-liq', money(result.cartaLiquida || 0, options)]
       ];
       fields.forEach(([selector, value]) => {
@@ -389,6 +511,7 @@
     advanceButtonState,
     renderSelectedGroupsHtml,
     renderSelectedGroupsFooter,
+    normalizeBidMode,
     normalizeEditValue,
     renderDashboardKpis,
     renderStep5CartHtml,

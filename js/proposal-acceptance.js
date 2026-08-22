@@ -1,6 +1,7 @@
 /**
  * Bancus Fraternis - Governanca local da proposta
- * Registra revisoes e aceite operacional da proposta em localStorage.
+ * Registra apenas metadados operacionais nao sensiveis em localStorage.
+ * Nomes e notas continuam disponiveis durante a sessao, somente em memoria.
  */
 
 const BFProposalAcceptance = (() => {
@@ -9,6 +10,80 @@ const BFProposalAcceptance = (() => {
   const STORAGE_KEY = 'bank_fratern_proposal_acceptances_v1';
   const SCHEMA = 'bank-fratern.proposal-acceptance.v1';
   const MAX_ITEMS = 80;
+  const volatileDetails = new Map();
+
+  function cleanText(value, max = 240) {
+    return String(value == null ? '' : value).trim().slice(0, max);
+  }
+
+  function cleanSystemId(value, prefix, fallback = '') {
+    const text = cleanText(value, 100);
+    if (!text || !new RegExp(`^${prefix}-[A-Za-z0-9._:-]+$`, 'i').test(text)) return fallback;
+    return text;
+  }
+
+  function cleanDate(value) {
+    const text = cleanText(value, 20);
+    return /^\d{4}-\d{2}-\d{2}$/.test(text) ? text : '';
+  }
+
+  function cleanTimestamp(value) {
+    const text = cleanText(value, 40);
+    return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(text) ? text : '';
+  }
+
+  function safeNumber(value) {
+    const parsed = Number(value || 0);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  function sanitizeChecklist(checklist) {
+    return {
+      premissas: !!(checklist && checklist.premissas),
+      cliente: !!(checklist && checklist.cliente),
+      documentacao: !!(checklist && checklist.documentacao)
+    };
+  }
+
+  function sanitizeStoredRecord(record) {
+    const source = record && typeof record === 'object' ? record : {};
+    const status = ['reviewed', 'partial', 'pending', 'expired'].includes(source.status)
+      ? source.status
+      : statusFromChecklist(source.checklist);
+    return {
+      schema: SCHEMA,
+      id: cleanSystemId(source.id, 'REV'),
+      proposalId: cleanSystemId(source.proposalId || 'PROP-PENDENTE', 'PROP', 'PROP-PENDENTE'),
+      status,
+      validUntil: cleanDate(source.validUntil),
+      checklist: sanitizeChecklist(source.checklist),
+      version: Math.max(0, parseInt(source.version, 10) || 0),
+      createdAt: cleanTimestamp(source.createdAt),
+      updatedAt: cleanTimestamp(source.updatedAt),
+      snapshot: {
+        creditoTotal: safeNumber(source.snapshot && source.snapshot.creditoTotal),
+        parcelaAtual: safeNumber(source.snapshot && source.snapshot.parcelaAtual),
+        lanceTotal: safeNumber(source.snapshot && source.snapshot.lanceTotal)
+      }
+    };
+  }
+
+  function sensitiveDetails(record) {
+    const source = record && typeof record === 'object' ? record : {};
+    const snapshot = source.snapshot && typeof source.snapshot === 'object' ? source.snapshot : {};
+    return {
+      reviewer: cleanText(source.reviewer, 120),
+      reviewerRole: cleanText(source.reviewerRole, 90),
+      notes: cleanText(source.notes, 420),
+      cliente: cleanText(snapshot.cliente, 120),
+      consultor: cleanText(snapshot.consultor, 120)
+    };
+  }
+
+  function rememberSensitive(record) {
+    if (!record || !record.id) return;
+    volatileDetails.set(record.id, sensitiveDetails(record));
+  }
 
   function storage() {
     try {
@@ -22,9 +97,17 @@ const BFProposalAcceptance = (() => {
     try {
       const store = storage();
       if (!store) return [];
-      const parsed = JSON.parse(store.getItem(STORAGE_KEY) || '[]');
-      return Array.isArray(parsed) ? parsed : [];
+      const raw = store.getItem(STORAGE_KEY) || '[]';
+      const parsed = JSON.parse(raw);
+      const sanitized = (Array.isArray(parsed) ? parsed : [])
+        .map(sanitizeStoredRecord)
+        .filter((item) => item.id && item.proposalId);
+      const serialized = JSON.stringify(sanitized);
+      if (serialized !== raw) store.setItem(STORAGE_KEY, serialized);
+      return sanitized;
     } catch (e) {
+      const store = storage();
+      if (store) store.removeItem(STORAGE_KEY);
       console.warn('BFProposalAcceptance: erro ao carregar revisoes', e);
       return [];
     }
@@ -34,7 +117,10 @@ const BFProposalAcceptance = (() => {
     try {
       const store = storage();
       if (!store) return false;
-      store.setItem(STORAGE_KEY, JSON.stringify(Array.isArray(items) ? items : []));
+      const sanitized = (Array.isArray(items) ? items : [])
+        .map(sanitizeStoredRecord)
+        .filter((item) => item.id && item.proposalId);
+      store.setItem(STORAGE_KEY, JSON.stringify(sanitized));
       return true;
     } catch (e) {
       console.error('BFProposalAcceptance: erro ao salvar revisao', e);
@@ -102,10 +188,6 @@ const BFProposalAcceptance = (() => {
     });
   }
 
-  function cleanText(value, max = 240) {
-    return String(value == null ? '' : value).trim().slice(0, max);
-  }
-
   function statusFromChecklist(checklist) {
     const values = Object.values(checklist || {});
     if (!values.length || values.every(Boolean)) return 'reviewed';
@@ -115,9 +197,9 @@ const BFProposalAcceptance = (() => {
   function statusLabel(status) {
     const map = {
       reviewed: 'Revisada localmente',
-      partial: 'Revisao parcial',
-      pending: 'Em revisao',
-      expired: 'Revisao vencida'
+      partial: 'Revisão parcial',
+      pending: 'Em revisão',
+      expired: 'Revisão vencida'
     };
     return map[status] || map.pending;
   }
@@ -133,11 +215,21 @@ const BFProposalAcceptance = (() => {
 
   function decorate(record) {
     if (!record) return null;
-    const status = isExpired(record) ? 'expired' : (record.status || 'pending');
+    const stored = sanitizeStoredRecord(record);
+    const volatile = volatileDetails.get(stored.id) || sensitiveDetails(record);
+    const status = isExpired(stored) ? 'expired' : (stored.status || 'pending');
     return {
-      ...record,
+      ...stored,
       status,
-      statusLabel: statusLabel(status)
+      statusLabel: statusLabel(status),
+      reviewer: volatile.reviewer || '',
+      reviewerRole: volatile.reviewerRole || 'Consultor responsável',
+      notes: volatile.notes || '',
+      snapshot: {
+        ...stored.snapshot,
+        cliente: volatile.cliente || 'Dados protegidos',
+        consultor: volatile.consultor || ''
+      }
     };
   }
 
@@ -151,9 +243,9 @@ const BFProposalAcceptance = (() => {
       proposalId: proposal.id || 'PROP-PENDENTE',
       status: 'pending',
       reviewer: proposal.consultor || 'Consultor Bancus Fraternis',
-      reviewerRole: 'Consultor responsavel',
+      reviewerRole: 'Consultor responsável',
       validUntil: valid.toISOString().slice(0, 10),
-      notes: 'Aguardando validacao das premissas antes do encaminhamento.',
+      notes: 'Aguardando validação das premissas antes do encaminhamento.',
       checklist: {
         premissas: false,
         cliente: false,
@@ -173,7 +265,7 @@ const BFProposalAcceptance = (() => {
   }
 
   function latest(proposalId) {
-    const id = cleanText(proposalId, 80);
+    const id = cleanSystemId(proposalId, 'PROP');
     if (!id) return null;
     const found = loadAll()
       .filter(item => item.proposalId === id)
@@ -182,7 +274,7 @@ const BFProposalAcceptance = (() => {
   }
 
   function history(proposalId, limit = 5) {
-    const id = cleanText(proposalId, 80);
+    const id = cleanSystemId(proposalId, 'PROP');
     return loadAll()
       .filter(item => !id || item.proposalId === id)
       .sort((a, b) => String(b.updatedAt || b.createdAt || '').localeCompare(String(a.updatedAt || a.createdAt || '')))
@@ -192,12 +284,8 @@ const BFProposalAcceptance = (() => {
 
   function saveReview({ proposal, reviewer, reviewerRole, validUntil, notes, checklist }) {
     const base = proposal || {};
-    const safeChecklist = {
-      premissas: !!(checklist && checklist.premissas),
-      cliente: !!(checklist && checklist.cliente),
-      documentacao: !!(checklist && checklist.documentacao)
-    };
-    const proposalId = cleanText(base.id || 'PROP-PENDENTE', 80);
+    const safeChecklist = sanitizeChecklist(checklist);
+    const proposalId = cleanSystemId(base.id || 'PROP-PENDENTE', 'PROP', 'PROP-PENDENTE');
     const now = new Date().toISOString();
     const previous = latest(proposalId);
     const version = previous && previous.version ? previous.version + 1 : 1;
@@ -207,8 +295,8 @@ const BFProposalAcceptance = (() => {
       proposalId,
       status: statusFromChecklist(safeChecklist),
       reviewer: cleanText(reviewer || base.consultor || 'Consultor Bancus Fraternis', 120),
-      reviewerRole: cleanText(reviewerRole || 'Consultor responsavel', 90),
-      validUntil: cleanText(validUntil || '', 20),
+      reviewerRole: cleanText(reviewerRole || 'Consultor responsável', 90),
+      validUntil: cleanDate(validUntil),
       notes: cleanText(notes || '', 420),
       checklist: safeChecklist,
       version,
@@ -223,19 +311,23 @@ const BFProposalAcceptance = (() => {
       }
     });
 
-    const list = loadAll().filter(item => item.id !== record.id);
-    list.unshift(record);
+    rememberSensitive(record);
+    const storedRecord = sanitizeStoredRecord(record);
+    const list = loadAll().filter(item => item.id !== storedRecord.id);
+    list.unshift(storedRecord);
     if (list.length > MAX_ITEMS) list.splice(MAX_ITEMS);
     if (!saveAll(list)) return null;
     publishAcceptanceSnapshot(record);
     publishDirectProposal(record);
-    return record;
+    return decorate(record);
   }
 
   function clear(proposalId) {
-    const id = cleanText(proposalId, 80);
+    const id = cleanSystemId(proposalId, 'PROP');
     if (!id) return false;
-    return saveAll(loadAll().filter(item => item.proposalId !== id));
+    const items = loadAll();
+    items.filter(item => item.proposalId === id).forEach(item => volatileDetails.delete(item.id));
+    return saveAll(items.filter(item => item.proposalId !== id));
   }
 
   const api = {

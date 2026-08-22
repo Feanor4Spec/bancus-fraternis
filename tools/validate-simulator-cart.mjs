@@ -101,6 +101,8 @@ const sampleItem = {
   mesContemplacaoAlvo: 18,
   lanceProprioPct: 10,
   lanceEmbutidoPct: 25,
+  modalidadeLance: 'embutido',
+  indiceReajuste: 0,
   _group: { lanceEmbutidoMaxPct: 30 }
 };
 
@@ -119,7 +121,20 @@ const cartHtml = cart.renderStep5CartHtml([sampleItem], {
 });
 assert(cartHtml.includes('cart-item-card'), 'HTML do passo 5 sem card de carrinho.');
 assert(cartHtml.includes('data-campo="lanceEmbutidoPct"'), 'HTML do passo 5 sem campo de lance embutido.');
-assert(cartHtml.includes('Credito Liquido'), 'HTML do passo 5 sem credito liquido calculado.');
+assert(cartHtml.includes('Crédito líquido'), 'HTML do passo 5 sem crédito líquido calculado.');
+assert(cartHtml.includes('value="embutido" selected'), 'HTML do passo 5 não preserva modalidade embutida.');
+assert(cartHtml.includes('data-campo="indiceReajuste" value="0.00"'), 'HTML do passo 5 não preserva reajuste 0%.');
+assert(cartHtml.includes('R$ 50000.00'), 'HTML do passo 5 não calcula o lance embutido da modalidade selecionada.');
+
+const defaultItem = cart.createProjectItem({ lanceEmbutidoMaxPct: 30 }, {
+  shelfEngine: {
+    createProjectItem: () => ({ modalidadeLance: 'sem_lance', lanceEmbutidoPct: 0, mesContemplacaoAlvo: 18 })
+  },
+  numberSetting: (_key, fallback) => fallback,
+  getEffectiveLanceEmbutidoMax: () => 30
+});
+assert(defaultItem.modalidadeLance === 'sem_lance', 'Novo item deveria iniciar sem lance.');
+assert(defaultItem.lanceEmbutidoPct === 0, 'Novo item não deve preencher automaticamente o limite de lance embutido.');
 
 const invalidValue = cart.normalizeEditValue('valorCartaUnitario', '0', sampleItem, {
   formatNumber: (value) => Number(value).toFixed(2)
@@ -133,6 +148,8 @@ const cappedBid = cart.normalizeEditValue('lanceEmbutidoPct', '80', sampleItem, 
   getEffectiveLanceEmbutidoMax: () => 30
 });
 assert(cappedBid.ok === true && cappedBid.value === 30, 'normalizeEditValue deveria limitar lance embutido.');
+const legacyOwnMode = cart.normalizeEditValue('modalidadeLance', 'proprio', sampleItem);
+assert(legacyOwnMode.ok === true && legacyOwnMode.value === 'livre', 'Modalidade legada proprio deveria virar livre.');
 
 const kpis = cart.renderDashboardKpis({
   totalCarta: 100000,
@@ -143,7 +160,8 @@ const kpis = cart.renderDashboardKpis({
   formatMoney: (value) => `R$ ${Number(value).toFixed(2)}`
 });
 assert(kpis.length === 10, 'renderDashboardKpis deveria devolver 10 KPIs.');
-assert(kpis.some((item) => item.label.includes('Credito')), 'renderDashboardKpis deveria preservar KPI de credito.');
+assert(kpis.some((item) => item.label === 'Crédito total'), 'renderDashboardKpis deveria exibir Crédito total.');
+assert(kpis.some((item) => item.label === 'Crédito disponível após lance'), 'renderDashboardKpis deveria explicar o crédito após lance.');
 
 const updatedValues = {};
 const fakeCard = {
@@ -164,13 +182,14 @@ const updated = cart.applyCalculationResults([{
   item: { itemId: 'ITEM-1' },
   lanceProprioR: 1000,
   lanceEmbutidoR: 2000,
+  lanceTotalR: 4000,
   cartaLiquida: 97000
 }], {
   root: fakeRoot,
   formatMoney: (value) => `R$ ${Number(value).toFixed(2)}`
 });
 assert(updated === 1, 'applyCalculationResults deveria atualizar um card.');
-assert(updatedValues['.dyn-val-lancetot'] === 'R$ 3000.00', 'applyCalculationResults nao somou lance total.');
+assert(updatedValues['.dyn-val-lancetot'] === 'R$ 4000.00', 'applyCalculationResults não usou o lance total aplicado pelo motor.');
 
 [
   'BFSimulatorCart',
@@ -191,6 +210,11 @@ const report = {
   totals,
   selectedHtml: selectedHtml.length,
   cartHtml: cartHtml.length,
+  defaultBid: {
+    modality: defaultItem.modalidadeLance,
+    embeddedPercent: defaultItem.lanceEmbutidoPct
+  },
+  legacyOwnMode: legacyOwnMode.value,
   updatedCards: updated,
   failures
 };

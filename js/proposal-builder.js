@@ -63,71 +63,71 @@
   const optionGroups = [
     {
       key: 'sections',
-      title: 'Blocos da proposta',
-      description: 'Escolha quais paginas e narrativas entram no preview e no PDF final.',
+      title: 'Seções da proposta',
+      description: 'Escolha as páginas que devem aparecer no PDF.',
       options: [
-        { key: 'header', label: 'Capa e identificacao', help: 'Cliente, grupo, cota, status e acao de exportacao.' },
-        { key: 'executive', label: 'Mapa executivo', help: 'Blocos que conectam decisao, caixa, lance e risco.' },
-        { key: 'decision', label: 'Decisao final', help: 'Recomendacao, riscos, premissas, comparacao e CTA para proposta.' },
-        { key: 'kpis', label: 'Numeros estrategicos', help: 'Credito, parcela, prazo, saldo, total e percentual percorrido.' },
-        { key: 'journey', label: 'Jornada do cliente', help: 'Adesao, assembleias, lance, contemplacao e uso do credito.' },
-        { key: 'project', label: 'Composicao do projeto', help: 'Grupos, cotas, administradoras, cartas, taxas e papeis.' },
-        { key: 'productPhases', label: 'Fases do produto', help: 'Pontos de controle comerciais e operacionais do consorcio.' },
-        { key: 'financialComposition', label: 'Estrutura financeira', help: 'Carta, taxa, fundo, seguro e composicao do plano.' },
-        { key: 'contributionOverview', label: 'Contribuicoes e parcelas', help: 'Parcelas pagas, restantes e proxima parcela.' },
-        { key: 'bidStrategy', label: 'Lance e contemplacao', help: 'Lance proprio, embutido, total e credito liquido.' },
-        { key: 'projection', label: 'Projecoes', help: 'Saldo devedor, parcelas e leitura de comportamento futuro.' },
-        { key: 'schedule', label: 'Cronograma mensal', help: 'Tabela mes a mes para propostas completas.' },
-        { key: 'concepts', label: 'Conceitos educativos', help: 'Glossario comercial selecionado para o cliente.' },
-        { key: 'formulas', label: 'Memoria de calculo', help: 'Formulas e explicacoes de calculo da proposta.' },
-        { key: 'nextSteps', label: 'Proximos passos', help: 'Sequencia operacional para decisao e continuidade.' },
-        { key: 'acceptance', label: 'Governanca e aceite', help: 'Registro de revisao local e validade da proposta.' },
-        { key: 'disclaimer', label: 'Premissas finais', help: 'Observacoes e limites formais da simulacao.' }
+        { key: 'header', label: 'Capa e identificação', help: 'Cliente, grupos, cotas e número da proposta.' },
+        { key: 'executive', label: 'Visão geral', help: 'Crédito, parcela, lance e prazo em destaque.' },
+        { key: 'decision', label: 'Pontos de atenção', help: 'Condições, riscos e itens que precisam de conferência.' },
+        { key: 'kpis', label: 'Principais valores', help: 'Crédito, parcela, prazo, saldo e total projetado.' },
+        { key: 'journey', label: 'Etapas do consórcio', help: 'Adesão, assembleias, lance, contemplação e uso do crédito.' },
+        { key: 'project', label: 'Grupos e cotas', help: 'Administradoras, cartas, prazos e taxas selecionados.' },
+        { key: 'productPhases', label: 'Etapas previstas', help: 'Adesão, assembleias, contemplação usada na simulação e encerramento.' },
+        { key: 'financialComposition', label: 'Custos do plano', help: 'Carta, taxa de administração, fundo de reserva e seguro.' },
+        { key: 'contributionOverview', label: 'Parcelas', help: 'Parcelas pagas, restantes e próxima parcela prevista.' },
+        { key: 'bidStrategy', label: 'Lances', help: 'Lance próprio, embutido, total e crédito disponível.' },
+        { key: 'projection', label: 'Evolução do saldo', help: 'Saldo devedor e parcelas ao longo do prazo.' },
+        { key: 'schedule', label: 'Parcelas mês a mês', help: 'Tabela mensal com valores e eventos previstos.' },
+        { key: 'concepts', label: 'Explicação dos termos', help: 'Definições de consórcio, carta, lance e demais termos.' },
+        { key: 'formulas', label: 'Como os valores foram calculados', help: 'Fórmulas usadas nos principais valores da proposta.' },
+        { key: 'nextSteps', label: 'Próximos passos', help: 'Conferências, documentos e contatos seguintes.' },
+        { key: 'acceptance', label: 'Conferência e validade', help: 'Responsável pela revisão, data de validade e aceite.' },
+        { key: 'disclaimer', label: 'Avisos importantes', help: 'Limites da simulação e condições que dependem do contrato.' }
       ]
     },
     {
       key: 'charts',
-      title: 'Graficos disponiveis',
-      description: 'Controle os graficos que aparecem dentro dos blocos selecionados.',
+      title: 'Gráficos',
+      description: 'Escolha os gráficos que devem aparecer no PDF.',
       options: [
-        { key: 'composition', label: 'Composicao financeira', help: 'Grafico de carta, taxa, fundo e seguro.' },
-        { key: 'installment', label: 'Evolucao das parcelas', help: 'Linha projetada da parcela ao longo do tempo.' },
-        { key: 'bid', label: 'Lance versus credito', help: 'Comparativo entre lance total, credito liquido e saldo.' },
-        { key: 'debt', label: 'Saldo devedor', help: 'Curva de amortizacao e saldo futuro.' },
-        { key: 'installmentProjection', label: 'Projecao de parcelas', help: 'Barras de parcelas projetadas por periodo.' }
+        { key: 'composition', label: 'Composição financeira', help: 'Gráfico de carta, taxa, fundo e seguro.' },
+        { key: 'installment', label: 'Evolução das parcelas', help: 'Linha projetada da parcela ao longo do tempo.' },
+        { key: 'bid', label: 'Lance versus crédito', help: 'Comparativo entre lance total, crédito líquido e saldo.' },
+        { key: 'debt', label: 'Saldo devedor', help: 'Curva de amortização e saldo futuro.' },
+        { key: 'installmentProjection', label: 'Projeção de parcelas', help: 'Barras de parcelas projetadas por período.' }
       ]
     },
     {
       key: 'concepts',
-      title: 'Conceitos para cliente',
-      description: 'Selecione os conceitos que devem acompanhar a proposta final.',
+      title: 'Termos explicados',
+      description: 'Escolha os termos que precisam de explicação no PDF.',
       options: [
-        { key: 'consorcio', label: 'Consorcio', help: 'Modelo de compra planejada em grupo.' },
-        { key: 'cartaCredito', label: 'Carta de credito', help: 'Poder de compra contratado.' },
-        { key: 'grupoCota', label: 'Grupo e cota', help: 'Origem operacional da proposta.' },
+        { key: 'consorcio', label: 'Consórcio', help: 'Modelo de compra planejada em grupo.' },
+        { key: 'cartaCredito', label: 'Carta de crédito', help: 'Poder de compra contratado.' },
+        { key: 'grupoCota', label: 'Grupo e cota', help: 'Identificação da participação no consórcio.' },
         { key: 'assembleia', label: 'Assembleia', help: 'Evento de sorteio, lance e acompanhamento.' },
-        { key: 'lanceProprio', label: 'Lance proprio', help: 'Recurso direto do cliente.' },
+        { key: 'lanceProprio', label: 'Lance próprio', help: 'Recurso direto do cliente.' },
         { key: 'lanceEmbutido', label: 'Lance embutido', help: 'Uso de parte da carta como lance.' },
-        { key: 'contemplacao', label: 'Contemplacao', help: 'Marco de acesso ao credito.' },
-        { key: 'fundoReserva', label: 'Fundo de reserva', help: 'Protecao financeira do grupo.' },
-        { key: 'taxaAdministracao', label: 'Taxa de administracao', help: 'Custo de administracao do plano.' },
+        { key: 'contemplacao', label: 'Contemplação', help: 'Marco de acesso ao crédito.' },
+        { key: 'fundoReserva', label: 'Fundo de reserva', help: 'Proteção financeira do grupo.' },
+        { key: 'taxaAdministracao', label: 'Taxa de administração', help: 'Custo de administração do plano.' },
         { key: 'saldoDevedor', label: 'Saldo devedor', help: 'Compromisso pendente projetado.' },
-        { key: 'reajuste', label: 'Reajuste', help: 'Atualizacao por indice e regras do grupo.' },
-        { key: 'seguro', label: 'Seguro', help: 'Protecao prevista conforme produto.' }
+        { key: 'reajuste', label: 'Reajuste', help: 'Atualização por índice e regras do grupo.' },
+        { key: 'seguro', label: 'Seguro', help: 'Proteção prevista conforme produto.' }
       ]
     },
     {
       key: 'formulas',
-      title: 'Formulas explicadas',
-      description: 'Inclua a memoria de calculo que sustenta a conversa comercial.',
+      title: 'Fórmulas explicadas',
+      description: 'Inclua a explicação dos cálculos usados na proposta.',
       options: [
         { key: 'parcelaTotal', label: 'Parcela total', help: 'Soma dos componentes mensais.' },
         { key: 'parcelaBase', label: 'Parcela base', help: 'Carta dividida pelo prazo.' },
         { key: 'taxaAdministracao', label: 'Taxa administrativa', help: 'Carta multiplicada pela taxa total.' },
         { key: 'fundoReserva', label: 'Fundo de reserva', help: 'Carta multiplicada pelo percentual de fundo.' },
-        { key: 'lanceTotal', label: 'Lance total', help: 'Lance proprio mais embutido.' },
-        { key: 'cartaLiquida', label: 'Carta liquida', help: 'Carta menos lance embutido.' },
-        { key: 'saldoDevedor', label: 'Saldo devedor', help: 'Saldo apos pagamentos, lances e eventos.' },
+        { key: 'lanceTotal', label: 'Lance total', help: 'Lance próprio mais embutido.' },
+        { key: 'cartaLiquida', label: 'Carta líquida', help: 'Carta menos lance embutido.' },
+        { key: 'saldoDevedor', label: 'Saldo devedor', help: 'Saldo após pagamentos, lances e eventos.' },
         { key: 'percentualPago', label: 'Percentual percorrido', help: 'Parcelas pagas sobre parcelas totais.' }
       ]
     }
@@ -365,22 +365,22 @@
     const current = normalizeConfig(config);
     const issues = [];
     if (!current.sections.header) issues.push('Capa desativada.');
-    if (!current.sections.decision) issues.push('Decisao final desativada.');
-    if (!current.sections.kpis) issues.push('Numeros estrategicos desativados.');
-    if (!current.sections.nextSteps) issues.push('Proximos passos desativados.');
-    if (!current.sections.disclaimer) issues.push('Premissas finais desativadas.');
-    if (current.sections.concepts && countEnabledFlags(current.concepts) === 0) issues.push('Bloco de conceitos ativo sem conceitos selecionados.');
-    if (current.sections.formulas && countEnabledFlags(current.formulas) === 0) issues.push('Memoria de calculo ativa sem formulas selecionadas.');
-    if (countEnabledFlags(current.sections) === 0) issues.push('Nenhum bloco selecionado para exportacao.');
+    if (!current.sections.decision) issues.push('Pontos de atenção desativados.');
+    if (!current.sections.kpis) issues.push('Principais valores desativados.');
+    if (!current.sections.nextSteps) issues.push('Próximos passos desativados.');
+    if (!current.sections.disclaimer) issues.push('Avisos importantes desativados.');
+    if (current.sections.concepts && countEnabledFlags(current.concepts) === 0) issues.push('Explicação de termos ativa sem nenhum termo selecionado.');
+    if (current.sections.formulas && countEnabledFlags(current.formulas) === 0) issues.push('Explicação dos cálculos ativa sem nenhuma fórmula selecionada.');
+    if (countEnabledFlags(current.sections) === 0) issues.push('Nenhuma seção selecionada para o PDF.');
     return issues;
   }
 
   function focusLabel(config) {
     const current = normalizeConfig(config);
-    if (current.sections.schedule && current.sections.formulas && !current.sections.concepts) return 'Tecnica';
-    if (!current.sections.schedule && current.sections.concepts && current.sections.formulas) return 'Consultiva';
-    if (!current.sections.concepts && !current.sections.formulas && !current.sections.schedule) return 'Executiva';
-    if (current.sections.concepts && current.sections.formulas && !current.sections.acceptance) return 'Educativa';
+    if (current.sections.schedule && current.sections.formulas && !current.sections.concepts) return 'Com cálculos';
+    if (!current.sections.schedule && current.sections.concepts && current.sections.formulas) return 'Com explicações';
+    if (!current.sections.concepts && !current.sections.formulas && !current.sections.schedule) return 'Resumo';
+    if (current.sections.concepts && current.sections.formulas && !current.sections.acceptance) return 'Explicada';
     if (countEnabledFlags(current.sections) <= 7) return 'Compacta';
     return 'Completa';
   }

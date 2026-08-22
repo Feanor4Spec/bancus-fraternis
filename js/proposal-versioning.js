@@ -1,6 +1,7 @@
 /**
  * Bancus Fraternis - Versionamento local da proposta
- * Guarda snapshots comparaveis da proposta antes de PDF e handoff.
+ * Guarda somente dados comparaveis nao identificaveis antes de PDF e handoff.
+ * Nomes, rotulos livres e notas permanecem apenas em memoria durante a sessao.
  */
 
 const BFProposalVersions = (() => {
@@ -9,6 +10,23 @@ const BFProposalVersions = (() => {
   const STORAGE_KEY = 'bank_fratern_proposal_versions_v1';
   const SCHEMA = 'bank-fratern.proposal-version.v1';
   const MAX_ITEMS = 120;
+  const volatileDetails = new Map();
+  const BUILDER_KEYS = {
+    sections: new Set([
+      'header', 'executive', 'decision', 'kpis', 'journey', 'project', 'productPhases',
+      'financialComposition', 'contributionOverview', 'bidStrategy', 'projection', 'schedule',
+      'concepts', 'formulas', 'nextSteps', 'acceptance', 'disclaimer'
+    ]),
+    charts: new Set(['composition', 'installment', 'bid', 'debt', 'installmentProjection']),
+    concepts: new Set([
+      'consorcio', 'cartaCredito', 'grupoCota', 'assembleia', 'lanceProprio', 'lanceEmbutido',
+      'contemplacao', 'fundoReserva', 'taxaAdministracao', 'saldoDevedor', 'reajuste', 'seguro'
+    ]),
+    formulas: new Set([
+      'parcelaTotal', 'parcelaBase', 'taxaAdministracao', 'fundoReserva', 'lanceTotal',
+      'cartaLiquida', 'saldoDevedor', 'percentualPago'
+    ])
+  };
 
   function storage() {
     try {
@@ -22,9 +40,17 @@ const BFProposalVersions = (() => {
     try {
       const store = storage();
       if (!store) return [];
-      const parsed = JSON.parse(store.getItem(STORAGE_KEY) || '[]');
-      return Array.isArray(parsed) ? parsed : [];
+      const raw = store.getItem(STORAGE_KEY) || '[]';
+      const parsed = JSON.parse(raw);
+      const sanitized = (Array.isArray(parsed) ? parsed : [])
+        .map(sanitizeStoredRecord)
+        .filter((item) => item.id && item.proposalId);
+      const serialized = JSON.stringify(sanitized);
+      if (serialized !== raw) store.setItem(STORAGE_KEY, serialized);
+      return sanitized;
     } catch (e) {
+      const store = storage();
+      if (store) store.removeItem(STORAGE_KEY);
       console.warn('BFProposalVersions: erro ao carregar historico', e);
       return [];
     }
@@ -34,7 +60,10 @@ const BFProposalVersions = (() => {
     try {
       const store = storage();
       if (!store) return false;
-      store.setItem(STORAGE_KEY, JSON.stringify(Array.isArray(items) ? items : []));
+      const sanitized = (Array.isArray(items) ? items : [])
+        .map(sanitizeStoredRecord)
+        .filter((item) => item.id && item.proposalId);
+      store.setItem(STORAGE_KEY, JSON.stringify(sanitized));
       return true;
     } catch (e) {
       console.error('BFProposalVersions: erro ao salvar historico', e);
@@ -94,7 +123,7 @@ const BFProposalVersions = (() => {
       ownerEmail: '',
       actorEmail: currentActorEmail(),
       entityId: record.proposalId || record.id,
-      title: record.label || `Versao ${record.version || ''}`.trim(),
+      title: record.label || `Versão ${record.version || ''}`.trim(),
       status: record.status || 'draft',
       storageKey: STORAGE_KEY,
       createdAt: record.createdAt || '',
@@ -104,6 +133,22 @@ const BFProposalVersions = (() => {
 
   function cleanText(value, max = 160) {
     return String(value == null ? '' : value).trim().slice(0, max);
+  }
+
+  function cleanSystemId(value, prefix, fallback = '') {
+    const text = cleanText(value, 100);
+    if (!text || !new RegExp(`^${prefix}-[A-Za-z0-9._:-]+$`, 'i').test(text)) return fallback;
+    return text;
+  }
+
+  function cleanDate(value) {
+    const text = cleanText(value, 20);
+    return /^\d{4}-\d{2}-\d{2}$/.test(text) ? text : '';
+  }
+
+  function cleanTimestamp(value) {
+    const text = cleanText(value, 40);
+    return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(text) ? text : '';
   }
 
   function number(value) {
@@ -143,19 +188,100 @@ const BFProposalVersions = (() => {
     return Object.keys(group || {}).length;
   }
 
+  function sanitizeFlagGroup(group, type) {
+    const source = group && typeof group === 'object' ? group : {};
+    const allowed = BUILDER_KEYS[type] || new Set();
+    return Object.keys(source).slice(0, 80).reduce((result, key) => {
+      if (allowed.has(key)) result[key] = !!source[key];
+      return result;
+    }, {});
+  }
+
   function summarizeBuilder(builder) {
     const source = builder && typeof builder === 'object' ? builder : {};
-    return {
-      sections: countSelected(source.sections),
-      sectionsTotal: countTotal(source.sections),
-      charts: countSelected(source.charts),
-      chartsTotal: countTotal(source.charts),
-      concepts: countSelected(source.concepts),
-      conceptsTotal: countTotal(source.concepts),
-      formulas: countSelected(source.formulas),
-      formulasTotal: countTotal(source.formulas),
-      raw: clone(source) || {}
+    const raw = {
+      sections: sanitizeFlagGroup(source.sections, 'sections'),
+      charts: sanitizeFlagGroup(source.charts, 'charts'),
+      concepts: sanitizeFlagGroup(source.concepts, 'concepts'),
+      formulas: sanitizeFlagGroup(source.formulas, 'formulas')
     };
+    return {
+      sections: countSelected(raw.sections),
+      sectionsTotal: countTotal(raw.sections),
+      charts: countSelected(raw.charts),
+      chartsTotal: countTotal(raw.charts),
+      concepts: countSelected(raw.concepts),
+      conceptsTotal: countTotal(raw.concepts),
+      formulas: countSelected(raw.formulas),
+      formulasTotal: countTotal(raw.formulas),
+      raw
+    };
+  }
+
+  function sanitizeGroups(groups) {
+    return (Array.isArray(groups) ? groups : []).slice(0, 12).map((item, index) => ({
+      index: Math.max(1, parseInt(item && item.index, 10) || index + 1),
+      administradora: cleanText(item && item.administradora, 80),
+      grupo: cleanText(item && item.grupo, 60),
+      segmento: cleanText(item && item.segmento, 80),
+      cotas: number(item && item.cotas),
+      carta: number(item && item.carta),
+      prazo: number(item && item.prazo)
+    }));
+  }
+
+  function statusLabel(status) {
+    const labels = {
+      reviewed: 'Revisada localmente',
+      partial: 'Revisão parcial',
+      pending: 'Em revisão',
+      draft: 'Rascunho',
+      expired: 'Revisão vencida'
+    };
+    return labels[status] || 'Proposta em revisao';
+  }
+
+  function sanitizeStoredRecord(record) {
+    const source = record && typeof record === 'object' ? record : {};
+    const rawBuilder = source.builder && source.builder.raw ? source.builder.raw : source.builder;
+    const version = Math.max(0, parseInt(source.version, 10) || 0);
+    const status = ['reviewed', 'partial', 'pending', 'draft', 'expired'].includes(source.status)
+      ? source.status
+      : 'draft';
+    return {
+      schema: SCHEMA,
+      proposalId: cleanSystemId(source.proposalId || 'PROP-PENDENTE', 'PROP', 'PROP-PENDENTE'),
+      simulationId: cleanSystemId(source.simulationId, 'SIM'),
+      status,
+      acceptanceVersion: Math.max(0, parseInt(source.acceptanceVersion, 10) || 0),
+      validUntil: cleanDate(source.validUntil),
+      metrics: metricsFrom(source),
+      lances: lancesFrom(source),
+      groups: sanitizeGroups(source.groups),
+      builder: summarizeBuilder(rawBuilder || {}),
+      sourceHash: /^[A-Za-z0-9]+$/.test(cleanText(source.sourceHash, 80)) ? cleanText(source.sourceHash, 80) : '',
+      id: cleanSystemId(source.id, 'PV'),
+      version,
+      label: version ? `Versão ${version}` : 'Sem versão',
+      createdAt: cleanTimestamp(source.createdAt),
+      updatedAt: cleanTimestamp(source.updatedAt)
+    };
+  }
+
+  function sensitiveDetails(record) {
+    const source = record && typeof record === 'object' ? record : {};
+    return {
+      cliente: cleanText(source.cliente, 120),
+      consultor: cleanText(source.consultor, 120),
+      notes: cleanText(source.notes, 420),
+      statusLabel: cleanText(source.statusLabel, 80),
+      label: cleanText(source.label, 80)
+    };
+  }
+
+  function rememberSensitive(record) {
+    if (!record || !record.id) return;
+    volatileDetails.set(record.id, sensitiveDetails(record));
   }
 
   function projectGroups(proposal, context) {
@@ -199,17 +325,17 @@ const BFProposalVersions = (() => {
   function snapshot(proposal = {}, context = {}) {
     const acceptance = context.acceptance || {};
     const builder = summarizeBuilder(context.builder || {});
-    const proposalId = cleanText(proposal.id || context.proposalId || 'PROP-PENDENTE', 80);
+    const proposalId = cleanSystemId(proposal.id || context.proposalId || 'PROP-PENDENTE', 'PROP', 'PROP-PENDENTE');
     const metrics = metricsFrom(proposal);
     const lances = lancesFrom(proposal);
     const groups = projectGroups(proposal, context);
     const status = cleanText(acceptance.status || context.status || 'draft', 40);
     const source = {
       proposalId,
-      simulationId: cleanText(context.simulationId || proposal.simulationId || '', 100),
+      simulationId: cleanSystemId(context.simulationId || proposal.simulationId || '', 'SIM'),
       status,
       acceptanceVersion: number(acceptance.version),
-      validUntil: cleanText(acceptance.validUntil || '', 20),
+      validUntil: cleanDate(acceptance.validUntil),
       metrics,
       lances,
       groups,
@@ -242,15 +368,23 @@ const BFProposalVersions = (() => {
 
   function decorate(record) {
     if (!record) return null;
+    const stored = sanitizeStoredRecord(record);
+    const volatile = volatileDetails.get(stored.id) || sensitiveDetails(record);
     return {
-      ...record,
-      versionLabel: record.version ? `Versao ${record.version}` : 'Sem versao',
-      savedAtLabel: record.createdAt ? new Date(record.createdAt).toLocaleString('pt-BR') : 'sem data'
+      ...stored,
+      cliente: volatile.cliente || 'Dados protegidos',
+      consultor: volatile.consultor || '',
+      notes: volatile.notes || '',
+      statusLabel: volatile.statusLabel || statusLabel(stored.status),
+      label: volatile.label || stored.label,
+      unchanged: !!record.unchanged,
+      versionLabel: stored.version ? `Versão ${stored.version}` : 'Sem versão',
+      savedAtLabel: stored.createdAt ? new Date(stored.createdAt).toLocaleString('pt-BR') : 'sem data'
     };
   }
 
   function history(proposalId, limit = 10) {
-    const id = cleanText(proposalId, 80);
+    const id = cleanSystemId(proposalId, 'PROP');
     return loadAll()
       .filter((item) => !id || item.proposalId === id)
       .sort((a, b) => {
@@ -276,7 +410,17 @@ const BFProposalVersions = (() => {
     const base = snapshot(proposal, context);
     const previous = latest(base.proposalId);
     if (previous && previous.sourceHash === base.sourceHash && !context.forceNew) {
-      return decorate({ ...previous, unchanged: true });
+      const unchangedRecord = {
+        ...previous,
+        cliente: base.cliente,
+        consultor: base.consultor,
+        notes: base.notes,
+        statusLabel: base.statusLabel,
+        label: cleanText(context.label || previous.label, 80),
+        unchanged: true
+      };
+      rememberSensitive(unchangedRecord);
+      return decorate(unchangedRecord);
     }
 
     const now = new Date().toISOString();
@@ -285,16 +429,18 @@ const BFProposalVersions = (() => {
       ...base,
       id: `PV-${Date.now().toString(36).toUpperCase()}-${version}`,
       version,
-      label: cleanText(context.label || `Versao ${version}`, 80),
+      label: cleanText(context.label || `Versão ${version}`, 80),
       createdAt: now,
       updatedAt: now
     });
 
-    const list = [record].concat(loadAll()).slice(0, MAX_ITEMS);
+    rememberSensitive(record);
+    const storedRecord = sanitizeStoredRecord(record);
+    const list = [storedRecord].concat(loadAll()).slice(0, MAX_ITEMS);
     if (!saveAll(list)) return null;
     publishProposalVersionSnapshot(record);
     publishDirectProposal(record);
-    return record;
+    return decorate(record);
   }
 
   const metricLabels = {
@@ -370,9 +516,11 @@ const BFProposalVersions = (() => {
   }
 
   function clear(proposalId) {
-    const id = cleanText(proposalId, 80);
+    const id = cleanSystemId(proposalId, 'PROP');
     if (!id) return false;
-    return saveAll(loadAll().filter((item) => item.proposalId !== id));
+    const items = loadAll();
+    items.filter((item) => item.proposalId === id).forEach((item) => volatileDetails.delete(item.id));
+    return saveAll(items.filter((item) => item.proposalId !== id));
   }
 
   const api = {

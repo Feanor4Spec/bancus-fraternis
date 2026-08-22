@@ -285,24 +285,24 @@
     const simulationCount = current.simulations.length;
     const score = Number(status.score || 0);
     const origin = latestSim
-      ? 'Origem: simulacao salva neste navegador'
-      : (activeJourney ? 'Origem: trilha assistida ativa neste navegador' : (latestCalc ? `Origem: ${latestRoute.label}` : 'Origem: sem historico local'));
+      ? 'Você tem uma simulação salva'
+      : (activeJourney ? 'Você tem um plano em andamento' : (latestCalc ? `Último cálculo: ${latestRoute.label}` : 'Comece com seus dados básicos'));
 
     const base = {
       stage: 'diagnostic',
-      badge: 'Diagnostico inicial',
-      title: 'Comece pelo diagnostico financeiro antes de simular.',
-      copy: 'A Home identifica lacunas de renda, custos e reserva para indicar a calculadora certa antes de comparar produtos.',
+      badge: 'Comece pelo orçamento',
+      title: 'Veja quanto cabe no seu mês antes de assumir uma parcela.',
+      copy: 'Informe renda, gastos e reserva para comparar opções dentro de um limite realista.',
       primaryHref: 'calculadora-custos-fixos.html',
-      primaryLabel: 'Criar diagnostico',
+      primaryLabel: 'Informar meus dados',
       secondaryHref: 'calculadoras.html',
       secondaryLabel: 'Ver calculadoras',
-      state: `${score}/100 de prontidao`,
-      next: 'Mapear renda, custos e reserva',
+      state: score > 0 ? 'Dados iniciados' : 'Primeiro passo',
+      next: 'Informe renda, gastos e reserva',
       origin,
-      panelTitle: 'Perfil em construcao',
-      panelBadge: 'Proximo passo sugerido',
-      panelNote: 'Preencha o diagnostico minimo para liberar uma simulacao mais orientada.',
+      panelTitle: 'Seu orçamento',
+      panelBadge: 'Próximo passo',
+      panelNote: 'Preencha os valores básicos para estimar uma parcela confortável.',
       historyCount,
       simulationCount
     };
@@ -312,16 +312,16 @@
       return {
         ...base,
         stage: 'journey',
-        badge: 'Trilha ativa',
-        title: 'Continue sua trilha assistida sem recomecar o diagnostico.',
-        copy: 'A Home encontrou uma trilha salva e prioriza o proximo passo entre produto, comparador, simulador e revisao.',
+        badge: 'Continue de onde parou',
+        title: 'Seu plano está pronto para continuar.',
+        copy: 'Abra a última etapa concluída e siga com os dados já informados.',
         primaryHref: journeyHref(activeJourney),
         primaryLabel: actionLabel,
         secondaryHref: 'trilha-decisao.html',
-        secondaryLabel: 'Rever trilha',
+        secondaryLabel: 'Ver meu plano',
         next: firstText(journeyNextAction(activeJourney).title, actionLabel, 'Continuar decisao'),
         panelTitle: journeyLabel(activeJourney),
-        panelBadge: 'Decisao em andamento',
+        panelBadge: 'Em andamento',
         panelNote: journeySummary(activeJourney)
       };
     }
@@ -331,16 +331,16 @@
         ...base,
         stage: 'ready',
         badge: 'Pronto para simular',
-        title: 'Seu contexto financeiro ja pode alimentar uma simulacao.',
-        copy: 'Perfil, capacidade e reserva ja oferecem base para abrir o simulador com continuidade e menos retrabalho.',
+        title: 'Seus dados já permitem iniciar uma simulação.',
+        copy: 'Use a renda, a reserva e o limite mensal já informados para comparar carta, parcela e lance.',
         primaryHref: simulatorContextHref(latestCalc),
-        primaryLabel: 'Simular com contexto',
+        primaryLabel: 'Simular consórcio',
         secondaryHref: 'comparador.html',
         secondaryLabel: 'Comparar alternativas',
-        next: 'Abrir simulador com prefill',
-        panelTitle: 'Contexto pronto',
-        panelBadge: 'Simulacao orientada',
-        panelNote: 'Use a capacidade e a reserva ja calculadas para comparar carta, parcela e lance.'
+        next: 'Escolher grupos e valores',
+        panelTitle: 'Dados preenchidos',
+        panelBadge: 'Pronto para simular',
+        panelNote: 'Compare carta, parcela e lance sem preencher tudo novamente.'
       };
     }
 
@@ -348,17 +348,17 @@
       return {
         ...base,
         stage: 'simulation',
-        badge: 'Simulacao em continuidade',
-        title: 'Retome sua simulacao e avance para carteira ou atendimento.',
-        copy: 'A Home encontrou uma simulacao salva e prioriza revisao, carteira e handoff consultivo local.',
+        badge: 'Simulação salva',
+        title: 'Revise sua simulação ou gere a proposta.',
+        copy: 'Os grupos e valores informados continuam disponíveis para você conferir.',
         primaryHref: 'carteira.html',
         primaryLabel: 'Abrir carteira',
         secondaryHref: latestSim.id ? `simulador.html?simulationId=${encodeURIComponent(latestSim.id)}` : 'simulador.html',
         secondaryLabel: 'Revisar simulacao',
-        next: 'Revisar carteira e continuidade',
-        panelTitle: 'Jornada em andamento',
-        panelBadge: 'Retomada disponivel',
-        panelNote: 'A simulacao salva vira ponto de continuidade para carteira, dashboard e atendimento.'
+        next: 'Conferir valores e parcelas',
+        panelTitle: 'Simulação em andamento',
+        panelBadge: 'Pronta para continuar',
+        panelNote: 'Abra os valores salvos e siga para a proposta quando estiver tudo certo.'
       };
     }
 
@@ -366,17 +366,17 @@
       return {
         ...base,
         stage: 'calculator',
-        badge: 'Calculadora conectada',
-        title: 'Continue a jornada a partir do ultimo calculo.',
-        copy: 'A primeira dobra agora prioriza a calculadora mais recente e sugere o melhor caminho ate comparador ou simulador.',
+        badge: 'Cálculo salvo',
+        title: 'Continue a partir do seu último cálculo.',
+        copy: 'Revise o resultado ou use os mesmos dados em uma nova simulação.',
         primaryHref: latestRoute.href,
-        primaryLabel: latestCalc ? 'Retomar calculadora' : 'Completar diagnostico',
+        primaryLabel: latestCalc ? 'Reabrir cálculo' : 'Completar dados',
         secondaryHref: score >= 60 ? simulatorContextHref(latestCalc) : 'calculadoras.html',
-        secondaryLabel: score >= 60 ? 'Simular com contexto' : 'Ver trilha minima',
+        secondaryLabel: score >= 60 ? 'Simular consórcio' : 'Ver calculadoras',
         next: latestCalc ? latestRoute.detail : 'Completar dados financeiros',
-        panelTitle: 'Perfil parcialmente pronto',
-        panelBadge: 'Continuar diagnostico',
-        panelNote: 'Finalize as lacunas restantes antes de assumir parcela, lance ou comparacao.'
+        panelTitle: 'Dados em andamento',
+        panelBadge: 'Continue preenchendo',
+        panelNote: 'Complete o que falta antes de definir parcela, lance ou prazo.'
       };
     }
 
@@ -403,7 +403,7 @@
     setText('[data-home-hero-panel-income]', current.metrics.income ? compactCurrency(current.metrics.income) : 'Pendente');
     setText('[data-home-hero-panel-capacity]', current.metrics.capacity ? compactCurrency(current.metrics.capacity) : 'Pendente');
     setText('[data-home-hero-panel-reserve]', current.metrics.reserve ? compactCurrency(current.metrics.reserve) : 'Pendente');
-    setText('[data-home-hero-panel-score]', `${number.format(status.score || 0)}/100`);
+    setText('[data-home-hero-panel-score]', status.score >= 80 ? 'Completo' : (status.score >= 45 ? 'Em andamento' : 'Começando'));
     setText('[data-home-hero-panel-badge]', heroContext.panelBadge);
     setText('[data-home-hero-panel-note]', heroContext.panelNote);
 
@@ -439,39 +439,26 @@
 
     if (metricsTarget) {
       metricsTarget.innerHTML = `
-        <article class="hm-continuity-metric ${continuityTone(status)}"><small>Prontidao</small><strong>${number.format(status.score || 0)}/100</strong><span>${escapeHTML(status.level || 'diagnostico')}</span></article>
-        <article class="hm-continuity-metric"><small>Historico</small><strong>${number.format(model.history.length)}</strong><span>calculos locais</span></article>
-        <article class="hm-continuity-metric"><small>Simulacoes</small><strong>${number.format(model.simulations.length)}</strong><span>salvas neste navegador</span></article>
-        <article class="hm-continuity-metric ${activeJourney ? 'is-strong' : ''}"><small>Trilha</small><strong>${activeJourney ? 'Ativa' : '0'}</strong><span>${activeJourney ? escapeHTML(activeJourneyLabel) : 'sem decisao ativa'}</span></article>
-        <article class="hm-continuity-metric"><small>Capacidade</small><strong>${compactCurrency(model.metrics.capacity)}</strong><span>parcela ou aporte seguro</span></article>
+        <article class="hm-continuity-metric ${continuityTone(status)}"><small>Perfil</small><strong>${status.score >= 80 ? 'Completo' : (status.score >= 45 ? 'Em andamento' : 'Começando')}</strong><span>dados financeiros</span></article>
+        <article class="hm-continuity-metric"><small>Cálculos</small><strong>${number.format(model.history.length)}</strong><span>salvos</span></article>
+        <article class="hm-continuity-metric"><small>Simulações</small><strong>${number.format(model.simulations.length)}</strong><span>salvas</span></article>
+        <article class="hm-continuity-metric"><small>Limite mensal</small><strong>${compactCurrency(model.metrics.capacity)}</strong><span>valor estimado</span></article>
       `;
     }
 
     if (cardsTarget) {
       cardsTarget.innerHTML = `
         <article class="hm-continuity-card">
-          <span>Diagnostico</span>
-          <strong>${escapeHTML(status.title || 'Diagnostico recomendado')}</strong>
-          <p>${escapeHTML(status.message || 'Complete o perfil para orientar simulacoes.')}</p>
-          <small>Lacunas: ${escapeHTML(missing)}</small>
+          <span>Último cálculo</span>
+          <strong>${escapeHTML(latestCalc ? (latestCalc.calculatorName || latestCalc.calculatorSlug || 'Cálculo salvo') : 'Nenhum cálculo salvo')}</strong>
+          <p>${escapeHTML(latestCalc ? (latestCalc.recommendation || 'O resultado está disponível para consulta.') : `Comece informando seus custos fixos. Falta conferir: ${missing}.`)}</p>
+          <a href="${latestCalc ? 'calculadoras.html' : 'calculadora-custos-fixos.html'}">${latestCalc ? 'Ver cálculos' : 'Começar'}</a>
         </article>
         <article class="hm-continuity-card">
-          <span>Ultima calculadora</span>
-          <strong>${escapeHTML(latestCalc ? (latestCalc.calculatorName || latestCalc.calculatorSlug || 'Calculo salvo') : 'Nenhum calculo ainda')}</strong>
-          <p>${escapeHTML(latestCalc ? (latestCalc.recommendation || 'Resultado pronto para retomar no hub de calculadoras.') : 'Comece por custos fixos para criar contexto financeiro reutilizavel.')}</p>
-          <a href="${latestCalc ? 'calculadoras.html' : 'calculadora-custos-fixos.html'}">${latestCalc ? 'Ver historico' : 'Criar diagnostico'}</a>
-        </article>
-        <article class="hm-continuity-card">
-          <span>Trilha assistida</span>
-          <strong>${escapeHTML(activeJourney ? activeJourneyLabel : 'Nenhuma trilha ativa')}</strong>
-          <p>${escapeHTML(activeJourney ? journeySummary(activeJourney) : 'Crie uma trilha para ligar diagnostico, produto, comparador e simulador.')}</p>
-          <a href="${escapeHTML(activeJourney ? activeJourneyHref : 'trilha-decisao.html')}">${activeJourney ? 'Continuar trilha' : 'Criar trilha'}</a>
-        </article>
-        <article class="hm-continuity-card">
-          <span>Ultima simulacao</span>
-          <strong>${escapeHTML(latestSim ? (latestSim.nome || latestSim.name || 'Simulacao salva') : 'Nenhuma simulacao salva')}</strong>
-          <p>${escapeHTML(latestSim ? `Credito total ${compactCurrency(latestSim.totalCarta || 0)} pronto para revisar na carteira.` : 'Quando uma simulacao for salva, a Home passa a apontar a retomada correta.')}</p>
-          <a href="${latestSim ? 'carteira.html' : 'simulador.html'}">${latestSim ? 'Abrir carteira' : 'Abrir simulador'}</a>
+          <span>Última simulação</span>
+          <strong>${escapeHTML(latestSim ? (latestSim.nome || latestSim.name || 'Simulação salva') : 'Nenhuma simulação salva')}</strong>
+          <p>${escapeHTML(latestSim ? `Crédito total de ${compactCurrency(latestSim.totalCarta || 0)} para revisar.` : 'Escolha grupos, defina lances e veja as parcelas mês a mês.')}</p>
+          <a href="${latestSim ? 'carteira.html' : 'simulador.html'}">${latestSim ? 'Abrir simulação' : 'Simular consórcio'}</a>
         </article>
       `;
     }
@@ -479,8 +466,8 @@
     if (actionsTarget) {
       actionsTarget.innerHTML = `
         <div class="hm-next-actions__head">
-          <span class="bf-badge bf-badge--gold">Proximos passos</span>
-          <strong>Sequencia sugerida pela prontidao local</strong>
+          <span class="bf-badge bf-badge--gold">Próximos passos</span>
+          <strong>Escolha onde deseja continuar</strong>
         </div>
         <div class="hm-next-actions__grid">
           ${nextActions.map((item) => `
@@ -524,6 +511,9 @@
       strip.className = 'bf-settings-strip';
       anchor.insertAdjacentElement('afterend', strip);
     }
+
+    strip.hidden = true;
+    strip.setAttribute('aria-hidden', 'true');
 
     const cfg = getSettingsConfig();
     const chips = describeHomeSettings(cfg);
@@ -711,7 +701,7 @@
 
   async function loadCatalogStats() {
     try {
-      updateStatus('Conectando à base real...', 'is-loading');
+      updateStatus('Buscando grupos disponíveis...', 'is-loading');
       const response = await fetch(BASE_PATH, { cache: 'no-store' });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
@@ -725,15 +715,15 @@
       setText('[data-home-kpi="segments"]', number.format(segments.size));
       setText('[data-home-kpi="maxCarta"]', compactCurrency(maxCarta));
       setText('[data-home-metric="base"]', `${number.format(valid.length)} grupos`);
-      updateStatus(`Base real conectada: ${number.format(valid.length)} grupos prontos para simulação.`, 'is-ready');
+      updateStatus(`${number.format(valid.length)} grupos disponíveis para simulação.`, 'is-ready');
       renderFeaturedGroups(valid);
     } catch (error) {
       console.warn('Home: nao foi possivel carregar base real', error);
       setText('[data-home-kpi="groups"]', '24');
       setText('[data-home-kpi="segments"]', '6');
       setText('[data-home-kpi="maxCarta"]', 'R$ 1,5M');
-      setText('[data-home-metric="base"]', 'Modo fallback');
-      updateStatus('Base real indisponível nesta abertura. Usando fallback local.', 'is-error');
+      setText('[data-home-metric="base"]', 'Opções de exemplo');
+      updateStatus('Não foi possível atualizar os grupos agora. Exibindo opções de exemplo.', 'is-error');
       renderFeaturedGroups([]);
     }
   }

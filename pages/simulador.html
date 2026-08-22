@@ -5,32 +5,30 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="description"
-    content="ConsórcioPro - Simulador completo de consórcio. Simule, entenda e exporte propostas comerciais com visão financeira detalhada.">
+    content="Simule grupos, lances, parcelas e eventos de um consórcio e gere uma proposta para o cliente.">
   <meta name="theme-color" content="#0B2C52">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="icon" href="../assets/logos/bank-fratern-icon.svg" type="image/svg+xml">
-  <title>ConsórcioPro  Simulador de Consórcio</title>
+  <title>Simulador de consórcio | Bancus Fraternis</title>
 
   <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap"
     rel="stylesheet">
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <!-- jsPDF + html2canvas para exportação PDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
   <!-- Estilos -->
   <link rel="stylesheet" href="../css/styles.css">
   <link rel="stylesheet" href="../css/bank-fratern-design-system.css">
   <link rel="stylesheet" href="../assets/css/bf-design-system-v8.css">
+  <link rel="stylesheet" href="../css/simulator-evolution.css">
 </head>
 
-<body class="sim-body bf-v8-body" data-bf-page="simulador" data-bf-archetype="calculator" data-bf-visual-version="8">
+<body class="sim-body bf-v8-body proposal-outline-collapsed" data-bf-page="simulador" data-bf-archetype="calculator"
+  data-bf-visual-version="9" data-simulator-evolution="proposal-shell">
 
   <!-- """""""""" TOASTS """""""""" -->
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
@@ -39,17 +37,17 @@
   <div id="loading-overlay" class="loading-overlay" style="display:none;">
     <div class="loading-overlay__content">
       <div class="loading-spinner"></div>
-      <span class="loading-overlay__eyebrow">Fase 1 - Base real</span>
-      <p id="loading-message" class="loading-overlay__title">Carregando base de grupos...</p>
-      <p id="loading-detail" class="loading-overlay__detail">17.000+ grupos reais do Banco Central</p>
+      <span class="loading-overlay__eyebrow">Preparando a simulação</span>
+      <p id="loading-message" class="loading-overlay__title">Carregando grupos disponíveis...</p>
+      <p id="loading-detail" class="loading-overlay__detail">Isso leva apenas alguns segundos.</p>
       <div class="loading-progress" aria-label="Progresso de carregamento da base">
         <span id="loading-progress-bar"></span>
       </div>
       <div class="loading-progress__meta">
         <span id="loading-progress-value">0%</span>
-        <span>Conexao segura com JSON local</span>
+        <span>Aguarde</span>
       </div>
-      <ol class="loading-steps" id="loading-stage-list" aria-label="Etapas de carregamento">
+      <ol class="loading-steps" id="loading-stage-list" aria-label="Etapas de carregamento" hidden>
         <li data-loading-stage="connect">Conexao</li>
         <li data-loading-stage="download">Download</li>
         <li data-loading-stage="parse">Validacao</li>
@@ -60,144 +58,187 @@
   </div>
 
   <!-- """""""""" HEADER COMPACTO DO SIMULADOR """""""""" -->
-  <header class="sim-header bf-header">
+  <header class="sim-header bf-header" data-simulator-evolution-header>
     <div class="sim-header__inner bf-header__inner">
-      <a href="index.html" class="sim-header__back" title="Voltar para Bancus Fraternis">
-          Início
-      </a>
-      <div class="sim-header__brand bf-brand">
-        <img src="../assets/logos/logo-bf-simulator.svg" alt="BF Simulator" class="sim-header__logo bf-brand__logo">
-        <span class="sim-header__product">Consórcio<strong>Pro</strong></span>
+      <div class="sim-header__identity">
+        <a href="index.html" class="sim-header__brand-link" title="Voltar para Bancus Fraternis">
+          <img src="../assets/logos/logo-bf-simulator.svg" alt="" class="sim-header__logo bf-brand__logo">
+          <span class="sim-header__product">Consórcio<strong>Pro</strong></span>
+        </a>
+        <div class="sim-header__project" aria-live="polite">
+          <strong id="sim-evolution-project-name">Projeto em preparação</strong>
+          <span id="sim-evolution-project-detail">Preencha os dados abaixo</span>
+        </div>
       </div>
-      <div class="sim-header__actions">
-        <span class="bf-demo-chip sim-header__demo" title="Ambiente publico de demonstracao: dados e sessoes ficam somente no navegador.">Demo local</span>
-        <button class="btn btn--accent btn--sm" onclick="App.carregarExemplo()" id="btn-exemplo">
-          <span class="bf-action-icon">EX</span> Exemplo
+
+      <div class="sim-header__system" aria-label="Estado da simulação">
+        <div class="sim-header__system-item sim-header__system-item--status">
+          <img src="../assets/icons/ui/ui-shield.svg" alt="">
+          <span>Status</span>
+          <strong id="sim-evolution-status">Em preparação</strong>
+        </div>
+        <div class="sim-header__system-item" hidden>
+          <img src="../assets/icons/ui/ui-document.svg" alt="">
+          <span>Versão</span>
+          <strong id="sim-evolution-version">v1.0</strong>
+        </div>
+        <div class="sim-header__system-item sim-header__system-item--saved" hidden>
+          <img src="../assets/icons/ui/ui-vault.svg" alt="">
+          <span>Estado local</span>
+          <strong id="sim-evolution-saved">Aguardando salvamento</strong>
+        </div>
+      </div>
+
+      <div class="sim-header__actions" aria-label="Ações do simulador">
+        <span class="bf-demo-chip sim-header__demo" hidden>Demo local</span>
+        <button class="btn btn--accent btn--sm" type="button" onclick="App.carregarExemplo()" id="btn-exemplo">
+          <img src="../assets/icons/ui/ui-document.svg" alt=""> Usar exemplo
         </button>
-        <button class="btn btn--ghost btn--sm" onclick="App.salvarSimulacao()" id="btn-salvar" title="Salvar simulação">
-          <span class="bf-action-icon">SV</span> Salvar
+        <button class="btn btn--ghost btn--sm" type="button" onclick="App.salvarSimulacao()" id="btn-salvar"
+          title="Salvar simulação no navegador">
+          <img src="../assets/icons/ui/ui-vault.svg" alt=""> Salvar
         </button>
-        <button class="btn btn--ghost btn--sm" onclick="App.abrirCarregamento()" id="btn-carregar"
-          title="Carregar simulação">
-          <span class="bf-action-icon">AB</span> Carregar
-        </button>
-        <button class="btn btn--ghost btn--sm" onclick="App.resetar()" id="btn-resetar">
-          <span class="bf-action-icon">RS</span> Resetar
-        </button>
+        <details class="sim-header-menu">
+          <summary class="btn btn--ghost btn--sm">Mais</summary>
+          <div class="sim-header-menu__panel">
+            <button type="button" onclick="App.abrirCarregamento()" id="btn-carregar">
+              <img src="../assets/icons/ui/ui-document.svg" alt=""> Abrir simulação
+            </button>
+            <button type="button" onclick="App.resetar()" id="btn-resetar">
+              <img src="../assets/icons/ui/ui-arrow.svg" alt=""> Recomeçar
+            </button>
+          </div>
+        </details>
       </div>
     </div>
   </header>
 
-  <!-- Legacy top stagebar removed; bottom collapsible shortcuts are the active contract.
-    <div class="bf-v8-stagebar__intro">
-      <span>Simulador v8</span>
-      <strong>Base real, prateleira, resultado e retomada conectados.</strong>
+  <nav class="sim-evolution-rail" aria-label="Etapas da simulação" data-simulator-evolution-rail>
+    <div class="sim-evolution-rail__current" aria-live="polite">
+      <span data-evolution-current-step>Etapa 1 de 10</span>
+      <h1 data-evolution-current-label>Consultor</h1>
+      <div class="sim-evolution-rail__progress" aria-hidden="true"><span data-evolution-progress></span></div>
     </div>
-    <a class="bf-v8-stagebar__item" href="#database-status-panel" data-step="1">
-      <span>Base</span>
-      <strong>Status da conexão</strong>
-    </a>
-    <a class="bf-v8-stagebar__item" href="#step-4" data-step="2">
-      <span>Escolha</span>
-      <strong>Prateleira de grupos</strong>
-    </a>
-    <a class="bf-v8-stagebar__item" href="#decisao-simulador" data-step="3">
-      <span>Decisão</span>
-      <strong>Próximo passo</strong>
-    </a>
-    <a class="bf-v8-stagebar__item" href="#step-7" data-step="4">
-      <span>Resultado</span>
-      <strong>Resumo financeiro</strong>
-    </a>
-    <a class="bf-v8-stagebar__item" href="carteira.html#decisao-carteira" data-step="5">
-      <span>Continuidade</span>
-      <strong>Retomar na Carteira</strong>
-    </a>
-  -->
+    <details class="sim-evolution-rail__menu">
+      <summary>Ver etapas</summary>
+      <div class="sim-evolution-rail__steps">
+        <button type="button" data-evolution-step="1" onclick="App.goToStep(1)">
+          <img src="../assets/icons/journey/01-visao-geral.svg" alt=""><span>Consultor</span>
+        </button>
+        <button type="button" data-evolution-step="2" onclick="App.goToStep(2)">
+          <img src="../assets/icons/journey/02-adesao.svg" alt=""><span>Cliente</span>
+        </button>
+        <button type="button" data-evolution-step="3" onclick="App.goToStep(3)">
+          <img src="../assets/icons/ui/ui-compass.svg" alt=""><span>Busca</span>
+        </button>
+        <button type="button" data-evolution-step="4" onclick="App.goToStep(4)">
+          <img src="../assets/icons/ui/ui-building.svg" alt=""><span>Grupos</span>
+        </button>
+        <button type="button" data-evolution-step="5" onclick="App.goToStep(5)">
+          <img src="../assets/icons/journey/06-lance.svg" alt=""><span>Projeto</span>
+        </button>
+        <button type="button" data-evolution-step="6" onclick="App.goToStep(6)">
+          <img src="../assets/icons/journey/04-reajuste.svg" alt=""><span>Eventos</span>
+        </button>
+        <button type="button" data-evolution-step="7" onclick="App.goToStep(7)">
+          <img src="../assets/icons/ui/ui-graph.svg" alt=""><span>Resultado</span>
+        </button>
+        <button type="button" data-evolution-step="8" onclick="App.goToStep(8)">
+          <img src="../assets/icons/ui/ui-calculator.svg" alt=""><span>Parcelas</span>
+        </button>
+        <button type="button" data-evolution-step="9" onclick="App.goToStep(9)">
+          <img src="../assets/icons/ui/ui-scale.svg" alt=""><span>Comparação</span>
+        </button>
+        <button type="button" data-evolution-step="10" onclick="App.goToStep(10)">
+          <img src="../assets/icons/ui/ui-document.svg" alt=""><span>Proposta</span>
+        </button>
+      </div>
+    </details>
+  </nav>
 
   <!-- """""""""" LAYOUT: SIDEBAR STEPPER + CONTEaDO """""""""" -->
   <section class="bf-v8-decision-strip bf-v8-decision-strip--outer" id="decisao-simulador"
-    aria-label="Resumo de decisão operacional do simulador" data-simulator-decision-strip>
+    aria-label="Resumo da simulação" data-simulator-decision-strip hidden>
   </section>
 
-  <section class="bf-platform-panel bf-platform-section" id="simulador-prontidao" data-simulator-readiness>
+  <section class="bf-platform-panel bf-platform-section" id="simulador-prontidao" data-simulator-readiness hidden>
   </section>
 
   <div class="sim-layout">
 
     <!-- Sidebar Vertical Stepper -->
-    <aside class="sim-sidebar" id="sim-sidebar">
+    <aside class="sim-sidebar" id="sim-sidebar" hidden aria-hidden="true">
       <nav class="sim-stepper" aria-label="Etapas da simulação">
-        <div class="sim-stepper__step sim-stepper__step--active" data-step="1" onclick="App.goToStep(1)">
+        <button type="button" class="sim-stepper__step sim-stepper__step--active" data-step="1" onclick="App.goToStep(1)">
           <div class="sim-stepper__mark">
             <img src="../assets/icons/journey/01-visao-geral.svg" alt="" class="sim-stepper__icon">
             <span class="sim-stepper__number">1</span>
           </div>
           <span class="sim-stepper__label">Consultor</span>
-        </div>
-        <div class="sim-stepper__step" data-step="2" onclick="App.goToStep(2)">
+        </button>
+        <button type="button" class="sim-stepper__step" data-step="2" onclick="App.goToStep(2)">
           <div class="sim-stepper__mark">
             <img src="../assets/icons/journey/02-adesao.svg" alt="" class="sim-stepper__icon">
             <span class="sim-stepper__number">2</span>
           </div>
           <span class="sim-stepper__label">Cliente</span>
-        </div>
-        <div class="sim-stepper__step" data-step="3" onclick="App.goToStep(3)">
+        </button>
+        <button type="button" class="sim-stepper__step" data-step="3" onclick="App.goToStep(3)">
           <div class="sim-stepper__mark">
             <img src="../assets/icons/journey/03-parcelas.svg" alt="" class="sim-stepper__icon">
             <span class="sim-stepper__number">3</span>
           </div>
           <span class="sim-stepper__label">Filtros</span>
-        </div>
-        <div class="sim-stepper__step" data-step="4" onclick="App.goToStep(4)">
+        </button>
+        <button type="button" class="sim-stepper__step" data-step="4" onclick="App.goToStep(4)">
           <div class="sim-stepper__mark">
             <img src="../assets/icons/journey/05-assembleia.svg" alt="" class="sim-stepper__icon">
             <span class="sim-stepper__number">4</span>
           </div>
           <span class="sim-stepper__label">Prateleira</span>
-        </div>
-        <div class="sim-stepper__step" data-step="5" onclick="App.goToStep(5)">
+        </button>
+        <button type="button" class="sim-stepper__step" data-step="5" onclick="App.goToStep(5)">
           <div class="sim-stepper__mark">
             <img src="../assets/icons/journey/06-lance.svg" alt="" class="sim-stepper__icon">
             <span class="sim-stepper__number">5</span>
           </div>
           <span class="sim-stepper__label">Parâmetros</span>
-        </div>
-        <div class="sim-stepper__step" data-step="6" onclick="App.goToStep(6)">
+        </button>
+        <button type="button" class="sim-stepper__step" data-step="6" onclick="App.goToStep(6)">
           <div class="sim-stepper__mark">
             <img src="../assets/icons/journey/04-reajuste.svg" alt="" class="sim-stepper__icon">
             <span class="sim-stepper__number">6</span>
           </div>
           <span class="sim-stepper__label">Eventos</span>
-        </div>
-        <div class="sim-stepper__step" data-step="7" onclick="App.goToStep(7)">
+        </button>
+        <button type="button" class="sim-stepper__step" data-step="7" onclick="App.goToStep(7)">
           <div class="sim-stepper__mark">
             <img src="../assets/icons/journey/07-contemplacao.svg" alt="" class="sim-stepper__icon">
             <span class="sim-stepper__number">7</span>
           </div>
           <span class="sim-stepper__label">Resultados</span>
-        </div>
-        <div class="sim-stepper__step" data-step="8" onclick="App.goToStep(8)">
+        </button>
+        <button type="button" class="sim-stepper__step" data-step="8" onclick="App.goToStep(8)">
           <div class="sim-stepper__mark">
             <img src="../assets/icons/journey/08-credito-documentos.svg" alt="" class="sim-stepper__icon">
             <span class="sim-stepper__number">8</span>
           </div>
           <span class="sim-stepper__label">Tabela</span>
-        </div>
-        <div class="sim-stepper__step" data-step="9" onclick="App.goToStep(9)">
+        </button>
+        <button type="button" class="sim-stepper__step" data-step="9" onclick="App.goToStep(9)">
           <div class="sim-stepper__mark">
             <img src="../assets/icons/journey/09-faturamento.svg" alt="" class="sim-stepper__icon">
             <span class="sim-stepper__number">9</span>
           </div>
-          <span class="sim-stepper__label">Proposta</span>
-        </div>
-        <div class="sim-stepper__step" data-step="10" onclick="App.goToStep(10)">
+          <span class="sim-stepper__label">Comparação</span>
+        </button>
+        <button type="button" class="sim-stepper__step" data-step="10" onclick="App.goToStep(10)">
           <div class="sim-stepper__mark">
             <img src="../assets/icons/journey/10-pos-contemplacao.svg" alt="" class="sim-stepper__icon">
             <span class="sim-stepper__number">10</span>
           </div>
-          <span class="sim-stepper__label">Comparador</span>
-        </div>
+          <span class="sim-stepper__label">Proposta final</span>
+        </button>
       </nav>
 
       <div class="sim-sidebar__footer">
@@ -207,7 +248,7 @@
 
     <!-- Conteúdo Principal -->
     <main class="sim-main">
-      <section class="database-status-panel" id="database-status-panel" data-state="pending" aria-live="polite">
+      <section class="database-status-panel" id="database-status-panel" data-state="pending" aria-live="polite" hidden>
         <div class="database-status-panel__main">
           <span class="database-status-panel__badge" id="database-status-badge">Fase 1</span>
           <div>
@@ -244,29 +285,30 @@
       <section id="step-1" class="step-section step-section--active" aria-label="Dados do Consultor">
         <div class="section-header">
           <div class="section-header__eyebrow">Etapa 1 de 10</div>
-          <h2 class="section-header__title">Dados do Consultor</h2>
-          <p class="section-header__desc">Identifique o vendedor/consultor responsável por esta simulação.</p>
+          <h2 class="section-header__title">Consultor</h2>
+          <p class="section-header__desc">Informe quem está preparando esta simulação.</p>
         </div>
 
         <div class="card">
           <div class="card__header">
             <div class="card__title">
-              <div class="card__title-icon card__title-icon--blue">CO</div>
-              Identificação Profissional
+              <div class="card__title-icon card__title-icon--blue" aria-hidden="true"><img src="../assets/icons/ui/ui-users.svg" alt=""></div>
+              Dados do consultor
             </div>
           </div>
           <div class="form-grid">
             <div class="form-group">
               <label class="form-label" for="consultor">Nome Completo</label>
-              <input type="text" id="consultor" class="form-input" placeholder="Ex: Maria Santos">
+              <input type="text" id="consultor" class="form-input" placeholder="Ex.: Maria Santos" minlength="3" required>
             </div>
             <div class="form-group">
               <label class="form-label" for="consultorEmail">E-mail Profissional</label>
-              <input type="email" id="consultorEmail" class="form-input" placeholder="consultor.demo@bankfratern.local">
+              <input type="email" id="consultorEmail" class="form-input" placeholder="consultor@example.com" required>
             </div>
             <div class="form-group">
               <label class="form-label" for="consultorTelefone">Telefone / WhatsApp</label>
-              <input type="tel" id="consultorTelefone" class="form-input" placeholder="(11) 0000-0000">
+              <input type="tel" id="consultorTelefone" class="form-input" placeholder="(11) 90000-0000"
+                inputmode="tel" pattern="[0-9() +.-]{10,20}" required>
             </div>
             <div class="form-group">
               <label class="form-label" for="consultorEmpresa">Empresa / Escritório</label>
@@ -285,7 +327,7 @@
 
         <div class="step-nav">
           <div></div>
-          <button class="btn btn--primary" onclick="App.nextStep()">Próximo: Dados do Cliente  </button>
+          <button class="btn btn--primary" type="button" onclick="App.nextStep()">Continuar</button>
         </div>
       </section>
 
@@ -293,39 +335,41 @@
       <section id="step-2" class="step-section" aria-label="Dados do Cliente">
         <div class="section-header">
           <div class="section-header__eyebrow">Etapa 2 de 10</div>
-          <h2 class="section-header__title">Dados do Cliente</h2>
-          <p class="section-header__desc">Preencha as informações do cliente que receberá esta proposta.</p>
+          <h2 class="section-header__title">Cliente e objetivo</h2>
+          <p class="section-header__desc">Informe o objetivo, o valor desejado e uma parcela confortável.</p>
         </div>
 
         <div class="card">
           <div class="card__header">
             <div class="card__title">
-              <div class="card__title-icon card__title-icon--gold">CL</div>
-              Informações do Cliente
+              <div class="card__title-icon card__title-icon--gold" aria-hidden="true"><img src="../assets/icons/ui/ui-users.svg" alt=""></div>
+              Dados do cliente
             </div>
           </div>
           <div class="form-grid">
             <div class="form-group">
               <label class="form-label" for="nomeCliente">Nome Completo do Cliente</label>
-              <input type="text" id="nomeCliente" class="form-input" placeholder="Ex: João da Silva">
+              <input type="text" id="nomeCliente" class="form-input" placeholder="Ex.: João da Silva" minlength="3" required>
             </div>
             <div class="form-group">
               <label class="form-label" for="clienteCpf">CPF</label>
-              <input type="text" id="clienteCpf" class="form-input" placeholder="000.000.000-00">
+              <input type="text" id="clienteCpf" class="form-input" placeholder="000.000.000-00"
+                inputmode="numeric" pattern="[0-9.-]{11,14}" required>
             </div>
             <div class="form-group">
               <label class="form-label" for="clienteEmail">E-mail do Cliente</label>
-              <input type="email" id="clienteEmail" class="form-input" placeholder="cliente.demo@bankfratern.local">
+              <input type="email" id="clienteEmail" class="form-input" placeholder="cliente@example.com" required>
             </div>
             <div class="form-group">
               <label class="form-label" for="clienteTelefone">Telefone do Cliente</label>
-              <input type="tel" id="clienteTelefone" class="form-input" placeholder="(11) 90000-0000">
+              <input type="tel" id="clienteTelefone" class="form-input" placeholder="(11) 90000-0000"
+                inputmode="tel" pattern="[0-9() +.-]{10,20}" required>
             </div>
             <div class="form-group">
               <label class="form-label" for="clienteObjetivo">Objetivo do Cliente
                 <span class="tooltip-trigger" data-tip="O que o cliente deseja alcançar com o consórcio.">?</span>
               </label>
-              <select id="clienteObjetivo" class="form-select">
+              <select id="clienteObjetivo" class="form-select" required>
                 <option value="aquisicao">Aquisição de bem</option>
                 <option value="investimento">Investimento / Patrimônio</option>
                 <option value="troca">Troca / Upgrade</option>
@@ -333,17 +377,76 @@
                 <option value="outro">Outro</option>
               </select>
             </div>
+            <div class="form-group">
+              <label class="form-label" for="valorObjetivo">Valor necessário para o projeto</label>
+              <input type="text" id="valorObjetivo" class="form-input" data-money="true" inputmode="decimal"
+                placeholder="R$ 350.000,00" autocomplete="off" required>
+              <small class="form-help">Crédito total que precisa ser estruturado.</small>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="parcelaConfortavel">Parcela mensal confortável</label>
+              <input type="text" id="parcelaConfortavel" class="form-input" data-money="true" inputmode="decimal"
+                placeholder="R$ 3.500,00" autocomplete="off" required>
+              <small class="form-help">Limite mensal informado pelo cliente, não uma aprovação de crédito.</small>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="reservaAtual">Reserva preservada</label>
+              <input type="text" id="reservaAtual" class="form-input" data-money="true" inputmode="decimal"
+                placeholder="R$ 50.000,00" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="caixaLance">Caixa disponível para lance</label>
+              <input type="text" id="caixaLance" class="form-input" data-money="true" inputmode="decimal"
+                placeholder="R$ 40.000,00" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="prazoDesejado">Horizonte desejado</label>
+              <select id="prazoDesejado" class="form-select" required>
+                <option value="">Selecione</option>
+                <option value="60">Até 60 meses</option>
+                <option value="80">Até 80 meses</option>
+                <option value="100">Até 100 meses</option>
+                <option value="120">Até 120 meses</option>
+                <option value="180">Até 180 meses</option>
+                <option value="240">Até 240 meses</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="urgencia">Urgência de uso do crédito</label>
+              <select id="urgencia" class="form-select" required>
+                <option value="">Selecione</option>
+                <option value="baixa">Flexível, acima de 24 meses</option>
+                <option value="media">Planejada, entre 12 e 24 meses</option>
+                <option value="alta">Prioritária, em até 12 meses</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="toleranciaRisco">Tolerância à incerteza de contemplação</label>
+              <select id="toleranciaRisco" class="form-select" required>
+                <option value="">Selecione</option>
+                <option value="baixa">Baixa: previsibilidade é essencial</option>
+                <option value="media">Moderada: aceita cenários alternativos</option>
+                <option value="alta">Alta: aceita maior variabilidade</option>
+              </select>
+            </div>
             <div class="form-group form-group--full">
               <label class="form-label" for="observacoes">Observações Comerciais</label>
               <textarea id="observacoes" class="form-textarea"
                 placeholder="Notas sobre perfil, necessidades e expectativas do cliente..."></textarea>
+            </div>
+            <div class="form-group form-group--full consent-field">
+              <label class="form-check" for="clienteConsentimento">
+                <input type="checkbox" id="clienteConsentimento" required>
+                <span>Confirmo que o cliente autorizou o uso destes dados para elaborar e compartilhar esta proposta.</span>
+              </label>
+              <small class="form-help">Os dados pessoais são usados apenas para preparar e compartilhar esta proposta.</small>
             </div>
           </div>
         </div>
 
         <div class="step-nav">
           <button class="btn btn--ghost" onclick="App.prevStep()">&larr; Voltar</button>
-          <button class="btn btn--primary" onclick="App.nextStep()">Próximo: Filtros de Simulação  </button>
+          <button class="btn btn--primary" type="button" onclick="App.nextStep()">Definir busca</button>
         </div>
       </section>
 
@@ -351,21 +454,21 @@
       <section id="step-3" class="step-section" aria-label="Filtros de Simulação">
         <div class="section-header">
           <div class="section-header__eyebrow">Etapa 3 de 10</div>
-          <h2 class="section-header__title">Filtros de Simulação</h2>
-          <p class="section-header__desc">Selecione os critérios para encontrar os melhores grupos disponíveis.</p>
+          <h2 class="section-header__title">Encontre os grupos</h2>
+          <p class="section-header__desc">Defina carta, prazo, taxa e administradora para reduzir a lista de opções.</p>
         </div>
 
         <section class="sim-objective-guide" data-simulator-objective-guide aria-live="polite">
           <div class="sim-objective-guide__empty">
-            Defina o objetivo do cliente para receber filtros sugeridos e uma leitura inicial da prateleira.
+            Defina o objetivo do cliente para preencher os filtros de busca.
           </div>
         </section>
 
         <div class="card">
           <div class="card__header">
             <div class="card__title">
-              <div class="card__title-icon card__title-icon--green">FT</div>
-              Parâmetros de Busca
+              <div class="card__title-icon card__title-icon--green" aria-hidden="true"><img src="../assets/icons/ui/ui-compass.svg" alt=""></div>
+              Filtros de busca
             </div>
           </div>
           <div class="form-grid">
@@ -401,11 +504,9 @@
             </div>
           </div>
 
-          <!-- V7: Filtros Avançados -->
-          <div class="card"
+          <details class="card simulator-advanced-filters"
             style="margin-top:16px;padding:18px 24px;border:1px dashed var(--primary-200);background:rgba(59,130,246,0.03);">
-            <div style="font-weight:700;font-size:14px;margin-bottom:14px;color:var(--gray-700);">Filtros Avançados
-              (Análise Heurística)</div>
+            <summary>Mais filtros</summary>
             <div class="form-grid">
               <div class="form-group">
                 <label class="form-label" for="filtroCartaMin">Carta Mínima (R$)</label>
@@ -422,19 +523,19 @@
                   placeholder="Ex: 18">
               </div>
               <div class="form-group">
-                <label class="form-label" for="filtroClassificacao">Classificação Executiva
-                  <span class="tooltip-trigger" data-tip="A=Expansão, B=Sustentação, C=Recuperação, D=Crítico">?</span>
+                <label class="form-label" for="filtroClassificacao">Situação do grupo
+                  <span class="tooltip-trigger" data-tip="Filtre pela situação atual informada pela administradora.">?</span>
                 </label>
                 <select id="filtroClassificacao" class="form-select">
                   <option value=""> Todas </option>
-                  <option value="A">A - Expansão</option>
-                  <option value="B">B - Sustentação</option>
-                  <option value="C">C - Recuperação</option>
-                  <option value="D">D - Crítico</option>
+                  <option value="A">Em expansão</option>
+                  <option value="B">Estável</option>
+                  <option value="C">Em recuperação</option>
+                  <option value="D">Atenção</option>
                 </select>
               </div>
               <div class="form-group">
-                <label class="form-label" for="filtroSaude">Saúde da Carteira</label>
+                <label class="form-label" for="filtroSaude">Nível de atenção</label>
                 <select id="filtroSaude" class="form-select">
                   <option value=""> Todas </option>
                   <option value="Baixa">Baixa (boa)</option>
@@ -444,7 +545,7 @@
                 </select>
               </div>
               <div class="form-group">
-                <label class="form-label" for="filtroMaturidade">Maturidade do Grupo</label>
+                <label class="form-label" for="filtroMaturidade">Fase do grupo</label>
                 <select id="filtroMaturidade" class="form-select">
                   <option value=""> Todas </option>
                   <option value="Início">Início</option>
@@ -471,20 +572,17 @@
                   <span class="form-switch__label">Parcela Reduzida</span>
                 </label>
               </div>
+              <div class="form-group" style="align-self:end;">
+                <button class="btn btn--ghost btn--sm" type="button" onclick="App.limparFiltros()">Limpar filtros</button>
+              </div>
             </div>
-          </div>
-
-          <div style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap;">
-            <button class="btn btn--primary" onclick="App.buscarGrupos()" id="btn-buscar-grupos"><span class="bf-action-icon">BG</span> Buscar
-              Grupos</button>
-            <button class="btn btn--ghost" onclick="App.limparFiltros()">  Limpar Filtros</button>
-          </div>
+          </details>
         </div>
 
         <div class="step-nav">
           <button class="btn btn--ghost" onclick="App.prevStep()">&larr; Voltar</button>
-          <button class="btn btn--primary" onclick="App.buscarGrupos(); App.nextStep()">Próximo: Ver Prateleira
-             </button>
+          <button class="btn btn--primary" type="button" id="btn-buscar-grupos"
+            onclick="App.buscarGrupos(); App.nextStep()">Ver grupos</button>
         </div>
       </section>
 
@@ -492,16 +590,15 @@
       <section id="step-4" class="step-section" aria-label="Prateleira de Grupos">
         <div class="section-header">
           <div class="section-header__eyebrow">Etapa 4 de 10</div>
-          <h2 class="section-header__title">Prateleira de Grupos</h2>
-          <p class="section-header__desc">Explore os grupos disponíveis. Clique em <strong>+ Adicionar</strong> para
-            incluir um grupo no projeto. Você pode adicionar vários grupos e editar os valores antes de simular.</p>
+          <h2 class="section-header__title">Grupos disponíveis</h2>
+          <p class="section-header__desc">Escolha um ou mais grupos para comparar valores e montar a simulação.</p>
         </div>
 
         <!-- Ordenação + Contagem -->
-        <div class="journey-progress-panel" id="journey-progress-panel" data-state="pending" aria-live="polite">
+        <div class="journey-progress-panel" id="journey-progress-panel" data-state="pending" aria-live="polite" hidden>
           <div class="journey-progress-panel__head">
             <div>
-              <span class="journey-progress-panel__eyebrow">Jornada da prateleira</span>
+              <span class="journey-progress-panel__eyebrow">Busca de grupos</span>
               <strong id="journey-progress-text">Aguardando busca de grupos.</strong>
             </div>
             <span id="journey-progress-value">0%</span>
@@ -522,22 +619,19 @@
               <label class="form-label" style="margin:0;" for="shelfSort">Ordenar por:</label>
               <select id="shelfSort" class="form-select" style="width:auto;min-width:200px;"
                 onchange="App.buscarGrupos()">
-                <option value="maior_score">Maior Score</option>
-                <option value="melhor_classificacao">Melhor Classificação</option>
+                <option value="maior_score">Mais adequados</option>
                 <option value="menor_taxa">Menor Taxa</option>
                 <option value="maior_carta">Maior Carta</option>
                 <option value="menor_prazo">Menor Prazo</option>
                 <option value="maior_prazo">Maior Prazo</option>
-                <option value="mais_ativas">Mais Cotas Ativas</option>
-                <option value="mais_contemplacoes">Mais Contemplações</option>
               </select>
-              <label class="form-label" style="margin:0;" for="shelfPageSize">Por página:</label>
+              <label class="form-label" style="margin:0;" for="shelfPageSize" hidden>Por página:</label>
               <input id="shelfPageSize" class="form-input" type="number" min="20" max="50" step="1" value="20"
-                style="width:88px;" onchange="App.changeShelfPageSize(this.value)">
-              <details class="shelf-columns-menu">
-                <summary class="btn btn--sm btn--ghost">ܷ Colunas</summary>
+                style="width:88px;" onchange="App.changeShelfPageSize(this.value)" hidden>
+              <details class="shelf-columns-menu" hidden>
+                <summary class="btn btn--sm btn--ghost">Colunas</summary>
                 <div class="shelf-columns-menu__panel">
-                  <label><input type="checkbox" value="score" checked onchange="App.toggleShelfColumn(this.value, this.checked)"> Score</label>
+                  <label><input type="checkbox" value="score" onchange="App.toggleShelfColumn(this.value, this.checked)"> Compatibilidade</label>
                   <label><input type="checkbox" value="classificacao" checked onchange="App.toggleShelfColumn(this.value, this.checked)"> Class.</label>
                   <label><input type="checkbox" value="papel" checked onchange="App.toggleShelfColumn(this.value, this.checked)"> Papel</label>
                   <label><input type="checkbox" value="admin" checked onchange="App.toggleShelfColumn(this.value, this.checked)"> Administradora</label>
@@ -562,7 +656,7 @@
             <table class="data-table" id="shelf-table">
               <thead>
                 <tr>
-                  <th data-shelf-col="score">Score</th>
+                  <th data-shelf-col="score">Compatibilidade</th>
                   <th data-shelf-col="classificacao">Class.</th>
                   <th data-shelf-col="papel">Papel</th>
                   <th data-shelf-col="admin">Administradora</th>
@@ -604,7 +698,7 @@
           <div class="shelf-detail-card">
             <div class="shelf-detail-header">
               <h3 id="shelf-detail-title">Detalhes do Grupo</h3>
-              <button class="btn btn--sm btn--ghost" onclick="App.fecharDetalheGrupo()">S" Fechar</button>
+              <button class="btn btn--sm btn--ghost" type="button" onclick="App.fecharDetalheGrupo()">Fechar</button>
             </div>
             <div id="shelf-detail-content"></div>
             <div style="margin-top:20px;text-align:right;">
@@ -617,21 +711,21 @@
         <div class="selected-groups-panel-wrapper">
           <div class="selected-groups-panel-header">
             <div class="selected-groups-panel-header__title">
-              <div class="card__title-icon card__title-icon--gold">PJ</div>
-              Grupos Selecionados para Simulação
+              <div class="card__title-icon card__title-icon--gold" aria-hidden="true"><img src="../assets/icons/ui/ui-building.svg" alt=""></div>
+              Grupos selecionados
             </div>
             <span id="shelf-cart-count" class="selected-groups-count-badge">0 grupos</span>
           </div>
           <div id="selected-groups-panel">
             <div class="selected-groups-empty">
-              <span class="bf-empty-mark">PJ</span>
-              <p>Nenhum grupo adicionado ainda. Clique em <strong>+ Adicionar</strong> na tabela acima.</p>
+              <span class="bf-empty-mark" aria-hidden="true"><img src="../assets/icons/ui/ui-building.svg" alt=""></span>
+              <p>Escolha ao menos um grupo na tabela acima.</p>
             </div>
           </div>
         </div>
 
         <div class="step-nav">
-          <button class="btn btn--ghost" onclick="App.prevStep()">&larr; Voltar para Filtros</button>
+          <button class="btn btn--ghost" type="button" onclick="App.prevStep()">&larr; Voltar</button>
           <button class="btn btn--primary" disabled id="btn-avancar-parametros"
             onclick="App.simularProjetoEstruturado()">Adicione pelo menos 1 grupo para avançar  </button>
         </div>
@@ -641,9 +735,8 @@
       <section id="step-5" class="step-section" aria-label="Parâmetros Financeiros">
         <div class="section-header">
           <div class="section-header__eyebrow">Etapa 5 de 10</div>
-          <h2 class="section-header__title">Sacola de Consórcios</h2>
-          <p class="section-header__desc">Edite os parâmetros de cada grupo selecionado e veja os resultados
-            consolidados do seu projeto.</p>
+          <h2 class="section-header__title">Valores e lance</h2>
+          <p class="section-header__desc">Revise as cartas, as cotas e as condições de cada grupo selecionado.</p>
         </div>
 
         <!-- Dashboard Consolidado (Topo) -->
@@ -657,8 +750,8 @@
         </div>
 
         <div class="step-nav" style="margin-top: 30px;">
-          <button class="btn btn--ghost" onclick="App.prevStep()">&larr; Voltar à Prateleira</button>
-          <button class="btn btn--primary" onclick="App.nextStep()">Avançar  </button>
+          <button class="btn btn--ghost" type="button" onclick="App.prevStep()">&larr; Voltar aos grupos</button>
+          <button class="btn btn--primary" type="button" onclick="App.nextStep()">Continuar</button>
         </div>
       </section>
 
@@ -666,15 +759,15 @@
       <section id="step-6" class="step-section" aria-label="Eventos e Regras">
         <div class="section-header">
           <div class="section-header__eyebrow">Etapa 6 de 10</div>
-          <h2 class="section-header__title">Eventos e Regras</h2>
-          <p class="section-header__desc">Configure adiantamentos de parcelas, inadimplência e encargos.</p>
+          <h2 class="section-header__title">Eventos do plano</h2>
+          <p class="section-header__desc">Inclua antecipações, atrasos e regularizações para testar outros cenários.</p>
         </div>
 
         <!-- Adiantamento -->
         <div class="card mb-6">
           <div class="card__header">
             <div class="card__title">
-              <div class="card__title-icon card__title-icon--blue">AD</div>
+              <div class="card__title-icon card__title-icon--blue" aria-hidden="true"><img src="../assets/icons/ui/ui-arrow.svg" alt=""></div>
               Adiantamento de Parcelas
             </div>
             <button class="btn btn--sm btn--primary" onclick="App.addAdiantamentoRow()" id="btn-add-adiant">
@@ -692,7 +785,7 @@
         <div class="card mb-6">
           <div class="card__header">
             <div class="card__title">
-              <div class="card__title-icon card__title-icon--red">IN</div>
+              <div class="card__title-icon card__title-icon--red" aria-hidden="true"><img src="../assets/icons/ui/ui-scale.svg" alt=""></div>
               Inadimplência
             </div>
             <button class="btn btn--sm btn--danger" onclick="App.addInadimplenciaRow()" id="btn-add-inad">
@@ -725,10 +818,10 @@
         </div>
 
         <!-- Árvore Lógica Visual -->
-        <div class="card">
+        <div class="card" hidden>
           <div class="card__header">
             <div class="card__title">
-              <div class="card__title-icon card__title-icon--gold">LG</div>
+              <div class="card__title-icon card__title-icon--gold" aria-hidden="true"><img src="../assets/icons/ui/ui-calculator.svg" alt=""></div>
               Árvore Lógica de Cálculo
             </div>
           </div>
@@ -758,30 +851,30 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
         <div class="step-nav">
           <button class="btn btn--ghost" onclick="App.prevStep()">&larr; Voltar</button>
           <button class="btn btn--success btn--lg" onclick="App.calcular(); App.nextStep();" id="btn-calcular">
-            <span class="bf-action-icon">CL</span> Calcular Simulação
+            Calcular resultado
           </button>
         </div>
       </section>
 
-      <!--  ETAPA 7: Resumo da Proposta Estruturada  -->
-      <section id="step-7" class="step-section" aria-label="Resumo da Proposta Estruturada">
+      <!-- ETAPA 7: Resumo da simulação -->
+      <section id="step-7" class="step-section" aria-label="Resumo da simulação">
         <div class="section-header">
           <div class="section-header__eyebrow">Etapa 7 de 10</div>
-          <h2 class="section-header__title">Resumo da Proposta Estruturada de Consórcio</h2>
-          <p class="section-header__desc">Visão executiva da operação, jornada do cliente, estratégia financeira e próximos passos.</p>
+          <h2 class="section-header__title">Resumo da simulação</h2>
+          <p class="section-header__desc">Confira crédito, parcela, lance, custos e pontos de atenção.</p>
         </div>
 
         <!-- Proposta visual explicada, renderizada pelo modulo ProposalSummary. -->
         <div id="proposal-summary-container" class="proposal-summary-container">
           <div class="card text-center" style="padding:48px 24px;">
-            <h3>Calcule a simulação para gerar a proposta estruturada.</h3>
-            <p class="text-muted">A tela reunirá resumo executivo, jornada, composição financeira, lances, projeções e próximos passos.</p>
+            <h3>Calcule a simulação para ver o resultado.</h3>
+            <p class="text-muted">Você verá os valores, as parcelas, os lances e os pontos de atenção.</p>
           </div>
         </div>
 
         <div class="step-nav">
           <button class="btn btn--ghost" onclick="App.prevStep()">&larr; Voltar</button>
-          <button class="btn btn--primary" onclick="App.nextStep()">Próximo: Tabela Analítica  </button>
+          <button class="btn btn--primary" type="button" onclick="App.nextStep()">Ver parcelas</button>
         </div>
       </section>
 
@@ -789,20 +882,20 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
       <section id="step-8" class="step-section" aria-label="Tabela Analítica">
         <div class="section-header">
           <div class="section-header__eyebrow">Etapa 8 de 10</div>
-          <h2 class="section-header__title">Tabela Analítica Mensal</h2>
-          <p class="section-header__desc">Cronograma detalhado mês a mês com cada componente da parcela.</p>
+          <h2 class="section-header__title">Parcelas mês a mês</h2>
+          <p class="section-header__desc">Veja a parcela prevista e abra os detalhes para conferir saldos, lances e outros eventos de cada mês.</p>
         </div>
 
         <div class="card">
           <div class="card__header">
             <div class="card__title">
-              <div class="card__title-icon card__title-icon--blue">CR</div>
-              Cronograma Mensal
+              <div class="card__title-icon card__title-icon--blue" aria-hidden="true"><img src="../assets/icons/ui/ui-document.svg" alt=""></div>
+              Cronograma de parcelas
             </div>
             <label class="form-switch">
               <input type="checkbox" id="tabelaDetalhada">
               <span class="form-switch__track"></span>
-              <span class="form-switch__label">Visualização detalhada</span>
+              <span class="form-switch__label">Mostrar saldos e eventos</span>
             </label>
           </div>
 
@@ -831,81 +924,26 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
 
         <div class="step-nav">
           <button class="btn btn--ghost" onclick="App.prevStep()">&larr; Voltar</button>
-          <button class="btn btn--primary" onclick="App.nextStep()">Próximo: Gerar Proposta &rarr;</button>
+          <button class="btn btn--primary" type="button" onclick="App.nextStep()">Comparar grupos</button>
         </div>
       </section>
 
-      <!--  ETAPA 9: Proposta Comercial (V3 renumerada)  -->
-      <section id="step-9" class="step-section" aria-label="Proposta Comercial">
+      <!-- ETAPA 9: Comparador de grupos antes da proposta final. -->
+      <section id="step-9" class="step-section" aria-label="Comparador de Grupos">
         <div class="section-header">
           <div class="section-header__eyebrow">Etapa 9 de 10</div>
-          <h2 class="section-header__title">Proposta Comercial</h2>
-          <p class="section-header__desc">Visualize a mesma proposta que sera exportada em PDF, com resumo, blocos narrativos, graficos e memoria de calculo alinhados.</p>
-        </div>
-
-        <div class="proposal-export-toolbar">
-          <button class="btn btn--success btn--lg" onclick="App.exportarPDF()" id="btn-export-pdf">
-            <span class="bf-action-icon">PDF</span> Exportar PDF
-          </button>
-          <button class="btn btn--primary btn--lg" onclick="App.imprimirProposta()" id="btn-print">
-            <span class="bf-action-icon">PR</span> Versão para Impressão
-          </button>
-          <button class="btn btn--ghost" onclick="App.calcular(); App.renderProposta && App.renderProposta();">
-            <span class="bf-action-icon">AT</span> Atualizar Proposta &rarr;</button>
-        </div>
-
-        <div class="proposal-export-note">
-          <strong>PDF espelhado na tela</strong>
-          <span>O preview abaixo usa o mesmo componente do resumo executivo. Cada bloco foi separado para que as informacoes, graficos e proximos passos conversem entre si no arquivo exportado.</span>
-        </div>
-
-        <section id="proposal-builder-board" class="proposal-builder-board" data-proposal-builder-board>
-          <div class="proposal-builder-board__empty">
-            Calcule a simulacao para montar a lousa de exportacao da proposta.
-          </div>
-        </section>
-
-        <section id="proposal-acceptance-panel" class="proposal-acceptance-panel" data-proposal-acceptance-panel>
-          <div class="proposal-acceptance-panel__empty">
-            Calcule a simulacao para registrar revisao, validade e aceite local da proposta.
-          </div>
-        </section>
-
-        <section id="proposal-version-panel" class="proposal-version-panel" data-proposal-version-panel>
-          <div class="proposal-version-panel__empty">
-            Calcule a simulacao para salvar versoes e comparar mudancas da proposta.
-          </div>
-        </section>
-
-        <div id="proposta-container" class="proposal-preview">
-          <p class="text-muted" style="text-align:center;padding:60px 20px;">
-            Calcule a simulação para gerar a proposta comercial.
-          </p>
-        </div>
-
-        <div class="step-nav">
-          <button class="btn btn--ghost" onclick="App.prevStep()">&larr; Voltar</button>
-          <button class="btn btn--primary" onclick="App.nextStep()">Próximo: Comparador de Grupos &rarr;</button>
-        </div>
-      </section>
-
-      <!--  ETAPA 10: Comparador de Grupos (V3 renumerada)  -->
-      <section id="step-10" class="step-section" aria-label="Comparador de Grupos">
-        <div class="section-header">
-          <div class="section-header__eyebrow">Etapa 10 de 10</div>
-          <h2 class="section-header__title">Comparador de Grupos</h2>
-          <p class="section-header__desc">Compare dois grupos lado a lado com o mesmo cenário de simulação. Veja
-            diferenças, vencedores e gráficos.</p>
+          <h2 class="section-header__title">Compare os grupos</h2>
+          <p class="section-header__desc">Veja as diferenças de crédito, parcela, lance, prazo e custo.</p>
         </div>
 
         <!-- Bloco 1: Seleção dos Grupos -->
         <div class="card mb-6">
           <div class="card__header">
             <div class="card__title">
-              <div class="card__title-icon card__title-icon--blue">GR</div>
-              Selecionar Grupos &rarr;</div>
+              <div class="card__title-icon card__title-icon--blue" aria-hidden="true"><img src="../assets/icons/ui/ui-building.svg" alt=""></div>
+              Grupos para comparar</div>
             <button class="btn btn--sm btn--accent" onclick="App.executarComparacao()" id="btn-comparar">
-              <span class="bf-action-icon">CP</span> Comparar Agora
+              Comparar
             </button>
           </div>
           <div class="form-grid">
@@ -932,8 +970,8 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
         <div class="card mb-6">
           <div class="card__header">
             <div class="card__title">
-              <div class="card__title-icon card__title-icon--gold">CN</div>
-              Cenário de Simulação
+              <div class="card__title-icon card__title-icon--gold" aria-hidden="true"><img src="../assets/icons/ui/ui-calculator.svg" alt=""></div>
+              Condições da comparação
             </div>
           </div>
           <p class="text-muted" style="margin-bottom:16px;font-size:13px;">Este cenário será aplicado igualmente aos
@@ -985,8 +1023,8 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
         <div id="comp-winners-container" class="card mb-6" style="display:none;">
           <div class="card__header">
             <div class="card__title">
-              <div class="card__title-icon card__title-icon--green">RV</div>
-              Resumo de Vencedores
+               <div class="card__title-icon card__title-icon--green" aria-hidden="true"><img src="../assets/icons/ui/ui-scale.svg" alt=""></div>
+               Resumo da comparação
             </div>
           </div>
           <div id="comp-winners-badges" class="comp-winners-badges"></div>
@@ -995,7 +1033,7 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
         <!-- Bloco 3: Gráficos Comparativos -->
         <div id="comp-charts-container" class="charts-grid mt-6" style="display:none;">
           <div class="chart-card">
-            <div class="chart-card__title">KPIs Comparativos</div>
+             <div class="chart-card__title">Valores comparados</div>
             <div class="chart-container" style="height:300px;">
               <canvas id="compChartBarras"></canvas>
             </div>
@@ -1030,8 +1068,8 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
         <div id="comp-narrativa-container" class="card mt-6" style="display:none;">
           <div class="card__header">
             <div class="card__title">
-              <div class="card__title-icon card__title-icon--blue">LE</div>
-              Leitura Executiva
+              <div class="card__title-icon card__title-icon--blue" aria-hidden="true"><img src="../assets/icons/ui/ui-document.svg" alt=""></div>
+              Conclusão
             </div>
           </div>
           <div id="comp-narrativa-text" class="comp-narrativa" style="font-size:14px;line-height:1.8;color:#374151;">
@@ -1039,43 +1077,272 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
         </div>
 
         <div class="step-nav">
-          <button class="btn btn--ghost" onclick="App.prevStep()">&larr; Voltar</button>
-          <button class="btn btn--accent btn--lg" onclick="App.exportarPDF()"><span class="bf-action-icon">PDF</span> Exportar PDF Final</button>
+          <button class="btn btn--ghost" type="button" onclick="App.prevStep()">&larr; Voltar</button>
+          <button class="btn btn--accent btn--lg" type="button" onclick="App.nextStep()">
+            <img src="../assets/icons/ui/ui-document.svg" alt=""> Revisar proposta final &rarr;
+          </button>
         </div>
       </section>
 
+      <!-- ETAPA 10: Proposta final. -->
+      <section id="step-10" class="step-section step-section--proposal-final" aria-label="Proposta final">
+        <div class="proposal-evolution-heading">
+          <div>
+            <div class="section-header__eyebrow">Etapa 10 de 10 · Proposta final</div>
+            <h2>Revise a proposta antes de enviar.</h2>
+            <p>Confira valores, condições e pontos de atenção.</p>
+          </div>
+          <dl class="proposal-evolution-heading__meta" aria-label="Metadados da proposta">
+            <div hidden>
+              <img src="../assets/icons/ui/ui-calculator.svg" alt="">
+              <dt>Motor</dt>
+              <dd id="proposal-meta-engine">ConsórcioPro</dd>
+            </div>
+            <div hidden>
+              <img src="../assets/icons/ui/ui-vault.svg" alt="">
+              <dt>Base de cálculo</dt>
+              <dd id="proposal-meta-base">Base local</dd>
+            </div>
+            <div>
+              <img src="../assets/icons/ui/ui-document.svg" alt="">
+              <dt>Gerado em</dt>
+              <dd id="proposal-meta-date">Aguardando cálculo</dd>
+            </div>
+            <div>
+              <img src="../assets/icons/ui/ui-key.svg" alt="">
+              <dt>Proposta</dt>
+              <dd id="proposal-meta-id">ID pendente</dd>
+            </div>
+            <div>
+              <img src="../assets/icons/ui/ui-document.svg" alt="">
+              <dt>Validade</dt>
+              <dd id="proposal-meta-validity">Definir antes de enviar</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="proposal-command-bar" aria-label="Ações da proposta">
+          <div class="proposal-command-bar__state">
+            <img src="../assets/icons/ui/ui-shield.svg" alt="">
+            <span>Status da publicação</span>
+            <strong id="proposal-command-status">Em preparação</strong>
+          </div>
+          <div class="proposal-command-bar__actions">
+            <details class="proposal-download-menu">
+              <summary class="btn btn--ghost">Ver e salvar</summary>
+              <div class="proposal-download-menu__panel">
+                <button type="button" id="btn-proposal-client-mode" aria-pressed="false"
+                  aria-controls="proposta-container">Visualizar como cliente</button>
+                <button type="button" onclick="App.exportarPDF()" id="btn-export-pdf">Imprimir ou salvar em PDF</button>
+              </div>
+            </details>
+            <button class="btn btn--accent" type="button" id="btn-proposal-publish"
+              title="Gera um link somente leitura com a validade definida." disabled>
+              <img src="../assets/icons/ui/ui-portal.svg" alt=""> Gerar link
+            </button>
+          </div>
+        </div>
+
+        <div id="proposal-evolution-feedback" class="proposal-evolution-feedback" role="status" aria-live="polite">
+          Confira os dados e defina a validade antes de gerar o link.
+        </div>
+
+        <section id="proposal-share-panel" class="proposal-share-panel" aria-live="polite" hidden>
+          <div>
+            <span>Link seguro da proposta</span>
+            <strong id="proposal-share-status">Publicação ativa</strong>
+            <small id="proposal-share-expiry">Validade pendente</small>
+          </div>
+          <label class="sr-only" for="proposal-share-link">Link público somente leitura</label>
+          <input id="proposal-share-link" type="text" readonly autocomplete="off">
+          <div class="proposal-share-panel__actions">
+            <button type="button" class="btn btn--primary btn--sm" id="btn-proposal-copy-link">Copiar link</button>
+            <button type="button" class="btn btn--ghost btn--sm" id="btn-proposal-open-link">Abrir como cliente</button>
+            <button type="button" class="btn btn--danger btn--sm" id="btn-proposal-revoke">Revogar acesso</button>
+          </div>
+        </section>
+
+        <div class="proposal-evolution-grid">
+          <aside class="proposal-outline-panel is-collapsed" aria-label="Conteúdo da proposta">
+            <div class="proposal-outline-panel__head">
+              <span>Estrutura da proposta</span>
+              <strong hidden>14 seções</strong>
+            </div>
+            <ol id="proposal-evolution-outline">
+              <li><button type="button" data-outline-index="0"><span>01</span><strong>Resumo</strong><small>Aguardando</small></button></li>
+              <li><button type="button" data-outline-index="1"><span>02</span><strong>Perfil e objetivo</strong><small>Aguardando</small></button></li>
+              <li><button type="button" data-outline-index="2"><span>03</span><strong>Grupos e cotas</strong><small>Aguardando</small></button></li>
+              <li><button type="button" data-outline-index="3"><span>04</span><strong>Grupos selecionados</strong><small>Aguardando</small></button></li>
+              <li><button type="button" data-outline-index="4"><span>05</span><strong>Valores contratados</strong><small>Aguardando</small></button></li>
+              <li><button type="button" data-outline-index="5"><span>06</span><strong>Lances</strong><small>Aguardando</small></button></li>
+              <li><button type="button" data-outline-index="6"><span>07</span><strong>Evolução das parcelas</strong><small>Aguardando</small></button></li>
+              <li><button type="button" data-outline-index="7"><span>08</span><strong>Eventos</strong><small>Aguardando</small></button></li>
+              <li><button type="button" data-outline-index="8"><span>09</span><strong>Comparação</strong><small>Aguardando</small></button></li>
+              <li><button type="button" data-outline-index="9"><span>10</span><strong>Riscos</strong><small>Aguardando</small></button></li>
+              <li><button type="button" data-outline-index="10"><span>11</span><strong>Cronograma</strong><small>Aguardando</small></button></li>
+              <li><button type="button" data-outline-index="11"><span>12</span><strong>Memória de cálculo</strong><small>Aguardando</small></button></li>
+              <li><button type="button" data-outline-index="12"><span>13</span><strong>Fontes e premissas</strong><small>Aguardando</small></button></li>
+              <li><button type="button" data-outline-index="13"><span>14</span><strong>Aceite e próximos passos</strong><small>Aguardando</small></button></li>
+            </ol>
+            <button type="button" class="proposal-outline-panel__collapse" id="btn-proposal-outline-collapse"
+              aria-expanded="false" aria-controls="proposal-evolution-outline">
+              <img src="../assets/icons/ui/ui-arrow.svg" alt=""> Ver conteúdo
+            </button>
+          </aside>
+
+          <div class="proposal-preview-shell">
+            <article class="proposal-cover-preview" aria-label="Capa e síntese da proposta">
+              <div class="proposal-cover-preview__brand">
+                <img src="../assets/logos/logo-bank-fratern-09.svg" alt="Bancus Fraternis">
+                <div>
+                  <span>Proposta comercial</span>
+                  <strong id="proposal-cover-id">ID pendente</strong>
+                </div>
+              </div>
+              <div class="proposal-cover-preview__content">
+                <div>
+                  <h3>Sua proposta de consórcio</h3>
+                  <p>Confira os grupos, valores, lances, parcelas e condições desta simulação.</p>
+                  <span class="proposal-cover-preview__notice">Simulação; não garante contemplação.</span>
+                </div>
+                <img src="../assets/logos/logo-bank-fratern-compass.svg" alt="" class="proposal-cover-preview__watermark">
+              </div>
+              <div class="proposal-cover-preview__metrics" aria-label="Resumo executivo">
+                <article><img src="../assets/icons/ui/ui-coin.svg" alt=""><span>Crédito contratado</span><strong data-proposal-metric="credit">Aguardando cálculo</strong></article>
+                <article><img src="../assets/icons/ui/ui-vault.svg" alt=""><span>Crédito líquido</span><strong data-proposal-metric="net-credit">Aguardando cálculo</strong></article>
+                <article><img src="../assets/icons/ui/ui-calculator.svg" alt=""><span>Parcela inicial</span><strong data-proposal-metric="installment">Aguardando cálculo</strong></article>
+                <article><img src="../assets/icons/ui/ui-scale.svg" alt=""><span>Lance configurado</span><strong data-proposal-metric="bid">Aguardando cálculo</strong></article>
+              </div>
+            </article>
+
+            <div id="proposta-container" class="proposal-preview">
+              <p class="text-muted proposal-preview__empty">
+                Calcule a simulação para gerar a proposta comercial.
+              </p>
+            </div>
+          </div>
+
+          <aside class="proposal-validation-panel" aria-labelledby="proposal-validation-title">
+            <div class="proposal-validation-panel__head">
+              <img src="../assets/icons/ui/ui-shield.svg" alt="">
+              <div>
+                <span>Validação da proposta</span>
+                <strong id="proposal-validation-title" tabindex="-1">Conferência final</strong>
+              </div>
+            </div>
+            <ul>
+              <li data-proposal-check="calculation">
+                <img src="../assets/icons/ui/ui-calculator.svg" alt="">
+                <div><strong>Simulação calculada</strong><span>Resumo e cronograma gerados.</span></div>
+                <small>Aguardando</small>
+              </li>
+              <li data-proposal-check="required-data">
+                <img src="../assets/icons/ui/ui-users.svg" alt="">
+                <div><strong>Dados essenciais</strong><span>Consultor, cliente e projeto conferidos.</span></div>
+                <small>Aguardando</small>
+              </li>
+              <li data-proposal-check="premises">
+                <img src="../assets/icons/ui/ui-scale.svg" alt="">
+                <div><strong>Premissas revisadas</strong><span>Taxas, índices e regras registrados.</span></div>
+                <small>Aguardando</small>
+              </li>
+              <li data-proposal-check="pdf-structure">
+                <img src="../assets/icons/ui/ui-document.svg" alt="">
+                <div><strong>Documento completo</strong><span>Seções e anexos conferidos.</span></div>
+                <small>Aguardando</small>
+              </li>
+              <li data-proposal-check="validity">
+                <img src="../assets/icons/ui/ui-key.svg" alt="">
+                <div><strong>Validade e aceite</strong><span>Revisão humana com prazo definido.</span></div>
+                <small>Aguardando</small>
+              </li>
+            </ul>
+            <div class="proposal-validation-panel__result" data-proposal-validation-result>
+              <img src="../assets/icons/ui/ui-lock.svg" alt="">
+              <div><strong>Validação pendente</strong><span>Revise os itens antes da publicação.</span></div>
+            </div>
+          </aside>
+        </div>
+
+        <details class="proposal-control-drawer" id="proposal-control-drawer">
+          <summary>
+            <img src="../assets/icons/ui/ui-calculator.svg" alt="">
+              <span><strong>Revisão e validade</strong><small>Escolha o conteúdo, confira os dados e defina o prazo.</small></span>
+          </summary>
+          <div class="proposal-control-drawer__content">
+            <section id="proposal-acceptance-panel" class="proposal-acceptance-panel" data-proposal-acceptance-panel>
+              <div class="proposal-acceptance-panel__empty">Calcule a simulação para registrar revisão, validade e aceite.</div>
+            </section>
+            <details class="proposal-control-disclosure">
+              <summary>Personalizar conteúdo do PDF</summary>
+              <div class="proposal-export-note">
+                <strong>Escolha as seções que o cliente receberá.</strong>
+                <span>Esta escolha não altera os valores calculados.</span>
+              </div>
+              <section id="proposal-builder-board" class="proposal-builder-board" data-proposal-builder-board>
+                <div class="proposal-builder-board__empty">Calcule a simulação para escolher o conteúdo da proposta.</div>
+              </section>
+            </details>
+            <details class="proposal-control-disclosure">
+              <summary>Ver versões salvas</summary>
+              <section id="proposal-version-panel" class="proposal-version-panel" data-proposal-version-panel>
+                <div class="proposal-version-panel__empty">Calcule a simulação para salvar versões e comparar mudanças.</div>
+              </section>
+            </details>
+          </div>
+        </details>
+
+        <div class="proposal-bottom-bar">
+          <button type="button" class="btn btn--ghost" id="btn-proposal-validity"
+            aria-controls="proposal-control-drawer">
+            <img src="../assets/icons/ui/ui-document.svg" alt=""> Configurar validade
+          </button>
+        <div class="proposal-bottom-bar__security">
+            <span><img src="../assets/icons/ui/ui-lock.svg" alt=""> O acesso pode ser revogado a qualquer momento</span>
+            <span><img src="../assets/icons/ui/ui-key.svg" alt=""> O link não exibe dados pessoais</span>
+          </div>
+          <button type="button" class="btn btn--accent" id="btn-proposal-publish-bottom" hidden
+            title="Gera um link somente leitura com a validade definida." disabled>
+            <img src="../assets/icons/ui/ui-portal.svg" alt=""> Gerar link
+          </button>
+        </div>
+
+        <div class="step-nav proposal-final-navigation">
+          <button class="btn btn--ghost" type="button" onclick="App.prevStep()">&larr; Voltar à comparação</button>
+        </div>
+      </section>
     </main>
   </div><!-- end .sim-layout -->
 
-  <details class="bf-v8-stagebar-shell" open>
+  <details class="bf-v8-stagebar-shell">
     <summary class="bf-v8-stagebar-shell__summary">
-      <span>Atalhos da jornada</span>
-      <strong>Ocultar ou exibir painel</strong>
+      <span>Outros atalhos</span>
+      <strong>Abrir</strong>
     </summary>
     <section class="bf-v8-stagebar bf-v8-stagebar--bottom" aria-label="Atalhos da jornada do simulador" data-v8-stagebar>
       <div class="bf-v8-stagebar__intro">
-        <span>Simulador v8</span>
-        <strong>Base real, prateleira, resultado e retomada conectados.</strong>
+        <span>Acesso rápido</span>
+        <strong>Vá direto ao ponto que deseja revisar.</strong>
       </div>
-      <a class="bf-v8-stagebar__item" href="#database-status-panel" data-step="1">
-        <span>Base</span>
-        <strong>Status da conexao</strong>
-      </a>
-      <a class="bf-v8-stagebar__item" href="#step-4" data-step="2">
-        <span>Escolha</span>
-        <strong>Prateleira de grupos</strong>
-      </a>
-      <a class="bf-v8-stagebar__item" href="#decisao-simulador" data-step="3">
-        <span>Decisao</span>
-        <strong>Proximo passo</strong>
-      </a>
-      <a class="bf-v8-stagebar__item" href="#step-7" data-step="4">
+      <button class="bf-v8-stagebar__item" type="button" data-step="1" onclick="App.goToStep(2)">
+        <span>Cliente</span>
+        <strong>Dados e objetivo</strong>
+      </button>
+      <button class="bf-v8-stagebar__item" type="button" data-step="2" onclick="App.goToStep(4)">
+        <span>Grupos</span>
+        <strong>Opções disponíveis</strong>
+      </button>
+      <button class="bf-v8-stagebar__item" type="button" data-step="3" onclick="App.goToStep(5)">
+        <span>Projeto</span>
+        <strong>Valores e lance</strong>
+      </button>
+      <button class="bf-v8-stagebar__item" type="button" data-step="4" onclick="App.goToStep(7)">
         <span>Resultado</span>
-        <strong>Resumo financeiro</strong>
-      </a>
+        <strong>Resumo da simulação</strong>
+      </button>
       <a class="bf-v8-stagebar__item" href="carteira.html#decisao-carteira" data-step="5">
-        <span>Continuidade</span>
-        <strong>Retomar na Carteira</strong>
+        <span>Salvas</span>
+        <strong>Abrir simulações</strong>
       </a>
     </section>
   </details>
@@ -1083,13 +1350,13 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
   <!-- """""""""" SE!ÒO EDUCATIVA """""""""" -->
   <section class="concepts-section" aria-label="Conceitos de Consórcio">
     <div class="container">
-      <div class="collapsible collapsible--open" style="border:none;background:transparent;">
+      <div class="collapsible" style="border:none;background:transparent;">
         <button class="collapsible__trigger"
           style="background:transparent;padding:0 0 24px 0;font-size:1.5rem;font-weight:800;color:var(--gray-900);">
-          Guia de Conceitos - Entenda o Consórcio
+          Entenda os termos do consórcio
         </button>
         <div class="collapsible__content" style="padding:0;">
-          <p class="text-muted mb-6">Clique em cada card para aprender sobre os conceitos fundamentais do consórcio.</p>
+          <p class="text-muted mb-6">Consulte definições e exemplos quando precisar.</p>
           <div id="conceitos-container" class="concepts-grid"></div>
         </div>
       </div>
@@ -1099,14 +1366,14 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
   <!-- """""""""" FOOTER """""""""" -->
   <footer class="site-footer">
     <div class="container">
-      <p>ConsórcioPro  Simulador de Consórcio Profissional</p>
-      <p style="margin-top:4px;font-size:12px;color:#60a5fa;">Simulação educacional. Não constitui oferta vinculante.
+      <p>Simulador de consórcio Bancus Fraternis</p>
+      <p style="margin-top:4px;font-size:12px;color:#60a5fa;">Os valores são estimados. A contemplação não é garantida.
       </p>
     </div>
   </footer>
 
   <!-- """""""""" BARRA DE A!"ES MOBILE """""""""" -->
-  <div class="mobile-action-bar" id="mobile-bar">
+  <div class="mobile-action-bar" id="mobile-bar" hidden aria-hidden="true">
     <button class="btn btn--success btn--sm" onclick="App.calcular()"><span class="bf-action-icon">CL</span> Calcular</button>
     <button class="btn btn--primary btn--sm" onclick="App.exportarPDF()"><span class="bf-action-icon">PDF</span> PDF</button>
   </div>
@@ -1116,6 +1383,7 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
   <script src="../js/shelf-data.js"></script>
   <script src="../js/database-progress.js"></script>
   <script src="../js/heuristic-engine.js"></script>
+  <script src="../js/simulation-contracts.js"></script>
   <script src="../js/engine.js"></script>
   <script src="../js/charts.js"></script>
   <script src="../js/export.js"></script>
@@ -1137,6 +1405,7 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
   <script src="../js/simulator-state.js"></script>
   <script src="../js/storage.js"></script>
   <script src="../js/app.js"></script>
+  <script src="../js/proposal-experience.js"></script>
   <script>
     // V7: Carregamento assíncrono da base real
     (async function bootV7() {
@@ -1148,15 +1417,15 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
         const dbPrefix = location.pathname.includes('/pages/') ? '../' : '';
         const dbPath = `${dbPrefix}data_base/Tab_Grupos_Consorcio.compact.json`;
         const fallbackDbPath = `${dbPrefix}data_base/Tab_Grupos_Consorcio.json`;
-        if (progress) progress.start('Preparando conexao com a base.', `Abrindo ${dbPath}.`);
+        if (progress) progress.start('Buscando grupos disponíveis.', 'Preparando as opções para consulta.');
       try {
-        if (msg) msg.textContent = 'Carregando base compacta de grupos (4 MB)...';
+        if (msg) msg.textContent = 'Carregando grupos disponíveis...';
         if (typeof loadRealDatabase !== 'function') {
           throw new Error('loadRealDatabase indisponivel');
         }
-        if (progress) progress.stage('download', 28, 'Carregando base compacta de grupos (4 MB)...', 'Recebendo registros compactos do JSON local.');
+        if (progress) progress.stage('download', 28, 'Carregando grupos disponíveis...', 'Recebendo as opções para consulta.');
         const count = await loadRealDatabase([dbPath, fallbackDbPath]);
-        if (progress) progress.stage('parse', 68, 'Validando registros carregados.', 'Normalizando campos comerciais e dados minimos.');
+        if (progress) progress.stage('parse', 68, 'Conferindo os grupos.', 'Organizando cartas, prazos e taxas.');
         const catalog = (typeof ShelfCatalog !== 'undefined' && Array.isArray(ShelfCatalog)) ? ShelfCatalog : [];
         const loadedFromReal = (typeof isShelfDataLoaded === 'function') ? isShelfDataLoaded() : count > 0;
         const dataError = (typeof getShelfDataError === 'function') ? getShelfDataError() : null;
@@ -1166,9 +1435,9 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
           if (loadedFromReal) {
             msg.textContent = `OK - ${count.toLocaleString('pt-BR')} grupos carregados!`;
           } else if (count > 0) {
-            msg.textContent = `Base real indisponivel. Usando fallback com ${count.toLocaleString('pt-BR')} grupos.`;
+            msg.textContent = `${count.toLocaleString('pt-BR')} opções de exemplo disponíveis.`;
           } else {
-            msg.textContent = 'Base real indisponivel. App iniciado sem grupos.';
+            msg.textContent = 'Não foi possível carregar os grupos agora.';
           }
         }
         console.log(`[bootV7] ShelfCatalog populado: ${catalog.length} grupos`);
@@ -1177,7 +1446,7 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
         //  Notificar o App que a base está pronta 
         // Popular filtros de administradora (dropdown etapa 3)
         if (typeof App !== 'undefined' && App.buscarGrupos) {
-          if (progress) progress.stage('filters', 84, 'Montando filtros da jornada.', 'Administradoras e segmentos prontos para uso.');
+          if (progress) progress.stage('filters', 84, 'Preparando os filtros.', 'Administradoras e segmentos prontos para uso.');
           // Forçar re-populagem dos filtros (resetar para permitir atualização)
           const selAdmin = document.getElementById('filtroAdministradora');
           if (selAdmin && typeof ShelfEngine !== 'undefined' && ShelfEngine.getUniqueAdmins) {
@@ -1193,7 +1462,7 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
             if (App.applyConfiguredDefaults) App.applyConfiguredDefaults({ forceFilters: true });
           }
           // Disparar busca inicial para popular a prateleira
-          if (progress) progress.stage('shelf', 94, 'Atualizando prateleira de grupos.', 'Aplicando filtros iniciais e score comercial.');
+          if (progress) progress.stage('shelf', 94, 'Organizando os grupos.', 'Aplicando os filtros iniciais.');
           App.buscarGrupos();
         } else {
           console.warn('[bootV7] App indisponivel; boot continuou sem busca inicial.');
@@ -1202,20 +1471,19 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
         // Delay para mostrar mensagem de sucesso
         if (progress) {
           if (loadedFromReal) {
-            progress.success(count, 'Base real conectada para filtros, prateleira e simulacao.');
+            progress.success(count, 'Grupos prontos para consulta e simulação.');
           } else if (count > 0) {
-            progress.fallback(count, 'Base real indisponivel; catalogo local de seguranca em uso.');
+            progress.fallback(count, 'Opções de exemplo prontas para consulta.');
           } else {
-            progress.error('Base real indisponivel. App iniciado sem grupos.');
+            progress.error('Não foi possível carregar os grupos agora.');
           }
         }
         await wait(loadedFromReal ? 800 : 1400);
       } catch (e) {
         console.warn(`[bootV7] Boot controlado: ${e && e.message ? e.message : e}`);
         const msg = document.getElementById('loading-message');
-        if (msg) msg.textContent = 'Nao foi possivel carregar a base agora. App iniciado em modo seguro.';
-        if (msg) msg.textContent = 'Nao foi possivel carregar a base agora. App iniciado em modo seguro.';
-        if (progress) progress.error('Nao foi possivel carregar a base agora. App iniciado em modo seguro.');
+        if (msg) msg.textContent = 'Não foi possível carregar os grupos agora.';
+        if (progress) progress.error('Não foi possível carregar os grupos agora. Tente novamente em instantes.');
         try {
           if (typeof App !== 'undefined' && App.buscarGrupos) App.buscarGrupos();
         } catch (appErr) {

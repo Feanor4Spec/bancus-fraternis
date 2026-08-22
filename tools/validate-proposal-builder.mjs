@@ -117,12 +117,12 @@ assert(consultiva.concepts.consorcio === true && consultiva.concepts.seguro === 
 assert(tecnica.sections.formulas === true && tecnica.sections.concepts === false, 'Preset tecnica nao prioriza memoria de calculo.');
 assert(compacta.sections.header === true && compacta.sections.schedule === false, 'Preset compacta nao reduz blocos corretamente.');
 assert(compacta.sections.decision === true, 'Preset compacta deve manter decisao final.');
-assert(builder.focusLabel(consultiva) === 'Consultiva', 'focusLabel nao reconhece preset consultiva.');
+assert(builder.focusLabel(consultiva) === 'Com explicações', 'focusLabel nao reconhece o foco explicativo do preset consultiva.');
 assert(builder.pageEstimate(tecnica) >= 1, 'pageEstimate deve retornar ao menos 1 pagina.');
 assert(builder.readinessIssues(builder.presetConfig('completa')).length === 0, 'Preset completo nao deveria ter pendencias.');
 const emptyConfig = builder.presetConfig('completa');
 Object.keys(emptyConfig.sections).forEach((key) => { emptyConfig.sections[key] = false; });
-assert(builder.readinessIssues(emptyConfig).includes('Nenhum bloco selecionado para exportacao.'), 'readinessIssues nao identifica lousa vazia.');
+assert(builder.readinessIssues(emptyConfig).includes('Nenhuma seção selecionada para o PDF.'), 'readinessIssues nao identifica configuracao vazia.');
 
 const defaults = summary.proposalBuilderDefaults;
 const report = {

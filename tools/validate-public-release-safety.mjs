@@ -27,9 +27,12 @@ const scanRoots = [
   'pages',
   'tools',
   '.gitignore',
+  '.env.example',
   '404.html',
   'index.html',
-  'README.md'
+  'README.md',
+  'package.json',
+  'server.js'
 ];
 
 function fail(message) {
@@ -79,7 +82,7 @@ async function collectFiles(entry, out = []) {
   }
 
   const extension = path.extname(entry).toLowerCase();
-  if (textExtensions.has(extension) || path.basename(entry) === '.gitignore') out.push(toPosix(entry));
+  if (textExtensions.has(extension) || ['.gitignore', '.env.example'].includes(path.basename(entry))) out.push(toPosix(entry));
   return out;
 }
 
@@ -105,7 +108,7 @@ function scanSensitiveText(relativePath, text) {
   const personalWorkspacePattern = /\b(?:OneDrive|gustavo\.pinheiro|\\gusta\\|\/gusta\/)/i;
   const emailPattern = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
   const cpfFieldPattern = /(?:clienteCpf|cpf)["'\s:=]+["']?([0-9.\-]{11,14})/gi;
-  const phoneFieldPattern = /(?:clienteTelefone|consultorTelefone|telefone|phone)["'\s:=]+["']?([^"',\n<]+)/gi;
+  const phoneFieldPattern = /(?:clienteTelefone|consultorTelefone|telefone|phone)\s*[:=]\s*["']([^"'\n<]+)["']/gi;
 
   if (localPathPattern.test(text)) fail(`${normalized} contem caminho local absoluto ou file://.`);
   if (normalized !== 'tools/validate-public-release-safety.mjs' && personalWorkspacePattern.test(text)) {
@@ -142,6 +145,8 @@ for (const file of Array.from(new Set(files)).sort()) {
 const gitignore = await read('.gitignore');
 [
   '.runtime/',
+  '.env.*',
+  '!.env.example',
   'server-8080.err',
   'server-8080.err.log',
   'server-8080.out',
@@ -157,6 +162,7 @@ const loginHtml = await read('pages/login.html');
 const simulatorHtml = await read('pages/simulador.html');
 const contracts = await read('docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md');
 const readme = await read('README.md');
+const server = await read('server.js');
 
 assert(await exists('404.html'), 'Fallback estatico 404.html ausente.');
 assert(await exists('.github/workflows/validate.yml'), 'Workflow de validacao publica ausente.');
@@ -165,6 +171,8 @@ assert(loginHtml.includes('data-public-demo-notice'), 'Login sem aviso publico d
 assert(simulatorHtml.includes('sim-header__demo'), 'Simulador sem selo publico de demonstracao.');
 assert(contracts.includes('tools/validate-public-release-safety.mjs'), 'Contratos publicos nao documentam validate-public-release-safety.');
 assert(readme.includes('Ambiente publico de demonstracao'), 'README raiz nao explicita ambiente publico de demonstracao.');
+assert(server.includes('path.relative(ROOT_DIR, filePath)'), 'Servidor sem verificacao robusta de containment para arquivos estaticos.');
+assert(!server.includes('filePath.startsWith(ROOT_DIR)'), 'Servidor ainda usa comparacao de prefixo vulneravel para arquivos estaticos.');
 
 for (const artifact of ['server-8080.err', 'server-8080.err.log', 'server-8080.out', 'server-8080.out.log']) {
   if (await exists(artifact)) warn(`${artifact} existe localmente, mas esta protegido pelo .gitignore.`);

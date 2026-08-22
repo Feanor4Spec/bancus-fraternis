@@ -5,17 +5,17 @@
 (function () {
   const stageOrder = ['connect', 'download', 'parse', 'filters', 'shelf'];
   const stageLabels = {
-    connect: 'Conexao local',
-    download: 'Download JSON',
-    parse: 'Validacao',
+    connect: 'Conexão',
+    download: 'Carregamento',
+    parse: 'Conferência',
     filters: 'Filtros',
-    shelf: 'Prateleira'
+    shelf: 'Grupos'
   };
 
   const state = {
     percent: 0,
-    message: 'Aguardando conexao com a base.',
-    detail: 'Base ainda nao inicializada.',
+    message: 'Preparando os grupos.',
+    detail: 'Aguarde alguns segundos.',
     mode: 'pending',
     count: 0,
     source: 'pending',
@@ -77,12 +77,12 @@
     text('loading-progress-value', statusText);
     text('loading-detail', state.detail);
     text('database-status-percent', statusText);
-    text('database-status-title', state.mode === 'success' ? 'Base real conectada' : 'Conexao com base real');
+    text('database-status-title', state.mode === 'success' ? 'Grupos disponíveis' : 'Carregando grupos');
     text('database-status-text', state.detail);
     text('database-status-count', `${formatCount(state.count)} grupos`);
     text('database-status-source', sourceLabel(state.source));
     text('database-status-path', state.path || '-');
-    text('database-status-badge', state.mode === 'success' ? 'Online' : (state.mode === 'fallback' ? 'Fallback' : 'Fase 1'));
+    text('database-status-badge', state.mode === 'success' ? 'Pronto' : (state.mode === 'fallback' ? 'Exemplo' : 'Aguarde'));
     width('loading-progress-bar', percent);
     width('database-status-bar', percent);
     dataset('database-status-panel', 'state', state.mode);
@@ -98,8 +98,8 @@
   function start(message, detail) {
     update({
       percent: 8,
-      message: message || 'Preparando conexao com a base.',
-      detail: detail || 'Abrindo canal local para data_base/Tab_Grupos_Consorcio.compact.json.',
+      message: message || 'Buscando grupos disponíveis.',
+      detail: detail || 'Preparando as opções para consulta.',
       mode: 'loading',
       source: 'loading'
     });
@@ -129,8 +129,8 @@
   function success(count, detail) {
     update({
       percent: 100,
-      message: `OK - ${formatCount(count)} grupos carregados.`,
-      detail: detail || 'Base real disponivel para filtros, prateleira e simulacao.',
+      message: `${formatCount(count)} grupos disponíveis.`,
+      detail: detail || 'As opções estão prontas para consulta e simulação.',
       mode: 'success',
       count,
       source: 'compact-json'
@@ -141,8 +141,8 @@
   function fallback(count, detail) {
     update({
       percent: 100,
-      message: `Fallback ativo - ${formatCount(count)} grupos disponiveis.`,
-      detail: detail || 'Base real indisponivel; catalogo local de seguranca em uso.',
+      message: `${formatCount(count)} opções de exemplo disponíveis.`,
+      detail: detail || 'Você pode continuar a simulação com estas opções.',
       mode: 'fallback',
       count,
       source: 'fallback'
@@ -153,8 +153,8 @@
   function error(detail) {
     update({
       percent: 100,
-      message: 'Base indisponivel no momento.',
-      detail: detail || 'O simulador iniciou em modo seguro.',
+      message: 'Não foi possível carregar os grupos.',
+      detail: detail || 'Tente novamente em instantes.',
       mode: 'error'
     });
     stageOrder.forEach((key) => setStage(key, 'pending'));
@@ -163,7 +163,7 @@
   function journey(percent, message, mode) {
     const value = clamp(percent);
     text('journey-progress-value', `${value}%`);
-    text('journey-progress-text', message || 'Atualizando jornada.');
+    text('journey-progress-text', message || 'Atualizando os grupos.');
     width('journey-progress-bar', value);
     dataset('journey-progress-panel', 'state', mode || 'loading');
   }

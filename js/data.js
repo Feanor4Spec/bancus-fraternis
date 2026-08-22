@@ -4,28 +4,48 @@
  * ============================================
  */
 
+function criarCpfDemonstracao(base = '123456789') {
+  const digits = String(base).replace(/\D/g, '').padEnd(9, '0').slice(0, 9).split('').map(Number);
+  const digito = (values, pesoInicial) => {
+    const soma = values.reduce((total, value, index) => total + value * (pesoInicial - index), 0);
+    const resto = (soma * 10) % 11;
+    return resto === 10 ? 0 : resto;
+  };
+  const primeiro = digito(digits, 10);
+  const segundo = digito([...digits, primeiro], 11);
+  return [...digits, primeiro, segundo].join('');
+}
+
 const DadosExemplo = {
   // ─── Cenário padrão de teste ───
   padrao: {
     // Dados do Consultor (V3)
     consultor: 'Consultor Demo',
     consultorEmail: 'consultor.demo@bankfratern.local',
-    consultorTelefone: '(11) 0000-0000',
+    consultorTelefone: '(11) 90000-0000',
     consultorEmpresa: 'Bancus Fraternis Demo',
     consultorCodigo: 'Consultor 01',
     dataSimulacao: new Date().toISOString().split('T')[0],
 
     // Dados do Cliente (V3)
     nomeCliente: 'Cliente Demonstracao',
-    clienteCpf: '00000000000',
+    clienteCpf: criarCpfDemonstracao(),
     clienteEmail: 'cliente.demo@bankfratern.local',
     clienteTelefone: '(11) 90000-0000',
     clienteObjetivo: 'aquisicao',
-    observacoes: 'Desejo ser contemplado em até 6 meses.',
+    valorObjetivo: 100000,
+    parcelaConfortavel: 1800,
+    reservaAtual: 30000,
+    caixaLance: 20000,
+    prazoDesejado: 100,
+    urgencia: 'media',
+    toleranciaRisco: 'media',
+    clienteConsentimento: true,
+    observacoes: 'Busca aquisicao planejada; a contemplacao e apenas uma hipotese de simulacao.',
 
     // Dados herdados / hidden
     tipoBem: 'imovel',
-    administradora: 'ConsórcioPro Admin',
+    administradora: 'Administradora Exemplo',
     grupo: 'G-2026-001',
     cota: '0042',
 
@@ -78,7 +98,7 @@ const ConceitosConsorcio = [
   {
     id: 'carta-credito',
     titulo: 'Carta de Crédito',
-    icone: '💳',
+    icone: 'CC',
     cor: 'blue',
     descricao: 'É o valor que o consorciado terá direito a receber quando for contemplado. Funciona como o "poder de compra" do consórcio para adquirir o bem desejado.',
     formula: 'Carta de Crédito = Valor do bem desejado',
@@ -88,7 +108,7 @@ const ConceitosConsorcio = [
   {
     id: 'saldo-devedor',
     titulo: 'Saldo Devedor Inicial',
-    icone: '📊',
+    icone: 'TA',
     cor: 'blue',
     descricao: 'É o montante que o consorciado deve pagar ao longo do plano. Pode ser igual à carta de crédito ou incluir os custos totais, dependendo da política da administradora.',
     formula: 'Política A: Saldo = Carta\nPolítica B: Saldo = Carta + Taxa Adm + Fundo Reserva + Seguro',
@@ -98,7 +118,7 @@ const ConceitosConsorcio = [
   {
     id: 'prazo-total',
     titulo: 'Prazo Total',
-    icone: '📅',
+    icone: 'PZ',
     cor: 'blue',
     descricao: 'É a quantidade total de meses (N) do grupo de consórcio. Define por quanto tempo as parcelas serão pagas.',
     formula: 'N = número total de meses do grupo',
@@ -108,7 +128,7 @@ const ConceitosConsorcio = [
   {
     id: 'prazo-restante',
     titulo: 'Prazo Restante',
-    icone: '⏳',
+    icone: 'AS',
     cor: 'blue',
     descricao: 'Quantidade de parcelas que ainda faltam para encerrar o plano. Diminui a cada mês.',
     formula: 'Prazo_Restante = Prazo_Anterior − 1',
@@ -118,7 +138,7 @@ const ConceitosConsorcio = [
   {
     id: 'parcela-base',
     titulo: 'Parcela Base',
-    icone: '💰',
+    icone: 'FR',
     cor: 'gold',
     descricao: 'Valor que corresponde à fração do saldo devedor pelo prazo restante. É o componente principal da parcela.',
     formula: 'Parcela Base = Saldo Devedor ÷ Prazo Restante',
@@ -128,7 +148,7 @@ const ConceitosConsorcio = [
   {
     id: 'parcela-total',
     titulo: 'Parcela Total',
-    icone: '🧾',
+    icone: 'SG',
     cor: 'gold',
     descricao: 'É a soma da parcela base com os componentes de taxa de administração, fundo de reserva e seguro (diluídos mensalmente).',
     formula: 'Parcela Total = Parcela Base + (Taxa Adm ÷ N) + (Fundo Reserva ÷ N) + Seguro mensal',
@@ -138,7 +158,7 @@ const ConceitosConsorcio = [
   {
     id: 'taxa-adm',
     titulo: 'Taxa de Administração',
-    icone: '🏦',
+    icone: 'AD',
     cor: 'gold',
     descricao: 'Remuneração da administradora pela gestão do grupo. É um percentual sobre a carta de crédito, diluído ao longo do prazo.',
     formula: 'Taxa Adm Total = Carta × %Taxa\nTaxa Adm Mensal = Taxa Adm Total ÷ N',
@@ -148,7 +168,7 @@ const ConceitosConsorcio = [
   {
     id: 'fundo-reserva',
     titulo: 'Fundo de Reserva',
-    icone: '🛡️',
+    icone: 'GR',
     cor: 'green',
     descricao: 'Valor destinado a proteger o grupo contra inadimplência e riscos. Pode ser devolvido ao final do grupo se não utilizado.',
     formula: 'FR Total = Carta × %FR\nFR Mensal = FR Total ÷ N',
@@ -158,7 +178,7 @@ const ConceitosConsorcio = [
   {
     id: 'seguro',
     titulo: 'Seguro Opcional',
-    icone: '🔒',
+    icone: 'CT',
     cor: 'green',
     descricao: 'Proteção adicional que pode cobrir morte, invalidez ou outros riscos. Pode ser percentual ou valor fixo mensal.',
     formula: 'Seguro Total = Carta × %Seguro (ou Valor Fixo × N)',
@@ -168,7 +188,7 @@ const ConceitosConsorcio = [
   {
     id: 'indice-reajuste',
     titulo: 'Índice de Reajuste',
-    icone: '📈',
+    icone: 'RJ',
     cor: 'gold',
     descricao: 'Índice econômico usado para corrigir o saldo devedor anualmente. Mantém o poder de compra da carta de crédito.',
     formula: 'Saldo Ajustado = Saldo × (1 + Índice)',
@@ -178,7 +198,7 @@ const ConceitosConsorcio = [
   {
     id: 'aniversario',
     titulo: 'Mês Aniversário do Grupo',
-    icone: '🎂',
+    icone: 'AN',
     cor: 'gold',
     descricao: 'Data anual em que o saldo devedor é reajustado pelo índice escolhido. Impacta diretamente no valor das parcelas futuras.',
     formula: 'No mês aniversário:\nSaldo = Saldo_Anterior × (1 + Índice)\nParcela = Saldo ÷ Prazo_Restante',
@@ -188,7 +208,7 @@ const ConceitosConsorcio = [
   {
     id: 'contemplacao',
     titulo: 'Contemplação',
-    icone: '🏆',
+    icone: 'CO',
     cor: 'green',
     descricao: 'Momento em que o consorciado recebe a carta de crédito, por sorteio ou lance. A partir deste ponto pode adquirir o bem.',
     formula: 'Se houver lance:\nNovo_Saldo = Saldo − Lance_Total\nParcela = Novo_Saldo ÷ Prazo_Restante',
@@ -198,7 +218,7 @@ const ConceitosConsorcio = [
   {
     id: 'lance-livre',
     titulo: 'Lance Livre',
-    icone: '🎯',
+    icone: 'LN',
     cor: 'purple',
     descricao: 'Oferta feita com recursos próprios do consorciado para antecipar a contemplação. O valor é abatido do saldo devedor.',
     formula: 'Lance Livre = Carta × %Lance_Próprio',
@@ -208,7 +228,7 @@ const ConceitosConsorcio = [
   {
     id: 'lance-fixo',
     titulo: 'Lance Fixo',
-    icone: '📌',
+    icone: 'LE',
     cor: 'purple',
     descricao: 'Lance com valor pré-definido pela administradora. Todos os participantes oferecem o mesmo percentual.',
     formula: 'Lance Fixo = Carta × %Lance_Fixo',
@@ -218,7 +238,7 @@ const ConceitosConsorcio = [
   {
     id: 'lance-embutido',
     titulo: 'Lance Embutido',
-    icone: '🔄',
+    icone: 'LP',
     cor: 'purple',
     descricao: 'Parte da própria carta de crédito é usada como lance. Reduz o valor líquido recebido, mas não exige desembolso extra.',
     formula: 'Lance Embutido = Carta × %Lance_Embutido\nCarta Líquida = Carta − Lance Embutido',
@@ -228,7 +248,7 @@ const ConceitosConsorcio = [
   {
     id: 'lance-fgts',
     titulo: 'Lance com FGTS',
-    icone: '🏠',
+    icone: 'FG',
     cor: 'green',
     descricao: 'Para consórcios de imóveis, o FGTS pode ser utilizado como lance ou para amortizar parcelas.',
     formula: 'Lance FGTS = Saldo do FGTS disponível',
@@ -238,7 +258,7 @@ const ConceitosConsorcio = [
   {
     id: 'adiantamento',
     titulo: 'Adiantamento de Parcelas',
-    icone: '⏩',
+    icone: 'AP',
     cor: 'purple',
     descricao: 'Pagamento antecipado de parcelas futuras. Pode ser usado para reduzir o saldo devedor ou encurtar o prazo.',
     formula: 'Estratégia 1 (Redução de saldo):\nNovo_Saldo = Saldo − Valor_Adiantado\nParcela = Novo_Saldo ÷ Prazo_Restante\n\nEstratégia 2 (Redução de prazo):\nPrazo_Restante = Prazo − Parcelas_Abatidas',
@@ -248,7 +268,7 @@ const ConceitosConsorcio = [
   {
     id: 'inadimplencia',
     titulo: 'Inadimplência',
-    icone: '⚠️',
+    icone: 'IN',
     cor: 'red',
     descricao: 'Quando o consorciado deixa de pagar parcelas no prazo. Gera multa e juros sobre os valores em aberto.',
     formula: 'Multa = Parcela × %Multa\nJuros = Parcela × %Juros × Meses_Atraso\nTotal em Aberto = Parcela + Multa + Juros',
@@ -258,7 +278,7 @@ const ConceitosConsorcio = [
   {
     id: 'carta-liquida',
     titulo: 'Carta Líquida',
-    icone: '💵',
+    icone: 'ML',
     cor: 'green',
     descricao: 'É o valor efetivo que o consorciado recebe após descontar o lance embutido. Representa o poder de compra real.',
     formula: 'Carta Líquida = Carta − Lance Embutido',
@@ -268,7 +288,7 @@ const ConceitosConsorcio = [
   {
     id: 'valor-total-plano',
     titulo: 'Valor Total do Plano',
-    icone: '📋',
+    icone: 'SD',
     cor: 'blue',
     descricao: 'Soma de todos os custos do consórcio: carta de crédito + taxa de administração + fundo de reserva + seguro.',
     formula: 'Valor Total = Carta + Taxa Adm Total + FR Total + Seguro Total',
@@ -278,7 +298,7 @@ const ConceitosConsorcio = [
   {
     id: 'evento-mensal',
     titulo: 'Evento Mensal',
-    icone: '📌',
+    icone: 'CL',
     cor: 'blue',
     descricao: 'Cada mês do consórcio tem um "evento" que identifica o tipo de cálculo aplicado naquele período.',
     formula: 'Eventos possíveis:\n• Adesão (mês 1)\n• Normal\n• Aniversário (reajuste)\n• Contemplação\n• Adiantamento\n• Inadimplência\n• Regularização',
@@ -297,7 +317,7 @@ const ConceitosConsorcio = [
 const GruposComparacao = [
   {
     idGrupo: 'GRP-001',
-    administradora: 'ConsórcioPro Admin',
+    administradora: 'Administradora Exemplo',
     plano: 'Imóvel Essencial 100',
     codigoGrupo: 'G-2026-001',
     tipoBem: 'imovel',
@@ -317,7 +337,7 @@ const GruposComparacao = [
   },
   {
     idGrupo: 'GRP-002',
-    administradora: 'ConsórcioPro Admin',
+    administradora: 'Administradora Exemplo',
     plano: 'Imóvel Premium 120',
     codigoGrupo: 'G-2026-002',
     tipoBem: 'imovel',
@@ -337,7 +357,7 @@ const GruposComparacao = [
   },
   {
     idGrupo: 'GRP-003',
-    administradora: 'ConsórcioPro Admin',
+    administradora: 'Administradora Exemplo',
     plano: 'Auto Flex 60',
     codigoGrupo: 'G-2026-010',
     tipoBem: 'automovel',
@@ -357,7 +377,7 @@ const GruposComparacao = [
   },
   {
     idGrupo: 'GRP-004',
-    administradora: 'ConsórcioPro Admin',
+    administradora: 'Administradora Exemplo',
     plano: 'Auto Plus 80',
     codigoGrupo: 'G-2026-011',
     tipoBem: 'automovel',

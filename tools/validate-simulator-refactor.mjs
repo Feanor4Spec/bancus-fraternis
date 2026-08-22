@@ -195,7 +195,7 @@ state.applyFormSnapshot({
   nomeCliente: { value: 'Cliente Restaurado' },
   usarFGTS: { value: false }
 }, fakeRoot);
-assert(formSnapshot.nomeCliente.value === 'Cliente Local', 'Snapshot de formulario perdeu valor textual.');
+assert(!Object.prototype.hasOwnProperty.call(formSnapshot, 'nomeCliente'), 'Snapshot local de formulario nao deveria persistir nomeCliente.');
 assert(formSnapshot.usarFGTS.value === true, 'Snapshot de formulario perdeu checkbox.');
 assert(fields.nomeCliente.value === 'Cliente Restaurado', 'applyFormSnapshot nao restaurou texto.');
 assert(fields.usarFGTS.checked === false, 'applyFormSnapshot nao restaurou checkbox.');
@@ -257,6 +257,9 @@ const payload = state.buildSimulationPayload({
 });
 assert(payload.origem === 'simulador-consorcio', 'Payload salvo perdeu origem publica.');
 assert(payload.totalCarta === 200000, 'Payload salvo perdeu total de carta.');
+assert(!Object.prototype.hasOwnProperty.call(payload.params, 'nomeCliente'), 'Payload local nao deveria persistir nomeCliente em params.');
+assert(!Object.prototype.hasOwnProperty.call(payload.formSnapshot, 'nomeCliente'), 'Payload local nao deveria persistir nomeCliente no formSnapshot.');
+assert(payload.privacy && payload.privacy.localPIIStored === false, 'Payload local nao declara exclusao de PII.');
 assert(payload.decisionContext.calculatorSlug === 'capacidade-credito', 'Payload salvo perdeu origem da calculadora.');
 assert(state.resolveResumeStep(payload) === 7, 'resolveResumeStep deveria retomar em resultados quando ha cronograma.');
 
@@ -288,6 +291,11 @@ const report = {
   savedCartItems: savedCart.length,
   restoredCartItems: restored.length,
   resultRows: calculation.resultado.cronograma.length,
+  privacy: {
+    formSnapshotExcludesName: !Object.prototype.hasOwnProperty.call(formSnapshot, 'nomeCliente'),
+    paramsExcludeName: !Object.prototype.hasOwnProperty.call(payload.params, 'nomeCliente'),
+    localPIIStored: payload.privacy && payload.privacy.localPIIStored
+  },
   failures
 };
 

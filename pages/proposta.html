@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#0b2c52">
+  <title>Proposta de consórcio | Bancus Fraternis</title>
+  <link rel="icon" href="../assets/logos/bank-fratern-icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/bank-fratern-design-system.css">
+  <link rel="stylesheet" href="../assets/css/bf-design-system-v8.css">
+  <link rel="stylesheet" href="../css/proposal-public.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body class="proposal-public-body" data-bf-page="proposta-publica">
+  <header class="proposal-public-header" data-shell-header>
+    <a href="index.html" class="proposal-public-brand" aria-label="Bancus Fraternis">
+      <img src="../assets/logos/logo-bank-fratern-09.svg" alt="Bancus Fraternis">
+    </a>
+    <div class="proposal-public-header__meta">
+      <span>Consulta somente leitura</span>
+      <strong id="public-proposal-status">Abrindo proposta</strong>
+    </div>
+    <div class="proposal-public-header__actions" hidden id="public-proposal-actions">
+      <button type="button" class="btn btn--primary" id="public-proposal-print">Imprimir ou salvar em PDF</button>
+    </div>
+  </header>
+
+  <main class="proposal-public-main">
+    <section class="proposal-public-hero" aria-labelledby="public-proposal-title">
+      <div>
+        <span class="proposal-public-eyebrow">Bancus Fraternis</span>
+        <h1 id="public-proposal-title">Sua proposta de consórcio</h1>
+        <p>Confira crédito, parcelas, lances, prazos, custos e riscos antes de decidir.</p>
+      </div>
+      <dl class="proposal-public-facts" id="public-proposal-facts" hidden>
+        <div><dt>Proposta</dt><dd id="public-proposal-engine">—</dd></div>
+        <div><dt>Crédito total</dt><dd id="public-proposal-base">—</dd></div>
+        <div><dt>Parcela estimada</dt><dd id="public-proposal-version">—</dd></div>
+        <div><dt>Validade</dt><dd id="public-proposal-expiry">—</dd></div>
+      </dl>
+    </section>
+
+    <section class="proposal-public-state" id="public-proposal-loading" role="status" aria-live="polite">
+      <img src="../assets/icons/ui/ui-lock.svg" alt="">
+      <div>
+        <strong>Abrindo sua proposta</strong>
+        <span>Aguarde um instante.</span>
+      </div>
+    </section>
+
+    <section class="proposal-public-state proposal-public-state--error" id="public-proposal-error" role="alert" hidden>
+      <img src="../assets/icons/ui/ui-shield.svg" alt="">
+      <div>
+        <strong>Esta proposta não está disponível</strong>
+        <span id="public-proposal-error-message">O acesso pode ter expirado ou sido revogado.</span>
+      </div>
+    </section>
+
+    <section id="public-proposal-container" class="proposal-public-document" aria-live="polite"></section>
+  </main>
+
+  <footer class="proposal-public-footer">
+    <span>Esta é uma simulação. A contemplação não é garantida.</span>
+    <span>Valores e condições dependem da confirmação da administradora e do contrato.</span>
+  </footer>
+
+  <script src="../js/export.js"></script>
+  <script src="../js/proposal-summary.js"></script>
+  <script src="../assets/js/services/backend-api.service.js"></script>
+  <script src="../js/proposal-public.js"></script>
+</body>
+</html>

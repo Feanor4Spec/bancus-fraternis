@@ -13,6 +13,10 @@
   min-height: 100vh;
 }
 
+.home-body [hidden] {
+  display: none !important;
+}
+
 /* ==========================================
    HEADER FIXO
    ========================================== */

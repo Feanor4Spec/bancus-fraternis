@@ -127,18 +127,18 @@ const ProposalSummary = (() => {
   };
 
   const conceptDefinitions = [
-    { key: 'consorcio', title: 'Consorcio', body: 'Modelo de compra planejada em grupo, no qual os participantes contribuem mensalmente para formar credito e disputar contemplacao.' },
-    { key: 'cartaCredito', title: 'Carta de credito', body: 'Valor contratado para aquisicao do bem ou composicao do projeto. E a referencia de poder de compra da proposta.' },
-    { key: 'grupoCota', title: 'Grupo e cota', body: 'O grupo organiza as regras coletivas. A cota identifica a participacao do cliente dentro desse grupo.' },
-    { key: 'assembleia', title: 'Assembleia', body: 'Evento periodico em que ocorrem contemplatorios por sorteio, lance ou outras regras previstas pela administradora.' },
-    { key: 'lanceProprio', title: 'Lance proprio', body: 'Recurso adicional do cliente usado para aumentar a forca de contemplacao sem reduzir diretamente a carta contratada.' },
-    { key: 'lanceEmbutido', title: 'Lance embutido', body: 'Parte da propria carta usada como lance. Aumenta a oferta, mas reduz o credito liquido disponivel apos contemplacao.' },
-    { key: 'contemplacao', title: 'Contemplacao', body: 'Momento em que o cliente passa a poder usar o credito, desde que cumpra regras cadastrais, contratuais e documentais.' },
-    { key: 'fundoReserva', title: 'Fundo de reserva', body: 'Componente financeiro previsto para proteger o grupo contra necessidades de caixa e eventos operacionais.' },
-    { key: 'taxaAdministracao', title: 'Taxa de administracao', body: 'Remuneracao da administradora pela operacao do grupo, distribuida ao longo do prazo conforme regra do plano.' },
-    { key: 'saldoDevedor', title: 'Saldo devedor', body: 'Valor ainda pendente na operacao, considerando pagamentos, lances, eventos e amortizacao projetada.' },
-    { key: 'reajuste', title: 'Reajuste', body: 'Atualizacao periodica da carta, parcelas ou saldo conforme indice e regra contratual do grupo.' },
-    { key: 'seguro', title: 'Seguro', body: 'Componente opcional ou contratual que pode proteger a operacao conforme produto, administradora e perfil.' }
+    { key: 'consorcio', title: 'Consórcio', body: 'Compra planejada em grupo. Os participantes pagam parcelas mensais e concorrem à contemplação conforme as regras da administradora.' },
+    { key: 'cartaCredito', title: 'Carta de crédito', body: 'Valor contratado para comprar o bem ou serviço após a contemplação e a aprovação da administradora.' },
+    { key: 'grupoCota', title: 'Grupo e cota', body: 'O grupo reúne os participantes e suas regras. A cota identifica a participação do cliente nesse grupo.' },
+    { key: 'assembleia', title: 'Assembleia', body: 'Reunião periódica em que podem ocorrer contemplações por sorteio ou lance, conforme o contrato.' },
+    { key: 'lanceProprio', title: 'Lance próprio', body: 'Valor oferecido com recursos do cliente para participar da disputa por lance. A oferta não garante contemplação.' },
+    { key: 'lanceEmbutido', title: 'Lance embutido', body: 'Parte da carta usada no lance. Esse valor reduz o crédito disponível depois da contemplação.' },
+    { key: 'contemplacao', title: 'Contemplação', body: 'Liberação do direito de usar o crédito, sujeita às regras cadastrais, contratuais e documentais.' },
+    { key: 'fundoReserva', title: 'Fundo de reserva', body: 'Valor cobrado conforme o contrato para despesas e necessidades do grupo.' },
+    { key: 'taxaAdministracao', title: 'Taxa de administração', body: 'Valor pago à administradora pela gestão do grupo, distribuído ao longo do prazo do plano.' },
+    { key: 'saldoDevedor', title: 'Saldo devedor', body: 'Valor ainda devido, considerando pagamentos, lances, reajustes e demais eventos previstos.' },
+    { key: 'reajuste', title: 'Reajuste', body: 'Atualização da carta, das parcelas ou do saldo conforme o índice e a periodicidade definidos no contrato.' },
+    { key: 'seguro', title: 'Seguro', body: 'Cobertura que pode fazer parte do plano, conforme o produto, a administradora e as condições contratadas.' }
   ];
 
   function formulaDefinitions(data) {
@@ -154,56 +154,56 @@ const ProposalSummary = (() => {
         title: 'Parcela total',
         expression: 'Parcela base + taxa adm. + fundo + seguro + eventos',
         example: `Parcela atual estimada: ${money(data.metrics.parcelaAtual)}`,
-        body: 'Mostra o compromisso mensal consolidado que o cliente precisa sustentar durante a jornada.'
+        body: 'Soma dos valores cobrados no mês, incluindo encargos e eventos previstos.'
       },
       {
         key: 'parcelaBase',
         title: 'Parcela base',
-        expression: 'Carta de credito / prazo total do grupo',
+        expression: 'Carta de crédito / prazo total do grupo',
         example: `${money(data.metrics.creditoTotal)} dividido pelo prazo contratado`,
-        body: 'E a referencia inicial de amortizacao antes de encargos, reajustes e eventos.'
+        body: 'Valor inicial antes de taxas, seguro, reajustes e outros eventos.'
       },
       {
         key: 'taxaAdministracao',
-        title: 'Taxa de administracao',
-        expression: 'Carta de credito x taxa adm. total',
-        example: `Taxa projetada: ${money(compositionValue('Taxa de administracao'))}`,
-        body: 'Explica o custo de administracao do plano e ajuda a comparar alternativas de grupo.'
+        title: 'Taxa de administração',
+        expression: 'Carta de crédito x taxa de administração total',
+        example: `Taxa projetada: ${money(compositionValue('Taxa de administração'))}`,
+        body: 'Custo cobrado pela administradora durante o prazo do plano.'
       },
       {
         key: 'fundoReserva',
         title: 'Fundo de reserva',
-        expression: 'Carta de credito x percentual de fundo',
+        expression: 'Carta de crédito x percentual do fundo',
         example: `Fundo projetado: ${money(data.metrics.fundoReserva || compositionValue('Fundo de reserva'))}`,
-        body: 'Ajuda o cliente a entender uma parcela do custo que nao e carta, mas faz parte da estrutura coletiva.'
+        body: 'Valor adicional previsto nas condições do grupo.'
       },
       {
         key: 'lanceTotal',
         title: 'Lance total',
-        expression: 'Lance proprio + lance embutido',
+        expression: 'Lance próprio + lance embutido',
         example: `${money(data.lances.lanceProprio)} + ${money(data.lances.lanceEmbutido)} = ${money(data.lances.lanceTotal)}`,
-        body: 'Traduz a forca da oferta de contemplacao e separa o que sai do caixa do que reduz a carta.'
+        body: 'Soma do valor pago com recursos próprios e do valor retirado da carta. O lance não garante contemplação.'
       },
       {
         key: 'cartaLiquida',
-        title: 'Carta liquida',
-        expression: 'Carta de credito - lance embutido',
+        title: 'Crédito líquido',
+        expression: 'Carta de crédito - lance embutido',
         example: `${money(data.metrics.creditoTotal)} - ${money(data.lances.lanceEmbutido)} = ${money(data.metrics.caixaLiquida)}`,
-        body: 'Mostra o credito estimado disponivel apos usar parte da carta como lance.'
+        body: 'Crédito estimado disponível após descontar o lance embutido.'
       },
       {
         key: 'saldoDevedor',
         title: 'Saldo devedor projetado',
-        expression: 'Saldo anterior - amortizacoes - lances + reajustes/eventos',
+        expression: 'Saldo anterior - amortizações - lances + reajustes e eventos',
         example: `Saldo final estimado: ${money(data.metrics.saldoDevedor)}`,
-        body: 'Serve para explicar como a operacao evolui depois da adesao e da estrategia de lance.'
+        body: 'Valor projetado após pagamentos, lances, reajustes e demais eventos.'
       },
       {
         key: 'percentualPago',
-        title: 'Percentual percorrido',
+        title: 'Parcelas pagas',
         expression: 'Parcelas pagas / parcelas totais',
         example: `${number(data.contributions.parcelasPagas)} de ${number(data.contributions.parcelasTotais)} parcelas = ${percent(data.metrics.percentualPago)}`,
-        body: 'Ajuda a localizar o cliente na jornada e mostra quanto do plano ja foi percorrido.'
+        body: 'Percentual de parcelas pagas em relação ao total previsto.'
       }
     ];
   }
@@ -227,6 +227,8 @@ const ProposalSummary = (() => {
   }
 
   function isSectionEnabled(data, key) {
+    const clientDocument = data && ['proposal', 'public', 'client'].includes(data.surface);
+    if (clientDocument && key === 'acceptance') return false;
     return !data.builder || !data.builder.sections || data.builder.sections[key] !== false;
   }
 
@@ -261,8 +263,15 @@ const ProposalSummary = (() => {
 
   function prepareRenderData(data, options = {}, target) {
     const prefix = domId(options.chartPrefix || (target && target.id) || 'proposal-summary');
+    const remainingInstallments = Number(data && data.contributions && data.contributions.parcelasRestantes);
     const prepared = {
       ...data,
+      metrics: {
+        ...(data && data.metrics ? data.metrics : {}),
+        ...(Number.isFinite(remainingInstallments) && remainingInstallments >= 0
+          ? { prazoRestante: remainingInstallments }
+          : {})
+      },
       rootId: options.rootId || 'proposal-summary-print-root',
       surface: options.surface || 'summary',
       chartIds: {
@@ -285,20 +294,20 @@ const ProposalSummary = (() => {
     const checklist = acceptance && acceptance.checklist ? acceptance.checklist : {};
     const status = acceptance && acceptance.status ? acceptance.status : 'pending';
     const labels = {
-      reviewed: 'Revisada localmente',
-      partial: 'Revisao parcial',
-      pending: 'Em revisao',
-      expired: 'Revisao vencida'
+      reviewed: 'Revisada',
+      partial: 'Revisão parcial',
+      pending: 'Em revisão',
+      expired: 'Revisão vencida'
     };
 
     return {
       status,
-      statusLabel: acceptance && acceptance.statusLabel ? acceptance.statusLabel : (labels[status] || labels.pending),
+      statusLabel: labels[status] || (acceptance && acceptance.statusLabel) || labels.pending,
       proposalId: acceptance && acceptance.proposalId ? acceptance.proposalId : (data && data.id) || 'PROP-PENDENTE',
       reviewer: acceptance && acceptance.reviewer ? acceptance.reviewer : (data && data.consultor) || 'Consultor Bancus Fraternis',
-      reviewerRole: acceptance && acceptance.reviewerRole ? acceptance.reviewerRole : 'Consultor responsavel',
+      reviewerRole: acceptance && acceptance.reviewerRole ? acceptance.reviewerRole : 'Consultor responsável',
       validUntil: acceptance && acceptance.validUntil ? acceptance.validUntil : valid.toISOString().slice(0, 10),
-      notes: acceptance && acceptance.notes ? acceptance.notes : 'Aguardando validacao das premissas antes do encaminhamento.',
+      notes: acceptance && acceptance.notes ? acceptance.notes : 'Aguardando a conferência dos valores e das condições antes do envio.',
       version: acceptance && acceptance.version ? acceptance.version : 0,
       updatedAt: acceptance && acceptance.updatedAt ? acceptance.updatedAt : '',
       checklist: {
@@ -330,6 +339,7 @@ const ProposalSummary = (() => {
     const projectItems = Array.isArray(input.projectItems) ? input.projectItems : [];
     const projectSummary = input.projectSummary || {};
     const context = input.decisionContext || {};
+    const diagnostics = input.diagnostics || {};
     const prefill = context.prefill || {};
     const profile = context.profileSnapshot || {};
     const cenarios = input.cenarios || {};
@@ -349,67 +359,72 @@ const ProposalSummary = (() => {
     const lanceEmbutidoPct = creditoTotal > 0 ? (lanceEmbutido / creditoTotal) * 100 : 0;
     const riscos = [];
     const premissas = [
-      `Carta e credito liquido: ${money(creditoTotal)} contratados, ${money(caixaLiquida)} estimados para uso apos lance embutido.`,
-      `Parcela de referencia: ${money(parcelaAtual)} com prazo de ${number(prazoTotal)} meses.`,
-      `Lance total: ${money(lanceTotal)} combinando recursos proprios, embutidos, FGTS ou fixo conforme configuracao.`,
-      `Taxa media informada: ${percent(taxaMedia)} com fundo de reserva e seguro conforme regras do grupo.`
+      `Crédito contratado: ${money(creditoTotal)}. Crédito líquido estimado após o lance embutido: ${money(caixaLiquida)}.`,
+      `Parcela inicial estimada: ${money(parcelaAtual)}. Prazo considerado: ${number(prazoTotal)} meses.`,
+      `Lance total: ${money(lanceTotal)}, conforme os valores informados para lance próprio, embutido, FGTS ou lance fixo.`,
+      `Taxa média informada: ${percent(taxaMedia)}. Fundo de reserva e seguro seguem as condições de cada grupo.`
     ];
 
-    if (!projectItems.length) riscos.push('Nenhum grupo real foi vinculado a proposta. Valide a prateleira antes de enviar ao cliente.');
-    if (readiness > 0 && readiness < 70) riscos.push(`Perfil financeiro com prontidao ${number(readiness)}/100. Reforce renda, reserva e capacidade antes do aceite.`);
+    if (!projectItems.length) riscos.push('Nenhum grupo foi selecionado. Inclua pelo menos um grupo antes de enviar a proposta.');
+    if (readiness < 70) riscos.push('O perfil financeiro está incompleto. Confirme renda, reserva e capacidade de pagamento antes do aceite.');
+    if (diagnostics.reconciled !== true) riscos.push('Os valores do resumo e do cronograma ainda não conferem. Recalcule a simulação antes de enviar.');
+    if (Array.isArray(diagnostics.errors) && diagnostics.errors.length) {
+      const totalErros = diagnostics.errors.length;
+      riscos.push(`Foram encontradas ${number(totalErros)} inconsistência${totalErros === 1 ? '' : 's'} nos cálculos. Corrija antes de gerar a proposta.`);
+    }
     if (capacidade > 0 && parcelaSobreCapacidade > 100) riscos.push(`Parcela usa ${percent(parcelaSobreCapacidade)} da capacidade declarada. Ajuste carta, prazo ou lance.`);
-    if (!capacidade && renda > 0 && parcelaSobreRenda > 30) riscos.push(`Parcela representa ${percent(parcelaSobreRenda)} da renda informada. Confirmar folga mensal com o cliente.`);
-    if (lanceEmbutidoPct > 30) riscos.push(`Lance embutido de ${percent(lanceEmbutidoPct)} reduz o credito liquido. Explicar impacto no uso do bem.`);
-    if (liquidezPct > 0 && liquidezPct < 70) riscos.push(`Credito liquido fica em ${percent(liquidezPct)} da carta. Avaliar se cobre o objetivo declarado.`);
-    if (prazoTotal >= 180) riscos.push('Prazo longo aumenta exposicao a reajustes e exige acompanhamento recorrente.');
-    if (taxaMedia > 20) riscos.push(`Taxa media de ${percent(taxaMedia)} pede comparacao com alternativas de grupo.`);
+    if (!capacidade && renda > 0 && parcelaSobreRenda > 30) riscos.push(`A parcela representa ${percent(parcelaSobreRenda)} da renda informada. Confirme a folga mensal com o cliente.`);
+    if (lanceEmbutidoPct > 30) riscos.push(`O lance embutido corresponde a ${percent(lanceEmbutidoPct)} da carta e reduz o crédito disponível para a compra.`);
+    if (liquidezPct > 0 && liquidezPct < 70) riscos.push(`O crédito líquido equivale a ${percent(liquidezPct)} da carta. Confirme se esse valor cobre o objetivo do cliente.`);
+    if (prazoTotal >= 180) riscos.push('O prazo aumenta a exposição a reajustes. Confira os índices e as condições do grupo.');
+    if (taxaMedia > 20) riscos.push(`A taxa média é de ${percent(taxaMedia)}. Compare com as demais opções disponíveis.`);
 
     const semContemplacao = scenarioResumo(cenarios, 'semContemplacao');
     const parcelaCheia = scenarioResumo(cenarios, 'parcelaCheia');
     const comparacao = [
       {
-        label: 'Credito liquido',
+        label: 'Crédito líquido',
         atual: money(caixaLiquida),
         referencia: money(creditoTotal),
-        leitura: liquidezPct > 0 ? `${percent(liquidezPct)} da carta permanece disponivel para uso.` : 'Comparacao depende da carta informada.'
+        leitura: liquidezPct > 0 ? `${percent(liquidezPct)} da carta permanece disponível para a compra.` : 'Informe o valor da carta para fazer a comparação.'
       },
       semContemplacao ? {
-        label: 'Com lance vs sem lance',
+        label: 'Com lance e sem lance',
         atual: money(lanceTotal),
         referencia: money(asNumber(semContemplacao.lanceTotal)),
-        leitura: 'O cenario atual antecipa estrategia de contemplacao; o alternativo preserva caixa, mas posterga acesso ao credito.'
+        leitura: 'O cenário com lance usa mais recursos agora. O cenário sem lance preserva o caixa, mas depende de sorteio ou de uma oferta futura.'
       } : null,
       parcelaCheia ? {
         label: 'Parcela reduzida',
         atual: money(parcelaAtual),
         referencia: money(asNumber(parcelaCheia.parcelaTotalAtual)),
         leitura: asNumber(parcelaCheia.parcelaTotalAtual) > parcelaAtual
-          ? 'A reducao melhora caixa antes da contemplacao e precisa ser explicada como etapa temporaria.'
-          : 'A parcela cheia nao altera significativamente o compromisso inicial.'
+          ? 'A parcela reduzida diminui o pagamento inicial por um período. Depois, o valor pode aumentar conforme o contrato.'
+          : 'A parcela cheia mantém valor próximo ao compromisso inicial calculado.'
       } : null
     ].filter(Boolean);
 
-    const status = riscos.some((item) => item.includes('capacidade') || item.includes('Nenhum grupo') || item.includes('Credito liquido'))
+    const status = riscos.some((item) => item.includes('capacidade') || item.includes('Nenhum grupo') || item.includes('crédito líquido') || item.includes('não conferem') || item.includes('inconsistência'))
       ? 'revisar'
       : riscos.length
         ? 'atencao'
         : 'pronto';
     const tone = status === 'pronto' ? 'stable' : status === 'atencao' ? 'warning' : 'critical';
     const headline = status === 'pronto'
-      ? 'Seguir para proposta final'
+      ? 'Pronta para revisão final'
       : status === 'atencao'
-        ? 'Seguir com ressalvas explicadas'
-        : 'Revisar premissas antes da proposta';
+        ? 'Pode avançar com pontos de atenção'
+        : 'Corrija os itens antes de enviar';
     const recommendation = status === 'pronto'
-      ? 'A simulacao esta coerente para virar proposta: credito, parcela, lance e prazo conversam com a jornada atual.'
+      ? 'Os valores principais foram calculados e conferidos. Revise as condições do grupo antes de enviar.'
       : status === 'atencao'
-        ? 'A proposta pode avancar, mas o consultor deve explicar os alertas antes de pedir aceite do cliente.'
-        : 'A proposta ainda precisa de ajuste ou confirmacao objetiva para nao levar uma decisao fragil ao cliente.';
+        ? 'Explique os pontos de atenção ao cliente antes de solicitar o aceite.'
+        : 'Ajuste os itens marcados para evitar uma proposta incompleta ou inconsistente.';
     const reasons = [
-      creditoTotal > 0 ? `Credito contratado de ${money(creditoTotal)} com caixa liquida de ${money(caixaLiquida)}.` : '',
-      parcelaAtual > 0 ? `Parcela atual projetada em ${money(parcelaAtual)}.` : '',
-      projectItems.length ? `${number(projectItems.length)} grupo${projectItems.length !== 1 ? 's' : ''} sustentam a composicao da proposta.` : '',
-      lanceTotal > 0 ? `Lance total de ${money(lanceTotal)} foi considerado no cronograma.` : ''
+      creditoTotal > 0 ? `Crédito contratado: ${money(creditoTotal)}. Crédito líquido: ${money(caixaLiquida)}.` : '',
+      parcelaAtual > 0 ? `Parcela inicial estimada: ${money(parcelaAtual)}.` : '',
+      projectItems.length ? `${number(projectItems.length)} grupo${projectItems.length !== 1 ? 's' : ''} selecionado${projectItems.length !== 1 ? 's' : ''}.` : '',
+      lanceTotal > 0 ? `Lance total considerado no cronograma: ${money(lanceTotal)}.` : ''
     ];
 
     return {
@@ -417,9 +432,9 @@ const ProposalSummary = (() => {
       tone,
       headline,
       recommendation,
-      actionLabel: status === 'revisar' ? 'Revisar premissas' : 'Ir para proposta final',
-      reasons: nonEmptyList(reasons, ['Calcule a simulacao e selecione grupos para gerar uma recomendacao final.']),
-      risks: nonEmptyList(riscos, ['Sem alerta critico nos parametros atuais. Manter validacao formal do grupo antes do envio.']),
+      actionLabel: status === 'revisar' ? 'Revisar simulação' : 'Comparar grupos',
+      reasons: nonEmptyList(reasons, ['Calcule a simulação e selecione os grupos para continuar.']),
+      risks: nonEmptyList(riscos, ['Nenhum alerta foi encontrado nos valores atuais. Confirme as condições com a administradora antes de enviar.']),
       premises: premissas,
       comparison: comparacao,
       metrics: {
@@ -533,8 +548,8 @@ const ProposalSummary = (() => {
       totalGrupos: items.length,
       totalCotas: items.reduce((s, i) => s + (Number(i.quantidadeCotas) || 0), 0),
       administradora: admins.length === 1 ? admins[0] : (admins.length ? `${admins.length} administradoras` : 'Administradora a definir'),
-      grupo: grupos.length === 1 ? grupos[0] : (grupos.length ? `${grupos.length} grupos estruturados` : 'Grupo a definir'),
-      segmento: first.nomeSegmento || 'Consorcio estruturado'
+      grupo: grupos.length === 1 ? grupos[0] : (grupos.length ? `${grupos.length} grupos selecionados` : 'Grupo não informado'),
+      segmento: first.nomeSegmento || 'Consórcio'
     };
   }
 
@@ -550,11 +565,20 @@ const ProposalSummary = (() => {
       const fundoReservaPct = Number(item.fundoReservaPct ?? group.fundoReservaPct) || 0;
       const lanceProprioPct = Number(item.lanceProprioPct) || 0;
       const lanceEmbutidoPct = Number(item.lanceEmbutidoPct) || 0;
+      const indiceCorrecaoNome = String(item.indiceCorrecaoNome ?? group.indiceCorrecaoNome ?? 'fixo').trim().toLowerCase() || 'fixo';
+      const indiceReajusteInformado = Number(item.indiceReajuste ?? group.indiceReajustePct ?? 0);
+      const indiceReajuste = Number.isFinite(indiceReajusteInformado) ? indiceReajusteInformado : 0;
+      const mesAniversarioInformado = Number(item.mesAniversario ?? group.mesAniversario ?? 12);
+      const mesAniversario = Number.isFinite(mesAniversarioInformado)
+        ? Math.max(1, Math.min(12, Math.trunc(mesAniversarioInformado)))
+        : 12;
+      const modalidadeLance = String(item.modalidadeLance ?? group.modalidadeLance ?? 'sem_lance').trim().toLowerCase() || 'sem_lance';
       const classificacao = item.classificacao || group._classificacao || null;
       const papel = item.papel || group._papel || null;
 
       return {
         index: index + 1,
+        itemId: item.itemId || group.itemId || '',
         codigoGrupo: item.codigoGrupo || group.codigoGrupo || `Grupo ${index + 1}`,
         administradora: item.administradora || group.nomeAdministradora || group.administradora || 'Administradora a definir',
         segmento: item.nomeSegmento || group.nomeSegmento || 'Segmento a definir',
@@ -567,6 +591,10 @@ const ProposalSummary = (() => {
         mesContemplacaoAlvo: Number(item.mesContemplacaoAlvo) || 0,
         lanceProprioPct,
         lanceEmbutidoPct,
+        indiceCorrecaoNome,
+        indiceReajuste,
+        mesAniversario,
+        modalidadeLance,
         classificacao: classificacao && (classificacao.final || classificacao.classe || classificacao.nota || classificacao),
         papel: papel && (papel.papel || papel.nome || papel)
       };
@@ -582,40 +610,40 @@ const ProposalSummary = (() => {
   function buildProductPhases({ adesao, proximaParcelaData, contemplData, mesContemplacao, parcelasRestantes }) {
     return [
       {
-        title: 'Adesao ao grupo',
+        title: 'Adesão ao grupo',
         status: 'done',
         date: formatDate(adesao),
-        description: 'Formalizacao da participacao, definicao da carta e aceite das regras do grupo.'
+        description: 'Entrada no grupo, definição da carta e aceite das condições do contrato.'
       },
       {
-        title: 'Contribuicoes mensais',
+        title: 'Parcelas mensais',
         status: 'current',
         date: formatDate(proximaParcelaData),
-        description: 'Pagamento das parcelas, taxa de administracao, fundo e componentes contratados.'
+        description: 'Pagamento da parcela, taxa de administração, fundo de reserva, seguro e demais valores contratados.'
       },
       {
-        title: 'Assembleias e lance',
+        title: 'Assembleias e lances',
         status: 'current',
-        date: `Ate o mes ${mesContemplacao}`,
-        description: 'Acompanhamento das assembleias e execucao da estrategia de lance planejada.'
+        date: `Até o mês ${mesContemplacao}`,
+        description: 'Participação nas assembleias e oferta de lance conforme as regras do grupo.'
       },
       {
-        title: 'Contemplacao estimada',
+        title: 'Contemplação no cenário',
         status: 'upcoming',
         date: formatDate(contemplData),
-        description: 'Marco projetado para acesso ao credito, condicionado as regras e a competitividade do grupo.'
+        description: 'Data usada apenas no cálculo deste cenário. A contemplação não é garantida.'
       },
       {
-        title: 'Credito, analise e documentos',
+        title: 'Análise e documentos',
         status: 'upcoming',
-        date: 'Apos contemplacao',
-        description: 'Validacao cadastral, analise de credito, garantias e documentacao do bem ou servico.'
+        date: 'Após a contemplação',
+        description: 'Análise cadastral e de crédito, garantias e documentos do bem ou serviço.'
       },
       {
-        title: 'Uso do credito e encerramento',
+        title: 'Uso do crédito e encerramento',
         status: 'upcoming',
         date: `${number(parcelasRestantes)} parcelas restantes`,
-        description: 'Faturamento, acompanhamento do saldo devedor e quitacao final da operacao.'
+        description: 'Compra do bem ou serviço, pagamento das parcelas restantes e quitação do plano.'
       }
     ];
   }
@@ -650,13 +678,17 @@ const ProposalSummary = (() => {
     const adesao = safeDate(params && params.dataSimulacao);
     const mesContemplacao = Math.max(1, Number(params && params.mesContemplacao) || 18);
     const parcelasTotais = Number(resumo.prazoTotal) || Number(params && params.prazoTotal) || cronograma.length || 1;
-    const parcelasPagas = Math.max(0, Math.min(parcelasTotais, mesContemplacao - 1));
+    const parcelasPagasInformadas = Number(params && params.parcelasPagas);
+    const parcelasPagas = Number.isFinite(parcelasPagasInformadas)
+      ? Math.max(0, Math.min(parcelasTotais, Math.trunc(parcelasPagasInformadas)))
+      : 0;
     const parcelasRestantes = Math.max(0, parcelasTotais - parcelasPagas);
     const saldoFinal = getLastCronEntry(cronograma);
     const saldoDevedor = saldoFinal ? Number(saldoFinal.saldoFinal) || 0 : Number(resumo.saldoInicial) || 0;
     const percentualPago = parcelasTotais > 0 ? (parcelasPagas / parcelasTotais) * 100 : 0;
-    const proximaParcelaData = addMonths(adesao, parcelasPagas + 1);
-    const contemplData = addMonths(adesao, mesContemplacao);
+    const proximaParcelaData = addMonths(adesao, parcelasPagas);
+    const contemplData = addMonths(adesao, Math.max(0, mesContemplacao - 1));
+    const proximaLinha = cronograma[Math.min(parcelasPagas, Math.max(0, cronograma.length - 1))] || null;
     const totalPlano = Number(resumo.valorTotalPlano) || 0;
     const creditoTotal = Number(resumo.valorCarta) || 0;
     const custoTotal = Number(resumo.custoTotal) || 0;
@@ -676,18 +708,21 @@ const ProposalSummary = (() => {
       ganhoTotal,
       fundoReserva: Number(resumo.fundoReservaTotal) || 0,
       seguroTotal: Number(resumo.seguroTotal) || 0,
-      prazoRestante: Number(resumo.prazoRestante) || parcelasRestantes,
+      prazoRestante: parcelasRestantes,
       parcelaAtual: Number(resumo.parcelaTotalAtual) || 0,
       totalPago: Number(resumo.totalPago) || 0,
       caixaLiquida: Number(resumo.cartaLiquida) || creditoTotal,
       saldoDevedor,
       percentualPago
     };
+    const nextInstallment = proximaLinha && Number.isFinite(Number(proximaLinha.parcelaTotal))
+      ? Number(proximaLinha.parcelaTotal)
+      : Number(resumo.parcelaTotalAtual) || 0;
     const contributions = {
       parcelasPagas,
       parcelasTotais,
       parcelasRestantes,
-      proximaParcelaValor: Number(resumo.parcelaTotalAtual) || 0,
+      proximaParcelaValor: nextInstallment,
       proximaParcelaData: proximaParcelaData.toISOString(),
       totalContribuido: Number(resumo.totalPagoAteContemplacao) || 0
     };
@@ -697,7 +732,7 @@ const ProposalSummary = (() => {
       lanceTotal: Number(resumo.lanceTotal) || 0,
       impactoCreditoLiquido: Number(resumo.lanceEmbutido) || 0,
       impactoSaldoDevedor: Math.max(0, (Number(resumo.saldoInicial) || 0) - (Number(resumo.lanceTotal) || 0)),
-      estrategiaResumo: 'A proposta combina credito liquido, lance e prazo para buscar contemplacao planejada sem perder rastreabilidade dos custos.'
+      estrategiaResumo: `Lance próprio de ${money(Number(resumo.lanceProprio) || 0)} e lance embutido de ${money(Number(resumo.lanceEmbutido) || 0)}. O lance embutido reduz o crédito disponível no mesmo valor.`
     };
     const decision = buildResultDecision({
       params,
@@ -709,17 +744,20 @@ const ProposalSummary = (() => {
       contributions,
       lances,
       cenarios,
-      decisionContext
+      decisionContext,
+      diagnostics: resultado && resultado.diagnostics
     });
 
     const proposal = {
       id: `PROP-${adesao.getFullYear()}-${String(proposalSeq).padStart(4, '0')}`,
-      status: 'Projetada',
-      title: 'Resumo da Proposta Estruturada',
-      subtitle: 'Operacao desenhada para contemplacao planejada, uso eficiente do credito e leitura clara dos compromissos.',
+      status: resultado && resultado.diagnostics && resultado.diagnostics.reconciled === true ? 'Validada' : 'Rascunho',
+      title: 'Proposta de consórcio',
+      subtitle: 'Valores, prazos, parcelas, lances, custos e riscos calculados com os dados informados.',
       grupo: descriptor.grupo,
-      cota: descriptor.totalCotas ? `${descriptor.totalCotas} cota(s)` : (params && params.cota) || 'Cota a definir',
-      cliente: (params && params.nomeCliente) || 'Cliente em analise',
+      cota: descriptor.totalCotas
+        ? `${descriptor.totalCotas} ${descriptor.totalCotas === 1 ? 'cota' : 'cotas'}`
+        : (params && params.cota) || 'Cota não informada',
+      cliente: (params && params.nomeCliente) || 'Cliente não informado',
       consultor: (params && params.consultor) || 'Consultor Bancus Fraternis',
       administradora: descriptor.administradora,
       segmento: descriptor.segmento,
@@ -732,19 +770,19 @@ const ProposalSummary = (() => {
       lances,
       decision,
       journey: [
-        { id: 'adesao', label: 'Adesao', status: 'done', date: formatDate(adesao), value: money(creditoTotal), description: 'Entrada no grupo e formalizacao da estrategia.' },
-        { id: 'grupo', label: 'Formacao / grupo', status: 'done', value: descriptor.grupo, description: `${descriptor.administradora} | ${descriptor.segmento}` },
-        { id: 'parcelas', label: 'Contribuicoes', status: parcelasPagas > 0 ? 'done' : 'current', value: `${parcelasPagas}/${parcelasTotais}`, description: 'Parcelas pagas e saldo de parcelas futuras.' },
-        { id: 'assembleia', label: 'Assembleias', status: 'current', date: formatDate(proximaParcelaData), value: money(resumo.parcelaTotalAtual), description: 'Acompanhamento mensal da assembleia e da parcela.' },
-        { id: 'lance', label: 'Lance', status: (Number(resumo.lanceTotal) || 0) > 0 ? 'current' : 'upcoming', value: money(resumo.lanceTotal), description: 'Estrategia de lance proprio, embutido ou combinado.' },
-        { id: 'contemplacao', label: 'Contemplacao', status: 'upcoming', date: formatDate(contemplData), value: `Mes ${mesContemplacao}`, description: 'Marco estimado para acesso ao credito.' },
-        { id: 'credito', label: 'Uso do credito', status: 'upcoming', value: money(resumo.cartaLiquida || creditoTotal), description: 'Analise de credito, documentos e faturamento.' },
-        { id: 'quitacao', label: 'Encerramento', status: 'upcoming', value: `${parcelasRestantes} restantes`, description: 'Quitacao das obrigacoes do plano.' }
+        { id: 'adesao', label: 'Adesão', status: 'done', date: formatDate(adesao), value: money(creditoTotal), description: 'Data de início e valor total das cartas.' },
+        { id: 'grupo', label: 'Grupos selecionados', status: 'done', value: descriptor.grupo, description: `${descriptor.administradora} | ${descriptor.segmento}` },
+        { id: 'parcelas', label: 'Parcelas', status: parcelasPagas > 0 ? 'done' : 'current', value: `${parcelasPagas}/${parcelasTotais}`, description: 'Parcelas pagas e parcelas restantes.' },
+        { id: 'assembleia', label: 'Assembleias', status: 'current', date: formatDate(proximaParcelaData), value: money(resumo.parcelaTotalAtual), description: 'Data e valor estimados da próxima parcela.' },
+        { id: 'lance', label: 'Lances', status: (Number(resumo.lanceTotal) || 0) > 0 ? 'current' : 'upcoming', value: money(resumo.lanceTotal), description: 'Soma dos lances próprio e embutido.' },
+        { id: 'contemplacao', label: 'Contemplação no cenário', status: 'upcoming', date: formatDate(contemplData), value: `Mês ${mesContemplacao}`, description: 'Data usada no cálculo. A contemplação não é garantida.' },
+        { id: 'credito', label: 'Crédito líquido', status: 'upcoming', value: money(resumo.cartaLiquida || creditoTotal), description: 'Valor estimado após descontar o lance embutido.' },
+        { id: 'quitacao', label: 'Encerramento', status: 'upcoming', value: `${parcelasRestantes} restantes`, description: 'Pagamento das parcelas restantes e quitação do plano.' }
       ],
       charts: {
         composition: [
-          { name: 'Carta de credito', value: creditoTotal },
-          { name: 'Taxa de administracao', value: Number(resumo.taxaAdmTotal) || 0 },
+          { name: 'Carta de crédito', value: creditoTotal },
+          { name: 'Taxa de administração', value: Number(resumo.taxaAdmTotal) || 0 },
           { name: 'Fundo de reserva', value: Number(resumo.fundoReservaTotal) || 0 },
           { name: 'Seguro', value: Number(resumo.seguroTotal) || 0 }
         ],
@@ -752,21 +790,21 @@ const ProposalSummary = (() => {
         installmentProjection: sampleSeries(cronograma, 'parcelaTotal'),
         bidComparison: [
           { name: 'Lance total', value: Number(resumo.lanceTotal) || 0 },
-          { name: 'Credito liquido', value: Number(resumo.cartaLiquida) || 0 },
-          { name: 'Saldo apos lance', value: Math.max(0, (Number(resumo.saldoInicial) || 0) - (Number(resumo.lanceTotal) || 0)) }
+          { name: 'Crédito líquido', value: Number(resumo.cartaLiquida) || 0 },
+          { name: 'Saldo após lance', value: Math.max(0, (Number(resumo.saldoInicial) || 0) - (Number(resumo.lanceTotal) || 0)) }
         ]
       },
       schedule: normalizeSchedule(cronograma, adesao),
       nextSteps: [
-        { title: 'Validar premissas da proposta', description: 'Confirmar carta, prazo, taxa, fundo de reserva e politica de lance antes de formalizar.', date: formatDate(new Date()) },
-        { title: 'Preparar recurso para lance', description: 'Definir origem do lance proprio e confirmar o limite de lance embutido permitido.' },
-        { title: 'Acompanhar assembleia', description: 'Monitorar a proxima assembleia e atualizar a estrategia conforme o comportamento do grupo.', date: formatDate(proximaParcelaData) },
-        { title: 'Organizar documentacao', description: 'Antecipar analise cadastral, comprovantes e documentos necessarios para uso do credito.' }
+        { title: 'Conferir valores e condições', description: 'Confirmar carta, prazo, taxa, fundo de reserva, seguro e limites de lance.', date: formatDate(new Date()) },
+        { title: 'Definir os recursos do lance', description: 'Confirmar quanto será pago com recursos próprios e quanto será descontado da carta.' },
+        { title: 'Acompanhar as assembleias', description: 'Verificar as datas e os resultados divulgados pela administradora.', date: formatDate(proximaParcelaData) },
+        { title: 'Separar os documentos', description: 'Preparar cadastro, comprovantes e documentos exigidos para a análise e o uso do crédito.' }
       ],
       disclaimers: [
-        'Valores estimados com base nos parametros informados e sujeitos a regras da administradora.',
-        'Parcelas, saldo devedor e custo efetivo podem variar por reajuste, assembleia, lance e eventos contratuais.',
-        'Esta proposta e uma simulacao executiva e nao substitui a validacao formal do grupo, contrato e credito.'
+        'Os valores são estimativas calculadas com os dados informados e dependem das regras da administradora.',
+        'Parcelas, saldo devedor e custo total podem mudar por reajustes, assembleias, lances e outras condições contratuais.',
+        'Esta é uma simulação. A contemplação não é garantida e a contratação depende da análise da administradora e do contrato.'
       ]
     };
 
@@ -808,7 +846,7 @@ const ProposalSummary = (() => {
           saldoFinal: Math.max(0, 3651261.12 - i * 16500)
         }))
       },
-      project: { itens: [{ administradora: 'Exemplo Consorcios', codigoGrupo: 'Automoveis Premium', quantidadeCotas: 1, nomeSegmento: 'Automoveis' }] }
+      project: { itens: [{ administradora: 'Exemplo Consórcios', codigoGrupo: 'Automóveis Premium', quantidadeCotas: 1, nomeSegmento: 'Automóveis' }] }
     });
   }
 
@@ -818,7 +856,7 @@ const ProposalSummary = (() => {
         <div class="ps-header__main">
           <img src="${assetPath('assets/logos/logo-bank-fratern-icon.svg')}" alt="Bancus Fraternis" class="ps-mark">
           <div>
-            <div class="ps-eyebrow">Proposta ${escapeHTML(data.id)} | ${escapeHTML(data.status)}</div>
+            <div class="ps-eyebrow">Proposta ${escapeHTML(data.id)}</div>
             <h2>${escapeHTML(data.title)}</h2>
             <p>${escapeHTML(data.subtitle)}</p>
           </div>
@@ -828,7 +866,6 @@ const ProposalSummary = (() => {
             <span>Cliente</span><strong>${escapeHTML(data.cliente)}</strong>
             <span>Grupo / Cota</span><strong>${escapeHTML(data.grupo)} | ${escapeHTML(data.cota)}</strong>
           </div>
-          <button class="btn btn--primary ps-no-print" type="button" onclick="ProposalSummary.exportPDF(this.closest('.ps-page'))">Exportar PDF</button>
         </div>
       </header>
     `;
@@ -837,39 +874,39 @@ const ProposalSummary = (() => {
   function renderExecutiveConversation(data) {
     const cards = [
       {
-        tag: 'Decisao',
-        title: 'O que esta sendo contratado',
+        tag: 'Crédito',
+        title: 'Crédito contratado',
         metric: money(data.metrics.creditoTotal),
-        body: `A carta de credito conversa com a composicao do projeto, os grupos escolhidos e a finalidade declarada pelo cliente.`,
-        link: 'Conecta blocos 01, 03 e 05'
+        body: 'Soma das cartas dos grupos selecionados.',
+        detail: `Grupos: ${number(data.projectSummary?.totalGrupos || data.projectItems?.length || 0)}. Cotas: ${number(data.projectSummary?.totalCotas || 0)}.`
       },
       {
-        tag: 'Caixa',
-        title: 'Como o compromisso aparece',
+        tag: 'Parcela',
+        title: 'Parcela inicial estimada',
         metric: money(data.metrics.parcelaAtual),
-        body: `A parcela atual conversa com a curva de parcelas e com a capacidade de manter o plano ate a contemplacao.`,
-        link: 'Conecta blocos 01, 06 e 08'
+        body: 'Valor calculado para o início do plano.',
+        detail: `Prazo considerado: ${number(data.contributions.parcelasTotais)} meses.`
       },
       {
         tag: 'Lance',
-        title: 'Qual alavanca move a contemplacao',
+        title: 'Lance configurado',
         metric: money(data.lances.lanceTotal),
-        body: `O lance combina recurso proprio e embutido, impactando credito liquido, saldo e estrategia de assembleia.`,
-        link: 'Conecta blocos 02, 07 e 09'
+        body: 'Soma dos lances próprio e embutido.',
+        detail: `O lance embutido reduz o crédito em ${money(data.lances.lanceEmbutido)}.`
       },
       {
-        tag: 'Risco',
-        title: 'Onde a conversa precisa continuar',
+        tag: 'Prazo',
+        title: 'Parcelas restantes',
         metric: `${number(data.contributions.parcelasRestantes)} parcelas`,
-        body: `O cronograma mostra se a operacao permanece coerente com prazo, saldo, eventos e proximos passos.`,
-        link: 'Conecta blocos 08, 09 e 10'
+        body: 'Quantidade calculada para o cenário atual.',
+        detail: 'A contemplação não é garantida.'
       }
     ];
     return `
       <section class="ps-section ps-section--conversation ps-print-page">
         <div class="ps-section__head">
-          <span>MAPA</span>
-          <div><h3>Blocos que conversam entre si</h3><p>A leitura do PDF e da tela foi organizada para cada grafico responder a uma decisao comercial concreta.</p></div>
+          <span>RESUMO</span>
+          <div><h3>Principais valores</h3><p>Confira os valores considerados nesta simulação.</p></div>
         </div>
         <div class="ps-conversation-grid">
           ${cards.map(card => `
@@ -878,7 +915,7 @@ const ProposalSummary = (() => {
               <strong>${escapeHTML(card.title)}</strong>
               <em>${escapeHTML(card.metric)}</em>
               <p>${escapeHTML(card.body)}</p>
-              <small>${escapeHTML(card.link)}</small>
+              <small>${escapeHTML(card.detail)}</small>
             </article>
           `).join('')}
         </div>
@@ -888,32 +925,67 @@ const ProposalSummary = (() => {
 
   function renderResultDecision(data) {
     const decision = data.decision || buildResultDecision(data);
-    const risks = Array.isArray(decision.risks) ? decision.risks : [];
+    const clientDocument = ['proposal', 'public', 'client'].includes(data.surface);
+    const risks = (Array.isArray(decision.risks) ? decision.risks : []).map((item) => (
+      clientDocument
+        ? String(item).replace(/antes de enviar/gi, 'antes de contratar')
+        : item
+    ));
     const premises = Array.isArray(decision.premises) ? decision.premises : [];
     const comparisons = Array.isArray(decision.comparison) ? decision.comparison : [];
+    const statusLabels = { pronto: 'Pronta', atencao: 'Atenção', revisar: 'Revisar' };
+    const clientStatus = {
+      pronto: {
+        label: 'Cenário calculado',
+        headline: 'Condições calculadas para este cenário',
+        recommendation: 'Os valores refletem os grupos e as premissas apresentados nesta proposta.'
+      },
+      atencao: {
+        label: 'Pontos de atenção',
+        headline: 'Este cenário tem pontos que merecem atenção',
+        recommendation: 'Leia os itens destacados e confirme as condições com a administradora.'
+      },
+      revisar: {
+        label: 'Confirmação necessária',
+        headline: 'Este cenário exige confirmação',
+        recommendation: 'Há informações que precisam ser confirmadas antes de qualquer contratação.'
+      }
+    }[decision.status] || {
+      label: 'Condições da proposta',
+      headline: 'Confira as condições deste cenário',
+      recommendation: 'Confirme os valores e as regras com a administradora antes de contratar.'
+    };
+    const sectionLabel = clientDocument ? 'CONDIÇÕES' : 'REVISÃO';
+    const sectionTitle = clientDocument ? 'Pontos de atenção da proposta' : 'Antes de enviar';
+    const sectionDescription = clientDocument
+      ? 'Veja as premissas, os riscos e a comparação dos valores considerados.'
+      : 'Confira os valores, as condições e os pontos de atenção desta simulação.';
+    const statusLabel = clientDocument ? clientStatus.label : (statusLabels[decision.status] || decision.status);
+    const headline = clientDocument ? clientStatus.headline : decision.headline;
+    const recommendation = clientDocument ? clientStatus.recommendation : decision.recommendation;
     return `
       <section class="ps-section ps-section--decision ps-section--decision-${escapeHTML(decision.tone)} ps-print-page" data-simulator-result-decision data-simulator-result-tone="${escapeHTML(decision.tone)}">
         <div class="ps-section__head">
-          <span>DEC</span>
-          <div><h3>Resultado como decisao</h3><p>Traduz a simulacao em recomendacao, riscos, premissas e proximo passo comercial.</p></div>
+          <span>${escapeHTML(sectionLabel)}</span>
+          <div><h3>${escapeHTML(sectionTitle)}</h3><p>${escapeHTML(sectionDescription)}</p></div>
         </div>
         <div class="ps-decision-grid">
           <article class="ps-decision-hero">
-            <span>${escapeHTML(decision.status)}</span>
-            <h3>${escapeHTML(decision.headline)}</h3>
-            <p>${escapeHTML(decision.recommendation)}</p>
+            <span>${escapeHTML(statusLabel)}</span>
+            <h3>${escapeHTML(headline)}</h3>
+            <p>${escapeHTML(recommendation)}</p>
             <div class="ps-decision-facts">
               ${(decision.reasons || []).slice(0, 4).map((item) => `<small>${escapeHTML(item)}</small>`).join('')}
             </div>
-            <button class="btn btn--primary ps-no-print" type="button" data-simulator-result-cta onclick="window.App && App.goToStep ? App.goToStep(9, { skipValidation: true, skipAutoCalculate: true }) : window.location.hash = 'step-9'">${escapeHTML(decision.actionLabel)}</button>
+            ${clientDocument ? '' : `<button class="btn btn--primary ps-no-print" type="button" data-simulator-result-cta onclick="window.App && App.goToStep ? App.goToStep(9, { skipValidation: true, skipAutoCalculate: true }) : window.location.hash = 'step-9'">${escapeHTML(decision.actionLabel)}</button>`}
           </article>
           <div class="ps-decision-panels">
             <article class="ps-decision-panel" data-simulator-result-premise>
-              <strong>Premissas que sustentam</strong>
+              <strong>Dados considerados</strong>
               <ul>${premises.slice(0, 4).map((item) => `<li>${escapeHTML(item)}</li>`).join('')}</ul>
             </article>
             <article class="ps-decision-panel ps-decision-panel--risk" data-simulator-result-risk>
-              <strong>Riscos para explicar</strong>
+              <strong>Pontos de atenção</strong>
               <ul>${risks.slice(0, 5).map((item) => `<li>${escapeHTML(item)}</li>`).join('')}</ul>
             </article>
           </div>
@@ -923,7 +995,7 @@ const ProposalSummary = (() => {
             <article>
               <span>${escapeHTML(item.label)}</span>
               <strong>${escapeHTML(item.atual)}</strong>
-              <small>Referencia: ${escapeHTML(item.referencia)}</small>
+              <small>Comparação: ${escapeHTML(item.referencia)}</small>
               <p>${escapeHTML(item.leitura)}</p>
             </article>
           `).join('')}
@@ -944,22 +1016,22 @@ const ProposalSummary = (() => {
 
   function renderKPISection(data) {
     const primary = [
-      { label: 'Credito total', value: money(data.metrics.creditoTotal), help: 'Valor de referencia da operacao.' },
-      { label: 'Caixa liquida', value: money(data.metrics.caixaLiquida), help: 'Credito estimado apos lance embutido.' },
-      { label: 'Parcela atual', value: money(data.metrics.parcelaAtual), help: 'Compromisso mensal projetado.' },
-      { label: 'Prazo restante', value: `${number(data.metrics.prazoRestante)} meses`, help: 'Horizonte apos contemplacao.' }
+      { label: 'Crédito total', value: money(data.metrics.creditoTotal), help: 'Soma das cartas selecionadas.' },
+      { label: 'Crédito líquido', value: money(data.metrics.caixaLiquida), help: 'Valor estimado após o lance embutido.' },
+      { label: 'Parcela inicial', value: money(data.metrics.parcelaAtual), help: 'Valor estimado para o início do plano.' },
+      { label: 'Parcelas restantes', value: `${number(data.contributions.parcelasRestantes)} parcelas`, help: 'Quantidade de parcelas ainda previstas no cronograma.' }
     ];
     const secondary = [
-      { label: 'Total do plano', value: money(data.metrics.totalPlano), help: 'Carta, taxas e componentes.' },
-      { label: 'Total pago', value: money(data.metrics.totalPago), help: 'Projecao ate encerramento.' },
-      { label: 'Saldo devedor', value: money(data.metrics.saldoDevedor), help: 'Saldo ao final da projecao.' },
-      { label: 'Percorrido', value: percent(data.metrics.percentualPago), help: 'Avanco estimado da jornada.' }
+      { label: 'Total do plano', value: money(data.metrics.totalPlano), help: 'Carta, taxas, fundo e seguro.' },
+      { label: 'Total projetado', value: money(data.metrics.totalPago), help: 'Soma dos pagamentos até o fim do plano.' },
+      { label: 'Saldo devedor final', value: money(data.metrics.saldoDevedor), help: 'Saldo calculado ao final do cronograma.' },
+      { label: 'Parcelas pagas', value: percent(data.metrics.percentualPago), help: 'Percentual informado como pago.' }
     ];
     return `
       <section class="ps-section ps-print-page">
         <div class="ps-section__head">
           <span>01</span>
-          <div><h3>Numeros estrategicos</h3><p>Os indicadores abaixo priorizam decisao, caixa e compromisso.</p></div>
+          <div><h3>Valores da simulação</h3><p>Crédito, parcela, prazo e custo total.</p></div>
         </div>
         <div class="ps-kpi-grid ps-kpi-grid--primary">${primary.map(k => kpiCard(k, 'primary')).join('')}</div>
         <div class="ps-kpi-grid">${secondary.map(k => kpiCard(k)).join('')}</div>
@@ -972,7 +1044,7 @@ const ProposalSummary = (() => {
       <section class="ps-section ps-print-page">
         <div class="ps-section__head">
           <span>02</span>
-          <div><h3>Jornada do cliente</h3><p>A proposta mostra o caminho entre adesao, lance, contemplacao e uso do credito.</p></div>
+          <div><h3>Etapas do consórcio</h3><p>Da adesão ao encerramento do plano.</p></div>
         </div>
         <div class="ps-journey">
           ${data.journey.map((step, idx) => `
@@ -985,11 +1057,50 @@ const ProposalSummary = (() => {
           `).join('')}
         </div>
         <aside class="ps-insight">
-          <strong>Leitura executiva</strong>
-          <p>A operacao esta estruturada para manter previsibilidade de parcela, reservar estrategia de lance e preparar o cliente para os marcos de documentacao e faturamento.</p>
+          <strong>Importante</strong>
+          <p>A contemplação pode ocorrer por sorteio ou lance e não é garantida na data usada nesta simulação.</p>
         </aside>
       </section>
     `;
+  }
+
+  function compactPercent(value) {
+    const n = Number(value) || 0;
+    const decimals = Number.isInteger(n) ? 0 : (Number.isInteger(n * 10) ? 1 : 2);
+    return percent(n, decimals);
+  }
+
+  function projectIndexLabel(value) {
+    const normalized = String(value || 'fixo').trim().toLowerCase();
+    const labels = {
+      fixo: 'Fixo',
+      ipca: 'IPCA',
+      incc: 'INCC',
+      igpm: 'IGP-M',
+      'igp-m': 'IGP-M'
+    };
+    return labels[normalized] || normalized.toLocaleUpperCase('pt-BR');
+  }
+
+  function projectBidModeLabel(value) {
+    const normalized = String(value || 'sem_lance').trim().toLowerCase();
+    const labels = {
+      sem_lance: 'Sem lance',
+      livre: 'Próprio',
+      proprio: 'Próprio',
+      embutido: 'Embutido',
+      fixo: 'Fixo',
+      fgts: 'FGTS',
+      combinado: 'Combinado'
+    };
+    return labels[normalized] || 'Modalidade a confirmar';
+  }
+
+  function projectAdjustmentLabel(item) {
+    const rate = Number(item.indiceReajuste) || 0;
+    const index = projectIndexLabel(item.indiceCorrecaoNome);
+    if (rate === 0) return `Sem reajuste (0%) • Índice ${index}`;
+    return `${index} • Reajuste de ${compactPercent(rate)} • mês de aniversário ${number(item.mesAniversario)}`;
   }
 
   function renderProjectComposition(data) {
@@ -999,14 +1110,14 @@ const ProposalSummary = (() => {
       <section class="ps-section ps-print-page">
         <div class="ps-section__head">
           <span>03</span>
-          <div><h3>Composicao do projeto estruturado</h3><p>Detalha quais grupos, cotas e premissas formam a proposta apresentada.</p></div>
+          <div><h3>Grupos e cotas selecionados</h3><p>Veja como o crédito total foi dividido entre os grupos.</p></div>
         </div>
 
         <div class="ps-project-summary">
-          <article><span>Grupos</span><strong>${number(summary.totalGrupos || items.length)}</strong><small>fontes de credito combinadas</small></article>
-          <article><span>Cotas</span><strong>${number(summary.totalCotas || 0)}</strong><small>quantidade total no projeto</small></article>
-          <article><span>Carta consolidada</span><strong>${money(summary.valorCartaTotal || data.metrics.creditoTotal)}</strong><small>soma das cartas selecionadas</small></article>
-          <article><span>Prazo medio</span><strong>${number(summary.prazoMedio || data.contributions.parcelasTotais)} meses</strong><small>ponderado pela carta</small></article>
+          <article><span>Grupos</span><strong>${number(summary.totalGrupos || items.length)}</strong><small>grupos incluídos</small></article>
+          <article><span>Cotas</span><strong>${number(summary.totalCotas || 0)}</strong><small>total de cotas</small></article>
+          <article><span>Crédito total</span><strong>${money(summary.valorCartaTotal || data.metrics.creditoTotal)}</strong><small>soma das cartas</small></article>
+          <article><span>Prazo médio</span><strong>${number(summary.prazoMedio || data.contributions.parcelasTotais)} meses</strong><small>ponderado pelo valor das cartas</small></article>
         </div>
 
         ${items.length ? `
@@ -1015,42 +1126,34 @@ const ProposalSummary = (() => {
               <thead>
                 <tr>
                   <th>Grupo</th>
-                  <th>Administradora</th>
-                  <th>Segmento</th>
-                  <th>Cotas</th>
-                  <th>Carta unit.</th>
-                  <th>Carta total</th>
-                  <th>Prazo</th>
-                  <th>Taxa adm.</th>
+                  <th>Administradora e segmento</th>
+                  <th>Cotas e crédito</th>
+                  <th>Prazo e contemplação</th>
+                  <th>Taxa e reajuste</th>
                   <th>Lance</th>
-                  <th>Papel</th>
                 </tr>
               </thead>
               <tbody>
                 ${items.map(item => `
                   <tr>
-                    <td><strong>${escapeHTML(item.codigoGrupo)}</strong>${item.classificacao ? `<small>Classe ${escapeHTML(item.classificacao)}</small>` : ''}</td>
-                    <td>${escapeHTML(item.administradora)}</td>
-                    <td>${escapeHTML(item.segmento)}</td>
-                    <td class="ps-project-table__center">${number(item.quantidadeCotas)}</td>
-                    <td class="ps-project-table__num">${money(item.valorCartaUnitario)}</td>
-                    <td class="ps-project-table__num ps-project-table__strong">${money(item.valorCartaTotal)}</td>
-                    <td class="ps-project-table__center">${number(item.prazoMeses)} meses</td>
-                    <td class="ps-project-table__center">${percent(item.taxaAdmPct)}</td>
-                    <td class="ps-project-table__center">${percent(item.lanceProprioPct + item.lanceEmbutidoPct)}</td>
-                    <td>${item.papel ? `<span class="ps-role-pill">${escapeHTML(item.papel)}</span>` : '-'}</td>
+                    <td><strong>${escapeHTML(item.codigoGrupo)}</strong></td>
+                    <td><strong>${escapeHTML(item.administradora)}</strong><small>${escapeHTML(item.segmento)}</small></td>
+                    <td><strong>${number(item.quantidadeCotas)} ${item.quantidadeCotas === 1 ? 'cota' : 'cotas'}</strong><small>Carta unitária ${money(item.valorCartaUnitario)} • total ${money(item.valorCartaTotal)}</small></td>
+                    <td><strong>${number(item.prazoMeses)} meses</strong><small>Contemplação no cenário: mês ${number(item.mesContemplacaoAlvo)}</small></td>
+                    <td><strong>Taxa de administração ${compactPercent(item.taxaAdmPct)}</strong><small>Fundo de reserva ${compactPercent(item.fundoReservaPct)} • ${escapeHTML(projectAdjustmentLabel(item))}</small></td>
+                    <td><strong>${escapeHTML(projectBidModeLabel(item.modalidadeLance))}</strong><small>Lance ${compactPercent(item.lanceProprioPct + item.lanceEmbutidoPct)}</small></td>
                   </tr>
                 `).join('')}
               </tbody>
             </table>
           </div>
         ` : `
-          <div class="ps-empty-schedule">Nenhum grupo foi vinculado a esta proposta. Os totais foram calculados pelos parametros gerais da simulacao.</div>
+          <div class="ps-empty-schedule">Nenhum grupo foi selecionado. Os totais usam apenas os valores gerais informados na simulação.</div>
         `}
 
         <aside class="ps-insight">
-          <strong>Rastreabilidade comercial</strong>
-          <p>Cada linha mostra a origem da carta, o peso financeiro e a funcao estrategica do grupo. Isso ajuda o cliente a entender que a proposta nao e um numero solto, mas uma composicao de grupos, cotas, prazos, taxas e lances.</p>
+          <strong>Conferência</strong>
+          <p>A soma das cartas selecionadas é ${money(summary.valorCartaTotal || data.metrics.creditoTotal)}. Confira grupo, cota, prazo, taxa e lance antes de contratar.</p>
         </aside>
       </section>
     `;
@@ -1062,7 +1165,7 @@ const ProposalSummary = (() => {
       <section class="ps-section ps-print-page">
         <div class="ps-section__head">
           <span>04</span>
-          <div><h3>Fases do produto e pontos de controle</h3><p>Traduz a operacao de consorcio em marcos claros para o cliente acompanhar.</p></div>
+          <div><h3>Etapas previstas</h3><p>Da entrada no grupo ao encerramento do plano.</p></div>
         </div>
         <div class="ps-phase-grid">
           ${phases.map((phase, index) => `
@@ -1077,8 +1180,8 @@ const ProposalSummary = (() => {
           `).join('')}
         </div>
         <aside class="ps-insight">
-          <strong>Como ler esta jornada</strong>
-          <p>O consorcio combina disciplina de pagamento, assembleias, possibilidade de lance, contemplacao e uso do credito. A proposta organiza esses marcos para reduzir incerteza e orientar as proximas decisoes.</p>
+          <strong>Atenção</strong>
+          <p>Assembleias, lances, análise de crédito e documentos seguem as regras da administradora e do contrato.</p>
         </aside>
       </section>
     `;
@@ -1088,13 +1191,13 @@ const ProposalSummary = (() => {
     const total = data.charts.composition.reduce((s, item) => s + item.value, 0) || 1;
     const chart = isChartEnabled(data, 'composition')
       ? `<div class="ps-chart-card"><canvas id="${chartId(data, 'composition')}"></canvas></div>`
-      : renderDisabledChart('Composicao financeira');
+      : renderDisabledChart('Custos do plano');
     return `
       <section class="ps-section ps-section--split ps-print-page">
         <div>
           <div class="ps-section__head">
             <span>05</span>
-            <div><h3>Estrutura financeira</h3><p>Composicao do plano e leitura do que compoe o custo total.</p></div>
+            <div><h3>Custos do plano</h3><p>Carta de crédito, taxa de administração, fundo de reserva e seguro.</p></div>
           </div>
           ${chart}
         </div>
@@ -1107,8 +1210,8 @@ const ProposalSummary = (() => {
             </article>
           `).join('')}
           <aside class="ps-insight">
-            <strong>O que isso significa</strong>
-            <p>A carta representa o poder de compra. Taxa, fundo e seguro explicam o custo de manter a operacao dentro das regras do grupo.</p>
+            <strong>Resumo</strong>
+            <p>A carta corresponde ao crédito contratado. Taxa, fundo e seguro são valores adicionais previstos nas condições do grupo.</p>
           </aside>
         </div>
       </section>
@@ -1118,13 +1221,13 @@ const ProposalSummary = (() => {
   function renderContributionOverview(data) {
     const chart = isChartEnabled(data, 'installment')
       ? `<div class="ps-chart-card"><canvas id="${chartId(data, 'installment')}"></canvas></div>`
-      : renderDisabledChart('Evolucao das parcelas');
+      : renderDisabledChart('Evolução das parcelas');
     return `
       <section class="ps-section ps-section--split ps-print-page">
         <div>
           <div class="ps-section__head">
             <span>06</span>
-            <div><h3>Contribuicoes e parcelas</h3><p>Mostra o estagio atual de pagamento e a evolucao projetada da parcela.</p></div>
+            <div><h3>Parcelas</h3><p>Quantidade paga, saldo restante e valores projetados mês a mês.</p></div>
           </div>
           <div class="ps-progress">
             <div><strong>${number(data.contributions.parcelasPagas)}</strong><span>pagas</span></div>
@@ -1133,7 +1236,7 @@ const ProposalSummary = (() => {
           </div>
           <div class="ps-progress-bar"><span style="width:${Math.min(100, data.metrics.percentualPago)}%"></span></div>
           <div class="ps-next-payment">
-            <span>Proxima parcela</span>
+            <span>Próxima parcela</span>
             <strong>${money(data.contributions.proximaParcelaValor)}</strong>
             <small>Vencimento estimado em ${formatDate(data.contributions.proximaParcelaData)}</small>
           </div>
@@ -1145,31 +1248,31 @@ const ProposalSummary = (() => {
 
   function renderBidStrategy(data) {
     const cards = [
-      { label: 'Lance proprio', value: money(data.lances.lanceProprio), help: 'Recurso que sai do caixa do cliente.' },
-      { label: 'Lance embutido', value: money(data.lances.lanceEmbutido), help: 'Valor que reduz o credito liquido.' },
-      { label: 'Lance total', value: money(data.lances.lanceTotal), help: 'Forca total da oferta de contemplacao.' },
-      { label: 'Credito liquido', value: money(data.metrics.caixaLiquida), help: 'Credito disponivel apos embutido.' }
+      { label: 'Lance próprio', value: money(data.lances.lanceProprio), help: 'Valor pago com recursos do cliente.' },
+      { label: 'Lance embutido', value: money(data.lances.lanceEmbutido), help: 'Valor descontado da carta.' },
+      { label: 'Lance total', value: money(data.lances.lanceTotal), help: 'Soma dos lances próprio e embutido.' },
+      { label: 'Crédito líquido', value: money(data.metrics.caixaLiquida), help: 'Crédito estimado após o lance embutido.' }
     ];
     return `
       <section class="ps-section ps-print-page">
         <div class="ps-section__head">
           <span>07</span>
-          <div><h3>Lance e estrategia de contemplacao</h3><p>Explica quanto e antecipado, quanto sai do bolso e o impacto no credito liquido.</p></div>
+          <div><h3>Lances</h3><p>Valores próprios, valor embutido e impacto no crédito disponível.</p></div>
         </div>
         <div class="ps-kpi-grid">${cards.map(k => kpiCard(k)).join('')}</div>
         <div class="ps-section--split ps-section--nested">
           <aside class="ps-strategy">
-            <strong>Estrategia sugerida</strong>
+            <strong>Valores considerados</strong>
             <p>${escapeHTML(data.lances.estrategiaResumo)}</p>
             <ul>
-              <li>Antecipacao total: ${money(data.lances.lanceTotal)}</li>
-              <li>Impacto no credito liquido: ${money(data.lances.impactoCreditoLiquido)}</li>
-              <li>Saldo apos lance: ${money(data.lances.impactoSaldoDevedor)}</li>
+              <li>Lance total: ${money(data.lances.lanceTotal)}</li>
+              <li>Redução do crédito pelo lance embutido: ${money(data.lances.impactoCreditoLiquido)}</li>
+              <li>Saldo após lance: ${money(data.lances.impactoSaldoDevedor)}</li>
             </ul>
           </aside>
           ${isChartEnabled(data, 'bid')
             ? `<div class="ps-chart-card"><canvas id="${chartId(data, 'bid')}"></canvas></div>`
-            : renderDisabledChart('Comparativo de lance e credito')}
+            : renderDisabledChart('Lance e crédito')}
         </div>
       </section>
     `;
@@ -1182,18 +1285,18 @@ const ProposalSummary = (() => {
         : renderDisabledChart('Saldo devedor'),
       isChartEnabled(data, 'installmentProjection')
         ? `<div class="ps-chart-card"><canvas id="${chartId(data, 'installmentProjection')}"></canvas></div>`
-        : renderDisabledChart('Projecao de parcelas')
+        : renderDisabledChart('Projeção de parcelas')
     ].join('');
     return `
       <section class="ps-section ps-section--split ps-print-page">
         <div>
           <div class="ps-section__head">
             <span>08</span>
-            <div><h3>Projecoes da operacao</h3><p>Leitura futura do saldo devedor, parcelas e comportamento ate encerramento.</p></div>
+            <div><h3>Saldo e parcelas ao longo do prazo</h3><p>Valores projetados mês a mês até o fim do plano.</p></div>
           </div>
           <aside class="ps-insight">
-            <strong>Interpretacao</strong>
-            <p>A curva de saldo mostra o ritmo de amortizacao. A curva de parcelas indica o compromisso mensal projetado e ajuda a revisar capacidade de pagamento.</p>
+            <strong>O que observar</strong>
+            <p>O saldo diminui com os pagamentos. As parcelas podem mudar por reajustes, lances e demais condições contratuais.</p>
           </aside>
         </div>
         <div class="ps-chart-stack">
@@ -1210,9 +1313,9 @@ const ProposalSummary = (() => {
         <section class="ps-section ps-section--schedule ps-print-page">
           <div class="ps-section__head">
             <span>09</span>
-            <div><h3>Cronograma mensal de parcelas</h3><p>A tabela detalhada sera exibida quando houver cronograma calculado.</p></div>
+            <div><h3>Cronograma mensal de parcelas</h3><p>A tabela será exibida após o cálculo da simulação.</p></div>
           </div>
-          <div class="ps-empty-schedule">Calcule a simulacao para visualizar o fluxo mensal completo.</div>
+          <div class="ps-empty-schedule">Calcule a simulação para ver as parcelas mês a mês.</div>
         </section>
       `;
     }
@@ -1228,22 +1331,22 @@ const ProposalSummary = (() => {
           <span>09</span>
           <div>
             <h3>Cronograma mensal de parcelas</h3>
-            <p>Detalhamento mes a mes das parcelas, eventos da jornada, encargos, lances e saldo projetado.</p>
+            <p>Parcelas, reajustes, encargos, lances e saldo projetado mês a mês.</p>
           </div>
         </div>
 
         <div class="ps-schedule-summary">
-          <article><span>Meses projetados</span><strong>${number(rows.length)}</strong><small>Visao completa para PDF</small></article>
+          <article><span>Meses projetados</span><strong>${number(rows.length)}</strong><small>Período calculado</small></article>
           <article><span>Total de parcelas</span><strong>${money(totalParcelas)}</strong><small>Soma do fluxo mensal</small></article>
-          <article><span>Maior parcela</span><strong>${money(maiorParcela)}</strong><small>Ponto de maior compromisso</small></article>
-          <article><span>Eventos relevantes</span><strong>${number(eventosRelevantes)}</strong><small>Lances, reajustes ou marcos</small></article>
+          <article><span>Maior parcela</span><strong>${money(maiorParcela)}</strong><small>Maior valor mensal calculado</small></article>
+          <article><span>Eventos</span><strong>${number(eventosRelevantes)}</strong><small>Lances, reajustes ou encargos</small></article>
         </div>
 
         <div class="ps-schedule-table-wrap">
           <table class="ps-schedule-table">
             <thead>
               <tr>
-                <th>Mes</th>
+                <th>Mês</th>
                 <th>Data</th>
                 <th>Evento</th>
                 <th>Parcela base</th>
@@ -1282,7 +1385,7 @@ const ProposalSummary = (() => {
             </tbody>
           </table>
         </div>
-        <p class="ps-schedule-note">Na tela, a tabela fica rolavel para preservar leitura. No PDF, o cronograma completo e expandido e paginado automaticamente.</p>
+        <p class="ps-schedule-note">Os valores podem mudar por reajustes e demais condições previstas no contrato.</p>
       </section>
     `;
   }
@@ -1295,7 +1398,7 @@ const ProposalSummary = (() => {
       <section class="ps-section ps-section--concepts ps-print-page">
         <div class="ps-section__head">
           <span>EDU</span>
-          <div><h3>Conceitos para explicar ao cliente</h3><p>Blocos educativos selecionados pelo consultor para dar contexto antes da decisao final.</p></div>
+          <div><h3>Termos desta proposta</h3><p>Definições dos principais itens do consórcio.</p></div>
         </div>
         <div class="ps-concepts-grid">
           ${concepts.map(item => `
@@ -1317,7 +1420,7 @@ const ProposalSummary = (() => {
       <section class="ps-section ps-section--formulas ps-print-page">
         <div class="ps-section__head">
           <span>CALC</span>
-          <div><h3>Memoria de calculo explicada</h3><p>Formulas e leituras comerciais escolhidas para sustentar a proposta final.</p></div>
+          <div><h3>Como os valores foram calculados</h3><p>Fórmulas usadas nesta simulação.</p></div>
         </div>
         <div class="ps-formula-grid">
           ${formulas.map(item => `
@@ -1334,35 +1437,18 @@ const ProposalSummary = (() => {
   }
 
   function renderNextSteps(data) {
-    const planItems = [
-      ['header', 'Capa da proposta'],
-      ['executive', 'Resumo executivo'],
-      ['decision', 'Decisao final'],
-      ['journey', 'Jornada da operacao'],
-      ['project', 'Composicao do projeto'],
-      ['productPhases', 'Fases do produto'],
-      ['financialComposition', 'Estrutura financeira'],
-      ['bidStrategy', 'Estrategia de contemplacao'],
-      ['projection', 'Projecoes'],
-      ['schedule', 'Cronograma mensal'],
-      ['concepts', 'Conceitos educativos'],
-      ['formulas', 'Memoria de calculo'],
-      ['nextSteps', 'Proximos passos'],
-      ['disclaimer', 'Premissas finais']
-    ].filter(([key]) => key === 'nextSteps' || isSectionEnabled(data, key)).map(([, label]) => label);
-    const builder = data.builder || proposalBuilderDefaults;
     const selectionFacts = [
-      ['Blocos', countEnabledFlags(builder.sections), Object.keys(builder.sections || {}).length],
-      ['Graficos', countEnabledFlags(builder.charts), Object.keys(builder.charts || {}).length],
-      ['Conceitos', countEnabledFlags(builder.concepts), Object.keys(builder.concepts || {}).length],
-      ['Formulas', countEnabledFlags(builder.formulas), Object.keys(builder.formulas || {}).length]
+      ['Crédito total', money(data.metrics.creditoTotal)],
+      ['Crédito líquido', money(data.metrics.caixaLiquida)],
+      ['Lance total', money(data.lances.lanceTotal)],
+      ['Prazo', `${number(data.contributions.parcelasTotais)} meses`]
     ];
     return `
       <section class="ps-section ps-section--split ps-print-page">
         <div>
           <div class="ps-section__head">
             <span>10</span>
-            <div><h3>Decisao e proximos passos</h3><p>Transforma a proposta em uma sequencia operacional para consultor e cliente.</p></div>
+            <div><h3>Próximos passos</h3><p>O que precisa ser confirmado antes da contratação.</p></div>
           </div>
           <div class="ps-next-list">
             ${data.nextSteps.map(step => `
@@ -1375,15 +1461,13 @@ const ProposalSummary = (() => {
           </div>
         </div>
         <div class="ps-pdf-plan">
-          <h4>Estrutura selecionada na lousa</h4>
+          <h4>Condições principais</h4>
           <div class="ps-pdf-plan__facts" data-proposal-selection-summary>
-            ${selectionFacts.map(([label, selected, total]) => `
-              <article><span>${escapeHTML(label)}</span><strong>${number(selected)} de ${number(total)}</strong></article>
+            ${selectionFacts.map(([label, value]) => `
+              <article><span>${escapeHTML(label)}</span><strong>${escapeHTML(value)}</strong></article>
             `).join('')}
           </div>
-          ${planItems.map((item, i) => `
-            <div><span>${i + 1}</span><strong>${escapeHTML(item)}</strong></div>
-          `).join('')}
+          <p>A contemplação não é garantida. Confirme taxas, reajustes, regras de lance e documentos com a administradora.</p>
         </div>
       </section>
     `;
@@ -1392,24 +1476,23 @@ const ProposalSummary = (() => {
   function renderAcceptance(data) {
     const acceptance = data.acceptance || normalizeAcceptance(null, data);
     const checks = [
-      { key: 'premissas', title: 'Premissas financeiras', body: 'Carta, prazo, taxa, fundo, lance e cronograma foram conferidos.' },
-      { key: 'cliente', title: 'Contexto do cliente', body: 'Objetivo, capacidade de pagamento e narrativa comercial foram revisados.' },
-      { key: 'documentacao', title: 'Documentacao e handoff', body: 'Proximos documentos e encaminhamento consultivo estao mapeados.' }
+      { key: 'premissas', title: 'Valores e condições', body: 'Crédito, prazo, taxa, fundo, lance e parcelas foram conferidos.' },
+      { key: 'cliente', title: 'Dados do cliente', body: 'Objetivo e capacidade de pagamento foram conferidos.' },
+      { key: 'documentacao', title: 'Documentos necessários', body: 'Documentos e próximos contatos foram definidos.' }
     ];
-    const versionLabel = acceptance.version ? `Versao ${number(acceptance.version, 0)}` : 'Sem versao registrada';
     const updatedLabel = acceptance.updatedAt ? formatDate(acceptance.updatedAt) : 'Aguardando registro';
 
     return `
-      <section class="ps-section ps-section--acceptance ps-print-page">
+      <section class="ps-section ps-section--acceptance">
         <div class="ps-section__head">
-          <span>REV</span>
-          <div><h3>Governanca e aceite local da proposta</h3><p>Registra a revisao operacional antes do envio, impressao ou handoff consultivo.</p></div>
+          <span>ACEITE</span>
+          <div><h3>Revisão da proposta</h3><p>Registro de quem conferiu os valores, as condições e os documentos antes do envio.</p></div>
         </div>
         <div class="ps-acceptance-grid">
-          <article><span>Status</span><strong>${escapeHTML(acceptance.statusLabel)}</strong><small>${escapeHTML(versionLabel)}</small></article>
-          <article><span>Responsavel</span><strong>${escapeHTML(acceptance.reviewer)}</strong><small>${escapeHTML(acceptance.reviewerRole)}</small></article>
+          <article><span>Status</span><strong>${escapeHTML(acceptance.statusLabel)}</strong><small>${acceptance.status === 'reviewed' ? 'Conferência concluída' : 'Conferência pendente'}</small></article>
+          <article><span>Responsável</span><strong>${escapeHTML(acceptance.reviewer)}</strong><small>${escapeHTML(acceptance.reviewerRole)}</small></article>
           <article><span>Validade</span><strong>${escapeHTML(formatDate(acceptance.validUntil))}</strong><small>Registro atualizado em ${escapeHTML(updatedLabel)}</small></article>
-          <article><span>Proposta</span><strong>${escapeHTML(acceptance.proposalId)}</strong><small>Mesmo identificador do preview e do PDF</small></article>
+          <article><span>Proposta</span><strong>${escapeHTML(acceptance.proposalId)}</strong><small>Número da proposta</small></article>
         </div>
         <div class="ps-acceptance-checklist">
           ${checks.map(item => `
@@ -1421,7 +1504,7 @@ const ProposalSummary = (() => {
           `).join('')}
         </div>
         <div class="ps-acceptance-note">
-          <strong>Observacao da revisao</strong>
+          <strong>Observações</strong>
           <p>${escapeHTML(acceptance.notes)}</p>
         </div>
       </section>
@@ -1432,13 +1515,13 @@ const ProposalSummary = (() => {
     return `
       <footer class="ps-footer ps-print-page">
         <div>
-          <strong>Premissas e observacoes</strong>
+          <strong>Avisos importantes</strong>
           <ul>${data.disclaimers.map(item => `<li>${escapeHTML(item)}</li>`).join('')}</ul>
         </div>
         <div class="ps-footer__meta">
           <span>Gerado em ${formatDate(data.generatedAt)}</span>
-          <span>Versao da simulacao: Bancus Fraternis ConsorcioPro v7</span>
-          <span>Responsavel: ${escapeHTML(data.consultor)}</span>
+          <span>Proposta ${escapeHTML(data.id)}</span>
+          <span>Responsável: ${escapeHTML(data.consultor)}</span>
         </div>
       </footer>
     `;
@@ -1544,7 +1627,11 @@ const ProposalSummary = (() => {
 
     const mapped = payload && payload.resultado
       ? mapSimulationToProposal(payload)
-      : createMockData();
+      : payload && payload.proposalData
+        ? payload.proposalData
+        : payload && payload.metrics && payload.lances
+          ? payload
+          : createMockData();
     if (payload && payload.acceptance) mapped.acceptance = payload.acceptance;
     if (payload && payload.builder) mapped.builder = payload.builder;
     const data = prepareRenderData(mapped, options, target);

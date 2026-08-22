@@ -22,6 +22,15 @@ const ShelfEngine = (() => {
     return Number.isFinite(n) ? n : fallback;
   }
 
+  function roundMoney(value) {
+    return Math.round((safeNumber(value, 0) + Number.EPSILON) * 100) / 100;
+  }
+
+  function normalizeBidMode(value, fallback = 'sem_lance') {
+    const mode = String(value || fallback);
+    return mode === 'proprio' ? 'livre' : mode;
+  }
+
   function parseFilterNumber(value) {
     if (value == null || value === '') return null;
     const raw = String(value).trim();
@@ -288,15 +297,26 @@ const ShelfEngine = (() => {
       prazoMeses: prazo,
       taxaAdmPct: safeNumber(group.taxaAdmPct, 0),
       fundoReservaPct: safeNumber(group.fundoReservaPct, 2),
+      seguroPct: safeNumber(group.seguroPctComercial, 0),
       indiceCorrecaoNome: group.indiceCorrecaoNome || 'fixo',
+      indiceReajuste: Number.isFinite(Number(group.indiceReajustePct))
+        ? Number(group.indiceReajustePct)
+        : 0,
+      mesAniversario: 12,
 
       estrategiaLance: 'sem_lance',
+      modalidadeLance: 'sem_lance',
       lanceProprioPct: 0,
       lanceEmbutidoPct: 0,
+      lanceFixoPct: safeNumber(group.lanceFixoPct, 0),
       valorFgts: 0,
       mesContemplacaoAlvo: Math.min(18, prazo),
       reduzirParcelaOuPrazo: null,
       parcelaReduzidaAtiva: false,
+      percentualReducao: 0,
+      politicaSaldo: 'carta',
+      adiantamentos: [],
+      inadimplencias: [],
       observacaoItem: '',
 
       // V7: Dados heurísticos
@@ -349,7 +369,7 @@ const ShelfEngine = (() => {
 
   // ─── Simulação do Projeto Estruturado ───
 
-  function simulateStructuredProject(project) {
+  function simulateStructuredProject(project, sharedParams = {}) {
     if (typeof Comparator === 'undefined' || typeof ConsorcioEngine === 'undefined') {
       return {
         erro: true,
@@ -368,12 +388,24 @@ const ShelfEngine = (() => {
     let cartaLiquida = 0;
     let totalLanceProprioR = 0;
     let totalLanceEmbutidoR = 0;
+    let totalLanceAplicadoR = 0;
     let parcelaInicialTotal = 0;
+    let totalTaxaAdm = 0;
+    let totalFundoReserva = 0;
+    let totalSeguro = 0;
+    let totalSaldoInicial = 0;
+    let totalCusto = 0;
     let somaPrazoPonderado = 0;
     let somaTaxaPonderada = 0;
     let pesoCarta = 0;
     let maxPrazo = 0;
     const mensagens = [];
+    const totalProjectCredit = projectItems.reduce((sum, item) => {
+      if (!item || typeof item !== 'object') return sum;
+      const quantity = Math.max(1, parseInt(item.quantidadeCotas, 10) || 1);
+      const unitCredit = safeNumber(item.valorCartaUnitario, safeNumber(item._group && item._group.valorCartaRef, 0));
+      return sum + (quantity * unitCredit);
+    }, 0);
 
     for (const item of projectItems) {
       if (!item || typeof item !== 'object') {
@@ -391,6 +423,10 @@ const ShelfEngine = (() => {
       item.lanceProprioPct = safeNumber(item.lanceProprioPct, 0);
       item.lanceEmbutidoPct = safeNumber(item.lanceEmbutidoPct, 0);
       item.mesContemplacaoAlvo = Math.max(1, parseInt(item.mesContemplacaoAlvo, 10) || 1);
+      item.modalidadeLance = normalizeBidMode(
+        item.modalidadeLance || sharedParams.modalidadeLance || 'combinado',
+        'combinado'
+      );
 
       const validationErrors = validateProjectItem(item);
       if (validationErrors.length > 0) {
@@ -400,26 +436,47 @@ const ShelfEngine = (() => {
         continue;
       }
 
-      const lanceProprioR = item.valorCartaTotal * (item.lanceProprioPct / 100);
-      const lanceEmbutidoR = item.valorCartaTotal * (item.lanceEmbutidoPct / 100);
+      const lanceProprioConfiguradoR = roundMoney(item.valorCartaTotal * (item.lanceProprioPct / 100));
+      const lanceEmbutidoConfiguradoR = roundMoney(item.valorCartaTotal * (item.lanceEmbutidoPct / 100));
+      const itemAdvances = Array.isArray(item.adiantamentos) && item.adiantamentos.length > 0
+        ? item.adiantamentos.map((advance) => ({ ...advance }))
+        : (Array.isArray(sharedParams.adiantamentos) ? sharedParams.adiantamentos : []).map((advance) => {
+            const projectValue = safeNumber(advance && advance.valor, 0);
+            return {
+              ...advance,
+              // O valor da etapa de eventos pertence ao projeto. Cada motor
+              // unitario recebe sua fracao para a consolidacao nao duplicar caixa.
+              valor: projectValue > 0 && totalProjectCredit > 0
+                ? projectValue * (item.valorCartaUnitario / totalProjectCredit)
+                : projectValue
+            };
+          });
+      const itemDefaults = Array.isArray(item.inadimplencias) && item.inadimplencias.length > 0
+        ? item.inadimplencias.map((entry) => ({ ...entry }))
+        : (Array.isArray(sharedParams.inadimplencias) ? sharedParams.inadimplencias : []).map((entry) => ({ ...entry }));
 
       const scenario = {
-        saldoInicialMode: 'carta',
-        indiceReajustePct: 5,
+        saldoInicialMode: item.politicaSaldo || sharedParams.politicaSaldo || 'carta',
+        // O índice exibido no item é a fonte da verdade. Zero é uma premissa
+        // explícita e não pode herdar silenciosamente o fallback global de 5%.
+        indiceReajustePct: safeNumber(item.indiceReajuste, 0),
         mesContemplacao: item.mesContemplacaoAlvo,
         lanceProprioPct: item.lanceProprioPct,
         lanceEmbutidoPct: item.lanceEmbutidoPct,
         usarFgts: item.valorFgts > 0,
         valorFgts: item.valorFgts || 0,
+        modalidadeLance: item.modalidadeLance,
         parcelaReduzida: item.parcelaReduzidaAtiva,
-        percentualReducao: group.reducaoMaxParcelaPct || 0,
+        percentualReducao: safeNumber(item.percentualReducao, safeNumber(group.reducaoMaxParcelaPct, 0)),
+        adiantamentos: itemAdvances,
+        inadimplencias: itemDefaults,
         adiantamentoMes: 0,
         adiantamentoValor: 0,
         adiantamentoModo: 'reduzir_saldo',
         inadimplenciaMes: 0,
         mesesAtraso: 0,
-        multaPct: 2,
-        jurosPct: 1
+        multaPct: safeNumber(item.multaAtraso, safeNumber(sharedParams.multaAtraso, 2)),
+        jurosPct: safeNumber(item.jurosAtraso, safeNumber(sharedParams.jurosAtraso, 1))
       };
 
       const groupForEngine = {
@@ -427,9 +484,9 @@ const ShelfEngine = (() => {
         prazoMeses: item.prazoMeses,
         taxaAdmTotalPct: item.taxaAdmPct,
         fundoReservaPct: item.fundoReservaPct,
-        seguroPct: group.seguroPctComercial || 0,
+        seguroPct: safeNumber(item.seguroPct, safeNumber(group.seguroPctComercial, 0)),
         indiceReajuste: item.indiceCorrecaoNome != null ? item.indiceCorrecaoNome : (group.indiceCorrecaoNome || 'fixo'),
-        mesAniversario: 12,
+        mesAniversario: safeNumber(item.mesAniversario, safeNumber(sharedParams.mesAniversario, 12)),
         lanceEmbutidoMaxPct: group.lanceEmbutidoMaxPct || 0,
         lanceFixoPct: group.lanceFixoPct || 0,
         parcelaReduzidaDisponivel: group.parcelaReduzidaDisponivel,
@@ -453,19 +510,40 @@ const ShelfEngine = (() => {
       const parcelaUnitaria = resumo.parcelaTotalAtual || 0;
       const totalPagoUnitario = resumo.totalPago || 0;
       const totalAteContemplacaoUnitario = resumo.totalPagoAteContemplacao || 0;
+      const quantidade = item.quantidadeCotas;
+      const selectedOwnUnit = safeNumber(resumo.lanceProprioSelecionado, 0);
+      const selectedCashUnit = selectedOwnUnit
+        + safeNumber(resumo.lanceFGTSSelecionado, 0)
+        + safeNumber(resumo.lanceFixoSelecionado, 0);
+      const appliedCashUnit = safeNumber(resumo.lanceCaixa, 0);
+      const appliedOwnUnit = selectedCashUnit > 0
+        ? roundMoney(appliedCashUnit * selectedOwnUnit / selectedCashUnit)
+        : 0;
+      const lanceProprioR = roundMoney(appliedOwnUnit * quantidade);
+      const lanceEmbutidoR = roundMoney(safeNumber(resumo.lanceEmbutidoAplicado, 0) * quantidade);
+      const lanceTotalR = roundMoney(safeNumber(resumo.lanceAplicado, 0) * quantidade);
+      const cartaLiquidaItem = roundMoney(item.valorCartaTotal - lanceEmbutidoR);
 
       itemResults.push({
         item, erro: false, simulation: sim, resumo,
+        engineParams: {
+          ...params,
+          adiantamentos: Array.isArray(params.adiantamentos) ? params.adiantamentos.map(entry => ({ ...entry })) : [],
+          inadimplencias: Array.isArray(params.inadimplencias) ? params.inadimplencias.map(entry => ({ ...entry })) : []
+        },
         parcelaUnitaria,
         totalPagoUnitario,
         totalAteContemplacaoUnitario,
-        parcelaTotal: parcelaUnitaria * item.quantidadeCotas,
-        totalPagoTotal: totalPagoUnitario * item.quantidadeCotas,
-        totalAteContemplacaoTotal: totalAteContemplacaoUnitario * item.quantidadeCotas,
+        parcelaTotal: parcelaUnitaria * quantidade,
+        totalPagoTotal: totalPagoUnitario * quantidade,
+        totalAteContemplacaoTotal: totalAteContemplacaoUnitario * quantidade,
         cartaTotal: item.valorCartaTotal,
         lanceProprioR,
         lanceEmbutidoR,
-        cartaLiquida: item.valorCartaTotal - lanceEmbutidoR
+        lanceTotalR,
+        lanceProprioConfiguradoR,
+        lanceEmbutidoConfiguradoR,
+        cartaLiquida: cartaLiquidaItem
       });
 
       totalCarta += item.valorCartaTotal;
@@ -474,8 +552,14 @@ const ShelfEngine = (() => {
       totalAteContemplacao += totalAteContemplacaoUnitario * item.quantidadeCotas;
       totalLanceProprioR += lanceProprioR;
       totalLanceEmbutidoR += lanceEmbutidoR;
-      cartaLiquida += item.valorCartaTotal - lanceEmbutidoR;
+      totalLanceAplicadoR += lanceTotalR;
+      cartaLiquida += cartaLiquidaItem;
       parcelaInicialTotal += parcelaUnitaria * item.quantidadeCotas;
+      totalTaxaAdm += safeNumber(resumo.taxaAdmTotal, 0) * item.quantidadeCotas;
+      totalFundoReserva += safeNumber(resumo.fundoReservaTotal, 0) * item.quantidadeCotas;
+      totalSeguro += safeNumber(resumo.seguroTotal, 0) * item.quantidadeCotas;
+      totalSaldoInicial += safeNumber(resumo.saldoInicial, 0) * item.quantidadeCotas;
+      totalCusto += safeNumber(resumo.custoTotal, 0) * item.quantidadeCotas;
       somaPrazoPonderado += item.prazoMeses * item.valorCartaTotal;
       somaTaxaPonderada += item.taxaAdmPct * item.valorCartaTotal;
       pesoCarta += item.valorCartaTotal;
@@ -484,23 +568,72 @@ const ShelfEngine = (() => {
 
     const cronogramaConsolidado = [];
     for (let m = 0; m < maxPrazo; m++) {
-      let somaParcelaMes = 0;
-      let somaSaldoMes = 0;
+      const aggregate = {
+        mes: m + 1,
+        saldoAnterior: 0,
+        saldoAjustado: 0,
+        indiceAplicado: 0,
+        reajusteValor: 0,
+        parcelaBase: 0,
+        parcelaReduzida: 0,
+        componenteTaxaAdm: 0,
+        componenteFundoReserva: 0,
+        componenteSeguro: 0,
+        parcelaTotal: 0,
+        valorLance: 0,
+        valorLanceCaixa: 0,
+        lanceExcedente: 0,
+        valorAdiantado: 0,
+        multa: 0,
+        juros: 0,
+        saldoFinal: 0,
+        prazoRestante: 0,
+        evento: 'normal',
+        observacao: ''
+      };
+      const eventos = new Set();
+      const observacoes = [];
       for (const ir of itemResults) {
         if (ir.erro) continue;
         const cron = ir.simulation.cronograma;
         if (cron[m]) {
-          somaParcelaMes += cron[m].parcelaTotal * ir.item.quantidadeCotas;
-          somaSaldoMes += cron[m].saldoFinal * ir.item.quantidadeCotas;
+          const row = cron[m];
+          const qtd = ir.item.quantidadeCotas;
+          ['saldoAnterior', 'saldoAjustado', 'reajusteValor', 'parcelaBase', 'parcelaReduzida', 'componenteTaxaAdm',
+            'componenteFundoReserva', 'componenteSeguro', 'parcelaTotal', 'valorLance', 'valorLanceCaixa', 'lanceExcedente',
+            'valorAdiantado', 'multa', 'juros', 'saldoFinal'].forEach((field) => {
+            aggregate[field] += safeNumber(row[field], 0) * qtd;
+          });
+          aggregate.indiceAplicado = Math.max(aggregate.indiceAplicado, safeNumber(row.indiceAplicado, 0));
+          aggregate.prazoRestante = Math.max(aggregate.prazoRestante, safeNumber(row.prazoRestante, 0));
+          if (row.evento && row.evento !== 'normal') eventos.add(row.evento);
+          if (row.observacao) observacoes.push(`${ir.item.codigoGrupo || 'Grupo'}: ${row.observacao}`);
         }
       }
-      cronogramaConsolidado.push({ mes: m + 1, parcelaTotal: somaParcelaMes, saldoTotal: somaSaldoMes });
+      aggregate.evento = eventos.size ? Array.from(eventos).join(' + ') : 'normal';
+      aggregate.observacao = observacoes.join(' | ');
+      aggregate.saldoTotal = aggregate.saldoFinal;
+      cronogramaConsolidado.push(aggregate);
     }
 
-    const totalLanceR = totalLanceProprioR + totalLanceEmbutidoR;
+    while (cronogramaConsolidado.length > 1) {
+      const last = cronogramaConsolidado[cronogramaConsolidado.length - 1];
+      if (Math.abs(last.saldoFinal) > 0.01 || Math.abs(last.parcelaTotal) > 0.01
+        || Math.abs(last.valorAdiantado) > 0.01 || Math.abs(last.valorLance) > 0.01) break;
+      cronogramaConsolidado.pop();
+    }
+    maxPrazo = cronogramaConsolidado.length;
+
+    totalCarta = roundMoney(totalCarta);
+    cartaLiquida = roundMoney(cartaLiquida);
+    totalLanceProprioR = roundMoney(totalLanceProprioR);
+    totalLanceEmbutidoR = roundMoney(totalLanceEmbutidoR);
+    const totalLanceR = roundMoney(totalLanceAplicadoR);
     const prazoMedio = pesoCarta > 0 ? somaPrazoPonderado / pesoCarta : 0;
     const taxaAdmMedia = pesoCarta > 0 ? somaTaxaPonderada / pesoCarta : 0;
-    const custoEfetivoMedio = totalCarta > 0 ? Math.max(0, ((totalPago - totalCarta) / totalCarta) * 100) : 0;
+    const custosContratados = totalTaxaAdm + totalFundoReserva + totalSeguro;
+    const custoEfetivoEstimado = Math.max(0, totalCusto, custosContratados);
+    const custoEfetivoMedio = totalCarta > 0 ? (custoEfetivoEstimado / totalCarta) * 100 : 0;
 
     return {
       erro: itemResults.length > 0 && itemResults.every(r => r.erro),
@@ -516,6 +649,11 @@ const ShelfEngine = (() => {
         totalLanceProprioR,
         totalLanceEmbutidoR,
         parcelaInicialTotal,
+        totalTaxaAdm,
+        totalFundoReserva,
+        totalSeguro,
+        totalSaldoInicial,
+        totalCusto,
         prazoMedio,
         taxaAdmMedia,
         custoEfetivoMedio,

@@ -58,8 +58,8 @@ assert(simulatorShelfIndex < appIndex, 'simulator-shelf.js deve carregar antes d
 assert(simulatorHtml.includes('id="shelfPageSize"'), 'simulador.html deve ter controle shelfPageSize.');
 assert(simulatorHtml.includes('type="number"') && simulatorHtml.includes('min="20"') && simulatorHtml.includes('max="50"'), 'simulador.html deve limitar shelfPageSize entre 20 e 50.');
 assert(simulatorHtml.includes('value="20"'), 'simulador.html deve iniciar shelfPageSize em 20.');
-assert(!simulatorHtml.includes('value="100"'), 'simulador.html nao deve oferecer pageSize 100.');
-assert(!simulatorHtml.includes('value="200"'), 'simulador.html nao deve oferecer pageSize 200.');
+const pageSizeControl = simulatorHtml.match(/<input[^>]+id="shelfPageSize"[^>]*>/i)?.[0] || '';
+assert(!/value="(?:100|200)"/i.test(pageSizeControl), 'simulador.html nao deve oferecer pageSize 100 ou 200.');
 assert(settingsHtml.includes('id="cfg-pageSize"'), 'configuracoes.html deve ter controle cfg-pageSize.');
 assert(settingsHtml.includes('type="number"') && settingsHtml.includes('min="20"') && settingsHtml.includes('max="50"'), 'configuracoes.html deve limitar cfg-pageSize entre 20 e 50.');
 assert(settingsHtml.includes('value="20"'), 'configuracoes.html deve iniciar cfg-pageSize em 20.');
@@ -157,7 +157,7 @@ assert(pag.startIdx === 3 && pag.endIdx === 4, 'paginateGroups calculou interval
 assert(JSON.stringify(pag.data) === JSON.stringify([3, 4]), 'paginateGroups retornou dados incorretos.');
 
 const emptyPagination = shelf.paginationState({ totalGroups: 0, totalPages: 1, currentPage: 1, startIdx: 0, endIdx: 0 });
-assert(emptyPagination.display === 'none' && emptyPagination.info === 'Sem paginas', 'paginationState deveria ocultar paginacao vazia.');
+assert(emptyPagination.display === 'none' && emptyPagination.info === 'Sem páginas', 'paginationState deveria ocultar paginação vazia.');
 
 const sampleGroup = {
   groupKey: 'G-1',

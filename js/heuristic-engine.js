@@ -75,12 +75,12 @@ const HeuristicEngine = (() => {
       ociosidade: classificarOciosidade(0),
       pressaoExclusao: classificarPressaoExclusao(0),
       dinamismo: classificarDinamismo(0),
-      classificacaoFinal: { classe: 'C - Recuperação', cor: '#f59e0b', icon: '🟡', nivel: 3, letra: 'C' }
+      classificacaoFinal: { classe: 'C - Recuperação', cor: '#f59e0b', icon: 'C', nivel: 3, letra: 'C' }
     };
 
     const papel = {
       papel: 'Complemento',
-      tag: '🧩',
+      tag: 'CO',
       cor: '#2563eb',
       justificativa: 'Grupo mantido em análise neutra por indisponibilidade parcial de dados.'
     };
@@ -90,9 +90,9 @@ const HeuristicEngine = (() => {
       classificacoes,
       papel,
       sinopse: [
-        `📌 ${g && g.nomeAdministradora ? g.nomeAdministradora : 'Administradora não informada'} — Grupo ${g && g.codigoGrupo ? g.codigoGrupo : 'sem código'}`,
+        `${g && g.nomeAdministradora ? g.nomeAdministradora : 'Administradora não informada'} — Grupo ${g && g.codigoGrupo ? g.codigoGrupo : 'sem código'}`,
         'Análise gerada com fallback seguro. Revise os dados do grupo antes de uma recomendação executiva.',
-        `🏷️ Classificação: **${classificacoes.classificacaoFinal.classe}** → Papel: ${papel.tag} **${papel.papel}**`
+        `Classificação: **${classificacoes.classificacaoFinal.classe}** → Papel: ${papel.tag} **${papel.papel}**`
       ]
     };
   }
@@ -193,10 +193,10 @@ const HeuristicEngine = (() => {
    * @param {number} ativas - Ativas monitoradas
    */
   function classificarPorte(ativas) {
-    if (ativas >= 1000) return { classe: 'Muito Grande', cor: '#059669', icon: '🏛️', nivel: 4 };
-    if (ativas >= 500)  return { classe: 'Grande',       cor: '#2563eb', icon: '🏢', nivel: 3 };
-    if (ativas >= 200)  return { classe: 'Médio',        cor: '#f59e0b', icon: '🏠', nivel: 2 };
-    return { classe: 'Pequeno', cor: '#94a3b8', icon: '🏚️', nivel: 1 };
+    if (ativas >= 1000) return { classe: 'Muito Grande', cor: '#059669', icon: 'MG', nivel: 4 };
+    if (ativas >= 500)  return { classe: 'Grande',       cor: '#2563eb', icon: 'GR', nivel: 3 };
+    if (ativas >= 200)  return { classe: 'Médio',        cor: '#f59e0b', icon: 'MD', nivel: 2 };
+    return { classe: 'Pequeno', cor: '#94a3b8', icon: 'PQ', nivel: 1 };
   }
 
   /**
@@ -204,10 +204,10 @@ const HeuristicEngine = (() => {
    * @param {number} indiceMaturidade - Assembleias / Prazo
    */
   function classificarMaturidade(indiceMaturidade) {
-    if (indiceMaturidade > 0.90)  return { classe: 'Final',       cor: '#dc2626', icon: '🔚', nivel: 4 };
-    if (indiceMaturidade > 0.60)  return { classe: 'Maturação',   cor: '#059669', icon: '🏆', nivel: 3 };
-    if (indiceMaturidade >= 0.25) return { classe: 'Crescimento',  cor: '#2563eb', icon: '📈', nivel: 2 };
-    return { classe: 'Início', cor: '#f59e0b', icon: '🌱', nivel: 1 };
+    if (indiceMaturidade > 0.90)  return { classe: 'Final',       cor: '#dc2626', icon: 'FI', nivel: 4 };
+    if (indiceMaturidade > 0.60)  return { classe: 'Maturação',   cor: '#059669', icon: 'MA', nivel: 3 };
+    if (indiceMaturidade >= 0.25) return { classe: 'Crescimento',  cor: '#2563eb', icon: 'CR', nivel: 2 };
+    return { classe: 'Início', cor: '#f59e0b', icon: 'IN', nivel: 1 };
   }
 
   /**
@@ -215,10 +215,10 @@ const HeuristicEngine = (() => {
    * @param {number} taxaInadimplencia
    */
   function classificarSaude(taxaInadimplencia) {
-    if (taxaInadimplencia >= 0.15) return { classe: 'Crítica',     cor: '#dc2626', icon: '🔴', nivel: 4 };
-    if (taxaInadimplencia >= 0.10) return { classe: 'Atenção',     cor: '#f59e0b', icon: '🟡', nivel: 3 };
-    if (taxaInadimplencia >= 0.05) return { classe: 'Controlada',  cor: '#2563eb', icon: '🔵', nivel: 2 };
-    return { classe: 'Baixa', cor: '#059669', icon: '🟢', nivel: 1 };
+    if (taxaInadimplencia >= 0.15) return { classe: 'Crítica',     cor: '#dc2626', icon: 'CR', nivel: 4 };
+    if (taxaInadimplencia >= 0.10) return { classe: 'Atenção',     cor: '#f59e0b', icon: 'AT', nivel: 3 };
+    if (taxaInadimplencia >= 0.05) return { classe: 'Controlada',  cor: '#2563eb', icon: 'CO', nivel: 2 };
+    return { classe: 'Baixa', cor: '#059669', icon: 'OK', nivel: 1 };
   }
 
   /**
@@ -226,10 +226,10 @@ const HeuristicEngine = (() => {
    * @param {number} valorCarta
    */
   function classificarTicket(valorCarta) {
-    if (valorCarta >= 300000)  return { classe: 'Premium',      cor: '#7c3aed', icon: '💎', nivel: 4 };
-    if (valorCarta >= 150000)  return { classe: 'Ticket Alto',   cor: '#2563eb', icon: '💰', nivel: 3 };
-    if (valorCarta >= 50000)   return { classe: 'Ticket Médio',  cor: '#f59e0b', icon: '💵', nivel: 2 };
-    return { classe: 'Baixo Ticket', cor: '#94a3b8', icon: '🪙', nivel: 1 };
+    if (valorCarta >= 300000)  return { classe: 'Premium',      cor: '#7c3aed', icon: 'PR', nivel: 4 };
+    if (valorCarta >= 150000)  return { classe: 'Ticket Alto',   cor: '#2563eb', icon: 'AL', nivel: 3 };
+    if (valorCarta >= 50000)   return { classe: 'Ticket Médio',  cor: '#f59e0b', icon: 'MD', nivel: 2 };
+    return { classe: 'Baixo Ticket', cor: '#94a3b8', icon: 'BX', nivel: 1 };
   }
 
   /**
@@ -237,10 +237,10 @@ const HeuristicEngine = (() => {
    * @param {number} taxaCreditoPendente
    */
   function classificarOciosidade(taxaCreditoPendente) {
-    if (taxaCreditoPendente >= 0.15) return { classe: 'Alta Ociosidade', cor: '#dc2626', icon: '⚠️', nivel: 4 };
-    if (taxaCreditoPendente >= 0.08) return { classe: 'Atenção',         cor: '#f59e0b', icon: '🟡', nivel: 3 };
-    if (taxaCreditoPendente >= 0.03) return { classe: 'Normal',          cor: '#2563eb', icon: '🔵', nivel: 2 };
-    return { classe: 'Baixa Ociosidade', cor: '#059669', icon: '✅', nivel: 1 };
+    if (taxaCreditoPendente >= 0.15) return { classe: 'Alta Ociosidade', cor: '#dc2626', icon: 'AL', nivel: 4 };
+    if (taxaCreditoPendente >= 0.08) return { classe: 'Atenção',         cor: '#f59e0b', icon: 'AT', nivel: 3 };
+    if (taxaCreditoPendente >= 0.03) return { classe: 'Normal',          cor: '#2563eb', icon: 'NO', nivel: 2 };
+    return { classe: 'Baixa Ociosidade', cor: '#059669', icon: 'OK', nivel: 1 };
   }
 
   /**
@@ -248,10 +248,10 @@ const HeuristicEngine = (() => {
    * @param {number} intensidadeExclusao
    */
   function classificarPressaoExclusao(intensidadeExclusao) {
-    if (intensidadeExclusao >= 1.0)  return { classe: 'Crítica',   cor: '#dc2626', icon: '🔴', nivel: 4 };
-    if (intensidadeExclusao >= 0.5)  return { classe: 'Alta',      cor: '#f59e0b', icon: '🟡', nivel: 3 };
-    if (intensidadeExclusao >= 0.2)  return { classe: 'Moderada',  cor: '#2563eb', icon: '🔵', nivel: 2 };
-    return { classe: 'Baixa', cor: '#059669', icon: '🟢', nivel: 1 };
+    if (intensidadeExclusao >= 1.0)  return { classe: 'Crítica',   cor: '#dc2626', icon: 'CR', nivel: 4 };
+    if (intensidadeExclusao >= 0.5)  return { classe: 'Alta',      cor: '#f59e0b', icon: 'AL', nivel: 3 };
+    if (intensidadeExclusao >= 0.2)  return { classe: 'Moderada',  cor: '#2563eb', icon: 'MO', nivel: 2 };
+    return { classe: 'Baixa', cor: '#059669', icon: 'OK', nivel: 1 };
   }
 
   /**
@@ -259,10 +259,10 @@ const HeuristicEngine = (() => {
    * @param {number} taxaContemplacao
    */
   function classificarDinamismo(taxaContemplacao) {
-    if (taxaContemplacao >= 0.03) return { classe: 'Forte',   cor: '#059669', icon: '🚀', nivel: 4 };
-    if (taxaContemplacao >= 0.015) return { classe: 'Bom',    cor: '#2563eb', icon: '📈', nivel: 3 };
-    if (taxaContemplacao >= 0.005) return { classe: 'Normal', cor: '#f59e0b', icon: '➡️', nivel: 2 };
-    return { classe: 'Baixo Dinamismo', cor: '#94a3b8', icon: '📉', nivel: 1 };
+    if (taxaContemplacao >= 0.03) return { classe: 'Forte',   cor: '#059669', icon: 'FO', nivel: 4 };
+    if (taxaContemplacao >= 0.015) return { classe: 'Bom',    cor: '#2563eb', icon: 'BO', nivel: 3 };
+    if (taxaContemplacao >= 0.005) return { classe: 'Normal', cor: '#f59e0b', icon: 'NO', nivel: 2 };
+    return { classe: 'Baixo Dinamismo', cor: '#94a3b8', icon: 'BD', nivel: 1 };
   }
 
   /**
@@ -273,10 +273,10 @@ const HeuristicEngine = (() => {
     // Se já tem classificação do JSON, usar
     if (g.classificacaoExecutiva) {
       const map = {
-        'A - Expansão':     { classe: 'A - Expansão',     cor: '#059669', icon: '🟢', nivel: 1, letra: 'A' },
-        'B - Sustentação':  { classe: 'B - Sustentação',  cor: '#2563eb', icon: '🔵', nivel: 2, letra: 'B' },
-        'C - Recuperação':  { classe: 'C - Recuperação',  cor: '#f59e0b', icon: '🟡', nivel: 3, letra: 'C' },
-        'D - Crítico':      { classe: 'D - Crítico',      cor: '#dc2626', icon: '🔴', nivel: 4, letra: 'D' }
+        'A - Expansão':     { classe: 'A - Expansão',     cor: '#059669', icon: 'A', nivel: 1, letra: 'A' },
+        'B - Sustentação':  { classe: 'B - Sustentação',  cor: '#2563eb', icon: 'B', nivel: 2, letra: 'B' },
+        'C - Recuperação':  { classe: 'C - Recuperação',  cor: '#f59e0b', icon: 'C', nivel: 3, letra: 'C' },
+        'D - Crítico':      { classe: 'D - Crítico',      cor: '#dc2626', icon: 'D', nivel: 4, letra: 'D' }
       };
       return map[g.classificacaoExecutiva] || map['C - Recuperação'];
     }
@@ -292,10 +292,10 @@ const HeuristicEngine = (() => {
     riskScore += pressao.nivel >= 4 ? 3 : (pressao.nivel >= 3 ? 1 : 0);
     riskScore -= dinamismo.nivel >= 3 ? 1 : 0;
 
-    if (riskScore >= 4) return { classe: 'D - Crítico',     cor: '#dc2626', icon: '🔴', nivel: 4, letra: 'D' };
-    if (riskScore >= 2) return { classe: 'C - Recuperação',  cor: '#f59e0b', icon: '🟡', nivel: 3, letra: 'C' };
-    if (riskScore >= 1) return { classe: 'B - Sustentação',  cor: '#2563eb', icon: '🔵', nivel: 2, letra: 'B' };
-    return { classe: 'A - Expansão', cor: '#059669', icon: '🟢', nivel: 1, letra: 'A' };
+    if (riskScore >= 4) return { classe: 'D - Crítico',     cor: '#dc2626', icon: 'D', nivel: 4, letra: 'D' };
+    if (riskScore >= 2) return { classe: 'C - Recuperação',  cor: '#f59e0b', icon: 'C', nivel: 3, letra: 'C' };
+    if (riskScore >= 1) return { classe: 'B - Sustentação',  cor: '#2563eb', icon: 'B', nivel: 2, letra: 'B' };
+    return { classe: 'A - Expansão', cor: '#059669', icon: 'A', nivel: 1, letra: 'A' };
   }
 
   // ══════════════════════════════════════════
@@ -312,21 +312,21 @@ const HeuristicEngine = (() => {
     const saude = classificacoes.saude;
     const maturidade = classificacoes.maturidade;
 
-    // ⚓ Âncora: A ou B + porte grande+ + saúde boa + crescimento/maturação
+    // Âncora: A ou B + porte grande+ + saúde boa + crescimento/maturação
     if ((letra === 'A' || letra === 'B') &&
         porte.nivel >= 3 &&
         saude.nivel <= 2 &&
         (maturidade.nivel === 2 || maturidade.nivel === 3)) {
       return {
-        papel: 'Âncora', tag: '⚓', cor: '#059669',
+        papel: 'Âncora', tag: 'AN', cor: '#059669',
         justificativa: `Grupo saudável (${saude.classe}), porte ${porte.classe.toLowerCase()}, fase ${maturidade.classe.toLowerCase()}. Base principal da proposta.`
       };
     }
 
-    // ⚠️ Cautela: D ou saúde/exclusão crítica
+    // Cautela: D ou saúde/exclusão crítica
     if (letra === 'D' || saude.nivel >= 4 || classificacoes.pressaoExclusao.nivel >= 4) {
       return {
-        papel: 'Cautela', tag: '⚠️', cor: '#dc2626',
+        papel: 'Cautela', tag: 'CA', cor: '#dc2626',
         justificativa: `Grupo com sinais de risco: ${saude.classe === 'Crítica' ? 'saúde crítica' : 'pressão histórica elevada'}. Entrada somente com análise manual.`
       };
     }
@@ -334,14 +334,14 @@ const HeuristicEngine = (() => {
     // ⚡ Oportunidade: C + ticket interessante ou fase final
     if (letra === 'C' && (maturidade.nivel >= 3 || classificacoes.ticket.nivel >= 3)) {
       return {
-        papel: 'Oportunidade', tag: '⚡', cor: '#f59e0b',
+        papel: 'Oportunidade', tag: 'OP', cor: '#f59e0b',
         justificativa: `Grupo em recuperação com ${maturidade.nivel >= 3 ? 'maturidade avançada' : 'ticket atrativo'}. Potencial com análise técnica.`
       };
     }
 
-    // 🧩 Complemento: padrão
+    // Complemento: padrão
     return {
-      papel: 'Complemento', tag: '🧩', cor: '#2563eb',
+      papel: 'Complemento', tag: 'CO', cor: '#2563eb',
       justificativa: `Grupo equilibrado, adequado para complementar volume, prazo ou composição da proposta.`
     };
   }
@@ -364,7 +364,7 @@ const HeuristicEngine = (() => {
     const creditoPendente = _safeNumber(g && g.qtdCreditoPendente, 0);
 
     // 1. Identidade
-    bullets.push(`📌 **${g.nomeAdministradora || 'Administradora não informada'}** — Grupo ${g.codigoGrupo || 'sem código'} (${g.nomeSegmento || 'Segmento não informado'})`);
+    bullets.push(`**${g.nomeAdministradora || 'Administradora não informada'}** — Grupo ${g.codigoGrupo || 'sem código'} (${g.nomeSegmento || 'Segmento não informado'})`);
 
     // 2. Porte e escala
     bullets.push(`${classificacoes.porte.icon} Porte **${classificacoes.porte.classe}** com ${metricas.ativasMonitoradas.toLocaleString('pt-BR')} cotas ativas`);
@@ -374,7 +374,7 @@ const HeuristicEngine = (() => {
 
     // 4. Saúde
     const saudeBullet = classificacoes.saude.nivel >= 3
-      ? `${classificacoes.saude.icon} ⚠️ Saúde **${classificacoes.saude.classe}** — inadimplência de ${fmt(metricas.taxaInadimplencia)}`
+      ? `${classificacoes.saude.icon} Atenção: saúde **${classificacoes.saude.classe}** — inadimplência de ${fmt(metricas.taxaInadimplencia)}`
       : `${classificacoes.saude.icon} Saúde **${classificacoes.saude.classe}** — inadimplência de ${fmt(metricas.taxaInadimplencia)}`;
     bullets.push(saudeBullet);
 
@@ -390,17 +390,17 @@ const HeuristicEngine = (() => {
 
     // 7. Pressão de exclusão (se relevante)
     if (classificacoes.pressaoExclusao.nivel >= 3) {
-      bullets.push(`🔴 **Alerta:** Pressão de exclusão ${classificacoes.pressaoExclusao.classe.toLowerCase()} — ${excluidas} cotas excluídas (${fmt(metricas.intensidadeExclusao)} do ativo)`);
+      bullets.push(`**Alerta:** Pressão de exclusão ${classificacoes.pressaoExclusao.classe.toLowerCase()} — ${excluidas} cotas excluídas (${fmt(metricas.intensidadeExclusao)} do ativo)`);
     }
 
     // 8. Ociosidade (se relevante)
     if (classificacoes.ociosidade.nivel >= 3) {
-      bullets.push(`⚠️ Ociosidade de crédito: ${classificacoes.ociosidade.classe} — ${creditoPendente} cotas com crédito pendente`);
+      bullets.push(`Atenção à ociosidade de crédito: ${classificacoes.ociosidade.classe} — ${creditoPendente} cotas com crédito pendente`);
     }
 
     // 9. Classificação e papel
-    bullets.push(`🏷️ Classificação: **${classificacoes.classificacaoFinal.classe}** → Papel: ${papel.tag} **${papel.papel}**`);
-    bullets.push(`💡 ${papel.justificativa}`);
+    bullets.push(`Classificação: **${classificacoes.classificacaoFinal.classe}** → Papel: ${papel.tag} **${papel.papel}**`);
+    bullets.push(`${papel.justificativa}`);
 
     return bullets;
   }

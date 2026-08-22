@@ -75,7 +75,7 @@ const ExportManager = (() => {
     pdf.setTextColor(100, 116, 139);
     for (let i = 1; i <= pageCount; i++) {
       pdf.setPage(i);
-      pdf.text(`Pagina ${i} de ${pageCount}`, pageWidth - margin, pageHeight - 4, { align: 'right' });
+      pdf.text(`Página ${i} de ${pageCount}`, pageWidth - margin, pageHeight - 4, { align: 'right' });
     }
   }
 
@@ -204,53 +204,91 @@ const ExportManager = (() => {
     addPageNumbers(pdf, state.pageWidth, state.pageHeight, margin);
   }
 
+  function prepareTextualPrintClone(source) {
+    const clone = source.cloneNode(true);
+    const sourceCanvases = source.querySelectorAll('canvas');
+    const cloneCanvases = clone.querySelectorAll('canvas');
+    sourceCanvases.forEach((canvas, index) => {
+      const target = cloneCanvases[index];
+      if (!target) return;
+      try {
+        const img = document.createElement('img');
+        img.src = canvas.toDataURL('image/png');
+        img.alt = canvas.getAttribute('aria-label') || 'Gráfico da simulação';
+        img.style.cssText = `display:block;width:${canvas.clientWidth || canvas.width}px;max-width:100%;height:auto;`;
+        target.replaceWith(img);
+      } catch (error) {
+        target.setAttribute('aria-label', 'Gráfico indisponível na impressão');
+      }
+    });
+    clone.querySelectorAll('button, [data-screen-only="true"]').forEach((node) => node.remove());
+    clone.querySelectorAll('details').forEach((node) => { node.open = true; });
+    return clone;
+  }
+
+  function collectPrintStyles() {
+    const links = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
+      .map((link) => `<link rel="stylesheet" href="${link.href}">`)
+      .join('');
+    const styles = Array.from(document.querySelectorAll('style'))
+      .map((style) => `<style>${style.textContent || ''}</style>`)
+      .join('');
+    return links + styles;
+  }
+
   /**
-   * Exporta a propria tela de Resultados/Resumo da Proposta como PDF.
-   * A versao visual e o PDF usam o mesmo DOM, evitando divergencia de conteudo.
+   * Abre a mesma proposta HTML em uma superficie de impressao nativa.
+   * Ao salvar como PDF pelo navegador, textos e links permanecem pesquisaveis.
    */
   async function exportarPDFDaTela(selector = '#proposal-export-root, #proposal-summary-print-root') {
-    if (typeof html2canvas === 'undefined' || typeof jspdf === 'undefined') {
-      alert('Bibliotecas de exportacao nao carregadas. Verifique sua conexao.');
-      return false;
-    }
-
     const source = resolveExportSource(selector);
     if (!source) {
-      alert('Resumo da proposta nao encontrado. Calcule a simulacao antes de exportar.');
+      alert('Resumo da proposta não encontrado. Calcule a simulação antes de imprimir.');
       return false;
     }
 
-    const wrapper = document.createElement('div');
-    const clone = source.cloneNode(true);
-    wrapper.className = 'ps-pdf-capture';
-    wrapper.style.position = 'absolute';
-    wrapper.style.left = '-10000px';
-    wrapper.style.top = '0';
-    wrapper.style.width = '1120px';
-    wrapper.style.maxWidth = '1120px';
-    wrapper.style.background = '#ffffff';
-    wrapper.style.pointerEvents = 'none';
-    wrapper.appendChild(clone);
-
-    document.body.classList.add('ps-exporting');
-    document.body.appendChild(wrapper);
-    copyCanvasState(source, clone);
-
-    try {
-      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-      const { jsPDF } = jspdf;
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      await addBlocksToPDF(pdf, clone, 8);
-      pdf.save(getProposalFilename(source));
-      return true;
-    } catch (err) {
-      console.error('Erro ao gerar PDF da proposta estruturada:', err);
-      alert('Erro ao gerar PDF. Tente novamente ou use a opcao de impressao.');
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert('A janela de impressão foi bloqueada. Permita pop-ups para imprimir ou salvar em PDF.');
       return false;
-    } finally {
-      wrapper.remove();
-      document.body.classList.remove('ps-exporting');
     }
+    printWindow.opener = null;
+
+    const clone = prepareTextualPrintClone(source);
+    const title = getProposalFilename(source).replace(/\.pdf$/i, '').replace(/[<>&"']/g, '');
+    let printTriggered = false;
+    const triggerPrint = () => {
+      if (printTriggered || printWindow.closed) return;
+      printTriggered = true;
+      window.setTimeout(() => {
+        printWindow.focus();
+        printWindow.print();
+      }, 350);
+    };
+    printWindow.addEventListener('load', triggerPrint, { once: true });
+    printWindow.document.open();
+    printWindow.document.write(`<!doctype html>
+      <html lang="pt-BR">
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width,initial-scale=1">
+          <meta name="robots" content="noindex,nofollow,noarchive">
+          <title>${title}</title>
+          ${collectPrintStyles()}
+          <style>
+            @page { size: A4; margin: 0; }
+            html, body { margin: 0; padding: 0; background: #fff; }
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            a { color: inherit; text-decoration: none; }
+            .ps-print-page { break-after: page; page-break-after: always; }
+            .ps-print-page:last-child { break-after: auto; page-break-after: auto; }
+          </style>
+        </head>
+        <body class="proposal-native-print">${clone.outerHTML}</body>
+      </html>`);
+    printWindow.document.close();
+    window.setTimeout(triggerPrint, 1000);
+    return true;
   }
 
   /**
@@ -295,7 +333,7 @@ const ExportManager = (() => {
           <!-- Dados do Cliente -->
           <div style="margin-bottom:28px;">
             <h3 style="font-size:16px;font-weight:700;color:#1a4480;border-bottom:2px solid #dbeafe;padding-bottom:8px;margin-bottom:12px;">
-              📋 Dados do Cliente
+              Dados do Cliente
             </h3>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
               ${infoItem('Cliente', params.nomeCliente || '—')}
@@ -310,7 +348,7 @@ const ExportManager = (() => {
           <!-- Resumo Financeiro -->
           <div style="margin-bottom:28px;">
             <h3 style="font-size:16px;font-weight:700;color:#1a4480;border-bottom:2px solid #dbeafe;padding-bottom:8px;margin-bottom:12px;">
-              💰 Resumo Financeiro
+              Resumo Financeiro
             </h3>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
               ${kpiItem('Carta de Crédito', formatMoney(r.valorCarta), '#2563eb')}
@@ -328,14 +366,14 @@ const ExportManager = (() => {
           <!-- Lance -->
           <div style="margin-bottom:28px;">
             <h3 style="font-size:16px;font-weight:700;color:#1a4480;border-bottom:2px solid #dbeafe;padding-bottom:8px;margin-bottom:12px;">
-              🎯 Informações do Lance
+              Informações do Lance
             </h3>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
               ${kpiItem('Lance Próprio', formatMoney(r.lanceProprio), '#2563eb')}
               ${kpiItem('Lance Embutido', formatMoney(r.lanceEmbutido), '#f59e0b')}
               ${kpiItem('Lance Total', formatMoney(r.lanceTotal), '#10b981')}
               ${kpiItem('Carta Líquida', formatMoney(r.cartaLiquida), '#059669')}
-              ${kpiItem('Prazo Restante', `${r.prazoRestante} meses`, '#374151')}
+              ${kpiItem('Prazo após a contemplação', `${r.prazoRestante} meses`, '#374151')}
               ${kpiItem('Custo Total Estimado', formatMoney(r.custoTotal), '#ef4444')}
             </div>
           </div>
@@ -343,7 +381,7 @@ const ExportManager = (() => {
           <!-- Tabela Resumida -->
           <div style="margin-bottom:28px;">
             <h3 style="font-size:16px;font-weight:700;color:#1a4480;border-bottom:2px solid #dbeafe;padding-bottom:8px;margin-bottom:12px;">
-              📊 Fluxo Mensal (Resumo)
+              Fluxo Mensal (Resumo)
             </h3>
             <table style="width:100%;border-collapse:collapse;font-size:12px;">
               <thead>
@@ -366,7 +404,7 @@ const ExportManager = (() => {
           ${params.observacoes ? `
           <div style="margin-bottom:28px;">
             <h3 style="font-size:16px;font-weight:700;color:#1a4480;border-bottom:2px solid #dbeafe;padding-bottom:8px;margin-bottom:12px;">
-              📝 Observações
+              Observações
             </h3>
             <p style="font-size:13px;color:#4b5563;line-height:1.6;">${params.observacoes}</p>
           </div>` : ''}
@@ -374,7 +412,7 @@ const ExportManager = (() => {
           <!-- Disclaimer -->
           <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin-bottom:28px;">
             <p style="font-size:11px;color:#6b7280;line-height:1.6;margin:0;">
-              ⚠️ <strong>Aviso:</strong> Esta proposta é uma simulação e não constitui oferta vinculante.
+              <strong>Aviso:</strong> Esta proposta é uma simulação e não constitui oferta vinculante.
               Os valores apresentados são estimativas baseadas nos parâmetros informados e podem variar
               conforme reajustes, alterações nas condições do grupo e políticas da administradora.
               Consulte as condições contratuais oficiais.

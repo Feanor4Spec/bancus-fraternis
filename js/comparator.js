@@ -45,7 +45,13 @@ const Comparator = (() => {
    * @returns {Object} Parâmetros normalizados para o engine
    */
   function normalizeInputs(group, scenario) {
-    const adiantamentos = [];
+    const finiteOr = (value, fallback) => {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : fallback;
+    };
+    const adiantamentos = Array.isArray(scenario.adiantamentos)
+      ? scenario.adiantamentos.map(item => ({ ...item }))
+      : [];
     if (scenario.adiantamentoMes && scenario.adiantamentoMes > 0 && scenario.adiantamentoValor > 0) {
       adiantamentos.push({
         mes: scenario.adiantamentoMes,
@@ -55,7 +61,9 @@ const Comparator = (() => {
       });
     }
 
-    const inadimplencias = [];
+    const inadimplencias = Array.isArray(scenario.inadimplencias)
+      ? scenario.inadimplencias.map(item => ({ ...item }))
+      : [];
     if (scenario.inadimplenciaMes && scenario.inadimplenciaMes > 0 && scenario.mesesAtraso > 0) {
       inadimplencias.push({
         mesInicio: scenario.inadimplenciaMes,
@@ -96,7 +104,7 @@ const Comparator = (() => {
       seguro: group.seguroPct || 0,
       seguroTipo: 'percentual',
       tipoIndice: (group.indiceReajuste || 'fixo').toLowerCase(),
-      indiceReajuste: scenario.indiceReajustePct || 5,
+      indiceReajuste: finiteOr(scenario.indiceReajustePct, 5),
       mesAdesao: 1,
       mesAniversario: group.mesAniversario || 12,
       mesContemplacao: scenario.mesContemplacao || 18,
@@ -107,20 +115,22 @@ const Comparator = (() => {
       lanceFixo: group.lanceFixoPct || 0,
       usarFGTS: scenario.usarFgts || false,
       valorFGTS: scenario.valorFgts || 0,
-      modalidadeLance: 'combinado',
+      modalidadeLance: scenario.modalidadeLance || 'combinado',
 
       // Parcela reduzida
       parcelaReduzida: parcelaReduzida,
       percentualReducao: percentualReducao,
 
       // Política
-      politicaSaldo: scenario.saldoInicialMode === 'com_custos' ? 'carta_mais_custos' : 'carta',
+      politicaSaldo: ['com_custos', 'carta_mais_custos'].includes(scenario.saldoInicialMode)
+        ? 'carta_mais_custos'
+        : 'carta',
 
       // Eventos
       adiantamentos: adiantamentos,
       inadimplencias: inadimplencias,
-      multaAtraso: scenario.multaPct || 2,
-      jurosAtraso: scenario.jurosPct || 1
+      multaAtraso: finiteOr(scenario.multaPct, 2),
+      jurosAtraso: finiteOr(scenario.jurosPct, 1)
     };
   }
 
@@ -176,18 +186,19 @@ const Comparator = (() => {
   }
 
   /**
-   * Gera texto de narrativa executiva automática.
+   * Resume as diferenças calculadas entre dois grupos.
    * @param {Object} groupA - Grupo A
    * @param {Object} groupB - Grupo B
    * @param {Object} resumoA - Resumo A
    * @param {Object} resumoB - Resumo B
    * @param {Object} winners - Flags de vencedor
    * @param {Object} deltas - Deltas percentuais
-   * @returns {string} Texto HTML da narrativa
+   * @returns {string} Texto HTML da comparação
    */
   function buildNarrativa(groupA, groupB, resumoA, resumoB, winners, deltas) {
     const nomeA = groupA.plano || groupA.codigoGrupo || 'Grupo A';
     const nomeB = groupB.plano || groupB.codigoGrupo || 'Grupo B';
+    const pct = (value) => Number(value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const frases = [];
 
     // Carta
@@ -199,30 +210,30 @@ const Comparator = (() => {
 
     // Taxa
     if (winners.menorTaxa === 'A') {
-      frases.push(`O <strong>${nomeA}</strong> possui taxa de administração mais competitiva (${groupA.taxaAdmTotalPct}% vs ${groupB.taxaAdmTotalPct}%).`);
+      frases.push(`A taxa de administração do <strong>${nomeA}</strong> é menor: ${pct(groupA.taxaAdmTotalPct)}% contra ${pct(groupB.taxaAdmTotalPct)}%.`);
     } else if (winners.menorTaxa === 'B') {
-      frases.push(`O <strong>${nomeB}</strong> possui taxa de administração mais competitiva (${groupB.taxaAdmTotalPct}% vs ${groupA.taxaAdmTotalPct}%).`);
+      frases.push(`A taxa de administração do <strong>${nomeB}</strong> é menor: ${pct(groupB.taxaAdmTotalPct)}% contra ${pct(groupA.taxaAdmTotalPct)}%.`);
     }
 
     // Parcela inicial
     if (winners.menorParcelaInicial === 'A') {
-      frases.push(`A parcela inicial do <strong>${nomeA}</strong> é mais leve, ideal para clientes sensíveis ao fluxo de caixa mensal.`);
+      frases.push(`A parcela inicial do <strong>${nomeA}</strong> é menor.`);
     } else if (winners.menorParcelaInicial === 'B') {
-      frases.push(`A parcela inicial do <strong>${nomeB}</strong> é mais leve, ideal para clientes sensíveis ao fluxo de caixa mensal.`);
+      frases.push(`A parcela inicial do <strong>${nomeB}</strong> é menor.`);
     }
 
     // Total pago
     if (winners.menorTotalPago === 'A') {
-      frases.push(`Considerando o plano completo, o <strong>${nomeA}</strong> resulta em menor desembolso total.`);
+      frases.push(`O total projetado do <strong>${nomeA}</strong> é menor.`);
     } else if (winners.menorTotalPago === 'B') {
-      frases.push(`Considerando o plano completo, o <strong>${nomeB}</strong> resulta em menor desembolso total.`);
+      frases.push(`O total projetado do <strong>${nomeB}</strong> é menor.`);
     }
 
     // Carta líquida
     if (winners.maiorCartaLiquida === 'A') {
-      frases.push(`O <strong>${nomeA}</strong> entrega maior poder de compra efetivo (carta líquida superior).`);
+      frases.push(`A carta líquida do <strong>${nomeA}</strong> é maior.`);
     } else if (winners.maiorCartaLiquida === 'B') {
-      frases.push(`O <strong>${nomeB}</strong> entrega maior poder de compra efetivo (carta líquida superior).`);
+      frases.push(`A carta líquida do <strong>${nomeB}</strong> é maior.`);
     }
 
     // Flexibilidade de lance
@@ -234,45 +245,13 @@ const Comparator = (() => {
 
     // Até contemplação
     if (winners.menorCustoAteContemplacao === 'A') {
-      frases.push(`Até a contemplação, o cliente desembolsa menos no <strong>${nomeA}</strong>.`);
+      frases.push(`No cenário informado, o valor pago até a contemplação é menor no <strong>${nomeA}</strong>.`);
     } else if (winners.menorCustoAteContemplacao === 'B') {
-      frases.push(`Até a contemplação, o cliente desembolsa menos no <strong>${nomeB}</strong>.`);
+      frases.push(`No cenário informado, o valor pago até a contemplação é menor no <strong>${nomeB}</strong>.`);
     }
 
     if (frases.length === 0) {
       frases.push('Os dois grupos são equivalentes nas principais métricas.');
-    }
-
-    // V7: Enriquecimento com inteligência heurística
-    if (typeof HeuristicEngine !== 'undefined') {
-      const hA = groupA._heuristica || (groupA._group ? groupA._group._heuristica : null);
-      const hB = groupB._heuristica || (groupB._group ? groupB._group._heuristica : null);
-      if (hA && hB) {
-        const cA = hA.classificacoes.classificacaoFinal;
-        const cB = hB.classificacoes.classificacaoFinal;
-        const pA = hA.papel;
-        const pB = hB.papel;
-        // Classificação
-        if (cA.nivel !== cB.nivel) {
-          const melhor = cA.nivel < cB.nivel ? nomeA : nomeB;
-          const mClass = cA.nivel < cB.nivel ? cA : cB;
-          frases.push(`<br><strong>🧠 Análise Heurística:</strong> O <strong>${melhor}</strong> possui classificação executiva superior (<span style="color:${mClass.cor};font-weight:700;">${mClass.icon} ${mClass.classe}</span>).`);
-        } else {
-          frases.push(`<br><strong>🧠 Análise Heurística:</strong> Ambos possuem classificação <span style="color:${cA.cor};font-weight:700;">${cA.icon} ${cA.classe}</span>.`);
-        }
-        // Papel
-        if (pA.papel !== pB.papel) {
-          frases.push(`O <strong>${nomeA}</strong> atua como ${pA.tag} <strong>${pA.papel}</strong>, enquanto o <strong>${nomeB}</strong> é ${pB.tag} <strong>${pB.papel}</strong>.`);
-        }
-        // Saúde
-        const sA = hA.classificacoes.saude;
-        const sB = hB.classificacoes.saude;
-        if (sA.nivel !== sB.nivel) {
-          const mSaude = sA.nivel < sB.nivel ? nomeA : nomeB;
-          const mSaudeClass = sA.nivel < sB.nivel ? sA : sB;
-          frases.push(`O <strong>${mSaude}</strong> apresenta melhor saúde da carteira (${mSaudeClass.icon} ${mSaudeClass.classe}).`);
-        }
-      }
     }
 
     return frases.join('<br>');

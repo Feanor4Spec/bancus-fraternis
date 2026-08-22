@@ -17,6 +17,20 @@ const App = (() => {
   let cenarios = null;
   let currentParams = null;
   let compResult = null; // V2: resultado da comparação
+  let projectSimulation = null;
+  const visitedSteps = new Set([1]);
+  const STEP_LABELS = Object.freeze([
+    'Consultor',
+    'Cliente',
+    'Busca',
+    'Grupos',
+    'Projeto',
+    'Eventos',
+    'Resultado',
+    'Parcelas',
+    'Comparação',
+    'Proposta'
+  ]);
   // V3: Estado da Prateleira
   let shelfGroups = []; // grupos filtrados
   let selectedShelfGroup = null; // compatibilidade legada - não usado no v5
@@ -61,15 +75,33 @@ const App = (() => {
   // ─── Navegação entre Etapas ───
   function goToStep(step, options = {}) {
     if (step < 1 || step > TOTAL_STEPS) return;
-    // Validar etapa atual antes de avançar
+    // Valida toda a trilha anterior para impedir saltos sobre dados obrigatorios.
     if (step > currentStep && !options.skipValidation) {
-      const valid = validateCurrentStep();
-      if (!valid) return;
+      for (let candidate = 1; candidate < step; candidate++) {
+        const errors = collectStepErrors(candidate);
+        if (errors.length > 0) {
+          if (candidate !== currentStep) {
+            currentStep = candidate;
+            visitedSteps.add(candidate);
+            renderSteps();
+            renderActiveSection();
+            renderSimulatorDecision();
+          }
+          closeNavigationMenus();
+          showToast(errors.join('\n'), 'error');
+          focusStepContent(candidate, { invalid: true });
+          return;
+        }
+      }
     }
     // Se indo para etapa 7+ (Resultados) e ainda não calculou, calcular
     if (step >= 7 && !resultado && !options.skipAutoCalculate) {
       calcular();
-      if (!resultado) return;
+      if (!resultado) {
+        closeNavigationMenus();
+        focusStepContent(currentStep, { invalid: true });
+        return;
+      }
     }
     // Se é etapa 3 (Filtros), popular dropdowns
     if (step === 3) {
@@ -81,10 +113,12 @@ const App = (() => {
       buscarGrupos();
     }
     currentStep = step;
+    visitedSteps.add(step);
     renderSteps();
     renderActiveSection();
     renderSimulatorDecision();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    closeNavigationMenus();
+    if (!options.skipFocus) focusStepContent(currentStep);
   }
 
   function nextStep() { goToStep(currentStep + 1); }
@@ -103,8 +137,38 @@ const App = (() => {
       );
       const prefix = el.classList.contains('sim-stepper__step') ? 'sim-stepper__step' : 'stepper__step';
       if (stepNum === currentStep) el.classList.add(prefix + '--active');
-      else if (stepNum < currentStep) el.classList.add(prefix + '--completed');
+      else if (visitedSteps.has(stepNum) && isStepComplete(stepNum)) el.classList.add(prefix + '--completed');
+      el.dataset.stepValid = isStepComplete(stepNum) ? 'true' : 'false';
     });
+
+    // O rail compacto e o conteúdo usam a mesma fonte de estado.
+    const railSteps = document.querySelectorAll('[data-evolution-step]');
+    railSteps.forEach((button) => {
+      const stepNum = Number(button.dataset.evolutionStep || 0);
+      const valid = stepNum >= 1 && stepNum <= TOTAL_STEPS && isStepComplete(stepNum);
+      const complete = stepNum !== currentStep && visitedSteps.has(stepNum) && valid;
+      const label = STEP_LABELS[stepNum - 1] || button.textContent.trim() || `Etapa ${stepNum}`;
+
+      button.classList.toggle('is-active', stepNum === currentStep);
+      button.classList.toggle('is-complete', complete);
+      button.dataset.stepValid = valid ? 'true' : 'false';
+      button.setAttribute('aria-label', `Etapa ${stepNum} de ${TOTAL_STEPS}: ${label}`);
+      button.removeAttribute('aria-current');
+    });
+
+    // Existe exatamente um indicador de etapa corrente, sempre no rail visível.
+    document.querySelectorAll('.sim-stepper__step[aria-current="step"], .stepper__step[aria-current="step"]')
+      .forEach((button) => button.removeAttribute('aria-current'));
+    const activeRailStep = document.querySelector(`[data-evolution-step="${currentStep}"]`);
+    if (activeRailStep) activeRailStep.setAttribute('aria-current', 'step');
+
+    const currentStepLabel = document.querySelector('[data-evolution-current-step]');
+    const currentLabel = document.querySelector('[data-evolution-current-label]');
+    const progress = document.querySelector('[data-evolution-progress]');
+    if (currentStepLabel) currentStepLabel.textContent = `Etapa ${currentStep} de ${TOTAL_STEPS}`;
+    if (currentLabel) currentLabel.textContent = STEP_LABELS[currentStep - 1] || `Etapa ${currentStep}`;
+    if (progress) progress.style.width = `${Math.round((currentStep / TOTAL_STEPS) * 100)}%`;
+
     // Old horizontal connectors (backwards compat)
     document.querySelectorAll('.stepper__connector').forEach((el, i) => {
       el.classList.toggle('stepper__connector--completed', i + 1 < currentStep);
@@ -118,6 +182,151 @@ const App = (() => {
     });
     const active = document.getElementById(`step-${currentStep}`);
     if (active) active.classList.add('step-section--active');
+    document.body.dataset.activeStep = String(currentStep);
+    return active;
+  }
+
+  function closeNavigationMenus() {
+    document.querySelectorAll(
+      '.sim-evolution-rail__menu[open], .bf-v8-stagebar-shell[open], .sim-header-menu[open]'
+    ).forEach((menu) => menu.removeAttribute('open'));
+  }
+
+  function prefersReducedMotion() {
+    return Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }
+
+  function clearNavigationInvalidState() {
+    document.querySelectorAll('[data-navigation-invalid="true"]').forEach((field) => {
+      field.removeAttribute('data-navigation-invalid');
+      field.removeAttribute('aria-invalid');
+    });
+  }
+
+  function findCartField(item, fieldName) {
+    const card = Array.from(document.querySelectorAll('.cart-item-card'))
+      .find((candidate) => candidate.dataset.itemId === String(item?.itemId || ''));
+    return card?.querySelector(`[data-campo="${fieldName}"]`) || null;
+  }
+
+  function findFirstInvalidControl(step) {
+    const byId = (id) => document.getElementById(id);
+    const firstRuleMatch = (rules) => {
+      for (const [id, invalid] of rules) {
+        if (invalid()) return byId(id);
+      }
+      return null;
+    };
+
+    if (step === 1) {
+      return firstRuleMatch([
+        ['consultor', () => fieldText('consultor').length < 3],
+        ['consultorEmail', () => !isValidEmail(fieldText('consultorEmail'))],
+        ['consultorTelefone', () => !isValidPhone(fieldText('consultorTelefone'))]
+      ]);
+    }
+
+    if (step === 2) {
+      return firstRuleMatch([
+        ['nomeCliente', () => fieldText('nomeCliente').length < 3],
+        ['clienteCpf', () => !isValidCPF(fieldText('clienteCpf'))],
+        ['clienteEmail', () => !isValidEmail(fieldText('clienteEmail'))],
+        ['clienteTelefone', () => !isValidPhone(fieldText('clienteTelefone'))],
+        ['clienteObjetivo', () => !fieldText('clienteObjetivo')],
+        ['clienteConsentimento', () => Boolean(byId('clienteConsentimento') && !byId('clienteConsentimento').checked)],
+        ['valorObjetivo', () => Format.parseMoney(byId('valorObjetivo')?.value || '') <= 0],
+        ['parcelaConfortavel', () => Format.parseMoney(byId('parcelaConfortavel')?.value || '') <= 0],
+        ['prazoDesejado', () => Number(fieldText('prazoDesejado')) <= 0],
+        ['urgencia', () => !fieldText('urgencia')],
+        ['toleranciaRisco', () => !fieldText('toleranciaRisco')]
+      ]);
+    }
+
+    if (step === 4 && projetoEstruturado.itens.length === 0) {
+      return document.querySelector('#shelf-table-body button:not([disabled])') || byId('shelfSort');
+    }
+
+    if (step === 5) {
+      for (const item of projetoEstruturado.itens) {
+        const limiteEmbutido = getEffectiveLanceEmbutidoMax(item._group);
+        if (item.valorCartaUnitario <= 0) return findCartField(item, 'valorCartaUnitario');
+        if (item.quantidadeCotas < 1) return findCartField(item, 'quantidadeCotas');
+        if (item.prazoMeses <= 0) return findCartField(item, 'prazoMeses');
+        if (item.taxaAdmPct < 0) return findCartField(item, 'taxaAdmPct');
+        if (item.fundoReservaPct < 0) return findCartField(item, 'fundoReservaPct');
+        if (item.mesContemplacaoAlvo < 1 || item.mesContemplacaoAlvo > (item.prazoMeses || 100)) {
+          return findCartField(item, 'mesContemplacaoAlvo');
+        }
+        if (limiteEmbutido > 0 && item.lanceEmbutidoPct > limiteEmbutido) {
+          return findCartField(item, 'lanceEmbutidoPct');
+        }
+      }
+    }
+
+    if (step === 6) {
+      const params = getParams();
+      const advances = document.querySelectorAll('.adiantamento-row');
+      for (let index = 0; index < params.adiantamentos.length; index += 1) {
+        const advance = params.adiantamentos[index];
+        const row = advances[index];
+        if (advance.mes > params.prazoTotal) return row?.querySelector('.adiant-mes') || null;
+        if (advance.valor <= 0 && advance.qtdParcelas <= 0) {
+          return row?.querySelector('.adiant-valor, .adiant-qtd') || null;
+        }
+      }
+      const delinquencies = document.querySelectorAll('.inadimplencia-row');
+      for (let index = 0; index < params.inadimplencias.length; index += 1) {
+        const delinquency = params.inadimplencias[index];
+        const row = delinquencies[index];
+        if (delinquency.mesInicio > params.prazoTotal) return row?.querySelector('.inad-mes') || null;
+        if (delinquency.regularizar && (
+          delinquency.mesRegularizacao <= delinquency.mesInicio + delinquency.mesesAtraso - 1
+          || delinquency.mesRegularizacao > params.prazoTotal
+        )) {
+          return row?.querySelector('.inad-mes-reg') || null;
+        }
+      }
+    }
+
+    if (step === 9 && !compResult) return byId('btn-comparar') || byId('compGrupoA');
+
+    const section = document.getElementById(`step-${step}`);
+    return Array.from(section?.querySelectorAll('input, select, textarea') || [])
+      .find((control) => !control.disabled && typeof control.checkValidity === 'function' && !control.checkValidity()) || null;
+  }
+
+  function focusStepContent(step, options = {}) {
+    const section = document.getElementById(`step-${step}`);
+    if (!section) return;
+    clearNavigationInvalidState();
+
+    const invalidControl = options.invalid ? findFirstInvalidControl(step) : null;
+    const target = invalidControl || section.querySelector('.section-header__title, .proposal-evolution-heading h2, h2');
+    if (!target) return;
+
+    if (invalidControl) {
+      invalidControl.setAttribute('aria-invalid', 'true');
+      invalidControl.dataset.navigationInvalid = 'true';
+    } else if (!target.matches('input, select, textarea, button, a[href], [tabindex]')) {
+      target.setAttribute('tabindex', '-1');
+    }
+
+    const moveFocus = () => {
+      if (typeof section.scrollIntoView === 'function') {
+        section.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' });
+      }
+      const delay = prefersReducedMotion() ? 0 : 180;
+      window.setTimeout(() => {
+        try {
+          target.focus({ preventScroll: true });
+        } catch (error) {
+          if (typeof target.focus === 'function') target.focus();
+        }
+      }, delay);
+    };
+
+    if (typeof window.requestAnimationFrame === 'function') window.requestAnimationFrame(moveFocus);
+    else moveFocus();
   }
 
   // ─── Coleta de Parâmetros do Formulário ───
@@ -132,6 +341,13 @@ const App = (() => {
       // Se tem máscara monetária, usar parseMoney
       if (el.dataset.money === 'true') return Format.parseMoney(el.value);
       return parseFloat(el.value) || 0;
+    };
+    const nOr = (id, fallback) => {
+      const el = document.getElementById(id);
+      if (!el || String(el.value ?? '').trim() === '') return fallback;
+      if (el.dataset.money === 'true') return Format.parseMoney(el.value);
+      const parsed = Number(el.value);
+      return Number.isFinite(parsed) ? parsed : fallback;
     };
     const checked = (id) => {
       const el = document.getElementById(id);
@@ -170,25 +386,40 @@ const App = (() => {
     let cValorCarta = 0, cPrazoTotal = 0, cTaxaAdm = 0, cFundoReserva = 0, cMesContemplacao = 0, cLanceProprio = 0, cLanceEmbutido = 0;
 
     if (projetoEstruturado.itens && projetoEstruturado.itens.length > 0) {
-      const it = projetoEstruturado.itens[0]; // Referência simplificada
       cValorCarta = projetoEstruturado.itens.reduce((s, i) => s + i.valorCartaTotal, 0);
       cPrazoTotal = Math.max(...projetoEstruturado.itens.map(i => i.prazoMeses || 0));
-      // Médias ponderadas no futuro; para compatibilidade legada, usa o primeiro item ou médias simples
-      cTaxaAdm = it.taxaAdmPct;
-      cFundoReserva = it.fundoReservaPct;
-      cMesContemplacao = it.mesContemplacaoAlvo;
-      cLanceProprio = it.lanceProprioPct;
-      cLanceEmbutido = it.lanceEmbutidoPct;
+      const totalWeight = cValorCarta || 1;
+      cTaxaAdm = projetoEstruturado.itens.reduce((s, i) => s + (i.taxaAdmPct || 0) * (i.valorCartaTotal || 0), 0) / totalWeight;
+      cFundoReserva = projetoEstruturado.itens.reduce((s, i) => s + (i.fundoReservaPct || 0) * (i.valorCartaTotal || 0), 0) / totalWeight;
+      cMesContemplacao = Math.min(...projetoEstruturado.itens.map(i => i.mesContemplacaoAlvo || cPrazoTotal));
+      cLanceProprio = projetoEstruturado.itens.reduce((s, i) => s + (i.lanceProprioPct || 0) * (i.valorCartaTotal || 0), 0) / totalWeight;
+      cLanceEmbutido = projetoEstruturado.itens.reduce((s, i) => s + (i.lanceEmbutidoPct || 0) * (i.valorCartaTotal || 0), 0) / totalWeight;
     }
 
     return {
       nomeCliente: v('nomeCliente'),
+      clienteCpf: v('clienteCpf'),
+      clienteEmail: v('clienteEmail'),
+      clienteTelefone: v('clienteTelefone'),
+      clienteObjetivo: v('clienteObjetivo'),
+      valorObjetivo: n('valorObjetivo'),
+      parcelaConfortavel: n('parcelaConfortavel'),
+      reservaAtual: n('reservaAtual'),
+      caixaLance: n('caixaLance'),
+      prazoDesejado: n('prazoDesejado'),
+      urgencia: v('urgencia'),
+      toleranciaRisco: v('toleranciaRisco'),
+      clienteConsentimento: checked('clienteConsentimento'),
       tipoBem: v('tipoBem'),
       administradora: v('administradora'),
       grupo: v('grupo'),
       cota: v('cota'),
       dataSimulacao: v('dataSimulacao'),
       consultor: v('consultor'),
+      consultorEmail: v('consultorEmail'),
+      consultorTelefone: v('consultorTelefone'),
+      consultorEmpresa: v('consultorEmpresa'),
+      consultorCodigo: v('consultorCodigo'),
       observacoes: v('observacoes'),
 
       // Se não encontrou no DOM, puxa do carrinho V5
@@ -199,7 +430,7 @@ const App = (() => {
       seguro: n('seguro'),
       seguroTipo: v('seguroTipo'),
       tipoIndice: v('tipoIndice') || 'fixo',
-      indiceReajuste: n('indiceReajuste') || numberSetting('defaultIndiceReajuste', 5),
+      indiceReajuste: nOr('indiceReajuste', numberSetting('defaultIndiceReajuste', 5)),
       mesAdesao: n('mesAdesao') || 1,
       mesAniversario: n('mesAniversario') || 12,
       mesContemplacao: n('mesContemplacao') || cMesContemplacao || numberSetting('defaultMesContemplacao', 18),
@@ -241,7 +472,7 @@ const App = (() => {
   }
 
   function getConfiguredPolicy() {
-    return getAppSettings().defaultPoliticaSaldo === 'carta_mais_custos' ? 'com_custos' : 'carta';
+    return getAppSettings().defaultPoliticaSaldo === 'carta_mais_custos' ? 'carta_mais_custos' : 'carta';
   }
 
   function getEffectiveLanceEmbutidoMax(group) {
@@ -292,11 +523,13 @@ const App = (() => {
       panel.className = 'settings-status-panel';
       anchor.insertAdjacentElement('afterend', panel);
     }
+    panel.hidden = true;
+    panel.setAttribute('aria-hidden', 'true');
     const chips = [
       cfg.defaultSegmento ? `Segmento ${cfg.defaultSegmento}` : 'Todos os segmentos',
       cfg.defaultAdmin ? `Admin ${cfg.defaultAdmin}` : 'Todas as administradoras',
       `${cfg.pageSize || 20} grupos/pagina`,
-      cfg.autoScore === false ? 'Score manual' : 'Score automatico',
+      cfg.autoScore === false ? 'Indice operacional manual' : 'Indice operacional automatico',
       `Lance ate ${cfg.maxLanceEmbutido || 30}%`,
       `Reajuste ${cfg.defaultIndiceReajuste || 5}%`,
       `MOB ${cfg.defaultMesContemplacao || 18}`
@@ -413,6 +646,21 @@ const App = (() => {
     return inferObjetivoValue(sourceValue);
   }
 
+  function getClientDecisionProfile() {
+    const money = (id) => Format.parseMoney(document.getElementById(id)?.value || '');
+    const number = (id) => Number(document.getElementById(id)?.value || 0) || 0;
+    return {
+      objective: getSimulatorObjective(),
+      valorObjetivo: money('valorObjetivo'),
+      parcelaConfortavel: money('parcelaConfortavel'),
+      reservaAtual: money('reservaAtual'),
+      caixaLance: money('caixaLance'),
+      prazoDesejado: number('prazoDesejado'),
+      urgencia: fieldText('urgencia'),
+      toleranciaRisco: fieldText('toleranciaRisco')
+    };
+  }
+
   function buildSimulatorObjectiveGuidance() {
     const context = getDecisionContextSnapshot();
     if (window.BFSimulatorJourney && window.BFSimulatorJourney.buildObjectiveGuidance) {
@@ -430,26 +678,21 @@ const App = (() => {
     if (!target) return;
     const guide = buildSimulatorObjectiveGuidance();
     if (!guide) {
-      target.innerHTML = '<div class="sim-objective-guide__empty">Defina o objetivo do cliente para receber uma sugestao de prateleira.</div>';
+      target.innerHTML = '<div class="sim-objective-guide__empty">Defina o objetivo do cliente para preencher os filtros.</div>';
       return;
     }
     document.body.dataset.simulatorObjective = guide.objective || 'aquisicao';
     target.dataset.simulatorObjectiveGuide = guide.objective || 'aquisicao';
     target.innerHTML = `
-      <article class="sim-objective-guide__card" data-simulator-objective-card="${escapeSettingsText(guide.objective)}">
+      <article class="sim-objective-guide__card sim-objective-guide__card--compact" data-simulator-objective-card="${escapeSettingsText(guide.objective)}">
         <div>
-          <span class="sim-objective-guide__eyebrow">Jornada guiada por objetivo</span>
+          <span class="sim-objective-guide__eyebrow">Filtros sugeridos</span>
           <h3>${escapeSettingsText(guide.title)}</h3>
           <p>${escapeSettingsText(guide.body)}</p>
         </div>
-        <div class="sim-objective-guide__facts">
-          ${(guide.facts || []).map((fact) => `<span>${escapeSettingsText(fact)}</span>`).join('')}
-        </div>
         <div class="sim-objective-guide__actions">
-          <button class="btn btn--primary" type="button" data-simulator-objective-apply onclick="App.applySimulatorObjectiveGuide()">${escapeSettingsText(guide.actionLabel || 'Aplicar orientacao')}</button>
-          <a class="btn btn--ghost" href="comparador.html?preset=${escapeSettingsText(guide.comparePreset || 'comprar_bem')}">Comparar alternativas</a>
+          <button class="btn btn--secondary" type="button" data-simulator-objective-apply onclick="App.applySimulatorObjectiveGuide()">${escapeSettingsText(guide.actionLabel || 'Usar estes filtros')}</button>
         </div>
-        <small>${escapeSettingsText(guide.nextStep || '')}</small>
       </article>
     `;
   }
@@ -532,7 +775,7 @@ const App = (() => {
         <a class="btn btn--primary btn--sm" href="${calculatorPageHref(firstSlug)}">${readiness.complete ? 'Revisar contexto' : 'Completar diagnostico'}</a>
       </div>
       <div class="bf-platform-metrics">
-        <article class="bf-platform-metric"><small>Score</small><strong>${Number(readiness.score || context.readinessScore || 0)}/100</strong></article>
+        <article class="bf-platform-metric"><small>Prontidao</small><strong>${Number(readiness.score || context.readinessScore || 0)}/100</strong></article>
         <article class="bf-platform-metric"><small>Origem</small><strong>${escapeSettingsText(contextSourceLabel(context))}</strong></article>
         <article class="bf-platform-metric"><small>Pendencias</small><strong>${escapeSettingsText(missingText)}</strong></article>
         <article class="bf-platform-metric"><small>Valor alvo</small><strong>${prefill.valorAlvo ? Format.money(prefill.valorAlvo) : '-'}</strong></article>
@@ -574,7 +817,7 @@ const App = (() => {
         eyebrow: 'Base',
         title: dataStatus.loaded ? 'Base real carregada' : dataStatus.error ? 'Base em fallback' : 'Base aguardando',
         body: dataStatus.loaded
-          ? `${Format.number(dataStatus.count || 0, 0)} grupos disponíveis para filtros, score e comparação.`
+          ? `${Format.number(dataStatus.count || 0, 0)} grupos disponiveis para filtros, indice operacional e comparacao.`
           : dataStatus.error
             ? 'A jornada permanece segura, mas a prateleira deve ser revisada antes da proposta.'
             : 'A conexão local ainda está preparando a prateleira de grupos.',
@@ -697,68 +940,153 @@ const App = (() => {
     renderSettingsStatus();
   }
 
-  function validateCurrentStep() {
+  function fieldText(id) {
+    return String(document.getElementById(id)?.value || '').trim();
+  }
+
+  function onlyDigits(value) {
+    return String(value || '').replace(/\D/g, '');
+  }
+
+  function isValidEmail(value) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(String(value || '').trim());
+  }
+
+  function isValidPhone(value) {
+    const digits = onlyDigits(value);
+    return digits.length === 10 || digits.length === 11;
+  }
+
+  function isValidCPF(value) {
+    const cpf = onlyDigits(value);
+    if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+    const digit = (base, factor) => {
+      let total = 0;
+      for (let i = 0; i < base.length; i++) total += Number(base[i]) * (factor - i);
+      const mod = (total * 10) % 11;
+      return mod === 10 ? 0 : mod;
+    };
+    return digit(cpf.slice(0, 9), 10) === Number(cpf[9])
+      && digit(cpf.slice(0, 10), 11) === Number(cpf[10]);
+  }
+
+  function collectStepErrors(step) {
     const errors = [];
-    if (currentStep === 1) {
-      // Dados do consultor - validação leve
+    if (step === 1) {
+      if (fieldText('consultor').length < 3) errors.push('Informe o nome do consultor.');
+      if (!isValidEmail(fieldText('consultorEmail'))) errors.push('Informe um e-mail válido do consultor.');
+      if (!isValidPhone(fieldText('consultorTelefone'))) errors.push('Informe um telefone válido do consultor com DDD.');
     }
-    if (currentStep === 2) {
-      // Dados do cliente - validação leve
+    if (step === 2) {
+      if (fieldText('nomeCliente').length < 3) errors.push('Informe o nome do cliente.');
+      if (!isValidCPF(fieldText('clienteCpf'))) errors.push('Informe um CPF válido.');
+      if (!isValidEmail(fieldText('clienteEmail'))) errors.push('Informe um e-mail válido do cliente.');
+      if (!isValidPhone(fieldText('clienteTelefone'))) errors.push('Informe um telefone válido do cliente com DDD.');
+      if (!fieldText('clienteObjetivo')) errors.push('Defina o objetivo do cliente.');
+      const consent = document.getElementById('clienteConsentimento');
+      if (consent && !consent.checked) errors.push('Registre o consentimento para uso dos dados na proposta.');
+      ['valorObjetivo', 'parcelaConfortavel'].forEach((id) => {
+        const input = document.getElementById(id);
+        if (input && Format.parseMoney(input.value) <= 0) {
+          errors.push(id === 'valorObjetivo' ? 'Informe o valor objetivo do projeto.' : 'Informe a parcela mensal confortável.');
+        }
+      });
+      if (Number(fieldText('prazoDesejado')) <= 0) errors.push('Defina o horizonte desejado do projeto.');
+      if (!fieldText('urgencia')) errors.push('Defina a urgência de uso do crédito.');
+      if (!fieldText('toleranciaRisco')) errors.push('Defina a tolerância à incerteza de contemplação.');
     }
-    if (currentStep === 3) {
-      // Filtros - sem validação obrigatória
+    if (step === 4 && projetoEstruturado.itens.length === 0) {
+      errors.push('Adicione pelo menos um grupo ao carrinho antes de avançar.');
     }
-    if (currentStep === 4) {
-      // V5: Prateleira - precisa ter pelo menos 1 grupo no projeto
-      if (projetoEstruturado.itens.length === 0) {
-        errors.push('Adicione pelo menos um grupo ao carrinho antes de avançar.');
-      }
-    }
-    if (currentStep === 5) {
+    if (step === 5) {
       if (projetoEstruturado.itens.length === 0) {
         errors.push('O carrinho está vazio. Volte e adicione um grupo.');
       } else {
-        // Validação básica se os campos editáveis estão coerentes
         projetoEstruturado.itens.forEach(i => {
           const limiteEmbutido = getEffectiveLanceEmbutidoMax(i._group);
-          if (i.valorCartaUnitario <= 0) errors.push(`Grupo ${i.codigoGrupo}: Valor da carta deve ser maior que zero.`);
-          if (i.quantidadeCotas < 1) errors.push(`Grupo ${i.codigoGrupo}: Quantidade de cotas inválida.`);
-          if (i.prazoMeses <= 0) errors.push(`Grupo ${i.codigoGrupo}: Prazo inválido.`);
-          if (i.taxaAdmPct < 0 || i.fundoReservaPct < 0) errors.push(`Grupo ${i.codigoGrupo}: Taxas não podem ser negativas.`);
+          if (i.valorCartaUnitario <= 0) errors.push(`Grupo ${i.codigoGrupo}: valor da carta deve ser maior que zero.`);
+          if (i.quantidadeCotas < 1) errors.push(`Grupo ${i.codigoGrupo}: quantidade de cotas inválida.`);
+          if (i.prazoMeses <= 0) errors.push(`Grupo ${i.codigoGrupo}: prazo inválido.`);
+          if (i.taxaAdmPct < 0 || i.fundoReservaPct < 0) errors.push(`Grupo ${i.codigoGrupo}: taxas não podem ser negativas.`);
           if (i.mesContemplacaoAlvo < 1 || i.mesContemplacaoAlvo > (i.prazoMeses || 100)) {
-            errors.push(`Grupo ${i.codigoGrupo}: Mês de contemplação (${i.mesContemplacaoAlvo}) inválido.`);
+            errors.push(`Grupo ${i.codigoGrupo}: mês de contemplação simulada inválido.`);
           }
           if (limiteEmbutido > 0 && i.lanceEmbutidoPct > limiteEmbutido) {
-            errors.push(`Grupo ${i.codigoGrupo}: Lance embutido acima do limite de ${limiteEmbutido.toFixed(1)}%.`);
+            errors.push(`Grupo ${i.codigoGrupo}: lance embutido acima do limite de ${limiteEmbutido.toFixed(1)}%.`);
           }
         });
       }
     }
-    if (currentStep === 6) {
+    if (step === 6) {
       const p = getParams();
       p.adiantamentos.forEach((a, i) => {
         if (a.mes > p.prazoTotal) errors.push(`Adiantamento ${i + 1}: mês excede o prazo total.`);
+        if (a.valor <= 0 && a.qtdParcelas <= 0) errors.push(`Adiantamento ${i + 1}: informe valor ou quantidade de parcelas.`);
       });
       p.inadimplencias.forEach((ind, i) => {
         if (ind.mesInicio > p.prazoTotal) errors.push(`Inadimplência ${i + 1}: mês de início excede o prazo.`);
-        if (ind.regularizar && ind.mesRegularizacao <= ind.mesInicio + ind.mesesAtraso - 1)
+        if (ind.regularizar && ind.mesRegularizacao <= ind.mesInicio + ind.mesesAtraso - 1) {
           errors.push(`Inadimplência ${i + 1}: regularização deve ser posterior ao período de atraso.`);
+        }
+        if (ind.regularizar && ind.mesRegularizacao > p.prazoTotal) errors.push(`Inadimplência ${i + 1}: regularização excede o prazo.`);
       });
     }
+    if (step === 7 && (!resultado || resultado.diagnostics?.reconciled !== true)) {
+      errors.push('O resultado financeiro precisa estar calculado e reconciliado antes de avançar.');
+    }
+    if (step === 8 && (!resultado || !Array.isArray(resultado.cronograma) || !resultado.cronograma.length)) {
+      errors.push('O cronograma mensal ainda não está disponível.');
+    }
+    const section = document.getElementById(`step-${step}`);
+    if (section && section.querySelector('#compGrupoA') && !compResult) {
+      errors.push('Compare ao menos dois grupos ou cenários do projeto antes de preparar a proposta.');
+    }
+    return errors;
+  }
 
+  function isStepComplete(step) {
+    return collectStepErrors(step).length === 0;
+  }
+
+  function validateCurrentStep() {
+    const errors = collectStepErrors(currentStep);
     if (errors.length > 0) {
       showToast(errors.join('\n'), 'error');
+      closeNavigationMenus();
+      focusStepContent(currentStep, { invalid: true });
       return false;
     }
     return true;
   }
 
   // ─── Motor de Cálculo ───
+  function ensureCurrentProjectResult() {
+    if (!resultado || !projetoEstruturado.itens.length
+      || !window.BFSimulatorResult || typeof window.BFSimulatorResult.validateProjectResult !== 'function') {
+      return true;
+    }
+    const integrity = window.BFSimulatorResult.validateProjectResult(resultado, projetoEstruturado);
+    if (integrity.reconciled) return true;
+    resultado = null;
+    cenarios = null;
+    projectSimulation = null;
+    calcular();
+    return false;
+  }
+
   function calcular() {
     const params = getParams();
     currentParams = params;
+    if (typeof ShelfEngine !== 'undefined' && projetoEstruturado.itens.length > 0) {
+      projectSimulation = ShelfEngine.simulateStructuredProject(projetoEstruturado, params);
+    }
     const calculation = window.BFSimulatorResult && window.BFSimulatorResult.calculate
-      ? window.BFSimulatorResult.calculate(params, { engine: ConsorcioEngine })
+      ? window.BFSimulatorResult.calculate(params, {
+        engine: ConsorcioEngine,
+        project: projetoEstruturado,
+        projectSimulation,
+        shelfEngine: typeof ShelfEngine !== 'undefined' ? ShelfEngine : null
+      })
       : { ok: false, mensagens: ['Modulo de resultado indisponivel.'] };
 
     if (!calculation.ok) {
@@ -780,6 +1108,7 @@ const App = (() => {
   // ─── Renderização dos Resultados (Etapa 4) ───
   function renderResultados() {
     if (!resultado) return;
+    if (!ensureCurrentProjectResult()) return;
     const container = document.getElementById('proposal-summary-container');
     if (!container) return;
 
@@ -810,6 +1139,7 @@ const App = (() => {
   // ─── Renderização da Tabela Analítica (Etapa 5) ───
   function renderTabela() {
     if (!resultado) return;
+    if (!ensureCurrentProjectResult()) return;
     if (window.BFSimulatorResult && window.BFSimulatorResult.renderAnalyticalTable) {
       window.BFSimulatorResult.renderAnalyticalTable(document, { resultado }, { formatMoney: Format.money });
       return;
@@ -964,22 +1294,22 @@ const App = (() => {
     const statusLabel = issues.length ? 'Revisar' : 'Pronta';
     const issueList = issues.length
       ? `<ul>${issues.map(issue => `<li>${escapeSettingsText(issue)}</li>`).join('')}</ul>`
-      : '<p>Selecao coerente para preview, impressao e PDF final.</p>';
+      : '<p>Conteúdo pronto para impressão e PDF.</p>';
 
     return `
       <div class="proposal-builder-readiness proposal-builder-readiness--${issues.length ? 'warning' : 'ok'}" data-proposal-builder-readiness>
         <article>
           <span>Status</span>
           <strong>${statusLabel}</strong>
-          <small>${pages} pagina(s) estimada(s)</small>
+          <small>${pages} página${pages === 1 ? '' : 's'} estimada${pages === 1 ? '' : 's'}</small>
         </article>
         <article>
           <span>Foco</span>
           <strong>${escapeSettingsText(proposalBuilderFocusLabel(config))}</strong>
-          <small>${countEnabledFlags(config.sections)} blocos ativos</small>
+          <small>${countEnabledFlags(config.sections)} seções selecionadas</small>
         </article>
         <div>
-          <strong>Controle antes do PDF</strong>
+          <strong>Antes de baixar</strong>
           ${issueList}
         </div>
       </div>
@@ -991,7 +1321,7 @@ const App = (() => {
     if (!board) return;
 
     if (!resultado || !currentParams) {
-      board.innerHTML = '<div class="proposal-builder-board__empty">Calcule a simulacao para montar a lousa de exportacao da proposta.</div>';
+      board.innerHTML = '<div class="proposal-builder-board__empty">Calcule a simulação para escolher o conteúdo da proposta.</div>';
       return;
     }
 
@@ -1005,25 +1335,25 @@ const App = (() => {
     board.innerHTML = `
       <div class="proposal-builder-head">
         <div>
-          <span class="proposal-builder-eyebrow">Lousa de exportacao</span>
-          <h3>Monte a proposta final do cliente</h3>
-          <p>O consultor escolhe os blocos, graficos, conceitos e formulas. O preview abaixo e o PDF exportado respeitam esta selecao.</p>
+          <span class="proposal-builder-eyebrow">Conteúdo do PDF</span>
+          <h3>Escolha o que incluir</h3>
+          <p>Marque as seções e explicações que devem aparecer no documento.</p>
         </div>
         <div class="proposal-builder-presets">
-          <button class="btn btn--sm btn--primary" type="button" onclick="App.applyProposalBuilderPreset('completa')">Completa</button>
-          <button class="btn btn--sm btn--ghost" type="button" onclick="App.applyProposalBuilderPreset('consultiva')">Consultiva</button>
-          <button class="btn btn--sm btn--ghost" type="button" onclick="App.applyProposalBuilderPreset('executiva')">Executiva</button>
-          <button class="btn btn--sm btn--ghost" type="button" onclick="App.applyProposalBuilderPreset('educativa')">Educativa</button>
-          <button class="btn btn--sm btn--ghost" type="button" onclick="App.applyProposalBuilderPreset('tecnica')">Tecnica</button>
-          <button class="btn btn--sm btn--ghost" type="button" onclick="App.applyProposalBuilderPreset('compacta')">Compacta</button>
+          <button class="btn btn--sm btn--primary" type="button" onclick="App.applyProposalBuilderPreset('completa')">Completo</button>
+          <button class="btn btn--sm btn--ghost" type="button" onclick="App.applyProposalBuilderPreset('consultiva')">Essencial</button>
+          <button class="btn btn--sm btn--ghost" type="button" onclick="App.applyProposalBuilderPreset('executiva')">Resumo</button>
+          <button class="btn btn--sm btn--ghost" type="button" onclick="App.applyProposalBuilderPreset('educativa')">Explicado</button>
+          <button class="btn btn--sm btn--ghost" type="button" onclick="App.applyProposalBuilderPreset('tecnica')">Com cálculos</button>
+          <button class="btn btn--sm btn--ghost" type="button" onclick="App.applyProposalBuilderPreset('compacta')">Compacto</button>
           <button class="btn btn--sm btn--ghost" type="button" onclick="App.setProposalBuilderAll(false)">Limpar</button>
         </div>
       </div>
       <div class="proposal-builder-scoreboard">
-        <article><span>Blocos</span><strong>${selectedSections}</strong><small>de ${Object.keys(config.sections).length}</small></article>
-        <article><span>Graficos</span><strong>${selectedCharts}</strong><small>de ${Object.keys(config.charts).length}</small></article>
-        <article><span>Conceitos</span><strong>${selectedConcepts}</strong><small>de ${Object.keys(config.concepts).length}</small></article>
-        <article><span>Formulas</span><strong>${selectedFormulas}</strong><small>de ${Object.keys(config.formulas).length}</small></article>
+        <article><span>Seções</span><strong>${selectedSections}</strong><small>de ${Object.keys(config.sections).length}</small></article>
+        <article><span>Gráficos</span><strong>${selectedCharts}</strong><small>de ${Object.keys(config.charts).length}</small></article>
+        <article><span>Termos</span><strong>${selectedConcepts}</strong><small>de ${Object.keys(config.concepts).length}</small></article>
+        <article><span>Cálculos</span><strong>${selectedFormulas}</strong><small>de ${Object.keys(config.formulas).length}</small></article>
       </div>
       ${renderProposalBuilderReadiness(config)}
       <div class="proposal-builder-grid">
@@ -1050,7 +1380,7 @@ const App = (() => {
     });
     saveProposalBuilderConfig(config);
     renderProposta();
-    showToast(`Lousa atualizada: ${checked ? 'todos' : 'nenhum'} em ${group}.`, 'success');
+    showToast(`Seleção atualizada: ${checked ? 'todos' : 'nenhum'} em ${group}.`, 'success');
   }
 
   function setProposalBuilderAll(checked) {
@@ -1060,7 +1390,7 @@ const App = (() => {
     });
     saveProposalBuilderConfig(config);
     renderProposta();
-    showToast(checked ? 'Todos os itens da lousa foram selecionados.' : 'A lousa foi limpa para uma nova selecao.', checked ? 'success' : 'warning');
+    showToast(checked ? 'Todo o conteúdo foi selecionado.' : 'A seleção foi limpa.', checked ? 'success' : 'warning');
   }
 
   function applyProposalBuilderPreset(preset = 'completa') {
@@ -1074,6 +1404,7 @@ const App = (() => {
   // ─── Renderização da Proposta (Etapa 6) ───
   function renderProposta() {
     if (!resultado || !currentParams) return;
+    if (!ensureCurrentProjectResult()) return;
     const container = document.getElementById('proposta-container');
     if (!container) return;
     const acceptance = getCurrentProposalAcceptance();
@@ -1112,8 +1443,127 @@ const App = (() => {
       resultado,
       cenarios,
       project: projetoEstruturado,
-      decisionContext: getDecisionContextSnapshot()
+      decisionContext: getDecisionContextSnapshot(),
+      comparison: compResult
     });
+  }
+
+  function jsonSnapshot(value) {
+    const seen = new WeakSet();
+    const serialized = JSON.stringify(value, (key, entry) => {
+      if (key === '_group' || typeof entry === 'function' || typeof entry === 'symbol' || typeof entry === 'bigint') {
+        return undefined;
+      }
+      if (typeof entry === 'number' && !Number.isFinite(entry)) {
+        throw new Error('A proposta contém um número não finito.');
+      }
+      if (entry && typeof entry === 'object') {
+        if (seen.has(entry)) return undefined;
+        seen.add(entry);
+      }
+      return entry;
+    });
+    return serialized ? JSON.parse(serialized) : {};
+  }
+
+  function getProjectDataBase() {
+    const labels = new Set();
+    (projetoEstruturado.itens || []).forEach((item) => {
+      const group = item && item._group ? item._group : {};
+      const raw = group.dataBase || group.dataReferencia || group.mesReferencia || item.dataBase || '';
+      if (raw) labels.add(String(raw).trim());
+    });
+    const databasePanel = document.getElementById('database-status-panel');
+    const fallback = databasePanel?.dataset.state === 'success'
+      ? 'Tab_Grupos_Consorcio.compact.json'
+      : 'Base local de grupos';
+    return (Array.from(labels).join(', ') || fallback).slice(0, 80);
+  }
+
+  function getProposalPublicationPayload() {
+    const issues = proposalReleaseIssues();
+    if (issues.length) return { ok: false, issues };
+
+    const proposalData = getCurrentProposalData();
+    const acceptance = getCurrentProposalAcceptance();
+    if (!proposalData || !acceptance) {
+      return { ok: false, issues: ['A proposta revisada não está disponível.'] };
+    }
+
+    try {
+      const project = {
+        schema: 'bancus.simulation-project.v1',
+        capturedAt: new Date().toISOString(),
+        objective: {
+          type: currentParams.clienteObjetivo || '',
+          targetValue: currentParams.valorObjetivo || 0,
+          comfortableInstallment: currentParams.parcelaConfortavel || 0,
+          reserve: currentParams.reservaAtual || 0,
+          bidBudget: currentParams.caixaLance || 0,
+          desiredTerm: currentParams.prazoDesejado || 0,
+          urgency: currentParams.urgencia || '',
+          riskTolerance: currentParams.toleranciaRisco || ''
+        },
+        client: {
+          name: currentParams.nomeCliente || '',
+          cpf: currentParams.clienteCpf || '',
+          email: currentParams.clienteEmail || '',
+          phone: currentParams.clienteTelefone || '',
+          consent: currentParams.clienteConsentimento === true
+        },
+        consultant: {
+          name: currentParams.consultor || '',
+          email: currentParams.consultorEmail || '',
+          phone: currentParams.consultorTelefone || '',
+          company: currentParams.consultorEmpresa || '',
+          code: currentParams.consultorCodigo || ''
+        },
+        items: (projetoEstruturado.itens || []).map((item) => jsonSnapshot(item)),
+        events: {
+          advances: jsonSnapshot(currentParams.adiantamentos || []),
+          delinquencies: jsonSnapshot(currentParams.inadimplencias || [])
+        }
+      };
+
+      const result = {
+        schema: 'bancus.simulation-result.v2',
+        simulation: jsonSnapshot(resultado),
+        comparison: jsonSnapshot(compResult),
+        proposalData: jsonSnapshot(proposalData),
+        builder: jsonSnapshot(getProposalBuilderConfig())
+      };
+      const checklist = acceptance.checklist && typeof acceptance.checklist === 'object'
+        ? jsonSnapshot(acceptance.checklist)
+        : {};
+
+      return {
+        ok: true,
+        payload: {
+          proposalId: proposalData.id,
+          engineVersion: `ConsórcioPro ${ConsorcioEngine.VERSION || '2.0.0'}`,
+          dataBase: getProjectDataBase(),
+          project: jsonSnapshot(project),
+          result,
+          review: {
+            status: 'reviewed',
+            reviewedAt: acceptance.reviewedAt || acceptance.updatedAt || new Date().toISOString(),
+            checklist,
+            validation: 'human-reviewed',
+            approved: true,
+            version: Number(acceptance.version || 1)
+          },
+          provenance: {
+            source: 'simulator-v9',
+            sourceVersion: '9',
+            rulesetVersion: ConsorcioEngine.VERSION || '2.0.0',
+            reconciliation: resultado.diagnostics?.reconciled === true ? 'passed' : 'failed',
+            comparison: compResult ? 'completed' : 'pending'
+          }
+        }
+      };
+    } catch (error) {
+      return { ok: false, issues: [error && error.message ? error.message : 'Não foi possível preparar o snapshot da proposta.'] };
+    }
   }
 
   function getCurrentProposalAcceptance() {
@@ -1174,7 +1624,7 @@ const App = (() => {
     if (!proposal || typeof BFProposalVersions === 'undefined') {
       panel.innerHTML = window.BFProposalGovernance && window.BFProposalGovernance.renderVersionEmpty
         ? window.BFProposalGovernance.renderVersionEmpty()
-        : '<div class="proposal-version-panel__empty">Calcule a simulacao para salvar versoes e comparar mudancas da proposta.</div>';
+        : '<div class="proposal-version-panel__empty">Calcule a simulação para salvar versões e comparar mudanças da proposta.</div>';
       panel.dataset.proposalVersionStatus = 'empty';
       return;
     }
@@ -1207,7 +1657,7 @@ const App = (() => {
   function salvarVersaoProposta(options = {}) {
     const proposal = getCurrentProposalData();
     if (!proposal || typeof BFProposalVersions === 'undefined') {
-      if (!options.silent) showToast('Calcule a simulacao antes de salvar uma versao.', 'error');
+      if (!options.silent) showToast('Calcule a simulação antes de salvar uma versão.', 'error');
       return null;
     }
     const acceptance = options.acceptance || getCurrentProposalAcceptance();
@@ -1218,12 +1668,12 @@ const App = (() => {
       label: options.label || ''
     });
     if (!record) {
-      if (!options.silent) showToast('Nao foi possivel salvar a versao da proposta.', 'error');
+      if (!options.silent) showToast('Não foi possível salvar a versão da proposta.', 'error');
       return null;
     }
     if (!options.skipRender) renderProposalVersionPanel(acceptance, builder);
     if (!options.silent) {
-      showToast(record.unchanged ? 'A versao atual ja estava salva.' : `Versao ${record.version} da proposta salva.`, record.unchanged ? 'info' : 'success');
+      showToast(record.unchanged ? 'A versão atual já estava salva.' : `Versão ${record.version} da proposta salva.`, record.unchanged ? 'info' : 'success');
     }
     return record;
   }
@@ -1274,7 +1724,7 @@ const App = (() => {
     if (!proposal || typeof BFProposalAcceptance === 'undefined') {
       panel.innerHTML = window.BFProposalGovernance && window.BFProposalGovernance.renderAcceptanceEmpty
         ? window.BFProposalGovernance.renderAcceptanceEmpty()
-        : '<div class="proposal-acceptance-panel__empty">Calcule a simulacao para registrar revisao, validade e aceite local da proposta.</div>';
+        : '<div class="proposal-acceptance-panel__empty">Calcule a simulação para registrar revisão, validade e aceite.</div>';
       return;
     }
 
@@ -1300,7 +1750,7 @@ const App = (() => {
   function salvarRevisaoProposta() {
     const proposal = getCurrentProposalData();
     if (!proposal || typeof BFProposalAcceptance === 'undefined') {
-      showToast('Calcule a simulacao antes de registrar revisao.', 'error');
+      showToast('Calcule a simulação antes de registrar revisão.', 'error');
       return;
     }
     const form = window.BFProposalGovernance && window.BFProposalGovernance.readAcceptanceForm
@@ -1319,21 +1769,21 @@ const App = (() => {
     const record = BFProposalAcceptance.saveReview({
       proposal,
       reviewer: form.reviewer || proposal.consultor,
-      reviewerRole: form.reviewerRole || 'Consultor responsavel',
+      reviewerRole: form.reviewerRole || 'Consultor responsável',
       validUntil: form.validUntil,
       notes: form.notes,
       checklist: form.checklist
     });
 
     if (!record) {
-      showToast('Nao foi possivel registrar a revisao local.', 'error');
+      showToast('Não foi possível registrar a revisão.', 'error');
       return;
     }
 
     salvarVersaoProposta({ silent: true, acceptance: record, forceNew: true, skipRender: true });
     renderResultados();
     renderProposta();
-    showToast(`Revisao registrada: ${record.statusLabel}.`, 'success');
+    showToast(`Revisão registrada: ${record.statusLabel}.`, 'success');
   }
 
   function limparRevisaoProposta() {
@@ -1342,28 +1792,28 @@ const App = (() => {
     BFProposalAcceptance.clear(proposal.id);
     renderResultados();
     renderProposta();
-    showToast('Revisoes locais desta proposta foram limpas.', 'warning');
+    showToast('As revisões desta proposta foram removidas.', 'warning');
   }
 
   function criarHandoffProposta() {
     const proposal = getCurrentProposalData();
     const acceptance = getCurrentProposalAcceptance();
     if (!proposal || !acceptance) {
-      showToast('Calcule a simulacao e registre a revisao antes de criar o handoff.', 'error');
+      showToast('Calcule a simulação e registre a revisão antes de criar o encaminhamento.', 'error');
       return null;
     }
     if (acceptance.status !== 'reviewed') {
-      showToast('Conclua o checklist da revisao para liberar o handoff consultivo.', 'warning');
+      showToast('Conclua a conferência da proposta antes de continuar.', 'warning');
       return null;
     }
     if (typeof BFHandoffConsultivoService === 'undefined' || !BFHandoffConsultivoService.createFromProposal) {
-      showToast('Servico de handoff consultivo indisponivel nesta pagina.', 'error');
+      showToast('O encaminhamento consultivo não está disponível nesta página.', 'error');
       return null;
     }
 
     const proposalVersion = salvarVersaoProposta({ silent: true, acceptance, skipRender: true });
     if (!proposalVersion) {
-      showToast('Nao foi possivel travar a versao atual antes do handoff.', 'error');
+      showToast('Não foi possível fechar a versão atual antes do encaminhamento.', 'error');
       return null;
     }
 
@@ -1433,7 +1883,7 @@ const App = (() => {
         </select>
       </div>
       <div class="form-group" style="justify-content:flex-end;">
-        <button type="button" class="btn btn--sm btn--danger" onclick="this.closest('.adiantamento-row').remove()">✕ Remover</button>
+        <button type="button" class="btn btn--sm btn--danger" onclick="this.closest('.adiantamento-row').remove()">Remover</button>
       </div>
     `;
     container.appendChild(row);
@@ -1473,7 +1923,7 @@ const App = (() => {
         <input type="number" class="form-input inad-mes-reg" min="1" placeholder="Mês">
       </div>
       <div class="form-group" style="justify-content:flex-end;">
-        <button type="button" class="btn btn--sm btn--danger" onclick="this.closest('.inadimplencia-row').remove()">✕ Remover</button>
+        <button type="button" class="btn btn--sm btn--danger" onclick="this.closest('.inadimplencia-row').remove()">Remover</button>
       </div>
     `;
     container.appendChild(row);
@@ -1487,8 +1937,8 @@ const App = (() => {
 
     // V3: Dados do Consultor (Step 1)
     set('consultor', d.consultor);
-    set('consultorEmail', d.consultorEmail);
-    set('consultorTelefone', d.consultorTelefone);
+    set('consultorEmail', d.consultorEmail || 'consultor.demo@bankfratern.local');
+    set('consultorTelefone', d.consultorTelefone || '(11) 90000-0000');
     set('consultorEmpresa', d.consultorEmpresa);
     set('consultorCodigo', d.consultorCodigo);
     set('dataSimulacao', d.dataSimulacao);
@@ -1496,9 +1946,17 @@ const App = (() => {
     // V3: Dados do Cliente (Step 2)
     set('nomeCliente', d.nomeCliente);
     set('clienteCpf', d.clienteCpf);
-    set('clienteEmail', d.clienteEmail);
-    set('clienteTelefone', d.clienteTelefone);
+    set('clienteEmail', d.clienteEmail || 'cliente.demo@bankfratern.local');
+    set('clienteTelefone', d.clienteTelefone || '(11) 90000-0000');
     set('clienteObjetivo', d.clienteObjetivo);
+    ['valorObjetivo', 'parcelaConfortavel', 'reservaAtual', 'caixaLance'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el && d[id] != null) el.value = Format.number(d[id]);
+    });
+    set('prazoDesejado', d.prazoDesejado);
+    set('urgencia', d.urgencia);
+    set('toleranciaRisco', d.toleranciaRisco);
+    setCheck('clienteConsentimento', d.clienteConsentimento);
     set('observacoes', d.observacoes);
 
     // Hidden fields
@@ -1542,28 +2000,37 @@ const App = (() => {
 
     // Mantem o exemplo funcional na jornada V7, onde carta/prazo vivem na sacola.
     if (!document.getElementById('valorCarta') && typeof ShelfEngine !== 'undefined' && ShelfEngine.createProjectItem) {
-      const exemploGrupo = {
-        idGrupo: 'EXEMPLO-ESTRUTURADO',
-        groupKey: 'EXEMPLO-ESTRUTURADO',
+      const exampleGroups = [
+        {
+          idGrupo: 'EXEMPLO-IMOVEL-A', groupKey: 'EXEMPLO-IMOVEL-A', codigoGrupo: `${d.grupo}-A`,
+          valorCartaRef: d.valorCarta * 0.6, prazoMeses: d.prazoTotal, taxaAdmPct: Math.max(0, d.taxaAdm - 0.5)
+        },
+        {
+          idGrupo: 'EXEMPLO-IMOVEL-B', groupKey: 'EXEMPLO-IMOVEL-B', codigoGrupo: `${d.grupo}-B`,
+          valorCartaRef: d.valorCarta * 0.4, prazoMeses: Math.max(60, d.prazoTotal - 20), taxaAdmPct: d.taxaAdm + 0.5
+        }
+      ].map((base) => ({
+        ...base,
         nomeAdministradora: d.administradora,
         administradora: d.administradora,
-        codigoGrupo: d.grupo,
         codigoSegmento: d.tipoBem,
         nomeSegmento: d.tipoBem === 'imovel' ? 'Imóveis' : 'Consórcio',
-        valorCartaRef: d.valorCarta,
-        prazoMeses: d.prazoTotal,
-        taxaAdmPct: d.taxaAdm,
         fundoReservaPct: d.fundoReserva,
         seguroPctComercial: d.seguroTipo === 'percentual' ? d.seguro : 0,
         indiceCorrecaoNome: d.tipoIndice || 'fixo',
+        dataBase: 'DEMO-2026-08',
         lanceEmbutidoMaxPct: Math.max(d.lanceEmbutido || 0, getEffectiveLanceEmbutidoMax({ lanceEmbutidoMaxPct: 30 }))
-      };
-      const item = ShelfEngine.createProjectItem(exemploGrupo, 1, d.valorCarta);
-      item.mesContemplacaoAlvo = d.mesContemplacao;
-      item.lanceProprioPct = d.lanceProprio;
-      item.lanceEmbutidoPct = d.lanceEmbutido;
-      item.fundoReservaPct = d.fundoReserva;
-      projetoEstruturado.itens = [item];
+      }));
+      projetoEstruturado.itens = exampleGroups.map((group) => {
+        const item = ShelfEngine.createProjectItem(group, 1, group.valorCartaRef);
+        item.mesContemplacaoAlvo = Math.min(d.mesContemplacao, item.prazoMeses);
+        item.lanceProprioPct = d.lanceProprio;
+        item.lanceEmbutidoPct = d.lanceEmbutido;
+        item.modalidadeLance = d.modalidadeLance === 'proprio' ? 'livre' : (d.modalidadeLance || 'sem_lance');
+        item.indiceReajuste = Number.isFinite(Number(d.indiceReajuste)) ? Number(d.indiceReajuste) : 0;
+        item.fundoReservaPct = d.fundoReserva;
+        return item;
+      });
       renderGruposSelecionados();
       renderStep5Cart();
       recalcularProjeto();
@@ -1586,6 +2053,11 @@ const App = (() => {
     resultado = null;
     cenarios = null;
     currentParams = null;
+    compResult = null;
+    projectSimulation = null;
+    projetoEstruturado.itens = [];
+    visitedSteps.clear();
+    visitedSteps.add(1);
     ChartManager.destroyAll();
     const kpi = document.getElementById('kpi-container');
     if (kpi) kpi.innerHTML = '<p class="text-muted" style="grid-column:1/-1;text-align:center;padding:40px;">Calcule a simulação para ver os resultados.</p>';
@@ -1593,6 +2065,9 @@ const App = (() => {
     if (tbody) tbody.innerHTML = '';
     const prop = document.getElementById('proposta-container');
     if (prop) prop.innerHTML = '';
+    renderGruposSelecionados();
+    renderStep5Cart();
+    populateGroupSelects();
     renderProposalBuilderBoard();
     renderProposalAcceptancePanel();
     renderProposalVersionPanel();
@@ -1644,12 +2119,34 @@ const App = (() => {
   }
 
   // ─── Exportar Proposta ───
+  function proposalReleaseIssues() {
+    const issues = [];
+    for (let step = 1; step <= 9; step += 1) {
+      collectStepErrors(step).forEach((message) => issues.push(message));
+    }
+    if (!resultado || !currentParams) issues.push('Calcule a simulação antes de gerar a proposta.');
+    if (resultado && resultado.diagnostics?.reconciled !== true) {
+      issues.push('Confira o cálculo financeiro antes de gerar a proposta.');
+    }
+    if (resultado && projetoEstruturado.itens.length && window.BFSimulatorResult?.validateProjectResult) {
+      const integrity = window.BFSimulatorResult.validateProjectResult(resultado, projetoEstruturado);
+      if (!integrity.reconciled) issues.push('Recalcule todos os grupos selecionados antes de gerar a proposta.');
+    }
+    if (!compResult) issues.push('Conclua a comparacao das alternativas do projeto.');
+    const acceptance = getCurrentProposalAcceptance();
+    if (!acceptance || acceptance.status !== 'reviewed') {
+      issues.push('Conclua a conferência dos dados antes de publicar.');
+    }
+    return Array.from(new Set(issues));
+  }
+
   async function exportarPDF() {
-    if (!resultado || !currentParams) {
-      showToast('Calcule a simulação antes de exportar.', 'error');
+    const releaseIssues = proposalReleaseIssues();
+    if (releaseIssues.length) {
+      showToast(releaseIssues.join('\n'), 'error');
       return;
     }
-    showToast('Gerando PDF...', 'info');
+    showToast('Abrindo as opções de impressão...', 'info');
     salvarVersaoProposta({ silent: true });
     renderResultados();
     renderProposta();
@@ -1658,12 +2155,13 @@ const App = (() => {
     const ok = exportRoot
       ? await ExportManager.exportarPDFDaTela(exportRoot)
       : await ExportManager.exportarPDF(currentParams, resultado);
-    if (ok !== false) showToast('PDF preparado com a proposta estruturada.', 'success');
+    if (ok !== false) showToast('Escolha imprimir ou salvar como PDF.', 'success');
   }
 
   function imprimirProposta() {
-    if (!resultado || !currentParams) {
-      showToast('Calcule a simulação antes de imprimir.', 'error');
+    const releaseIssues = proposalReleaseIssues();
+    if (releaseIssues.length) {
+      showToast(releaseIssues.join('\n'), 'error');
       return;
     }
     salvarVersaoProposta({ silent: true });
@@ -1745,29 +2243,19 @@ const App = (() => {
     const selectB = document.getElementById('compGrupoB');
     if (!selectA || !selectB) return;
 
-    // Prioridade: grupos do carrinho > últimos filtrados na prateleira > GruposComparacao fallback
-    let sourceGroups = [];
-    let sourceLabel = '';
+    const sourceGroups = projetoEstruturado.itens.map(item => item._group).filter(Boolean);
+    const sourceLabel = 'Projeto atual';
 
-    if (projetoEstruturado.itens.length >= 2) {
-      sourceGroups = projetoEstruturado.itens.map(item => item._group);
-      sourceLabel = 'Carrinho';
-    } else if (shelfGroups.length > 0) {
-      sourceGroups = shelfGroups.slice(0, 50); // max 50 para select
-      sourceLabel = 'Prateleira';
-    } else if (typeof GruposComparacao !== 'undefined' && GruposComparacao.length > 0) {
-      // Fallback legado
-      const options = GruposComparacao.map((g, i) => {
-        const label = `${g.plano} — ${Format.money(g.valorCarta)} — ${g.prazoMeses}m`;
-        return `<option value="legacy-${i}">${label}</option>`;
-      }).join('');
-      selectA.innerHTML = '<option value="">— Selecione o Grupo A —</option>' + options;
-      selectB.innerHTML = '<option value="">— Selecione o Grupo B —</option>' + options;
-      if (GruposComparacao.length >= 2) { selectA.value = 'legacy-0'; selectB.value = 'legacy-1'; }
+    if (sourceGroups.length < 2) {
+      const message = '<option value="">Adicione ao menos dois grupos ao projeto</option>';
+      selectA.innerHTML = message;
+      selectB.innerHTML = message;
+      selectA.disabled = true;
+      selectB.disabled = true;
       return;
     }
-
-    if (sourceGroups.length === 0) return;
+    selectA.disabled = false;
+    selectB.disabled = false;
 
     const options = sourceGroups.map((g, i) => {
       const classStr = (g.classificacaoExecutiva || '').charAt(0) || '?';
@@ -1790,7 +2278,10 @@ const App = (() => {
   function getCompScenario() {
     return {
       saldoInicialMode: document.getElementById('compPoliticaSaldo')?.value || 'carta',
-      indiceReajustePct: parseFloat(document.getElementById('compIndiceReajuste')?.value) || 5,
+      indiceReajustePct: (() => {
+        const parsed = Number(document.getElementById('compIndiceReajuste')?.value);
+        return Number.isFinite(parsed) ? parsed : 5;
+      })(),
       mesContemplacao: parseInt(document.getElementById('compMesContemplacao')?.value) || 18,
       lanceProprioPct: parseFloat(document.getElementById('compLanceProprio')?.value) || 0,
       lanceEmbutidoPct: parseFloat(document.getElementById('compLanceEmbutido')?.value) || 0,
@@ -1812,33 +2303,22 @@ const App = (() => {
   function _resolveCompGroup(selectValue) {
     if (!selectValue || selectValue === '') return null;
 
-    // Legado: GruposComparacao
-    if (selectValue.startsWith('legacy-')) {
-      const idx = parseInt(selectValue.replace('legacy-', ''));
-      return (typeof GruposComparacao !== 'undefined') ? GruposComparacao[idx] : null;
-    }
-
-    // V7: Grupos do carrinho ou prateleira
+    // Comparacao sempre usa os grupos que pertencem ao projeto atual.
     const idx = parseInt(selectValue);
-    let sourceGroups = [];
-    if (projetoEstruturado.itens.length >= 2) {
-      sourceGroups = projetoEstruturado.itens.map(item => item._group);
-    } else if (shelfGroups.length > 0) {
-      sourceGroups = shelfGroups.slice(0, 50);
-    }
-    const g = sourceGroups[idx];
-    if (!g) return null;
+    const item = projetoEstruturado.itens[idx];
+    const g = item && item._group;
+    if (!g || !item) return null;
 
     // Adaptar formato shelf → formato Comparator
     return {
       plano: `${g.nomeAdministradora || 'Admin'} — Grp ${g.codigoGrupo}`,
-      valorCarta: g.valorCartaRef,
-      prazoMeses: g.prazoMeses,
-      taxaAdmTotalPct: g.taxaAdmPct,
-      fundoReservaPct: g.fundoReservaPct || 2,
+      valorCarta: item.valorCartaUnitario || g.valorCartaRef,
+      prazoMeses: item.prazoMeses || g.prazoMeses,
+      taxaAdmTotalPct: item.taxaAdmPct ?? g.taxaAdmPct,
+      fundoReservaPct: item.fundoReservaPct ?? g.fundoReservaPct ?? 0,
       seguroPct: g.seguroPctComercial || 0,
       indiceReajuste: g.indiceCorrecaoNome || 'fixo',
-      mesAniversario: 12,
+      mesAniversario: item.mesAniversario || 12,
       lanceEmbutidoMaxPct: getEffectiveLanceEmbutidoMax(g),
       lanceFixoPct: g.lanceFixoPct || 0,
       parcelaReduzidaDisponivel: g.parcelaReduzidaDisponivel || false,
@@ -1846,6 +2326,8 @@ const App = (() => {
       tipoBem: g.macroCategoria || 'imovel',
       administradora: g.nomeAdministradora,
       codigoGrupo: g.codigoGrupo,
+      groupKey: g.groupKey,
+      quantidadeCotas: item.quantidadeCotas || 1,
       observacao: '',
       // V7: dados heurísticos para narrativa
       _heuristica: g._heuristica,
@@ -1921,7 +2403,7 @@ const App = (() => {
     const metrics = [
       { label: 'Carta de Crédito', vA: Format.money(gA.valorCarta), vB: Format.money(gB.valorCarta), delta: d.valorCartaPct, winner: w.maiorCarta, icon: 'CC', prefer: 'higher' },
       { label: 'Prazo Total', vA: `${gA.prazoMeses} meses`, vB: `${gB.prazoMeses} meses`, delta: d.prazoPct, winner: w.menorPrazo, icon: 'PR', prefer: 'context' },
-      { label: 'Taxa de Administração', vA: `${gA.taxaAdmTotalPct}%`, vB: `${gB.taxaAdmTotalPct}%`, delta: d.taxaAdmPct, winner: w.menorTaxa, icon: 'TX', prefer: 'lower' },
+      { label: 'Taxa de Administração', vA: `${Number(gA.taxaAdmTotalPct || 0).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}%`, vB: `${Number(gB.taxaAdmTotalPct || 0).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}%`, delta: d.taxaAdmPct, winner: w.menorTaxa, icon: 'TX', prefer: 'lower' },
       { label: 'Total do Plano', vA: Format.money(rA.valorTotalPlano), vB: Format.money(rB.valorTotalPlano), delta: d.totalPlanoPct, winner: null, icon: 'TP' },
       { label: 'Parcela Inicial', vA: Format.money(rA.parcelaTotalAtual), vB: Format.money(rB.parcelaTotalAtual), delta: d.parcelaInicialPct, winner: w.menorParcelaInicial, icon: 'PI', prefer: 'lower' },
       { label: 'Carta Líquida', vA: Format.money(rA.cartaLiquida), vB: Format.money(rB.cartaLiquida), delta: d.cartaLiquidaPct, winner: w.maiorCartaLiquida, icon: 'CL', prefer: 'higher' },
@@ -2138,6 +2620,7 @@ const App = (() => {
       return window.BFSimulatorShelf.explainGroupRecommendation(group, {
         filters: getShelfFilters(),
         objective: getSimulatorObjective(),
+        profile: getClientDecisionProfile(),
         ...options
       });
     }
@@ -2166,9 +2649,9 @@ const App = (() => {
 
       const appSettings = getAppSettings();
       if (appSettings.autoScore === false) {
-        if (progress) progress.journey(42, 'Score automatico desativado. Usando ordenacao operacional.', 'loading');
+        if (progress) progress.journey(42, 'Indice operacional automatico desativado. Usando ordenacao por filtros.', 'loading');
       } else {
-        if (progress) progress.journey(42, 'Calculando score comercial dos grupos.', 'loading');
+        if (progress) progress.journey(42, 'Calculando indice operacional dos grupos.', 'loading');
         if (ShelfEngine.computeAllScores) ShelfEngine.computeAllScores(catalog);
       }
       if (progress) {
@@ -2309,8 +2792,8 @@ const App = (() => {
 
   function _getSaudeBadge(g) {
     const s = g.saudeCarteira || (g._heuristica ? g._heuristica.classificacoes.saude.classe : '');
-    const iconMap = { 'Baixa': '🟢', 'Controlada': '🔵', 'Atenção': '🟡', 'Crítica': '🔴' };
-    return `${iconMap[s] || '⚪'} ${s || '—'}`;
+    const iconMap = { 'Baixa': 'OK', 'Controlada': 'CO', 'Atenção': 'AT', 'Crítica': 'CR' };
+    return `${iconMap[s] || '--'} ${s || '—'}`;
   }
 
   function renderShelfTable(groups, pag) {
@@ -2322,6 +2805,7 @@ const App = (() => {
         projectItems: projetoEstruturado.itens,
         filters: getShelfFilters(),
         objective: getSimulatorObjective(),
+        profile: getClientDecisionProfile(),
         formatMoney: Format.money,
         formatNumber: Format.number
       });
@@ -2388,6 +2872,7 @@ const App = (() => {
           heuristicEngine: typeof HeuristicEngine !== 'undefined' ? HeuristicEngine : null,
           filters: getShelfFilters(),
           objective: getSimulatorObjective(),
+          profile: getClientDecisionProfile(),
           getEffectiveLanceEmbutidoMax,
           formatMoney: Format.money,
           formatNumber: Format.number
@@ -2468,7 +2953,7 @@ const App = (() => {
               <tr><td>Cotas Excluídas</td><td>${g.qtdExcluidas}</td></tr>
               <tr><td>Cotas Quitadas</td><td>${g.qtdQuitadas}</td></tr>
               <tr><td>Crédito Pendente</td><td>${g.qtdCreditoPendente}</td></tr>
-              <tr><td>Score Prateleira</td><td><strong>${g.scoreShelf}</strong>/100</td></tr>
+              <tr><td>Indice operacional</td><td><strong>${g.scoreShelf}</strong>/100</td></tr>
             </table>
           </div>
           <div class="shelf-detail-section">
@@ -2505,6 +2990,14 @@ const App = (() => {
 
   // ── V5: Multi-Seleção ──────────────────────────────────────────────────────
 
+  function invalidateCalculatedArtifacts(options = {}) {
+    resultado = null;
+    cenarios = null;
+    currentParams = null;
+    compResult = null;
+    if (!options.keepProjectSimulation) projectSimulation = null;
+  }
+
   /** Adiciona um grupo ao projeto estruturado (carrinho multi-select). */
   function selecionarGrupo(idx) {
     const g = shelfGroups[idx];
@@ -2521,9 +3014,13 @@ const App = (() => {
     }
     if (!window.BFSimulatorCart) {
       item.mesContemplacaoAlvo = numberSetting('defaultMesContemplacao', item.mesContemplacaoAlvo || 18);
-      item.lanceEmbutidoPct = Math.min(getEffectiveLanceEmbutidoMax(g), item.lanceEmbutidoPct || getEffectiveLanceEmbutidoMax(g));
+      item.lanceEmbutidoPct = Math.max(0, Math.min(
+        getEffectiveLanceEmbutidoMax(g),
+        Number(item.lanceEmbutidoPct || 0)
+      ));
     }
     projetoEstruturado.itens.push(item);
+    invalidateCalculatedArtifacts();
 
     // Re-renderizar tabela para atualizar indicador "Adicionado"
     renderShelfPage();
@@ -2531,6 +3028,7 @@ const App = (() => {
     renderGruposSelecionados();
     // Atualizar botão de avançar
     atualizarBotaoAvancar();
+    populateGroupSelects();
     renderSimulatorDecision();
 
     showToast(`Grupo ${g.codigoGrupo} (${g.nomeAdministradora}) adicionado ao projeto.`, 'success');
@@ -2543,9 +3041,11 @@ const App = (() => {
     } else {
       ShelfEngine.removeProjectItem(projetoEstruturado, itemId);
     }
+    invalidateCalculatedArtifacts();
     renderShelfPage();
     renderGruposSelecionados();
     atualizarBotaoAvancar();
+    populateGroupSelects();
     renderSimulatorDecision();
     showToast('Grupo removido do projeto.', 'warning');
   }
@@ -2560,6 +3060,7 @@ const App = (() => {
       patch[campo] = valor;
       ShelfEngine.updateProjectItem(projetoEstruturado, itemId, patch);
     }
+    invalidateCalculatedArtifacts({ keepProjectSimulation: true });
     // Re-renderizar somente o campo calculado correspondente
     const rowEl = document.querySelector(`.selected-group-row[data-item-id="${itemId}"]`);
     if (!rowEl) return;
@@ -2569,6 +3070,7 @@ const App = (() => {
     if (totalEl) totalEl.textContent = Format.money(item.valorCartaTotal);
     // Atualizar rodapé
     atualizarRodapeGruposSelecionados();
+    populateGroupSelects();
     renderSimulatorDecision();
   }
 
@@ -2583,6 +3085,8 @@ const App = (() => {
         formatNumber: Format.number
       });
       if (projetoEstruturado.itens.length > 0) atualizarRodapeGruposSelecionados();
+      atualizarBotaoAvancar();
+      populateGroupSelects();
       return;
     }
 
@@ -2593,6 +3097,8 @@ const App = (() => {
           <p>Nenhum grupo adicionado ainda. Clique em <strong>+ Adicionar</strong> na tabela acima.</p>
         </div>
       `;
+      atualizarBotaoAvancar();
+      populateGroupSelects();
       return;
     }
 
@@ -2610,7 +3116,7 @@ const App = (() => {
         <td><span class="shelf-segment-badge">${item.iconSegmento} ${item.nomeSegmento}</span></td>
         <td>
           <div class="campo-input-usuario">
-            <label class="campo-label--usuario">Editável</label>
+            <label class="campo-label--usuario">Por cota</label>
             <input
               type="text"
               class="input-usuario"
@@ -2625,7 +3131,7 @@ const App = (() => {
         </td>
         <td>
           <div class="campo-input-usuario">
-            <label class="campo-label--usuario">Editável</label>
+            <label class="campo-label--usuario">Cotas</label>
             <input
               type="number"
               class="input-usuario input-usuario--qtd"
@@ -2641,12 +3147,12 @@ const App = (() => {
         </td>
         <td>
           <div class="campo-calculado">
-            <label class="campo-label--calculado">Calculado</label>
+            <label class="campo-label--calculado">Total</label>
             <div class="campo-calculado__valor sg-total-carta">${Format.money(item.valorCartaTotal)}</div>
           </div>
         </td>
         <td class="sg-remover-cell">
-          <button class="btn btn--sm btn--danger" onclick="App.removerGrupoSelecionado('${item.itemId}')" title="Remover grupo">✕</button>
+          <button class="btn btn--sm btn--danger" onclick="App.removerGrupoSelecionado('${item.itemId}')" title="Remover grupo">Remover</button>
         </td>
       </tr>
     `).join('');
@@ -2668,6 +3174,8 @@ const App = (() => {
       <div class="selected-groups-footer" id="selected-groups-footer"></div>
     `;
     atualizarRodapeGruposSelecionados();
+    atualizarBotaoAvancar();
+    populateGroupSelects();
   }
 
   /** Atualiza o rodapé com totais consolidados e o badge do header. */
@@ -2716,7 +3224,8 @@ const App = (() => {
     const itemAtual = projetoEstruturado.itens.find(i => i.itemId === itemId);
     if (!itemAtual) return;
     if (window.BFSimulatorCart && window.BFSimulatorCart.normalizeEditValue) {
-      const normalized = window.BFSimulatorCart.normalizeEditValue(campo, inputEl.value, itemAtual, {
+      const rawValue = inputEl.type === 'checkbox' ? inputEl.checked : inputEl.value;
+      const normalized = window.BFSimulatorCart.normalizeEditValue(campo, rawValue, itemAtual, {
         parseMoney: Format.parseMoney,
         formatNumber: Format.number,
         getEffectiveLanceEmbutidoMax
@@ -2777,7 +3286,7 @@ const App = (() => {
       btn.textContent = 'Adicione pelo menos 1 grupo para avançar →';
     } else {
       btn.disabled = false;
-      btn.textContent = `Simular ${n} grupo${n !== 1 ? 's' : ''} selecionado${n !== 1 ? 's' : ''} →`;
+      btn.textContent = `Continuar com ${n} grupo${n !== 1 ? 's' : ''}`;
     }
   }
 
@@ -2793,8 +3302,8 @@ const App = (() => {
       });
       dash.innerHTML = `
         <div class="kpi-header">
-          <span>Metricas Consolidadas</span>
-          <span>Projeto Estruturado</span>
+          <span>Resumo do projeto</span>
+          <span>${consolidado.totalGrupos} grupo${consolidado.totalGrupos === 1 ? '' : 's'} selecionado${consolidado.totalGrupos === 1 ? '' : 's'}</span>
         </div>
         <div class="step5-dashboard-grid">
           ${kpis.map(k => `
@@ -2810,22 +3319,22 @@ const App = (() => {
     }
 
     const kpis = [
-      { label: 'Valor Crédito Contratado', val: Format.money(consolidado.totalCarta), cls: '' },
-      { label: 'Valor Receber (Crédito - L. Embutido)', val: Format.money(consolidado.cartaLiquida), cls: 'kpi-row--green' },
-      { label: 'Taxa Administração Média', val: (consolidado.taxaAdmMedia || 0).toFixed(2) + '%', cls: '' },
-      { label: 'Quantidade de Grupos', val: consolidado.totalGrupos, cls: '' },
-      { label: 'Total de Cotas', val: consolidado.totalCotas || 0, cls: '' },
-      { label: 'Prazo Médio', val: (consolidado.prazoMedio || 0).toFixed(0) + ' meses', cls: '' },
-      { label: 'Lance Próprio', val: Format.money(consolidado.totalLanceProprioR) || 'R$ 0,00', cls: 'kpi-row--green' },
-      { label: 'Lance Embutido', val: Format.money(consolidado.totalLanceEmbutidoR) || 'R$ 0,00', cls: 'kpi-row--green' },
-      { label: 'Parcela Inicial do Projeto', val: Format.money(consolidado.parcelaInicialTotal), cls: 'kpi-row--red' },
-      { label: 'Custo Efetivo Estimado', val: (consolidado.custoEfetivoMedio || 0).toFixed(2) + '%', cls: 'kpi-row--red' }
+      { label: 'Crédito total', val: Format.money(consolidado.totalCarta), cls: '' },
+      { label: 'Crédito disponível após lance', val: Format.money(consolidado.cartaLiquida), cls: 'kpi-row--green' },
+      { label: 'Taxa de administração média', val: (consolidado.taxaAdmMedia || 0).toFixed(2) + '%', cls: '' },
+      { label: 'Grupos', val: consolidado.totalGrupos, cls: '' },
+      { label: 'Cotas', val: consolidado.totalCotas || 0, cls: '' },
+      { label: 'Prazo médio', val: (consolidado.prazoMedio || 0).toFixed(0) + ' meses', cls: '' },
+      { label: 'Lance próprio', val: Format.money(consolidado.totalLanceProprioR) || 'R$ 0,00', cls: 'kpi-row--green' },
+      { label: 'Lance embutido', val: Format.money(consolidado.totalLanceEmbutidoR) || 'R$ 0,00', cls: 'kpi-row--green' },
+      { label: 'Parcela inicial do projeto', val: Format.money(consolidado.parcelaInicialTotal), cls: 'kpi-row--red' },
+      { label: 'Custo efetivo estimado', val: (consolidado.custoEfetivoMedio || 0).toFixed(2) + '%', cls: 'kpi-row--red' }
     ];
 
     dash.innerHTML = `
       <div class="kpi-header">
-        <span>Métricas Consolidadas</span>
-        <span>Projeto Estruturado</span>
+        <span>Resumo do projeto</span>
+        <span>${consolidado.totalGrupos} grupo${consolidado.totalGrupos === 1 ? '' : 's'} selecionado${consolidado.totalGrupos === 1 ? '' : 's'}</span>
       </div>
       <div class="step5-dashboard-grid">
         ${kpis.map(k => `
@@ -2883,7 +3392,7 @@ const App = (() => {
               <span class="shelf-segment-badge">${item.iconSegmento} ${item.nomeSegmento}</span>
               ${item.administradora} — Grupo ${item.codigoGrupo}
             </div>
-            <button class="btn btn--sm btn--danger" onclick="App.removerGrupoSelecionado('${item.itemId}'); App.recalcularProjeto()">✕ Remover</button>
+            <button class="btn btn--sm btn--danger" onclick="App.removerGrupoSelecionado('${item.itemId}'); App.recalcularProjeto()">Remover</button>
           </div>
           <div class="cart-item-body">
             <div class="cart-grid-container">
@@ -2950,16 +3459,18 @@ const App = (() => {
   /** Centraliza o re-cálculo da Sacola quando o usuário edita. */
   function recalcularProjeto() {
     if (projetoEstruturado.itens.length === 0) {
+      projectSimulation = null;
       document.getElementById('step5-dashboard').style.display = 'none';
       renderStep5Cart();
       return;
     }
 
-    const resultado = ShelfEngine.simulateStructuredProject(projetoEstruturado);
+    const resultado = ShelfEngine.simulateStructuredProject(projetoEstruturado, getParams());
     if (!resultado || !resultado.consolidado) {
       showToast('Não foi possível recalcular o projeto estruturado.', 'error');
       return;
     }
+    projectSimulation = resultado;
 
     if (window.BFSimulatorCart && window.BFSimulatorCart.applyCalculationResults) {
       window.BFSimulatorCart.applyCalculationResults(resultado.itemResults, {
@@ -2980,7 +3491,7 @@ const App = (() => {
       const lLiqEl = card.querySelector('.dyn-val-liq');
       if (lPropEl) lPropEl.textContent = Format.money(propR);
       if (lEmbEl) lEmbEl.textContent = Format.money(embR);
-      if (lTotEl) lTotEl.textContent = Format.money(propR + embR);
+      if (lTotEl) lTotEl.textContent = Format.money(Number.isFinite(Number(r.lanceTotalR)) ? r.lanceTotalR : propR + embR);
       if (lLiqEl) lLiqEl.textContent = Format.money(r.cartaLiquida || 0);
     });
 
@@ -3106,12 +3617,16 @@ const App = (() => {
         cart: carrinho,
         filters: getShelfFilters(),
         resultado,
+        comparison: compResult,
+        proposalSnapshot: typeof BFProposalSnapshot !== 'undefined' && BFProposalSnapshot.current
+          ? BFProposalSnapshot.current()
+          : null,
         proposalAcceptance: getCurrentProposalAcceptance(),
         decisionContext,
         formSnapshot: collectFormSnapshot(),
         root: document
       })
-      : { nome, origem: 'simulador-consorcio', currentStep, params, carrinho, resultado };
+      : { nome, origem: 'simulador-consorcio', currentStep, params, carrinho, resultado, comparison: compResult };
   }
 
   function salvarSimulacao() {
@@ -3155,8 +3670,6 @@ const App = (() => {
               <div>
                 <strong>${s.nome}</strong>
                 <div style="font-size:12px;color:var(--gray-500);margin-top:2px;">
-                  ${s.consultor ? `Consultor: ${s.consultor} | ` : ''}
-                  ${s.cliente ? `Cliente: ${s.cliente} | ` : ''}
                   ${s.totalGrupos} grupo(s) | ${Format.money(s.totalCarta)}
                 </div>
                 <div style="font-size:11px;color:var(--gray-400);margin-top:2px;">${new Date(s.criadoEm).toLocaleString('pt-BR')}</div>
@@ -3194,8 +3707,6 @@ const App = (() => {
     // Restaurar dados do consultor/cliente
     applyFormSnapshot(sim.formSnapshot);
     const fallbackSet = (elId, val) => { const el = document.getElementById(elId); if (el && val && !el.value) el.value = val; };
-    fallbackSet('consultor', sim.consultor);
-    fallbackSet('nomeCliente', sim.cliente);
     restoreDynamicEvents(sim.params);
     if (typeof ShelfEngine !== 'undefined') {
       restoreCartItems(sim.carrinho || []);
@@ -3203,21 +3714,30 @@ const App = (() => {
 
     currentParams = sim.params || getParams();
     resultado = sim.resultado && Array.isArray(sim.resultado.cronograma) ? sim.resultado : null;
-    if (!resultado && currentParams && (sim.carrinho || []).length) {
-      resultado = ConsorcioEngine.simular(currentParams);
-      if (resultado && resultado.erro) resultado = null;
-    }
-    cenarios = currentParams ? ConsorcioEngine.compararCenarios(currentParams) : null;
+    compResult = sim.comparison || null;
+    cenarios = null;
+    // O carrinho restaurado é a fonte atual. Recalcular evita combinar uma
+    // seleção multigrupo com um resultado antigo ou parcial salvo localmente.
+    if (currentParams && (sim.carrinho || []).length) calcular();
 
     if (resultado) {
       renderResultados();
       renderTabela();
       renderProposta();
     }
+    if (compResult && !compResult.erro) {
+      renderCompCards(compResult);
+      renderCompWinners(compResult);
+      renderCompNarrativa(compResult);
+      window.setTimeout(() => ChartManager.renderAllComparison(compResult), 150);
+    }
 
     renderSimulatorDecision();
     goToStep(getResumeStep(sim), { skipValidation: true, skipAutoCalculate: true, skipAutoSearch: true });
-    showToast(`Simulacao "${sim.nome}" restaurada com carrinho, parametros e resultado.`, 'success');
+    const privacyNotice = sim.privacy && sim.privacy.localPIIStored === false
+      ? ' Dados identificadores devem ser reinformados por seguranca.'
+      : '';
+    showToast(`Simulacao "${sim.nome}" restaurada com carrinho, parametros e resultado.${privacyNotice}`, 'success');
   }
 
   function carregarSimulacaoDaUrl() {
@@ -3250,6 +3770,9 @@ const App = (() => {
     renderProposta,
     renderProposalBuilderBoard,
     renderProposalVersionPanel,
+    getCurrentProposalData,
+    getProposalPublicationPayload,
+    getProposalReleaseIssues: proposalReleaseIssues,
     toggleProposalBuilderOption,
     setProposalBuilderGroup,
     setProposalBuilderAll,
@@ -3298,6 +3821,10 @@ const App = (() => {
     _excluirSimulacao
   };
 })();
+
+// Ponte explicita para modulos de experiencia carregados em scripts separados.
+// A API continua limitada ao objeto publico retornado pelo modulo principal.
+if (typeof window !== 'undefined') window.App = App;
 
 // Inicializar quando o DOM estiver pronto
 document.addEventListener('DOMContentLoaded', App.init);

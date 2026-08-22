@@ -11,12 +11,12 @@
 // ─── Dimensões de Referência ───
 
 const SegmentosRef = {
-  1: { nome: 'Imóveis', macro: 'imovel', icon: '🏠' },
-  2: { nome: 'Pesados e Equipamentos', macro: 'pesado', icon: '🚜' },
-  3: { nome: 'Automóveis', macro: 'automovel', icon: '🚗' },
-  4: { nome: 'Motos', macro: 'moto', icon: '🏍️' },
-  5: { nome: 'Outros Bens Móveis', macro: 'outros', icon: '📦' },
-  6: { nome: 'Serviços Turísticos', macro: 'servico', icon: '✈️' }
+  1: { nome: 'Imóveis', macro: 'imovel', icon: 'IM' },
+  2: { nome: 'Pesados e Equipamentos', macro: 'pesado', icon: 'PE' },
+  3: { nome: 'Automóveis', macro: 'automovel', icon: 'AU' },
+  4: { nome: 'Motos', macro: 'moto', icon: 'MO' },
+  5: { nome: 'Outros Bens Móveis', macro: 'outros', icon: 'BM' },
+  6: { nome: 'Serviços Turísticos', macro: 'servico', icon: 'ST' }
 };
 
 const IndiceCorrecaoRef = {
@@ -222,9 +222,16 @@ function _decodeCompactDatabasePayload(payload) {
 
 function _normalizeGroup(raw, index = 0) {
   const g = raw && typeof raw === 'object' ? { ...raw } : {};
+  const sourceHas = (key) => Object.prototype.hasOwnProperty.call(raw || {}, key)
+    && raw[key] !== undefined
+    && raw[key] !== null
+    && raw[key] !== '';
   const codigoSegmento = _parseInteger(_firstValue(g, ['codigoSegmento', 'segmentoCodigo', 'codSegmento'], 0));
   const prazoMeses = _parseInteger(_firstValue(g, ['prazoMeses', 'prazo', 'prazoOriginal'], 0));
-  const indiceMaturidadeRaw = _parseRatio(_firstValue(g, ['indiceMaturidade', 'maturidade'], 0));
+  // Maturidade e uma razao operacional, nao uma porcentagem. Valores acima de
+  // 1 (presentes na base real) devem permanecer intactos para que a heuristica
+  // nao mova grupos maduros/finais de volta para o inicio do ciclo.
+  const indiceMaturidadeRaw = _parseNumber(_firstValue(g, ['indiceMaturidade', 'maturidade'], 0));
   const assembleias = _parseInteger(
     _firstValue(g, ['assembleias', 'qtdAssembleias', 'assembleiasRealizadas', 'numeroAssembleia'], indiceMaturidadeRaw * prazoMeses),
     0
@@ -265,6 +272,22 @@ function _normalizeGroup(raw, index = 0) {
   g.statusComercial = _asText(_firstValue(g, ['statusComercial'], 'ativo'), 'ativo');
   g.dataBase = dataBase;
 
+  g._fieldProvenance = {
+    valorCartaRef: sourceHas('valorCartaRef') ? 'source' : 'derived',
+    taxaAdmPct: sourceHas('taxaAdmPct') ? 'source' : 'derived',
+    prazoMeses: sourceHas('prazoMeses') ? 'source' : 'derived',
+    indiceMaturidade: sourceHas('indiceMaturidade') ? 'source' : 'derived',
+    fundoReservaPct: sourceHas('fundoReservaPct') ? 'base-default' : 'default',
+    lanceEmbutidoMaxPct: sourceHas('lanceEmbutidoMaxPct') ? 'base-default' : 'default',
+    lanceFixoPct: sourceHas('lanceFixoPct') ? 'base-default' : 'default',
+    parcelaReduzidaDisponivel: sourceHas('parcelaReduzidaDisponivel') ? 'base-default' : 'default',
+    reducaoMaxParcelaPct: sourceHas('reducaoMaxParcelaPct') ? 'base-default' : 'default',
+    seguroPctComercial: sourceHas('seguroPctComercial') ? 'base-default' : 'default',
+    fgtsPermitido: sourceHas('fgtsPermitido') ? 'source' : 'derived',
+    statusComercial: sourceHas('statusComercial') ? 'base-default' : 'default'
+  };
+  g._commercialVerification = 'unverified';
+
   if (!g.groupKey) {
     const adminKey = cnpjRaiz || _asText(g.nomeAdministradora, 'ADMIN');
     g.groupKey = `${adminKey}|${dataBase || 'sem-data'}|${codigoSegmento || 'sem-segmento'}|${codigoGrupo}`;
@@ -284,7 +307,7 @@ function enrichGroup(g, index = 0) {
     g.macroCategoria = SegmentosRef[g.codigoSegmento]?.macro || 'outros';
   }
   if (!g.iconSegmento) {
-    g.iconSegmento = SegmentosRef[g.codigoSegmento]?.icon || '📦';
+    g.iconSegmento = SegmentosRef[g.codigoSegmento]?.icon || 'OU';
   }
 
   // Garantir groupKey
@@ -378,19 +401,19 @@ async function _loadLegacyRealDatabase(jsonPath) {
       loadedAt: new Date().toISOString()
     };
 
-    console.log(`✅ Base real carregada: ${ShelfCatalog.length} grupos válidos de ${data.length} totais`);
+    console.log(`Base real carregada: ${ShelfCatalog.length} grupos válidos de ${data.length} totais`);
     return ShelfCatalog.length;
   } catch (err) {
     const message = err && err.message ? err.message : String(err);
     console.warn(`Base real nao carregada (${message}).`);
     return _applyFallbackCatalog(message);
-    console.error('❌ Erro ao carregar base real:', err);
+    console.error('Erro ao carregar base real:', err);
     _shelfDataError = err.message;
 
     // Fallback para catálogo simulado se existir
     if (ShelfCatalog.length === 0) {
       ShelfCatalog = _getSimulatedCatalog().map(enrichGroup);
-      console.warn(`⚠️ Usando catálogo simulado com ${ShelfCatalog.length} grupos`);
+      console.warn(`Usando catálogo simulado com ${ShelfCatalog.length} grupos`);
     }
 
     return ShelfCatalog.length;

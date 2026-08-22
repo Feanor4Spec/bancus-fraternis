@@ -94,6 +94,11 @@ const invalidReasons = invalidGroups.reduce((acc, group) => {
 const expectedSegments = Array.from(new Set(expectedValid.map((group) => Number(group.codigoSegmento)).filter(Boolean)))
   .sort((a, b) => a - b);
 const expectedAdmins = new Set(expectedValid.map((group) => group.nomeAdministradora || group.cnpjRaiz || group.cnpjAdministradora).filter(Boolean));
+const compactGroupKeyIndex = compactData.columns.indexOf('groupKey');
+const compactMaturityIndex = compactData.columns.indexOf('indiceMaturidade');
+const compactKeys = compactData.rows.map((row) => row[compactGroupKeyIndex]);
+const compactMaturity = compactData.rows.map((row) => Number(row[compactMaturityIndex]) || 0);
+const compactMaturityAboveOne = compactMaturity.filter((value) => value > 1);
 
 assert(Array.isArray(rawData), 'Tab_Grupos_Consorcio.json precisa ser um array.');
 assert(compactData.schema === 'bancus.shelf.compact.v1', 'Tab_Grupos_Consorcio.compact.json precisa usar schema compacto v1.');
@@ -102,6 +107,9 @@ assert(rawData.length > 17000, `Base bruta deveria ter mais de 17.000 registros,
 assert(expectedValid.length > 17000, `Base valida deveria ter mais de 17.000 grupos, obteve ${expectedValid.length}.`);
 assert(expectedSegments.length === 6, `Base valida deveria cobrir 6 segmentos, obteve ${expectedSegments.length}.`);
 assert(Object.keys(invalidReasons).length === 1 && invalidReasons['valorCartaRef<=0'] === invalidGroups.length, 'Registros excluidos deveriam falhar apenas por valorCartaRef<=0.');
+assert(compactGroupKeyIndex >= 0, 'Base compacta sem groupKey.');
+assert(compactMaturityIndex >= 0, 'Base compacta sem indiceMaturidade.');
+assert(new Set(compactKeys).size === compactKeys.length, 'groupKey precisa ser unico na base compacta.');
 
 const context = {
   console,
@@ -167,7 +175,12 @@ const engineReport = vm.runInContext(`
     lastPageRows: lastPage.data.length,
     paginatedCount,
     uniqueAdmins: ShelfEngine.getUniqueAdmins(ShelfCatalog).length,
-    segments: Array.from(new Set(ShelfCatalog.map((group) => Number(group.codigoSegmento)).filter(Boolean))).sort((a, b) => a - b)
+    segments: Array.from(new Set(ShelfCatalog.map((group) => Number(group.codigoSegmento)).filter(Boolean))).sort((a, b) => a - b),
+    uniqueGroupKeys: new Set(ShelfCatalog.map((group) => group.groupKey)).size,
+    maturityAboveOne: ShelfCatalog.filter((group) => Number(group.indiceMaturidade) > 1).length,
+    maturityMax: Math.max(...ShelfCatalog.map((group) => Number(group.indiceMaturidade) || 0)),
+    provenanceReady: ShelfCatalog.filter((group) => group._fieldProvenance && group._commercialVerification === 'unverified').length,
+    baseDefaultsFlagged: ShelfCatalog.filter((group) => group._fieldProvenance && group._fieldProvenance.lanceEmbutidoMaxPct === 'base-default').length
   });
 `, context);
 
@@ -178,6 +191,11 @@ assert(engineReport.scoredCount === expectedValid.length, `Score deveria ser cal
 assert(engineReport.paginatedCount === expectedValid.length, `Paginacao somada deveria cobrir todos os grupos, obteve ${engineReport.paginatedCount}.`);
 assert(engineReport.uniqueAdmins === expectedAdmins.size, `Administradoras unicas deveriam ser ${expectedAdmins.size}, obteve ${engineReport.uniqueAdmins}.`);
 assert(JSON.stringify(engineReport.segments) === JSON.stringify(expectedSegments), 'Segmentos carregados nao batem com a base valida.');
+assert(engineReport.uniqueGroupKeys === expectedValid.length, 'groupKey deixou de ser unico no catalogo em memoria.');
+assert(engineReport.maturityAboveOne === compactMaturityAboveOne.length, 'indiceMaturidade acima de 1 sofreu conversao indevida no runtime.');
+assert(engineReport.maturityMax === Math.max(...compactMaturity), 'Valor maximo de indiceMaturidade diverge entre base e runtime.');
+assert(engineReport.provenanceReady === expectedValid.length, 'Todos os grupos devem expor proveniencia e verificacao comercial pendente.');
+assert(engineReport.baseDefaultsFlagged > 0, 'Defaults comerciais da base devem ser rotulados como base-default.');
 
 const simulatorHtml = await readText('pages/simulador.html');
 assert(simulatorHtml.includes('data_base/Tab_Grupos_Consorcio.compact.json'), 'simulador.html nao referencia a base compacta de grupos.');
@@ -196,7 +214,10 @@ const report = {
     excludedByMinimumData: rawData.length - expectedValid.length,
     excludedReasons: invalidReasons,
     segments: expectedSegments,
-    admins: expectedAdmins.size
+    admins: expectedAdmins.size,
+    uniqueGroupKeys: new Set(compactKeys).size,
+    maturityAboveOne: compactMaturityAboveOne.length,
+    maturityMax: Math.max(...compactMaturity)
   },
   loader: {
     returned: loadedCount,

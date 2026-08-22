@@ -36,16 +36,16 @@
   function versionBuilderLabel(builder) {
     const current = builder || {};
     return [
-      `${Number(current.sections || 0)}/${Number(current.sectionsTotal || 0)} blocos`,
-      `${Number(current.charts || 0)}/${Number(current.chartsTotal || 0)} graficos`,
+      `${Number(current.sections || 0)}/${Number(current.sectionsTotal || 0)} seções`,
+      `${Number(current.charts || 0)}/${Number(current.chartsTotal || 0)} gráficos`,
       `${Number(current.concepts || 0)}/${Number(current.conceptsTotal || 0)} conceitos`,
-      `${Number(current.formulas || 0)}/${Number(current.formulasTotal || 0)} formulas`
+      `${Number(current.formulas || 0)}/${Number(current.formulasTotal || 0)} fórmulas`
     ].join(' | ');
   }
 
   function renderVersionComparison(comparison, helpers = {}) {
     if (!comparison) {
-      return '<p class="proposal-version-panel__muted">Salve ao menos duas versoes para comparar as mudancas antes do handoff.</p>';
+      return '<p class="proposal-version-panel__muted">Salve ao menos duas versões para comparar as mudanças.</p>';
     }
     const metrics = (comparison.changedMetrics || []).slice(0, 4);
     const builder = comparison.changedBuilder || [];
@@ -58,7 +58,7 @@
         <strong>${versionMetricValue(item.key, item.before, helpers)} -> ${versionMetricValue(item.key, item.after, helpers)}</strong>
         <small>${item.delta >= 0 ? '+' : ''}${versionMetricValue(item.key, item.delta, helpers)}</small>
       </article>
-    `).join('') : '<article><span>Numeros</span><strong>Sem alteracao relevante</strong><small>Metricas financeiras preservadas.</small></article>';
+    `).join('') : '<article><span>Valores</span><strong>Sem alteração relevante</strong><small>Valores financeiros preservados.</small></article>';
     const builderHtml = builder.length ? builder.map((item) => `
       <article>
         <span>${escapeText(item.label)}</span>
@@ -81,8 +81,8 @@
     const latest = input.latest || history[0] || null;
     const saved = !!input.saved;
     const comparison = input.comparison || null;
-    const latestVersion = latest ? `v${latest.version}` : 'sem versao';
-    const statusLabel = saved ? 'Versao atual salva' : (latest ? 'Mudancas pendentes' : 'Primeira versao pendente');
+    const latestVersion = latest ? `v${latest.version}` : 'sem versão';
+    const statusLabel = saved ? 'Versão atual salva' : (latest ? 'Mudanças pendentes' : 'Primeira versão pendente');
     const statusTone = saved ? 'success' : (latest ? 'warning' : 'info');
 
     return {
@@ -91,9 +91,9 @@
       html: `
       <div class="proposal-version-panel__head">
         <div>
-          <span class="proposal-version-panel__eyebrow">Historico da proposta</span>
-          <h3>Versoes e comparacao antes do handoff</h3>
-          <p>Salve snapshots da proposta para comparar mudancas de numeros, lousa, validade e aceite antes de encaminhar ao atendimento.</p>
+          <span class="proposal-version-panel__eyebrow">Histórico da proposta</span>
+          <h3>Versões e mudanças</h3>
+          <p>Salve uma versão para comparar valores, conteúdo, validade e aceite antes de enviar.</p>
         </div>
         <div class="proposal-version-status proposal-version-status--${statusTone}">
           <span>Status</span>
@@ -102,8 +102,8 @@
         </div>
       </div>
       <div class="proposal-version-panel__actions">
-        <button class="btn btn--primary" type="button" onclick="App.salvarVersaoProposta()">Salvar versao atual</button>
-        <button class="btn btn--ghost" type="button" onclick="App.limparVersoesProposta()">Limpar versoes desta proposta</button>
+        <button class="btn btn--primary" type="button" onclick="App.salvarVersaoProposta()">Salvar versão atual</button>
+        <button class="btn btn--ghost" type="button" onclick="App.limparVersoesProposta()">Limpar versões desta proposta</button>
       </div>
       <div class="proposal-version-current">
         <article>
@@ -112,32 +112,32 @@
           <small>${escapeText(currentSnapshot.proposalId)}</small>
         </article>
         <article>
-          <span>Credito</span>
+          <span>Crédito</span>
           <strong>${formatMoney(currentSnapshot.metrics && currentSnapshot.metrics.creditoTotal, helpers)}</strong>
           <small>Parcela ${formatMoney(currentSnapshot.metrics && currentSnapshot.metrics.parcelaAtual, helpers)}</small>
         </article>
         <article>
-          <span>Lousa</span>
+          <span>Conteúdo</span>
           <strong>${escapeText(versionBuilderLabel(currentSnapshot.builder))}</strong>
-          <small>Selecao que entra no PDF final.</small>
+          <small>Seleção incluída no PDF.</small>
         </article>
       </div>
       ${renderVersionComparison(comparison, helpers)}
       <div class="proposal-version-history" data-proposal-version-history>
-        <strong>Historico versionado</strong>
+        <strong>Versões salvas</strong>
         ${history.length ? history.map((item) => `
           <article data-proposal-version-item="${escapeText(String(item.version || ''))}">
             <span>${escapeText(item.versionLabel)} | ${escapeText(item.statusLabel || item.status)}</span>
             <small>${escapeText(item.savedAtLabel)} | ${escapeText(versionBuilderLabel(item.builder))}</small>
           </article>
-        `).join('') : '<p>Nenhuma versao salva para esta proposta.</p>'}
+        `).join('') : '<p>Nenhuma versão salva para esta proposta.</p>'}
       </div>
     `
     };
   }
 
   function renderVersionEmpty() {
-    return '<div class="proposal-version-panel__empty">Calcule a simulacao para salvar versoes e comparar mudancas da proposta.</div>';
+    return '<div class="proposal-version-panel__empty">Calcule a simulação para salvar versões e comparar mudanças.</div>';
   }
 
   function readField(root, id) {
@@ -174,7 +174,7 @@
     const checked = current.checklist || {};
     const statusTone = current.status === 'reviewed' ? 'success' : (current.status === 'expired' ? 'danger' : 'warning');
     const reviewer = escapeText(current.reviewer || proposal.consultor || '');
-    const reviewerRole = escapeText(current.reviewerRole || 'Consultor responsavel');
+    const reviewerRole = escapeText(current.reviewerRole || 'Consultor responsável');
     const notes = escapeText(current.notes || '');
     const validUntil = escapeText(current.validUntil || '');
     const handoffReady = !!handoff;
@@ -190,24 +190,24 @@
       html: `
       <div class="proposal-acceptance-panel__head">
         <div>
-          <span class="proposal-acceptance-panel__eyebrow">Governanca da proposta</span>
-          <h3>Revisao e aceite local</h3>
-          <p>Registre a versao revisada antes de exportar, imprimir ou encaminhar para atendimento consultivo.</p>
+           <span class="proposal-acceptance-panel__eyebrow">Conferência final</span>
+           <h3>Revisão e aceite</h3>
+           <p>Confira os dados e defina a validade antes de baixar ou compartilhar.</p>
         </div>
         <div class="proposal-acceptance-status proposal-acceptance-status--${statusTone}">
           <span>Status</span>
-          <strong>${escapeText(current.statusLabel || 'Em revisao')}</strong>
-          <small>${current.version ? `Versao ${current.version}` : 'Sem versao registrada'}</small>
+          <strong>${escapeText(current.statusLabel || 'Em revisão')}</strong>
+          <small>${current.version ? `Versão ${current.version}` : 'Sem versão registrada'}</small>
         </div>
       </div>
       <div class="proposal-acceptance-form">
         <label>
-          <span>Responsavel pela revisao</span>
-          <input id="proposalReviewer" class="form-input" type="text" value="${reviewer}" placeholder="Nome do responsavel">
+          <span>Responsável pela revisão</span>
+          <input id="proposalReviewer" class="form-input" type="text" value="${reviewer}" placeholder="Nome do responsável">
         </label>
         <label>
-          <span>Papel na revisao</span>
-          <input id="proposalReviewerRole" class="form-input" type="text" value="${reviewerRole}" placeholder="Consultor responsavel">
+          <span>Papel na revisão</span>
+          <input id="proposalReviewerRole" class="form-input" type="text" value="${reviewerRole}" placeholder="Consultor responsável">
         </label>
         <label>
           <span>Validade da proposta</span>
@@ -216,18 +216,18 @@
       </div>
       <div class="proposal-acceptance-checks">
         <label><input id="proposalCheckPremissas" type="checkbox" ${checked.premissas ? 'checked' : ''}> Premissas financeiras conferidas</label>
-        <label><input id="proposalCheckCliente" type="checkbox" ${checked.cliente ? 'checked' : ''}> Contexto do cliente revisado</label>
-        <label><input id="proposalCheckDocumentacao" type="checkbox" ${checked.documentacao ? 'checked' : ''}> Documentacao e handoff mapeados</label>
+        <label><input id="proposalCheckCliente" type="checkbox" ${checked.cliente ? 'checked' : ''}> Dados do cliente revisados</label>
+        <label><input id="proposalCheckDocumentacao" type="checkbox" ${checked.documentacao ? 'checked' : ''}> Documentação conferida</label>
       </div>
       <label class="proposal-acceptance-notes">
-        <span>Observacao da revisao</span>
-        <textarea id="proposalReviewNotes" class="form-textarea" rows="3" placeholder="Ex: Validar limite de lance embutido antes do envio.">${notes}</textarea>
+        <span>Observação da revisão</span>
+        <textarea id="proposalReviewNotes" class="form-textarea" rows="3" placeholder="Ex.: Confirmar o limite de lance embutido antes do envio.">${notes}</textarea>
       </label>
       <div class="proposal-acceptance-actions">
-        <button class="btn btn--primary" type="button" onclick="App.salvarRevisaoProposta()">Registrar revisao</button>
-        <button class="btn btn--ghost" type="button" onclick="App.limparRevisaoProposta()">Limpar revisoes desta proposta</button>
+        <button class="btn btn--primary" type="button" onclick="App.salvarRevisaoProposta()">Registrar revisão</button>
+        <button class="btn btn--ghost" type="button" onclick="App.limparRevisaoProposta()">Limpar revisões desta proposta</button>
       </div>
-      <div class="proposal-handoff-bridge" data-proposal-handoff-bridge>
+      <div class="proposal-handoff-bridge" data-proposal-handoff-bridge hidden aria-hidden="true">
         <div>
           <span class="proposal-handoff-bridge__eyebrow">Continuidade consultiva</span>
           <strong>${escapeText(handoffStatus)}</strong>
@@ -241,20 +241,20 @@
         </div>
       </div>
       <div class="proposal-acceptance-history" data-proposal-acceptance-history>
-        <strong>Historico local</strong>
+        <strong>Histórico de revisões</strong>
         ${history.length ? history.map((item) => `
           <article>
             <span>${escapeText(item.statusLabel)}${item.version ? ` | v${item.version}` : ''}</span>
             <small>${escapeText(item.reviewer)} - ${item.updatedAt ? new Date(item.updatedAt).toLocaleString('pt-BR') : 'sem data'}</small>
           </article>
-        `).join('') : '<p>Nenhuma revisao registrada para esta proposta.</p>'}
+        `).join('') : '<p>Nenhuma revisão registrada para esta proposta.</p>'}
       </div>
     `
     };
   }
 
   function renderAcceptanceEmpty() {
-    return '<div class="proposal-acceptance-panel__empty">Calcule a simulacao para registrar revisao, validade e aceite local da proposta.</div>';
+    return '<div class="proposal-acceptance-panel__empty">Calcule a simulação para registrar revisão, validade e aceite.</div>';
   }
 
   global.BFProposalGovernance = {

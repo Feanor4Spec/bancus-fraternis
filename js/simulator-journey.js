@@ -63,7 +63,7 @@
     aquisicao: {
       label: 'Aquisicao planejada',
       title: 'Comprar bem com previsibilidade',
-      body: 'Comece por grupos com score alto, carteira controlada e taxa administravel. A proposta deve explicar carta, lance, prazo e uso do credito.',
+      body: 'Compare o valor da carta, o prazo e a taxa. Depois, confira o lance e o crédito líquido antes de escolher.',
       filters: {
         filtroClassificacao: 'A',
         filtroSaude: 'Controlada',
@@ -73,13 +73,13 @@
       },
       sortBy: 'maior_score',
       comparePreset: 'comprar_bem',
-      reasons: ['Score alto primeiro', 'Taxa maxima sugerida', 'Carteira controlada'],
+      reasons: ['Taxa de até 18%', 'Prazo entre 36 e 240 meses', 'Valor próximo ao objetivo'],
       nextStep: 'Selecionar 2 ou 3 grupos para comparar antes da proposta.'
     },
     troca: {
       label: 'Troca ou upgrade',
       title: 'Trocar veiculo sem perder controle de parcela',
-      body: 'Priorize grupos de automoveis com prazo menor, boa saude e dinamica suficiente para comparar parcela, lance e credito liquido.',
+      body: 'Comece por grupos de automóveis com prazo menor. Compare parcela, lance e crédito líquido.',
       filters: {
         filtroProduto: '3',
         filtroClassificacao: 'A',
@@ -89,13 +89,13 @@
       },
       sortBy: 'maior_score',
       comparePreset: 'trocar_veiculo',
-      reasons: ['Segmento de automoveis', 'Prazo mais curto', 'Score operacional'],
+      reasons: ['Segmento de automóveis', 'Prazo entre 24 e 96 meses', 'Taxa de até 20%'],
       nextStep: 'Comparar grupos antes de gerar proposta para o cliente.'
     },
     reforma: {
       label: 'Reforma ou construcao',
       title: 'Montar credito com lastro e flexibilidade',
-      body: 'Use grupos de imoveis, valide FGTS quando fizer sentido e mantenha a memoria de calculo aberta para explicar regras de uso do credito.',
+      body: 'Use grupos de imóveis e confira as regras para uso do FGTS. Revise também o crédito líquido e o prazo.',
       filters: {
         filtroProduto: '1',
         filtroClassificacao: 'A',
@@ -106,13 +106,13 @@
       },
       sortBy: 'maior_score',
       comparePreset: 'comprar_bem',
-      reasons: ['Segmento imovel', 'FGTS como opcao', 'Prazo compativel com obra'],
+      reasons: ['Segmento de imóveis', 'FGTS como opção', 'Prazo entre 60 e 240 meses'],
       nextStep: 'Validar carta liquida e cronograma antes do PDF.'
     },
     investimento: {
       label: 'Planejamento patrimonial',
       title: 'Comparar disciplina, custo e horizonte',
-      body: 'Comece com grupos fortes em score e taxa, sem estreitar demais o segmento. A proposta deve destacar risco, horizonte e custo de oportunidade.',
+      body: 'Ordene pela menor taxa e compare prazo, custo total e incerteza de contemplação.',
       filters: {
         filtroClassificacao: 'A',
         filtroTaxaMax: '17',
@@ -121,7 +121,7 @@
       },
       sortBy: 'menor_taxa',
       comparePreset: 'obter_liquidez',
-      reasons: ['Menor taxa primeiro', 'Horizonte longo', 'Leitura patrimonial'],
+      reasons: ['Menor taxa primeiro', 'Prazo entre 48 e 240 meses', 'Comparação de custo total'],
       nextStep: 'Gerar comparacao e explicar custo de oportunidade na proposta.'
     }
   };
@@ -166,7 +166,7 @@
       reasons: guide.reasons.slice(),
       facts,
       nextStep: guide.nextStep,
-      actionLabel: 'Aplicar orientacao e ver grupos'
+      actionLabel: 'Usar estes filtros'
     };
   }
 
