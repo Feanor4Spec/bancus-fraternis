@@ -1,0 +1,27 @@
+{
+  "ok": true,
+  "baseUrl": "http://127.0.0.1:63763",
+  "playwrightSource": "bundled-workspace-runtime",
+  "viewport": {
+    "width": 1440,
+    "height": 1000
+  },
+  "checks": {
+    "productiveCopy": true,
+    "demoHidden": true,
+    "accessibleForm": true,
+    "mobileReflow": true,
+    "mandatoryPasswordChange": true,
+    "freshTabSession": true,
+    "staleDescriptorRejected": true,
+    "safeResume": true,
+    "noBrowserToken": true
+  },
+  "screenshots": [
+    "docs/test-prints/auth-production-login-desktop.png",
+    "docs/test-prints/auth-production-login-mobile.png",
+    "docs/test-prints/auth-production-password-change-desktop.png"
+  ],
+  "consoleErrors": [],
+  "failures": []
+}

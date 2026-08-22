@@ -669,6 +669,8 @@ addCheck(
   'publication.client-sequence',
   'A interface publica pelo BFBackendApi na ordem rascunho, validada, revisada e publicada.',
   publishBody.includes('window.BFBackendApi')
+    && publishBody.includes('hasPublicationSession(session)')
+    && !publishBody.includes('session?.token')
     && sequenceIndexes.every((index) => index >= 0)
     && sequenceIndexes.every((index, position) => position === 0 || index > sequenceIndexes[position - 1])
     && !/prepareLocalPublication|localStorage\.setItem\([^)]*proposal.*publish/i.test(publishBody),
@@ -689,11 +691,11 @@ addCheck(
   'Publicacao exige gate de liberacao, sessao autenticada e revisao humana.',
   /if\s*\(!state\.ready\)/.test(publishBody)
     && /readSession\?\.\(\)/.test(publishBody)
-    && /session\?\.token/.test(publishBody)
+    && /hasPublicationSession\(session\)/.test(publishBody)
     && /prepared\.payload\.review/.test(publishBody),
   {
     releaseGate: /if\s*\(!state\.ready\)/.test(publishBody),
-    authenticatedSession: /session\?\.token/.test(publishBody),
+    authenticatedSession: /hasPublicationSession\(session\)/.test(publishBody),
     humanReview: /prepared\.payload\.review/.test(publishBody)
   }
 );

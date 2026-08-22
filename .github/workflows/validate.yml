@@ -57,6 +57,9 @@ jobs:
           node tools/validate-proposal-builder.mjs
           node tools/validate-proposal-governance.mjs
           node tools/validate-proposal-versioning.mjs
+          node tools/validate-proposal-secure-share.mjs
           node tools/validate-auth-navigation.mjs
+          node tools/validate-auth-production.mjs
+          node tools/validate-database-provider.mjs
           node tools/validate-navigable-journey.mjs
           node tools/validate-design-system.mjs

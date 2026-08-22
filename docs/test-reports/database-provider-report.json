@@ -1,7 +1,7 @@
 {
   "schema": "bancus.database-provider-gate.v1",
   "phase": "8AO / P3.3B",
-  "generatedAt": "2026-08-22T05:21:59.736Z",
+  "generatedAt": "2026-08-22T15:07:12.063Z",
   "status": "PASS",
   "runtime": {
     "node": "v24.19.0",
@@ -10,8 +10,8 @@
     "reportPath": "docs/test-reports/database-provider-report.json"
   },
   "summary": {
-    "total": 39,
-    "passed": 39,
+    "total": 46,
+    "passed": 46,
     "failed": 0,
     "gaps": 1
   },
@@ -20,7 +20,7 @@
       "id": "provider.contract",
       "title": "Contrato configuravel de providers",
       "status": "PASS",
-      "durationMs": 1,
+      "durationMs": 0,
       "evidence": {
         "defaultProvider": "sqlite",
         "supportedProviders": [
@@ -36,7 +36,8 @@
           "BANCUS_POSTGRESQL_MIGRATION_MANIFEST_INVALID",
           "BANCUS_OWNER_CONFLICT",
           "BANCUS_USER_EMAIL_CONFLICT",
-          "BANCUS_USER_HAS_RELATED_RECORDS"
+          "BANCUS_USER_HAS_RELATED_RECORDS",
+          "LAST_ACTIVE_ADMIN"
         ]
       }
     },
@@ -59,7 +60,7 @@
       "id": "postgresql.proposal-migration-contract",
       "title": "Migration PostgreSQL de proposta e append-only",
       "status": "PASS",
-      "durationMs": 2,
+      "durationMs": 3,
       "evidence": {
         "migration": "postgresql/002_proposal_secure_share.sql",
         "checksum": "sha256:bcf2c62eb88ba89ae14028a612695a0e8818b47528209b483a16922d25fea710",
@@ -79,7 +80,7 @@
       "id": "sqlite.default",
       "title": "SQLite padrao permanece funcional",
       "status": "PASS",
-      "durationMs": 122,
+      "durationMs": 133,
       "evidence": {
         "provider": "sqlite",
         "quickCheck": "ok",
@@ -98,10 +99,104 @@
       }
     },
     {
+      "id": "sqlite.last-active-admin-delete",
+      "title": "SQLite bloqueia exclusao do ultimo admin sem ocultar historico vinculado",
+      "status": "PASS",
+      "durationMs": 95,
+      "evidence": {
+        "unlinkedDelete": {
+          "status": 409,
+          "code": "LAST_ACTIVE_ADMIN"
+        },
+        "linkedDelete": {
+          "status": 409,
+          "code": "BANCUS_USER_HAS_RELATED_RECORDS"
+        },
+        "userPreserved": true,
+        "transaction": "SAVEPOINT with write lock before linked-record and admin-count checks"
+      }
+    },
+    {
+      "id": "sqlite.last-active-admin-concurrency",
+      "title": "SQLite preserva um admin em duas remocoes de acesso concorrentes",
+      "status": "PASS",
+      "durationMs": 225,
+      "evidence": {
+        "concurrentAttempts": [
+          {
+            "operation": "demotion",
+            "status": 200,
+            "code": "",
+            "ok": true
+          },
+          {
+            "operation": "inactivation",
+            "status": 409,
+            "code": "LAST_ACTIVE_ADMIN",
+            "ok": false
+          }
+        ],
+        "succeeded": "demotion",
+        "blocked": "inactivation",
+        "activeAdminIds": [
+          "USR-SQLITE-ADMIN-B"
+        ],
+        "concurrency": "two worker threads / independent SQLite connections",
+        "transaction": "SAVEPOINT with write lock before count"
+      }
+    },
+    {
+      "id": "sqlite.last-active-admin-delete-concurrency",
+      "title": "SQLite serializa delete contra demissao e inativacao concorrentes",
+      "status": "PASS",
+      "durationMs": 452,
+      "evidence": {
+        "deleteVsUpdate": {
+          "attempts": [
+            {
+              "operation": "delete",
+              "status": 200,
+              "code": "",
+              "ok": true
+            },
+            {
+              "operation": "demotion",
+              "status": 409,
+              "code": "LAST_ACTIVE_ADMIN",
+              "ok": false
+            }
+          ],
+          "activeAdminIds": [
+            "USR-SQLITE-ADMIN-B"
+          ]
+        },
+        "deleteVsStatus": {
+          "attempts": [
+            {
+              "operation": "delete",
+              "status": 200,
+              "code": "",
+              "ok": true
+            },
+            {
+              "operation": "inactivation",
+              "status": 409,
+              "code": "LAST_ACTIVE_ADMIN",
+              "ok": false
+            }
+          ],
+          "activeAdminIds": [
+            "USR-SQLITE-ADMIN-B"
+          ]
+        },
+        "concurrency": "worker-thread barrier with independent SQLite connections"
+      }
+    },
+    {
       "id": "sqlite.owner-and-identity-guards",
       "title": "SQLite bloqueia takeover e migra identidade vinculada",
       "status": "PASS",
-      "durationMs": 177,
+      "durationMs": 175,
       "evidence": {
         "leadTakeover": "blocked-409",
         "snapshotTakeover": "blocked-409",
@@ -116,7 +211,7 @@
       "id": "sqlite.user-status-rollback",
       "title": "SQLite reverte inativacao se a revogacao de sessoes falhar",
       "status": "PASS",
-      "durationMs": 337,
+      "durationMs": 178,
       "evidence": {
         "injectedFailure": "session-revocation",
         "userStatusAfterRollback": "active",
@@ -128,7 +223,7 @@
       "id": "sqlite.large-json-envelope",
       "title": "SQLite trunca payload grande em JSON parseavel",
       "status": "PASS",
-      "durationMs": 133,
+      "durationMs": 119,
       "evidence": {
         "truncated": true,
         "originalLength": 89321,
@@ -140,7 +235,7 @@
       "id": "sqlite.snapshot-payload-boundary",
       "title": "SQLite preserva snapshot grande e rejeita somente acima de 4 MiB",
       "status": "PASS",
-      "durationMs": 159,
+      "durationMs": 164,
       "evidence": {
         "eventLimitChars": 50000,
         "persistedLimitChars": 4194304,
@@ -158,7 +253,7 @@
       "id": "sqlite.direct-records-survive-reopen",
       "title": "Rebuild SQLite preserva registros diretos apos reabertura",
       "status": "PASS",
-      "durationMs": 130,
+      "durationMs": 127,
       "evidence": {
         "reopened": true,
         "preserved": [
@@ -173,7 +268,7 @@
       "id": "provider.unknown",
       "title": "Provider desconhecido falha sem fallback",
       "status": "PASS",
-      "durationMs": 0,
+      "durationMs": 1,
       "evidence": {
         "fallbackCreated": false,
         "error": {
@@ -206,7 +301,7 @@
       "id": "postgresql.connection-failed",
       "title": "PostgreSQL sem conexao falha explicitamente e sem segredo",
       "status": "PASS",
-      "durationMs": 0,
+      "durationMs": 1,
       "evidence": {
         "code": "BANCUS_POSTGRESQL_CONNECTION_FAILED",
         "message": "Nao foi possivel conectar e inicializar o provider postgresql.",
@@ -275,7 +370,7 @@
       "id": "postgresql.pool-configuration",
       "title": "Pool proprio prioriza opcoes seguras sobre query params da URL",
       "status": "PASS",
-      "durationMs": 160,
+      "durationMs": 170,
       "evidence": {
         "sslRejectUnauthorized": true,
         "max": 7,
@@ -299,10 +394,123 @@
       "id": "postgresql.seed-opt-in",
       "title": "PostgreSQL nao cria usuarios seed por padrao",
       "status": "PASS",
-      "durationMs": 74,
+      "durationMs": 80,
       "evidence": {
         "defaultSeedCount": 0,
-        "explicitSeedCount": 3,
+        "explicitDemoSeedCount": 3,
+        "productiveSeedRejected": true,
+        "networkUsed": false
+      }
+    },
+    {
+      "id": "postgresql.credential-policy-cutover",
+      "title": "PostgreSQL exige troca para credencial legada e promove somente apos nova senha",
+      "status": "PASS",
+      "durationMs": 129,
+      "evidence": {
+        "legacyRestricted": true,
+        "promotedAfterChange": true,
+        "networkUsed": false
+      }
+    },
+    {
+      "id": "postgresql.last-active-admin-delete",
+      "title": "PostgreSQL bloqueia exclusao do ultimo admin sem ocultar historico vinculado",
+      "status": "PASS",
+      "durationMs": 52,
+      "evidence": {
+        "unlinkedDelete": {
+          "status": 409,
+          "code": "LAST_ACTIVE_ADMIN"
+        },
+        "linkedDelete": {
+          "status": 409,
+          "code": "BANCUS_USER_HAS_RELATED_RECORDS"
+        },
+        "advisoryLocks": 2,
+        "rowLocks": 2,
+        "userPreserved": true,
+        "networkUsed": false
+      }
+    },
+    {
+      "id": "postgresql.last-active-admin-concurrency",
+      "title": "PostgreSQL serializa duas remocoes concorrentes e preserva um admin",
+      "status": "PASS",
+      "durationMs": 61,
+      "evidence": {
+        "concurrentAttempts": [
+          {
+            "operation": "demotion",
+            "status": 200,
+            "code": "",
+            "ok": true
+          },
+          {
+            "operation": "inactivation",
+            "status": 409,
+            "code": "LAST_ACTIVE_ADMIN",
+            "ok": false
+          }
+        ],
+        "lockContentions": 1,
+        "maxConcurrentCriticalSections": 1,
+        "succeeded": "demotion",
+        "blocked": "inactivation",
+        "activeAdminIds": [
+          "USR-PG-ADMIN-B"
+        ],
+        "networkUsed": false
+      }
+    },
+    {
+      "id": "postgresql.last-active-admin-delete-concurrency",
+      "title": "PostgreSQL serializa delete contra demissao e inativacao concorrentes",
+      "status": "PASS",
+      "durationMs": 105,
+      "evidence": {
+        "deleteVsUpdate": {
+          "attempts": [
+            {
+              "operation": "delete",
+              "status": 200,
+              "code": "",
+              "ok": true
+            },
+            {
+              "operation": "demotion",
+              "status": 409,
+              "code": "LAST_ACTIVE_ADMIN",
+              "ok": false
+            }
+          ],
+          "lockContentions": 1,
+          "maxConcurrentCriticalSections": 1,
+          "activeAdminIds": [
+            "USR-PG-ADMIN-B"
+          ]
+        },
+        "deleteVsStatus": {
+          "attempts": [
+            {
+              "operation": "delete",
+              "status": 200,
+              "code": "",
+              "ok": true
+            },
+            {
+              "operation": "inactivation",
+              "status": 409,
+              "code": "LAST_ACTIVE_ADMIN",
+              "ok": false
+            }
+          ],
+          "lockContentions": 1,
+          "maxConcurrentCriticalSections": 1,
+          "activeAdminIds": [
+            "USR-PG-ADMIN-B"
+          ]
+        },
         "networkUsed": false
       }
     },
@@ -350,7 +558,7 @@
       "id": "postgresql.user-status-rollback",
       "title": "PostgreSQL reverte inativacao se a revogacao de sessoes falhar",
       "status": "PASS",
-      "durationMs": 48,
+      "durationMs": 52,
       "evidence": {
         "injectedFailure": "session-revocation",
         "userStatusAfterRollback": "active",
@@ -411,7 +619,7 @@
       "id": "postgresql.mock.crud",
       "title": "CRUD minimo funciona no provider PostgreSQL injetado",
       "status": "PASS",
-      "durationMs": 24,
+      "durationMs": 25,
       "evidence": {
         "create": true,
         "read": true,
@@ -424,7 +632,7 @@
       "id": "postgresql.mock.snapshot-payload-boundary",
       "title": "PostgreSQL preserva snapshot grande e rejeita somente acima de 4 MiB",
       "status": "PASS",
-      "durationMs": 31,
+      "durationMs": 28,
       "evidence": {
         "eventLimitChars": 50000,
         "persistedLimitChars": 4194304,
@@ -443,7 +651,7 @@
       "id": "postgresql.mock.identity-guards",
       "title": "PostgreSQL migra identidade e preserva usuario vinculado",
       "status": "PASS",
-      "durationMs": 60,
+      "durationMs": 53,
       "evidence": {
         "emailMigration": "committed-atomically",
         "migratedTables": [
@@ -463,7 +671,7 @@
       "id": "postgresql.mock.password-session-revocation",
       "title": "Reset de senha PostgreSQL invalida sessoes anteriores",
       "status": "PASS",
-      "durationMs": 49,
+      "durationMs": 51,
       "evidence": {
         "tokenValidBeforeReset": true,
         "tokenValidAfterReset": false,
@@ -474,7 +682,7 @@
       "id": "postgresql.mock.owner-scope",
       "title": "Owner scope impede vazamento entre carteiras",
       "status": "PASS",
-      "durationMs": 1,
+      "durationMs": 0,
       "evidence": {
         "ownerAIds": [
           "LEAD-PG-A"
@@ -492,7 +700,7 @@
       "id": "postgresql.mock.sanitization",
       "title": "Payloads PostgreSQL removem dados sensiveis",
       "status": "PASS",
-      "durationMs": 0,
+      "durationMs": 1,
       "evidence": {
         "eventId": "EVT-PG-SANITIZE",
         "preservedSafeFields": [
@@ -514,12 +722,20 @@
       "status": "PASS",
       "durationMs": 2,
       "evidence": {
-        "publicKeys": 40,
-        "exercisedCalls": 35,
+        "publicKeys": 46,
+        "exercisedCalls": 39,
         "calls": [
           [
             "GET",
             "/api/health"
+          ],
+          [
+            "GET",
+            "/api/auth/config"
+          ],
+          [
+            "GET",
+            "/api/auth/config"
           ],
           [
             "POST",
@@ -528,6 +744,14 @@
           [
             "POST",
             "/api/auth/logout"
+          ],
+          [
+            "POST",
+            "/api/auth/change-password"
+          ],
+          [
+            "POST",
+            "/api/auth/logout-all"
           ],
           [
             "GET",
@@ -665,13 +889,13 @@
       "id": "api.http-owner-isolation",
       "title": "HTTP real bloqueia takeover A/B sem alterar owner ou payload",
       "status": "PASS",
-      "durationMs": 514,
+      "durationMs": 444,
       "evidence": {
         "transport": "real-local-http",
         "provider": "sqlite",
         "proposalShareProvider": "sqlite",
         "providerCoherent": true,
-        "leadTakeoverStatus": 409,
+        "leadTakeoverStatus": 403,
         "snapshotTakeoverStatus": 409,
         "ownerPreserved": true,
         "payloadPreserved": true,
@@ -685,7 +909,7 @@
       "id": "api.http-static-boundary",
       "title": "HTTP publica assets da aplicacao sem expor runtime ou codigo interno",
       "status": "PASS",
-      "durationMs": 341,
+      "durationMs": 246,
       "evidence": {
         "transport": "real-local-http",
         "denied": {
@@ -721,7 +945,7 @@
       "id": "api.http-utf8-payload-boundary",
       "title": "HTTP mede bytes UTF-8, responde 413 JSON e nao grava parcialmente",
       "status": "PASS",
-      "durationMs": 208,
+      "durationMs": 222,
       "evidence": {
         "transport": "real-local-http",
         "utf8Characters": 2100000,
@@ -738,7 +962,7 @@
       "id": "api.audit-best-effort",
       "title": "Falha de auditoria nao desfaz nem mascara a operacao principal",
       "status": "PASS",
-      "durationMs": 233,
+      "durationMs": 140,
       "evidence": {
         "injectedDatabase": true,
         "result": null,

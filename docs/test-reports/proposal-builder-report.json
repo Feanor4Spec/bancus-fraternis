@@ -18,6 +18,7 @@
     "readinessPanel": true,
     "groupActions": true,
     "selectionSummary": true,
+    "hostileStatusRejected": true,
     "presets": {
       "consultiva": true,
       "tecnica": true

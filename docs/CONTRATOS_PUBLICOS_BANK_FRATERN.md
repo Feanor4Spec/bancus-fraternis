@@ -17,9 +17,10 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 
 | Chave | Dono | Uso | Compatibilidade |
 | --- | --- | --- | --- |
-| `bf_auth_users_v1` | `BFAuth` | Usuarios locais, papeis e status. | Preservar shape de usuario e senha local apenas no prototipo. |
-| `bf_auth_session_v1` | `BFAuth` | Sessao local de 8 horas. | Manter leitura tolerante quando sessao expirar. |
-| `bf_backend_session_v1` | `BFBackendApi` | Token da API local Node/SQLite quando o site roda em `localhost`. | Fallback obrigatorio para paginas estaticas, `file://` e GitHub Pages. |
+| `bf_auth_users_v1` | `BFAuth` | Usuarios demonstrativos, papeis e status. | Existe apenas em `demo`; `production` remove esta chave. |
+| `bf_auth_session_v1` | `BFAuth` | Sessao visual demonstrativa ou usuario publico da aba produtiva. | Nunca armazenar token ou hash produtivo. |
+| `bf_backend_session_v1` | `BFBackendApi` | Bearer exclusivo do modo demo/local. | `production` remove a chave e usa cookie `HttpOnly`. |
+| `bf_auth_mode_v1` | `BFAuth` / `BFBackendApi` | Cache publico de modo e transporte informado por `/api/auth/config`. | Pode conter apenas configuracao nao sensivel. |
 | `consorciopro_settings` | `Settings` | Preferencias historicas do simulador, incluindo `pageSize` da prateleira normalizado entre 20 e 50. | Nome legado controlado; nao renomear sem migracao. |
 | `consorciopro_simulations` | `Storage` / `App` | Simulacoes salvas do simulador completo. | Manter leitura de simulacoes antigas. |
 | `bank_fratern_proposal_acceptances_v1` | `BFProposalAcceptance` | Revisoes, aceite local e status de proposta. | Preservar `proposalId`, `status`, `version` e `snapshot`. |
@@ -79,16 +80,19 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | `GET /api/health` | Verifica API local, schema `bancus-fraternis.local-db.v1` e estatisticas agregadas. | Deve responder sem autenticacao. |
 | `GET /api/database/status` | Retorna provider, driver, arquivos SQLite, PRAGMAs, tabelas e runtime local. | Exige papel `admin`; nao deve ser usado em publicacao estatica. |
 | `POST /api/database/import-local` | Previsualiza ou executa importacao guiada de usuarios, eventos e snapshots do `localStorage` para SQLite. | Exige papel `admin`; deve ser idempotente, sem sobrescrever usuarios/eventos e atualizando snapshots pelo mesmo `id`. |
-| `POST /api/auth/login` | Autentica usuarios seed ou cadastrados no SQLite e cria sessao server-side. | Nao substitui `BFAuth.login`; apenas espelha quando houver servidor local. |
-| `POST /api/auth/logout` | Revoga token da sessao de API. | Deve limpar tambem `bf_backend_session_v1` no browser. |
-| `GET /api/auth/me` | Retorna usuario e sessao da API local. | Exige bearer token. |
+| `GET /api/auth/config` | Informa `demo` ou `production`, transporte, duracao e politica publica de senha. | Nao retorna conta, token ou segredo. |
+| `POST /api/auth/login` | Autentica e cria sessao server-side. | Em `production`, a API e autoridade unica, usa cookie `HttpOnly` e nao retorna token no JSON. |
+| `POST /api/auth/logout` | Revoga a sessao apresentada e limpa o cookie produtivo. | Deve limpar tambem os estados publicos do navegador. |
+| `POST /api/auth/logout-all` | Revoga todas as sessoes do usuario. | Aceita a sessao restrita de primeiro acesso. |
+| `POST /api/auth/change-password` | Troca a senha temporaria, revoga sessoes e cria uma nova. | Exige senha atual e politica produtiva; nunca ecoa senha ou token. |
+| `GET /api/auth/me` | Retorna somente usuario e metadados publicos da sessao. | Exige bearer em demo ou cookie em producao. |
 | `GET /api/users` | Lista usuarios publicos do banco local. | Exige papel `admin`; nunca retornar hash, salt ou senha. |
 | `POST /api/users` | Cria usuario com senha hasheada via `scrypt-sha256`. | Exige papel `admin`; aceitar `id` para espelhamento do `localStorage`. |
 | `PATCH /api/users/:id` | Atualiza nome, e-mail, papel, status, area e telefone. | Exige papel `admin`; senha e opcional. |
 | `POST /api/users/:id/password` | Redefine senha no banco local. | Exige papel `admin`; resposta nao deve ecoar senha. |
 | `POST /api/users/:id/status` | Ativa ou inativa usuario e revoga sessoes quando inativado. | Exige papel `admin`; nao permitir auto-inativacao. |
 | `DELETE /api/users/:id` | Remove usuario e sessoes vinculadas. | Exige papel `admin`; nao permitir auto-exclusao. |
-| `POST /api/events` | Grava evento sanitizado de jornada, handoff, proposta, modelos ou auth. | Pode receber evento anonimo, mas payload sensivel deve ser removido. |
+| `POST /api/events` | Grava evento autenticado e sanitizado de jornada, handoff, proposta ou modelos. | Origem e horario sao server-side; tipos reservados de auth/admin nao podem ser forjados pelo cliente. |
 | `GET /api/events` | Lista ultimos eventos locais. | Exige papel `admin`. |
 | `POST /api/snapshots` | Cria ou atualiza snapshot sanitizado de simulacao, trilha, proposta, lousa, perfil, modelos ou handoff. | Exige bearer token; admin pode informar dono, demais papeis gravam no proprio `owner_email`. |
 | `GET /api/snapshots` | Lista snapshots recentes, com filtro opcional por `type`. | Exige bearer token; `admin` ve todos e demais papeis recebem apenas snapshots do proprio `owner_email`. |
@@ -213,6 +217,8 @@ Leitura progressiva dos snapshots:
 | `tools/inspect-local-sql-environment.mjs` | Diagnostico local de CLIs, portas padrao e servicos SQL externos antes de trocar provider. |
 | `tools/validate-docs-modernization.mjs` | README ativo, docs historicos e contagem atual de 19 calculadoras. |
 | `tools/validate-auth-navigation.mjs` | Login local, seed users, redirect seguro e bloqueio por papel. |
+| `tools/validate-auth-production.mjs` | Modo fechado, cookie, troca obrigatoria, revogacao, rate limit, origem e auditoria privada. |
+| `tools/validate-auth-browser.mjs` | Jornada produtiva real, foco acessivel, troca obrigatoria, hidratacao por cookie, descriptor local rejeitado e reflow a 320 px. |
 | `tools/validate-navigable-journey.mjs` | Roteiro ponta a ponta da lousa, links, marcadores e contratos de QA de jornada. |
 | `tools/validate-online-journey-smoke.mjs` | Smoke test online do GitHub Pages cobrindo as 10 etapas navegaveis da lousa. |
 | `tools/validate-github-pages-deploy.mjs` | Deploy publico no GitHub Pages, marca Bancus Fraternis, lousa, simulador e base real online. |

@@ -2,7 +2,7 @@
 
 Plataforma estatica/progressiva de decisao financeira, simulacao, proposta com lousa consultiva de PDF, versionamento local, handoff consultivo, dashboards comerciais e primeira API local Node/SQLite para usuarios, sessoes e eventos.
 
-Ambiente publico de demonstracao: login, dashboards, propostas e dados operacionais continuam funcionando em `localStorage` no navegador. Quando rodar com `node server.js`, o projeto tambem cria um SQLite local em `.runtime/` para evolucao de usuarios, senhas e eventos. Nao use dados pessoais reais neste prototipo publicado.
+Ambiente publico de demonstracao: o site publicado nao usa dados reais. Em ambiente controlado, `BANCUS_AUTH_MODE=production` usa a API como autoridade, cookie `HttpOnly`, senha temporaria com troca obrigatoria e contas provisionadas sem seeds publicas.
 
 ## Online
 
@@ -36,6 +36,8 @@ Validacao do deploy:
 ```bash
 node tools/validate-public-release-safety.mjs
 node tools/validate-local-database.mjs
+node tools/validate-auth-production.mjs
+node tools/validate-auth-browser.mjs
 node tools/validate-online-journey-smoke.mjs
 node tools/validate-simulator-performance.mjs
 node tools/validate-proposal-versioning.mjs
@@ -52,6 +54,9 @@ Endpoints locais:
 
 - `GET /api/health`
 - `POST /api/auth/login`
+- `GET /api/auth/config`
+- `POST /api/auth/change-password`
+- `POST /api/auth/logout-all`
 - `GET /api/users`
 - `POST /api/events`
 

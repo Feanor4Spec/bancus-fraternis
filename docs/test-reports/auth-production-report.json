@@ -1,0 +1,22 @@
+{
+  "ok": true,
+  "mode": "production",
+  "transport": "httpOnly-cookie",
+  "passwordPolicy": {
+    "minLength": 12,
+    "maxLength": 128
+  },
+  "gates": {
+    "seedsDisabled": true,
+    "mandatoryPasswordChange": true,
+    "sessionRotation": true,
+    "originProtection": true,
+    "rateLimit": true,
+    "rateLimitCapacity": true,
+    "roleMatrix": true,
+    "legacyCutover": true,
+    "auditPrivacy": true
+  },
+  "warnings": [],
+  "failures": []
+}

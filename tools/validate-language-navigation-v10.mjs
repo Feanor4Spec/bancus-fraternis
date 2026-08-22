@@ -1177,7 +1177,8 @@ addCheck(
   { simulatorBytes: simulatorHtml.length, publicBytes: publicHtml.length }
 );
 
-const publicActionsMarkup = publicHtml.match(/<div\b[^>]*\bid=["']public-proposal-actions["'][^>]*>([\s\S]*?)<\/div>/i)?.[1] || '';
+const publicActionsContainer = publicHtml.match(/<(div|nav)\b[^>]*\bid=["']public-proposal-actions["'][^>]*>([\s\S]*?)<\/\1>/i);
+const publicActionsMarkup = publicActionsContainer?.[2] || '';
 const publicActionLabels = [...publicActionsMarkup.matchAll(/<button\b[^>]*>([\s\S]*?)<\/button>/gi)]
   .map((match) => String(match[1] || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim())
   .filter(Boolean);

@@ -62,27 +62,67 @@ const [authSource, loginSource, loginHtml, designValidator, contractsDoc] = awai
   'data-login-form',
   'data-login-email',
   'data-login-password',
-  'data-demo-login'
+  'data-demo-login',
+  'data-password-change-form',
+  'data-change-current',
+  'aria-live="polite"'
 ].forEach((marker) => assert(loginHtml.includes(marker), `login.html sem ${marker}.`));
 
 [
   'performLogin',
   'initLoginPage',
   'goToTarget',
+  'safeRequestedTarget',
+  'BFLoginSecurity',
   'loginRedirectReady',
   'loginRedirectTarget',
-  'redirectTarget(result.user)',
-  "!requested.startsWith('login.html')"
+  'await Promise.resolve(window.BFAuth.login',
+  "requested.toLowerCase().startsWith('login.html')"
 ].forEach((marker) => assert(loginSource.includes(marker), `login.js sem contrato ${marker}.`));
 
 [
   'loginPageUrl',
   'requireRole',
+  'configureMode',
+  'validateServerSession',
   'bf_auth_session_v1',
   'bf_auth_users_v1',
   'redirect=${encodeURIComponent(current)}',
   "dashboard-cliente.html?auth=forbidden"
 ].forEach((marker) => assert(authSource.includes(marker), `auth.js sem contrato ${marker}.`));
+
+const loginContext = {
+  window: null,
+  document: { readyState: 'loading', addEventListener() {} },
+  location: { search: '' },
+  URLSearchParams,
+  Object,
+  String,
+  Promise
+};
+loginContext.window = loginContext;
+vm.createContext(loginContext);
+vm.runInContext(loginSource, loginContext, { filename: 'assets/js/login.js' });
+const redirectSecurity = loginContext.BFLoginSecurity;
+assert(redirectSecurity && typeof redirectSecurity.safeRequestedTarget === 'function', 'Contrato de redirect seguro indisponivel.');
+
+for (const unsafe of [
+  'javascript:alert(1)',
+  'data:text/html,unsafe',
+  '//evil.example/path',
+  '\\evil.example/path',
+  '../server.js',
+  'login.html?redirect=dashboard-admin.html',
+  'simulador.html\\evil'
+]) {
+  loginContext.location.search = `?redirect=${encodeURIComponent(unsafe)}`;
+  assert(redirectSecurity.safeRequestedTarget() === '', `Redirect inseguro aceito: ${unsafe}.`);
+}
+loginContext.location.search = `?redirect=${encodeURIComponent('simulador.html?journeyId=J-1#proposta')}`;
+assert(
+  redirectSecurity.safeRequestedTarget() === 'simulador.html?journeyId=J-1#proposta',
+  'Redirect interno valido nao foi preservado.'
+);
 
 assert(designValidator.includes('tools/validate-auth-navigation.mjs'), 'validate-design-system nao exige validate-auth-navigation.');
 assert(contractsDoc.includes('tools/validate-auth-navigation.mjs'), 'Contratos publicos nao documentam validate-auth-navigation.');

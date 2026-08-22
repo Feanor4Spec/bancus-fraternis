@@ -17,6 +17,7 @@ O Bancus Fraternis e uma plataforma estatica/progressiva para apoiar decisao fin
 - UX com dados vivos iniciada: Dashboard Cliente mostra fonte ativa e contadores server-side; Handoff Consultivo le `/api/leads`, mescla com a fila local e sincroniza status, responsavel, checklist e notas quando a API local esta ativa.
 - Publicacao em GitHub Pages com selo de ambiente demo/local, fallback estatico e validador de seguranca publica.
 - Backend com SQLite local por padrao e adapter PostgreSQL piloto por ambiente, preservando `localStorage`, `BFBackendApi`, contratos `/api/*`, escopo por usuario e proposta segura no mesmo provider.
+- Autenticacao produtiva por ambiente com cookie `HttpOnly`, troca obrigatoria de senha temporaria, revogacao total, rate limit, hidratacao fail-closed e contas demo restritas ao modo estatico/local.
 - Schema local versionado em `js/backend/migrations`, com baseline SQLite, rollback, `schema-manifest.json` e validador de paridade antes do adapter produtivo.
 
 ## Entrada Recomendada
@@ -48,6 +49,8 @@ BANCUS_DB_PROVIDER=sqlite node server.js
 
 Para preparar a homologacao PostgreSQL, siga `docs/POSTGRESQL_PILOT.md`. A URL fica exclusivamente no gerenciador de segredos e o servidor falha de forma explicita quando conexao ou migrations nao estiverem corretas.
 
+Para ativar identidade produtiva e provisionar o primeiro administrador, siga `docs/AUTH_ADMIN_LOCAL.md`; nao reutilize as contas `@bankfratern.local`.
+
 Depois acesse:
 
 ```text
@@ -71,7 +74,7 @@ http://localhost:8080/dashboard-admin.html
 | Dashboard Cliente | `pages/dashboard-cliente.html`, `assets/js/client-dashboard.js` |
 | Dashboard Admin | `pages/dashboard-admin.html`, `assets/js/admin-users.js`, `assets/js/services/admin-recovery.service.js` |
 | Governanca | `docs/MAPA_COMPLETO_PROJETO_BANK_FRATERN.md`, `docs/PLANO_ACAO_EVOLUCAO_BANK_FRATERN.md`, `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md` |
-| Backend produtivo | `docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md`, `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md`, `docs/PROXIMAS_FASES_BANK_FRATERN.md`, `tools/validate-backend-production-plan.mjs` |
+| Backend produtivo | `docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md`, `docs/AUTH_ADMIN_LOCAL.md`, `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md`, `docs/PROXIMAS_FASES_BANK_FRATERN.md`, `tools/validate-auth-production.mjs`, `tools/validate-auth-browser.mjs` |
 | Migrations | `js/backend/migrations/schema-manifest.json`, `js/backend/migrations/001_bancus_fraternis_local_db.sql`, `tools/validate-database-migrations.mjs` |
 
 ## Documentos-Chave

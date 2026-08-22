@@ -17,7 +17,8 @@ Regra central: localStorage continua sendo fallback publico para GitHub Pages, `
 | Banco local | Ativo | SQLite em `.runtime/bancus-fraternis.sqlite`, fora do Git. |
 | Provider configuravel | Piloto implementado | SQLite segue como padrao; PostgreSQL e ativado por ambiente, valida schema no boot e nao faz fallback silencioso. |
 | Schema versionado | Ativo parcial | `js/backend/migrations/schema-manifest.json`, baseline SQL, rollback e `tools/validate-database-migrations.mjs`. |
-| Proximas fases | Em andamento | `docs/PROXIMAS_FASES_BANK_FRATERN.md` detalha migrations, adapter produtivo, auth, migracao, observabilidade e corte controlado. |
+| Autenticacao produtiva | Implementada e validada localmente | API como autoridade, cookie `HttpOnly`, troca obrigatoria, revogacao, rate limit, origem confiavel e demo isolada. |
+| Proximas fases | Em andamento | `docs/PROXIMAS_FASES_BANK_FRATERN.md` detalha migracao, observabilidade e corte controlado. |
 | Backend hospedado | Pendente de homologacao externa | Codigo, migrations e gate injetado estao prontos; falta URL/instancia externa para o smoke real. |
 
 ## Principios De Migracao
@@ -60,7 +61,10 @@ Primeiro conjunto que deve virar API hospedada:
 
 - `POST /api/auth/login`
 - `POST /api/auth/logout`
+- `POST /api/auth/logout-all`
+- `POST /api/auth/change-password`
 - `GET /api/auth/me`
+- `GET /api/auth/config`
 - `GET /api/users`
 - `POST /api/users`
 - `PATCH /api/users/:id`
@@ -91,7 +95,7 @@ Endpoints futuros de produto, calculadoras, comparador e recomendacoes so devem 
 | P3.2 | Abstrair provider | Concluido parcial: `BANCUS_DB_PROVIDER` existe, `sqlite` e padrao e providers sem adapter falham com mensagem explicita sem mudar `BFBackendApi`. |
 | P3.3A | Versionar schema | Concluido parcial: baseline `001_bancus_fraternis_local_db.sql`, manifest de schema e rollback criados antes de conectar provider hospedado. |
 | P3.3B | Hospedar banco piloto | Subir Postgres ou servico gerenciado equivalente com schema espelhado e adapter controlado. |
-| P3.4 | Autenticacao produtiva | Tirar senha demonstrativa da operacao real, reforcar politica de sessao, auditoria e permissao server-side. |
+| P3.4 | Autenticacao produtiva | Concluida no codigo e no gate local: demo isolada, senha temporaria, cookie produtivo, revogacao, auditoria e permissao server-side. |
 | P3.5 | Migracao assistida | Importar usuarios, eventos, snapshots e entidades dedicadas com relatorio de divergencias. |
 | P3.6 | Observabilidade e backup | Logs, metricas, alertas, backup automatizado e rotina de restauracao testada. |
 | P3.7 | Corte controlado | Ativar API hospedada por ambiente, mantendo fallback estatico e plano de rollback. |
@@ -104,7 +108,7 @@ O detalhamento executavel esta em `docs/PROXIMAS_FASES_BANK_FRATERN.md`.
 | --- | --- | --- | --- |
 | 8AN / P3.3A | P0 | Schema e migrations versionadas para todas as tabelas atuais, com `schema-manifest.json`. | `tools/validate-database-migrations.mjs` |
 | 8AO / P3.3B | P0 | Adapter `postgresql` piloto com `BANCUS_DATABASE_URL` e fallback SQLite. | `tools/validate-database-provider.mjs` |
-| 8AP / P3.4 | P0 | Autenticacao produtiva, revogacao, escopo e auditoria server-side. | `tools/validate-auth-navigation.mjs` |
+| 8AP / P3.4 | P0 | Autenticacao produtiva, revogacao, escopo e auditoria server-side. | `tools/validate-auth-production.mjs` + `tools/validate-auth-browser.mjs` |
 | 8AQ / P3.5 | P1 | Migracao assistida com preview, divergencias e idempotencia. | `tools/validate-database-migration-reconciliation.mjs` |
 | 8AR / P3.6 | P1 | Health, logs sanitizados, backup/restore e checklist LGPD. | `tools/validate-backend-production-plan.mjs` |
 | 8AS / P3.7 | P1 | Corte por ambiente, smoke test e rollback documentado. | `tools/validate-online-journey-smoke.mjs` |
@@ -119,6 +123,8 @@ Uma troca para backend hospedado so pode ser aceita quando:
 - `node tools/validate-local-database.mjs` continuar verde para o fallback SQLite.
 - `node tools/validate-public-contracts.mjs` continuar verde para contratos publicos.
 - `node tools/validate-public-release-safety.mjs` confirmar que a publicacao estatica nao vazou dados reais.
+- `node tools/validate-auth-production.mjs` confirmar o contrato produtivo de identidade e sessao.
+- `node tools/validate-auth-browser.mjs` confirmar a jornada produtiva e a hidratacao fail-closed no navegador.
 - Admin nao conseguir listar ou alterar registro fora do escopo autorizado sem papel correto.
 - Consultor e cliente nao conseguirem ler registros de outro `owner_email`.
 - Eventos, snapshots, leads, simulacoes e propostas removerem senha, token, hash, CPF, telefone, WhatsApp e e-mail sensivel dos payloads publicos.
@@ -151,4 +157,6 @@ node tools/validate-database-migrations.mjs
 node tools/validate-local-database.mjs
 node tools/validate-public-contracts.mjs
 node tools/validate-public-release-safety.mjs
+node tools/validate-auth-production.mjs
+node tools/validate-auth-browser.mjs
 ```

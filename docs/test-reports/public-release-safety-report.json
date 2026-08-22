@@ -1,10 +1,11 @@
 {
   "ok": true,
-  "scannedFiles": 383,
+  "scannedFiles": 390,
   "checks": {
     "staticFallback": true,
     "githubWorkflow": true,
     "demoDisclosure": true,
+    "localChartDependency": true,
     "gitignoreProtections": true
   },
   "warnings": [],

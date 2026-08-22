@@ -5,6 +5,7 @@ import path from 'node:path';
 import vm from 'node:vm';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { Worker } from 'node:worker_threads';
 
 const require = createRequire(import.meta.url);
 const ROOT_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -213,6 +214,113 @@ function cloneRow(row) {
   return row ? JSON.parse(JSON.stringify(row)) : row;
 }
 
+function sqliteAdminMutationWorker({ dbPath, operation, targetId, barrier }) {
+  const source = `
+    const { parentPort, workerData } = require('node:worker_threads');
+    const dbModule = require(workerData.dbModulePath);
+    let database = null;
+    try {
+      database = dbModule.createDatabase({
+        provider: 'sqlite',
+        dbPath: workerData.dbPath,
+        authMode: 'production',
+        seedUsers: false
+      });
+      database.db.exec('PRAGMA busy_timeout = 5000');
+      const barrier = new Int32Array(workerData.barrier);
+      parentPort.postMessage({ type: 'ready' });
+      while (Atomics.load(barrier, 0) === 0) Atomics.wait(barrier, 0, 0);
+      let result;
+      if (workerData.operation === 'delete') result = database.deleteUser(workerData.targetId);
+      else if (workerData.operation === 'demotion') result = database.updateUser(workerData.targetId, { role: 'consultor' });
+      else if (workerData.operation === 'inactivation') result = database.setUserStatus(workerData.targetId, 'inactive');
+      else throw new Error('Operacao concorrente SQLite desconhecida.');
+      parentPort.postMessage({ type: 'result', operation: workerData.operation, result });
+    } catch (error) {
+      parentPort.postMessage({
+        type: 'error',
+        operation: workerData.operation,
+        error: { code: String(error && error.code || ''), message: String(error && error.message || error) }
+      });
+    } finally {
+      if (database) database.close();
+    }
+  `;
+  const worker = new Worker(source, {
+    eval: true,
+    workerData: { dbModulePath: DB_MODULE_PATH, dbPath, operation, targetId, barrier }
+  });
+  let readySettled = false;
+  let resultSettled = false;
+  let resolveReady;
+  let rejectReady;
+  let resolveResult;
+  let rejectResult;
+  const ready = new Promise((resolve, reject) => {
+    resolveReady = resolve;
+    rejectReady = reject;
+  });
+  const result = new Promise((resolve, reject) => {
+    resolveResult = resolve;
+    rejectResult = reject;
+  });
+  // O worker pode falhar durante o setup, antes de o chamador chegar ao
+  // Promise de resultado. Mantem a rejeicao observavel sem unhandled rejection.
+  result.catch(() => {});
+  const fail = (error) => {
+    if (!readySettled) {
+      readySettled = true;
+      rejectReady(error);
+    }
+    if (!resultSettled) {
+      resultSettled = true;
+      rejectResult(error);
+    }
+  };
+  worker.on('message', (message) => {
+    if (message && message.type === 'ready' && !readySettled) {
+      readySettled = true;
+      resolveReady();
+      return;
+    }
+    if (message && message.type === 'result' && !resultSettled) {
+      resultSettled = true;
+      resolveResult({ operation: message.operation, result: message.result });
+      return;
+    }
+    if (message && message.type === 'error') {
+      const error = new Error(message.error && message.error.message || `Worker SQLite ${operation} falhou.`);
+      error.code = message.error && message.error.code || '';
+      fail(error);
+    }
+  });
+  worker.on('error', fail);
+  worker.on('exit', (code) => {
+    if (code !== 0) fail(new Error(`Worker SQLite ${operation} encerrou com codigo ${code}.`));
+  });
+  return { ready, result };
+}
+
+async function runConcurrentSqliteAdminMutations(dbPath, mutations = [
+  { operation: 'demotion', targetId: 'USR-SQLITE-ADMIN-A' },
+  { operation: 'inactivation', targetId: 'USR-SQLITE-ADMIN-B' }
+]) {
+  const barrier = new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT);
+  const state = new Int32Array(barrier);
+  const workers = [];
+  // Cada conexao termina a inicializacao idempotente do schema antes da
+  // proxima ser aberta. A barreira continua sincronizando apenas as mutacoes,
+  // que e a concorrencia sob teste.
+  for (const { operation, targetId } of mutations) {
+    const worker = sqliteAdminMutationWorker({ dbPath, operation, targetId, barrier });
+    workers.push(worker);
+    await worker.ready;
+  }
+  Atomics.store(state, 0, 1);
+  Atomics.notify(state, 0, workers.length);
+  return Promise.all(workers.map((worker) => worker.result));
+}
+
 function journeyRowFromParams(params) {
   return {
     id: params[0],
@@ -349,6 +457,30 @@ class MemoryPostgresqlPool extends SchemaPool {
       return { rows: [], rowCount: 0 };
     }
 
+    if (plain.startsWith('select pg_advisory_xact_lock($1, $2)')) {
+      return { rows: [{ pg_advisory_xact_lock: null }], rowCount: 1 };
+    }
+
+    if (plain.startsWith('select count(*)::integer as active_admins from users')) {
+      const activeAdmins = Array.from(this.users.values())
+        .filter((user) => user.role === 'admin' && user.status === 'active')
+        .length;
+      return { rows: [{ active_admins: activeAdmins }], rowCount: 1 };
+    }
+
+    if (normalized.includes('bancus_user_has_related_records')) {
+      const userId = String(params[0] || '');
+      const email = String(params[1] || '').trim().toLowerCase();
+      const ownedByEmail = (row) => [row && row.owner_email, row && row.actor_email]
+        .some((value) => String(value || '').trim().toLowerCase() === email);
+      const hasRelated = Array.from(this.sessions.values()).some((row) => String(row.user_id || '') === userId)
+        || this.events.some(ownedByEmail)
+        || Array.from(this.snapshots.values()).some(ownedByEmail)
+        || Array.from(this.journeyEntities.values()).some(ownedByEmail)
+        || Object.values(this.materialized).some((table) => Array.from(table.values()).some(ownedByEmail));
+      return { rows: [{ has_related: hasRelated }], rowCount: 1 };
+    }
+
     if (plain.startsWith('select * from users where email = $1')) {
       const email = String(params[0] || '').toLowerCase();
       const row = Array.from(this.users.values()).find((item) => String(item.email).toLowerCase() === email);
@@ -463,7 +595,8 @@ class MemoryPostgresqlPool extends SchemaPool {
       if (!user) return { rows: [], rowCount: 0 };
       const email = String(user.email || '').trim().toLowerCase();
       const linked = plain.includes('not exists') && (
-        this.events.some((row) => [row.owner_email, row.actor_email].some((value) => String(value || '').trim().toLowerCase() === email))
+        Array.from(this.sessions.values()).some((row) => String(row.user_id || '') === id)
+        || this.events.some((row) => [row.owner_email, row.actor_email].some((value) => String(value || '').trim().toLowerCase() === email))
         || Array.from(this.snapshots.values()).some((row) => [row.owner_email, row.actor_email].some((value) => String(value || '').trim().toLowerCase() === email))
         || Array.from(this.journeyEntities.values()).some((row) => [row.owner_email, row.actor_email].some((value) => String(value || '').trim().toLowerCase() === email))
         || Object.values(this.materialized).some((table) => Array.from(table.values()).some((row) => (
@@ -882,6 +1015,98 @@ class RollbackPostgresqlPool extends MemoryPostgresqlPool {
   }
 }
 
+class ConcurrentAdminPostgresqlPool extends MemoryPostgresqlPool {
+  constructor(manifest) {
+    super(manifest);
+    this.connectionSequence = 0;
+    this.connectionBarrier = [];
+    this.connectionBarrierOpen = false;
+    this.adminLockOwner = '';
+    this.adminLockQueue = [];
+    this.adminLockContentions = 0;
+    this.activeAdminCriticalSections = 0;
+    this.maxActiveAdminCriticalSections = 0;
+  }
+
+  async connect() {
+    const state = {
+      id: `admin-race-client-${++this.connectionSequence}`,
+      lockHeld: false,
+      released: false
+    };
+    const client = {
+      query: (sql, params = []) => this.queryFromClient(state, sql, params),
+      release: () => {
+        state.released = true;
+        if (state.lockHeld) this.releaseAdminLock(state);
+      }
+    };
+
+    // As duas primeiras transacoes so deixam connect juntas. Isso torna a
+    // disputa pelo advisory lock observavel e deterministica no gate.
+    if (!this.connectionBarrierOpen) {
+      await new Promise((resolve) => {
+        this.connectionBarrier.push(resolve);
+        if (this.connectionBarrier.length === 2) {
+          this.connectionBarrierOpen = true;
+          const waiting = this.connectionBarrier.splice(0);
+          waiting.forEach((release) => release());
+        }
+      });
+    }
+    return client;
+  }
+
+  async acquireAdminLock(state) {
+    if (state.lockHeld) return;
+    if (!this.adminLockOwner) {
+      this.adminLockOwner = state.id;
+      state.lockHeld = true;
+      this.activeAdminCriticalSections += 1;
+      this.maxActiveAdminCriticalSections = Math.max(
+        this.maxActiveAdminCriticalSections,
+        this.activeAdminCriticalSections
+      );
+      return;
+    }
+    this.adminLockContentions += 1;
+    await new Promise((resolve) => this.adminLockQueue.push({ state, resolve }));
+  }
+
+  releaseAdminLock(state) {
+    if (!state.lockHeld || this.adminLockOwner !== state.id) return;
+    state.lockHeld = false;
+    this.adminLockOwner = '';
+    this.activeAdminCriticalSections -= 1;
+    const next = this.adminLockQueue.shift();
+    if (!next) return;
+    this.adminLockOwner = next.state.id;
+    next.state.lockHeld = true;
+    this.activeAdminCriticalSections += 1;
+    this.maxActiveAdminCriticalSections = Math.max(
+      this.maxActiveAdminCriticalSections,
+      this.activeAdminCriticalSections
+    );
+    next.resolve();
+  }
+
+  async queryFromClient(state, sql, params = []) {
+    const plain = normalizeSql(sql).replace(/"/g, '');
+    if (plain.startsWith('select pg_advisory_xact_lock($1, $2)')) {
+      await this.acquireAdminLock(state);
+      return super.query(sql, params);
+    }
+    if (plain === 'commit' || plain === 'rollback') {
+      try {
+        return await super.query(sql, params);
+      } finally {
+        if (state.lockHeld) this.releaseAdminLock(state);
+      }
+    }
+    return super.query(sql, params);
+  }
+}
+
 function collectSensitiveKeys(value, pathParts = [], findings = []) {
   if (!value || typeof value !== 'object') return findings;
   if (Array.isArray(value)) {
@@ -977,13 +1202,19 @@ function evaluateBackendApi() {
 
 const EXPECTED_BACKEND_API_KEYS = [
   'SESSION_KEY',
+  'PUBLIC_SESSION_KEY',
+  'AUTH_CONFIG_KEY',
   'available',
+  'readAuthConfig',
+  'authConfig',
   'readSession',
   'clearSession',
   'request',
   'health',
   'authLogin',
   'authLogout',
+  'authChangePassword',
+  'authLogoutAll',
   'currentUser',
   'databaseStatus',
   'importLocalSnapshot',
@@ -1020,8 +1251,12 @@ const EXPECTED_BACKEND_API_KEYS = [
 
 const EXPECTED_API_CALLS = [
   ['GET', '/api/health'],
+  ['GET', '/api/auth/config'],
+  ['GET', '/api/auth/config'],
   ['POST', '/api/auth/login'],
   ['POST', '/api/auth/logout'],
+  ['POST', '/api/auth/change-password'],
+  ['POST', '/api/auth/logout-all'],
   ['GET', '/api/auth/me'],
   ['GET', '/api/database/status'],
   ['POST', '/api/database/import-local'],
@@ -1058,8 +1293,11 @@ const EXPECTED_API_CALLS = [
 
 async function exerciseBackendApi(api) {
   await api.health();
+  await api.authConfig();
   await api.authLogin('provider-gate@example.com', 'not-a-real-password');
   await api.authLogout();
+  await api.authChangePassword('temporary-password', 'NewSecure!Password2026');
+  await api.authLogoutAll();
   await api.currentUser();
   await api.databaseStatus();
   await api.importLocalSnapshot({ source: 'provider-gate' });
@@ -1205,7 +1443,7 @@ async function runHttpOwnerIsolationScenario() {
         }
       });
       assert(takeoverLead.status !== 500, 'Takeover de lead gerou HTTP 500.');
-      assert([404, 409].includes(takeoverLead.status), `Takeover de lead deveria retornar 404/409, recebeu ${takeoverLead.status}.`);
+      assert([403, 404, 409].includes(takeoverLead.status), `Takeover de lead deveria retornar 403/404/409, recebeu ${takeoverLead.status}.`);
       assert(takeoverLead.data.ok === false, 'Takeover de lead nao retornou falha semantica.');
 
       const leadAfter = await requestJson(`/api/leads/${encodeURIComponent(leadId)}`, { token: tokenA });
@@ -1667,7 +1905,8 @@ async function run() {
       'BANCUS_POSTGRESQL_MIGRATION_MANIFEST_INVALID',
       'BANCUS_OWNER_CONFLICT',
       'BANCUS_USER_EMAIL_CONFLICT',
-      'BANCUS_USER_HAS_RELATED_RECORDS'
+      'BANCUS_USER_HAS_RELATED_RECORDS',
+      'LAST_ACTIVE_ADMIN'
     ];
     const actualCodes = Object.values(postgresqlProvider.ERROR_CODES || {});
     for (const code of expectedCodes) assert(actualCodes.includes(code), `Adapter postgresql nao expoe ${code}.`);
@@ -1805,6 +2044,171 @@ async function run() {
     } finally {
       await Promise.resolve(database.close());
     }
+  });
+
+  await check('sqlite.last-active-admin-delete', 'SQLite bloqueia exclusao do ultimo admin sem ocultar historico vinculado', async () => {
+    const dbPath = path.join(temporaryDirectory, 'sqlite-last-active-admin-delete.sqlite');
+    const database = await Promise.resolve(dbModule.createDatabase({
+      provider: 'sqlite',
+      dbPath,
+      authMode: 'production',
+      seedUsers: false
+    }));
+    try {
+      const password = 'Horizonte!Seguro2031#Norte';
+      const created = database.createUser({
+        id: 'USR-SQLITE-ONLY-ADMIN',
+        name: 'Administrador SQLite Unico',
+        email: 'sqlite-only-admin@example.com',
+        role: 'admin',
+        status: 'active',
+        password
+      });
+      assert(created.ok, 'SQLite nao criou o administrador unitario.');
+
+      const blocked = database.deleteUser(created.user.id);
+      assert(blocked.status === 409 && blocked.code === 'LAST_ACTIVE_ADMIN', 'SQLite permitiu excluir o ultimo administrador ativo.');
+      assert(database.findPublicUser(created.user.id), 'SQLite removeu o administrador apesar do bloqueio.');
+
+      const login = database.login(created.user.email, password);
+      assert(login.ok, 'SQLite nao criou a sessao vinculada da fixture administrativa.');
+      const linked = database.deleteUser(created.user.id);
+      assert(
+        linked.status === 409 && linked.code === 'BANCUS_USER_HAS_RELATED_RECORDS',
+        'SQLite deixou LAST_ACTIVE_ADMIN ocultar o contrato de historico vinculado.'
+      );
+      assert(database.findPublicUser(created.user.id), 'SQLite removeu o administrador com sessao vinculada.');
+      return {
+        unlinkedDelete: { status: blocked.status, code: blocked.code },
+        linkedDelete: { status: linked.status, code: linked.code },
+        userPreserved: true,
+        transaction: 'SAVEPOINT with write lock before linked-record and admin-count checks'
+      };
+    } finally {
+      await Promise.resolve(database.close());
+    }
+  });
+
+  await check('sqlite.last-active-admin-concurrency', 'SQLite preserva um admin em duas remocoes de acesso concorrentes', async () => {
+    const dbPath = path.join(temporaryDirectory, 'sqlite-last-active-admin.sqlite');
+    const setupDatabase = await Promise.resolve(dbModule.createDatabase({
+      provider: 'sqlite',
+      dbPath,
+      authMode: 'production',
+      seedUsers: false
+    }));
+    try {
+      for (const fixture of [
+        { id: 'USR-SQLITE-ADMIN-A', name: 'Administrador SQLite A', email: 'sqlite-admin-a@example.com' },
+        { id: 'USR-SQLITE-ADMIN-B', name: 'Administrador SQLite B', email: 'sqlite-admin-b@example.com' }
+      ]) {
+        const created = await Promise.resolve(setupDatabase.createUser({
+          ...fixture,
+          role: 'admin',
+          status: 'active',
+          password: 'Horizonte!Seguro2031#Norte'
+        }));
+        assert(created.ok, `SQLite nao criou fixture administrativa ${fixture.id}.`);
+      }
+    } finally {
+      await Promise.resolve(setupDatabase.close());
+    }
+
+    const attempts = await runConcurrentSqliteAdminMutations(dbPath);
+    const inspectionDatabase = await Promise.resolve(dbModule.createDatabase({
+      provider: 'sqlite',
+      dbPath,
+      authMode: 'production',
+      seedUsers: false
+    }));
+    try {
+      const succeeded = attempts.filter((attempt) => attempt.result && attempt.result.ok);
+      const blocked = attempts.filter((attempt) => attempt.result && attempt.result.code === 'LAST_ACTIVE_ADMIN');
+      const activeAdmins = inspectionDatabase.listUsers().filter((user) => user.role === 'admin' && user.status === 'active');
+
+      assert(succeeded.length === 1, `SQLite confirmou ${succeeded.length} remocoes concorrentes; esperado 1.`);
+      assert(blocked.length === 1 && blocked[0].result.status === 409, 'SQLite nao bloqueou a segunda remocao com LAST_ACTIVE_ADMIN/409.');
+      assert(activeAdmins.length === 1, `SQLite terminou com ${activeAdmins.length} admins ativos.`);
+      return {
+        concurrentAttempts: attempts.map((attempt) => ({
+          operation: attempt.operation,
+          status: attempt.result.status,
+          code: attempt.result.code || '',
+          ok: attempt.result.ok
+        })),
+        succeeded: succeeded[0].operation,
+        blocked: blocked[0].operation,
+        activeAdminIds: activeAdmins.map((user) => user.id),
+        concurrency: 'two worker threads / independent SQLite connections',
+        transaction: 'SAVEPOINT with write lock before count'
+      };
+    } finally {
+      await Promise.resolve(inspectionDatabase.close());
+    }
+  });
+
+  await check('sqlite.last-active-admin-delete-concurrency', 'SQLite serializa delete contra demissao e inativacao concorrentes', async () => {
+    const runScenario = async (suffix, competingMutation) => {
+      const dbPath = path.join(temporaryDirectory, `sqlite-last-active-admin-delete-${suffix}.sqlite`);
+      const setupDatabase = await Promise.resolve(dbModule.createDatabase({
+        provider: 'sqlite',
+        dbPath,
+        authMode: 'production',
+        seedUsers: false
+      }));
+      try {
+        for (const fixture of [
+          { id: 'USR-SQLITE-ADMIN-A', name: 'Administrador SQLite A', email: `sqlite-delete-a-${suffix}@example.com` },
+          { id: 'USR-SQLITE-ADMIN-B', name: 'Administrador SQLite B', email: `sqlite-delete-b-${suffix}@example.com` }
+        ]) {
+          const created = setupDatabase.createUser({
+            ...fixture,
+            role: 'admin',
+            status: 'active',
+            password: 'Horizonte!Seguro2031#Norte'
+          });
+          assert(created.ok, `SQLite nao criou fixture concorrente ${fixture.id}.`);
+        }
+      } finally {
+        await Promise.resolve(setupDatabase.close());
+      }
+
+      const attempts = await runConcurrentSqliteAdminMutations(dbPath, [
+        { operation: 'delete', targetId: 'USR-SQLITE-ADMIN-A' },
+        { operation: competingMutation, targetId: 'USR-SQLITE-ADMIN-B' }
+      ]);
+      const inspectionDatabase = await Promise.resolve(dbModule.createDatabase({
+        provider: 'sqlite',
+        dbPath,
+        authMode: 'production',
+        seedUsers: false
+      }));
+      try {
+        const succeeded = attempts.filter((attempt) => attempt.result && attempt.result.ok);
+        const blocked = attempts.filter((attempt) => attempt.result && attempt.result.code === 'LAST_ACTIVE_ADMIN');
+        const activeAdmins = inspectionDatabase.listUsers().filter((user) => user.role === 'admin' && user.status === 'active');
+        assert(succeeded.length === 1, `SQLite ${suffix} confirmou ${succeeded.length} remocoes; esperado 1.`);
+        assert(blocked.length === 1 && blocked[0].result.status === 409, `SQLite ${suffix} nao bloqueou a segunda remocao com LAST_ACTIVE_ADMIN/409.`);
+        assert(activeAdmins.length === 1, `SQLite ${suffix} terminou com ${activeAdmins.length} admins ativos.`);
+        return {
+          attempts: attempts.map((attempt) => ({
+            operation: attempt.operation,
+            status: attempt.result.status,
+            code: attempt.result.code || '',
+            ok: attempt.result.ok
+          })),
+          activeAdminIds: activeAdmins.map((user) => user.id)
+        };
+      } finally {
+        await Promise.resolve(inspectionDatabase.close());
+      }
+    };
+
+    return {
+      deleteVsUpdate: await runScenario('update', 'demotion'),
+      deleteVsStatus: await runScenario('status', 'inactivation'),
+      concurrency: 'worker-thread barrier with independent SQLite connections'
+    };
   });
 
   await check('sqlite.owner-and-identity-guards', 'SQLite bloqueia takeover e migra identidade vinculada', async () => {
@@ -2426,6 +2830,7 @@ async function run() {
       const optInPool = new MemoryPostgresqlPool(manifest);
       const optInDatabase = await Promise.resolve(dbModule.createDatabase({
         provider: 'postgresql',
+        authMode: 'demo',
         databaseUrl: TEST_DATABASE_URL,
         pool: optInPool,
         schemaManifest: manifest,
@@ -2436,8 +2841,250 @@ async function run() {
       } finally {
         await Promise.resolve(optInDatabase.close());
       }
-      return { defaultSeedCount: 0, explicitSeedCount: optInPool.users.size, networkUsed: false };
+      let productiveSeedRejected = false;
+      try {
+        await Promise.resolve(dbModule.createDatabase({
+          provider: 'postgresql',
+          authMode: 'production',
+          databaseUrl: TEST_DATABASE_URL,
+          pool: new MemoryPostgresqlPool(manifest),
+          schemaManifest: manifest,
+          seedUsers: true
+        }));
+      } catch (error) {
+        productiveSeedRejected = /production/i.test(String(error && error.message || ''));
+      }
+      assert(productiveSeedRejected, 'Provider PostgreSQL aceitou seeds em modo produtivo.');
+      return { defaultSeedCount: 0, explicitDemoSeedCount: optInPool.users.size, productiveSeedRejected, networkUsed: false };
     });
+  });
+
+  await check('postgresql.credential-policy-cutover', 'PostgreSQL exige troca para credencial legada e promove somente apos nova senha', async () => {
+    const pool = new MemoryPostgresqlPool(manifest);
+    const demoDatabase = await Promise.resolve(dbModule.createDatabase({
+      provider: 'postgresql',
+      authMode: 'demo',
+      databaseUrl: TEST_DATABASE_URL,
+      pool,
+      schemaManifest: manifest,
+      seedUsers: false,
+      rebuildJourneyEntities: false
+    }));
+    let productionDatabase;
+    try {
+      const created = await demoDatabase.createUser({
+        id: 'USR-PG-LEGACY-POLICY',
+        name: 'Conta Legada PostgreSQL',
+        email: 'legacy-pg@example.com',
+        role: 'cliente',
+        status: 'active',
+        password: 'Fraca1'
+      });
+      assert(created.ok, 'Fixture PostgreSQL demo nao criou credencial legada.');
+      assert(
+        pool.users.get('USR-PG-LEGACY-POLICY')?.password_algorithm === dbModule.PASSWORD_HASH_ALGORITHM,
+        'Fixture PostgreSQL demo nao gravou o marcador legado.'
+      );
+      productionDatabase = await Promise.resolve(dbModule.createDatabase({
+        provider: 'postgresql',
+        authMode: 'production',
+        databaseUrl: TEST_DATABASE_URL,
+        pool,
+        schemaManifest: manifest,
+        seedUsers: false,
+        rebuildJourneyEntities: false
+      }));
+      const listed = (await productionDatabase.listUsers()).find((user) => user.id === 'USR-PG-LEGACY-POLICY');
+      assert(listed?.mustChangePassword === true, 'Listagem PostgreSQL ocultou o corte da credencial legada.');
+      const login = await productionDatabase.login('legacy-pg@example.com', 'Fraca1');
+      assert(login.ok && login.user.mustChangePassword === true, 'Login PostgreSQL nao restringiu credencial legada.');
+      const upgraded = await productionDatabase.changePassword(
+        'USR-PG-LEGACY-POLICY',
+        'Fraca1',
+        'Horizonte!Seguro2030#Sul'
+      );
+      assert(upgraded.ok && upgraded.user.mustChangePassword === false, 'PostgreSQL nao concluiu a troca da credencial legada.');
+      assert(
+        pool.users.get('USR-PG-LEGACY-POLICY')?.password_algorithm === dbModule.CURRENT_PASSWORD_POLICY_VERSION,
+        'PostgreSQL nao gravou a versao corrente depois da troca real.'
+      );
+      return { legacyRestricted: true, promotedAfterChange: true, networkUsed: false };
+    } finally {
+      if (productionDatabase) await Promise.resolve(productionDatabase.close());
+      await Promise.resolve(demoDatabase.close());
+    }
+  });
+
+  await check('postgresql.last-active-admin-delete', 'PostgreSQL bloqueia exclusao do ultimo admin sem ocultar historico vinculado', async () => {
+    const pool = new MemoryPostgresqlPool(manifest);
+    const database = await Promise.resolve(dbModule.createDatabase({
+      provider: 'postgresql',
+      authMode: 'production',
+      databaseUrl: TEST_DATABASE_URL,
+      pool,
+      schemaManifest: manifest,
+      seedUsers: false,
+      rebuildJourneyEntities: false
+    }));
+    try {
+      const password = 'Horizonte!Seguro2031#Norte';
+      const created = await database.createUser({
+        id: 'USR-PG-ONLY-ADMIN',
+        name: 'Administrador PostgreSQL Unico',
+        email: 'pg-only-admin@example.com',
+        role: 'admin',
+        status: 'active',
+        password
+      });
+      assert(created.ok, 'PostgreSQL nao criou o administrador unitario.');
+
+      const blocked = await database.deleteUser(created.user.id);
+      assert(blocked.status === 409 && blocked.code === 'LAST_ACTIVE_ADMIN', 'PostgreSQL permitiu excluir o ultimo administrador ativo.');
+      assert(await database.findPublicUser(created.user.id), 'PostgreSQL removeu o administrador apesar do bloqueio.');
+
+      const login = await database.login(created.user.email, password);
+      assert(login.ok, 'PostgreSQL nao criou a sessao vinculada da fixture administrativa.');
+      const linked = await database.deleteUser(created.user.id);
+      assert(
+        linked.status === 409 && linked.code === 'BANCUS_USER_HAS_RELATED_RECORDS',
+        'PostgreSQL deixou LAST_ACTIVE_ADMIN ocultar o contrato de historico vinculado.'
+      );
+      assert(await database.findPublicUser(created.user.id), 'PostgreSQL removeu o administrador com sessao vinculada.');
+      const advisoryLocks = pool.queries.filter((entry) => entry.sql.includes('pg_advisory_xact_lock')).length;
+      const rowLocks = pool.queries.filter((entry) => entry.sql.includes('select * from users where id = $1 for update')).length;
+      assert(advisoryLocks >= 2 && rowLocks >= 2, 'PostgreSQL deleteUser nao executou advisory lock e row lock nos dois contratos de exclusao.');
+      return {
+        unlinkedDelete: { status: blocked.status, code: blocked.code },
+        linkedDelete: { status: linked.status, code: linked.code },
+        advisoryLocks,
+        rowLocks,
+        userPreserved: true,
+        networkUsed: false
+      };
+    } finally {
+      await Promise.resolve(database.close());
+    }
+  });
+
+  await check('postgresql.last-active-admin-concurrency', 'PostgreSQL serializa duas remocoes concorrentes e preserva um admin', async () => {
+    const pool = new ConcurrentAdminPostgresqlPool(manifest);
+    const database = await Promise.resolve(dbModule.createDatabase({
+      provider: 'postgresql',
+      authMode: 'production',
+      databaseUrl: TEST_DATABASE_URL,
+      pool,
+      schemaManifest: manifest,
+      seedUsers: false,
+      rebuildJourneyEntities: false
+    }));
+    try {
+      for (const fixture of [
+        { id: 'USR-PG-ADMIN-A', name: 'Administrador PostgreSQL A', email: 'pg-admin-a@example.com' },
+        { id: 'USR-PG-ADMIN-B', name: 'Administrador PostgreSQL B', email: 'pg-admin-b@example.com' }
+      ]) {
+        const created = await database.createUser({
+          ...fixture,
+          role: 'admin',
+          status: 'active',
+          password: 'Horizonte!Seguro2031#Norte'
+        });
+        assert(created.ok, `PostgreSQL nao criou fixture administrativa ${fixture.id}.`);
+      }
+
+      const attempts = await Promise.all([
+        database.updateUser('USR-PG-ADMIN-A', { role: 'consultor' }).then((result) => ({ operation: 'demotion', result })),
+        database.setUserStatus('USR-PG-ADMIN-B', 'inactive').then((result) => ({ operation: 'inactivation', result }))
+      ]);
+      const succeeded = attempts.filter((attempt) => attempt.result && attempt.result.ok);
+      const blocked = attempts.filter((attempt) => attempt.result && attempt.result.code === 'LAST_ACTIVE_ADMIN');
+      const activeAdmins = (await database.listUsers()).filter((user) => user.role === 'admin' && user.status === 'active');
+
+      assert(pool.adminLockContentions === 1, `Gate PostgreSQL observou ${pool.adminLockContentions} contencoes; esperado 1.`);
+      assert(pool.maxActiveAdminCriticalSections === 1, 'Advisory lock PostgreSQL permitiu duas secoes criticas simultaneas.');
+      assert(succeeded.length === 1, `PostgreSQL confirmou ${succeeded.length} remocoes concorrentes; esperado 1.`);
+      assert(blocked.length === 1 && blocked[0].result.status === 409, 'PostgreSQL nao bloqueou a segunda remocao com LAST_ACTIVE_ADMIN/409.');
+      assert(activeAdmins.length === 1, `PostgreSQL terminou com ${activeAdmins.length} admins ativos.`);
+      return {
+        concurrentAttempts: attempts.map((attempt) => ({
+          operation: attempt.operation,
+          status: attempt.result.status,
+          code: attempt.result.code || '',
+          ok: attempt.result.ok
+        })),
+        lockContentions: pool.adminLockContentions,
+        maxConcurrentCriticalSections: pool.maxActiveAdminCriticalSections,
+        succeeded: succeeded[0].operation,
+        blocked: blocked[0].operation,
+        activeAdminIds: activeAdmins.map((user) => user.id),
+        networkUsed: false
+      };
+    } finally {
+      await Promise.resolve(database.close());
+    }
+  });
+
+  await check('postgresql.last-active-admin-delete-concurrency', 'PostgreSQL serializa delete contra demissao e inativacao concorrentes', async () => {
+    const runScenario = async (suffix, competingMutation) => {
+      const pool = new ConcurrentAdminPostgresqlPool(manifest);
+      const database = await Promise.resolve(dbModule.createDatabase({
+        provider: 'postgresql',
+        authMode: 'production',
+        databaseUrl: TEST_DATABASE_URL,
+        pool,
+        schemaManifest: manifest,
+        seedUsers: false,
+        rebuildJourneyEntities: false
+      }));
+      try {
+        for (const fixture of [
+          { id: 'USR-PG-ADMIN-A', name: 'Administrador PostgreSQL A', email: `pg-delete-a-${suffix}@example.com` },
+          { id: 'USR-PG-ADMIN-B', name: 'Administrador PostgreSQL B', email: `pg-delete-b-${suffix}@example.com` }
+        ]) {
+          const created = await database.createUser({
+            ...fixture,
+            role: 'admin',
+            status: 'active',
+            password: 'Horizonte!Seguro2031#Norte'
+          });
+          assert(created.ok, `PostgreSQL nao criou fixture concorrente ${fixture.id}.`);
+        }
+
+        const attempts = await Promise.all([
+          database.deleteUser('USR-PG-ADMIN-A').then((result) => ({ operation: 'delete', result })),
+          (competingMutation === 'demotion'
+            ? database.updateUser('USR-PG-ADMIN-B', { role: 'consultor' })
+            : database.setUserStatus('USR-PG-ADMIN-B', 'inactive'))
+            .then((result) => ({ operation: competingMutation, result }))
+        ]);
+        const succeeded = attempts.filter((attempt) => attempt.result && attempt.result.ok);
+        const blocked = attempts.filter((attempt) => attempt.result && attempt.result.code === 'LAST_ACTIVE_ADMIN');
+        const activeAdmins = (await database.listUsers()).filter((user) => user.role === 'admin' && user.status === 'active');
+        assert(pool.adminLockContentions === 1, `Gate PostgreSQL ${suffix} observou ${pool.adminLockContentions} contencoes; esperado 1.`);
+        assert(pool.maxActiveAdminCriticalSections === 1, `Advisory lock PostgreSQL ${suffix} permitiu secoes criticas simultaneas.`);
+        assert(succeeded.length === 1, `PostgreSQL ${suffix} confirmou ${succeeded.length} remocoes; esperado 1.`);
+        assert(blocked.length === 1 && blocked[0].result.status === 409, `PostgreSQL ${suffix} nao bloqueou a segunda remocao com LAST_ACTIVE_ADMIN/409.`);
+        assert(activeAdmins.length === 1, `PostgreSQL ${suffix} terminou com ${activeAdmins.length} admins ativos.`);
+        return {
+          attempts: attempts.map((attempt) => ({
+            operation: attempt.operation,
+            status: attempt.result.status,
+            code: attempt.result.code || '',
+            ok: attempt.result.ok
+          })),
+          lockContentions: pool.adminLockContentions,
+          maxConcurrentCriticalSections: pool.maxActiveAdminCriticalSections,
+          activeAdminIds: activeAdmins.map((user) => user.id)
+        };
+      } finally {
+        await Promise.resolve(database.close());
+      }
+    };
+
+    return {
+      deleteVsUpdate: await runScenario('update', 'demotion'),
+      deleteVsStatus: await runScenario('status', 'inactivation'),
+      networkUsed: false
+    };
   });
 
   await check('postgresql.proposal-lifecycle', 'Repositorio PostgreSQL preserva ciclo completo da proposta', async () => {
@@ -2598,10 +3245,10 @@ async function run() {
         email: 'pg-status-rollback@example.com',
         role: 'consultor',
         status: 'active',
-        password: 'GatePassword123'
+        password: 'Ponte!Clara2026#Sul'
       });
       assert(created.ok, 'PostgreSQL nao criou usuario para o teste transacional de status.');
-      const login = await database.login('pg-status-rollback@example.com', 'GatePassword123');
+      const login = await database.login('pg-status-rollback@example.com', 'Ponte!Clara2026#Sul');
       assert(login.ok && login.session && login.session.token, 'PostgreSQL nao criou sessao ativa para o teste transacional.');
       pool.failSessionRevocation = true;
       let failure = null;
@@ -2668,7 +3315,7 @@ async function run() {
       status: 'active',
       department: 'QA',
       phone: '(00) 00000-0000',
-      password: 'GatePassword123'
+      password: 'Ponte!Clara2026#Sul'
     });
     assert(created.ok && created.user && created.user.id === 'USR-PG-GATE', 'CREATE de usuario falhou no mock PostgreSQL.');
     assert(!Object.prototype.hasOwnProperty.call(created.user, 'password_hash'), 'CREATE retornou password_hash.');
@@ -2683,6 +3330,13 @@ async function run() {
       phone: '(00) 00000-0001'
     });
     assert(updated.ok && updated.user && updated.user.name === 'Usuario PostgreSQL Atualizado', 'UPDATE de usuario falhou no mock PostgreSQL.');
+    const inactive = await mockDatabase.setUserStatus('USR-PG-GATE', 'inactive');
+    assert(inactive.ok && inactive.user.status === 'inactive', 'PostgreSQL nao inativou usuario com status valido.');
+    const invalidStatus = await mockDatabase.setUserStatus('USR-PG-GATE', 'enabled');
+    assert(invalidStatus.ok === false && invalidStatus.status === 400, 'PostgreSQL aceitou status desconhecido.');
+    assert(mockPool.users.get('USR-PG-GATE')?.status === 'inactive', 'Status desconhecido reativou usuario PostgreSQL.');
+    const active = await mockDatabase.setUserStatus('USR-PG-GATE', 'active');
+    assert(active.ok && active.user.status === 'active', 'PostgreSQL nao reativou usuario com status valido.');
     const deleted = await mockDatabase.deleteUser('USR-PG-GATE');
     assert(deleted.ok, 'DELETE de usuario falhou no mock PostgreSQL.');
     const afterDelete = await mockDatabase.findPublicUser('USR-PG-GATE');
@@ -2751,7 +3405,7 @@ async function run() {
       status: 'active',
       department: 'QA',
       phone: '(00) 00000-0000',
-      password: 'GatePassword123'
+      password: 'Ponte!Clara2026#Sul'
     });
     assert(created.ok, 'Mock PostgreSQL nao criou usuario vinculado.');
     const lead = await mockDatabase.upsertDirectJourneyRow('lead', {
@@ -2800,7 +3454,7 @@ async function run() {
       status: 'active',
       department: 'QA',
       phone: '(00) 00000-0002',
-      password: 'GatePassword123'
+      password: 'Ponte!Clara2026#Sul'
     });
     assert(duplicateUser.ok, 'Mock PostgreSQL nao criou usuario de e-mail duplicado.');
     const migratedEmail = 'pg-migrated@example.com';
@@ -2870,13 +3524,13 @@ async function run() {
       status: 'active',
       department: 'QA',
       phone: '(00) 00000-0003',
-      password: 'GatePassword123'
+      password: 'Ponte!Clara2026#Sul'
     });
     assert(created.ok, 'Mock PostgreSQL nao criou usuario para reset.');
     const session = await mockDatabase.createSession(created.user);
     const beforeReset = await mockDatabase.authenticateToken(session.token);
     assert(beforeReset && beforeReset.user && beforeReset.user.id === created.user.id, 'Token PostgreSQL nao autenticava antes do reset.');
-    const reset = await mockDatabase.setPassword(created.user.id, 'GatePassword456');
+    const reset = await mockDatabase.setPassword(created.user.id, 'Horizonte!Vivo2027#Norte');
     assert(reset.ok, 'Reset de senha PostgreSQL falhou.');
     const afterReset = await mockDatabase.authenticateToken(session.token);
     assert(afterReset === null, 'Token PostgreSQL anterior continuou valido apos reset.');

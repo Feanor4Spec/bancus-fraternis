@@ -320,6 +320,8 @@ assert(await exists('tools/validate-public-contracts.mjs'), 'Validador de contra
   'tools/validate-docs-modernization.mjs',
   'tools/validate-handoff-consultant-operations.mjs',
   'tools/validate-auth-navigation.mjs',
+  'tools/validate-auth-production.mjs',
+  'tools/validate-auth-browser.mjs',
   'tools/validate-navigable-journey.mjs',
   'tools/validate-online-journey-smoke.mjs',
   'tools/validate-github-pages-deploy.mjs'

@@ -42,12 +42,16 @@ const {
   SUPPORTED_DB_PROVIDERS,
   FUTURE_DB_PROVIDERS,
   SCHEMA_MIGRATIONS_DIR,
-  SCHEMA_MANIFEST_PATH
+  SCHEMA_MANIFEST_PATH,
+  PASSWORD_HASH_ALGORITHM,
+  CURRENT_PASSWORD_POLICY_VERSION,
+  LEGACY_PASSWORD_POLICY_VERSIONS
 } = require('../js/backend/db.js');
 
 const manifestRelativePath = 'js/backend/migrations/schema-manifest.json';
 const migrationRelativePath = 'js/backend/migrations/001_bancus_fraternis_local_db.sql';
 const rollbackRelativePath = 'js/backend/migrations/001_bancus_fraternis_local_db.rollback.sql';
+const postgresqlMigrationRelativePath = 'js/backend/migrations/postgresql/001_bancus_fraternis.sql';
 
 assert(await exists(manifestRelativePath), 'Manifest de schema ausente.');
 assert(await exists(migrationRelativePath), 'Migration baseline ausente.');
@@ -58,6 +62,7 @@ assert(String(SCHEMA_MANIFEST_PATH).endsWith(path.join('js', 'backend', 'migrati
 const [
   manifestText,
   migrationSql,
+  postgresqlMigrationSql,
   rollbackSql,
   dbJs,
   localDatabaseDoc,
@@ -72,6 +77,7 @@ const [
 ] = await Promise.all([
   read(manifestRelativePath),
   read(migrationRelativePath),
+  read(postgresqlMigrationRelativePath),
   read(rollbackRelativePath),
   read('js/backend/db.js'),
   read('docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md'),
@@ -99,7 +105,18 @@ assert(Array.isArray(SUPPORTED_DB_PROVIDERS) && SUPPORTED_DB_PROVIDERS.includes(
 assert(Array.isArray(FUTURE_DB_PROVIDERS) && !FUTURE_DB_PROVIDERS.includes('postgresql'), 'db.js nao deveria manter postgresql como provider futuro depois da implementacao.');
 assert(manifest.currentMigration === path.basename(migrationRelativePath), 'Manifest nao aponta para a migration baseline.');
 assert(manifest.rollback === path.basename(rollbackRelativePath), 'Manifest nao aponta para rollback baseline.');
-assert(manifest.passwordAlgorithm === 'scrypt-sha256', 'Manifest nao documenta algoritmo de senha atual.');
+const credentialContract = manifest.passwordCredentials || {};
+assert(credentialContract.hashAlgorithm === PASSWORD_HASH_ALGORITHM, 'Manifest diverge do hash de senha.');
+assert(credentialContract.baselineDefault === PASSWORD_HASH_ALGORITHM, 'Manifest diverge do default legado fail-closed.');
+assert(credentialContract.currentPolicyVersion === CURRENT_PASSWORD_POLICY_VERSION, 'Manifest diverge da politica de credencial corrente.');
+assert(
+  JSON.stringify(credentialContract.legacyPolicyVersions || []) === JSON.stringify(LEGACY_PASSWORD_POLICY_VERSIONS),
+  'Manifest diverge das politicas de credencial legadas.'
+);
+assert(credentialContract.unknownPolicyRequiresChange === true, 'Manifest nao exige troca para politica desconhecida.');
+const legacyCredentialDefault = `password_algorithm TEXT NOT NULL DEFAULT '${PASSWORD_HASH_ALGORITHM}'`;
+assert(migrationSql.includes(legacyCredentialDefault), 'Baseline SQLite perdeu o default legado fail-closed.');
+assert(postgresqlMigrationSql.includes(legacyCredentialDefault), 'Baseline PostgreSQL perdeu o default legado fail-closed.');
 
 [
   'PRAGMA journal_mode = WAL',
@@ -180,6 +197,9 @@ try {
   assert(status.provider === 'sqlite', 'databaseStatus nao preserva provider sqlite.');
   assert(status.sqlite && status.sqlite.foreignKeys === true, 'Banco real nao ativou foreign_keys.');
   assert(status.tables.length === tables.length, 'Status tecnico nao lista as 8 tabelas do manifest.');
+  const passwordColumn = localDb.db.prepare('PRAGMA table_info("users")').all().find((column) => column.name === 'password_algorithm');
+  const passwordDefault = String(passwordColumn && passwordColumn.dflt_value || '').replace(/^['"]|['"]$/g, '');
+  assert(passwordDefault === PASSWORD_HASH_ALGORITHM, 'Runtime SQLite diverge do default legado fail-closed.');
 } finally {
   localDb.close();
   await cleanup();

@@ -88,6 +88,7 @@ vm.runInContext(proposalBuilder, context, {
 
 const summary = context.__ProposalSummary;
 assert(summary && typeof summary.normalizeProposalBuilder === 'function', 'normalizeProposalBuilder indisponivel em runtime.');
+assert(summary && typeof summary.presentationStatus === 'function', 'Allowlist visual de status indisponivel em runtime.');
 assert(summary && summary.proposalBuilderDefaults, 'proposalBuilderDefaults indisponivel em runtime.');
 const builder = context.BFProposalBuilder;
 assert(builder && typeof builder.normalizeConfig === 'function', 'BFProposalBuilder.normalizeConfig indisponivel em runtime.');
@@ -124,6 +125,23 @@ const emptyConfig = builder.presetConfig('completa');
 Object.keys(emptyConfig.sections).forEach((key) => { emptyConfig.sections[key] = false; });
 assert(builder.readinessIssues(emptyConfig).includes('Nenhuma seção selecionada para o PDF.'), 'readinessIssues nao identifica configuracao vazia.');
 
+const hostileStatus = 'done\"><img data-xss-probe src=x>';
+const hostileProposal = summary.createMockData();
+hostileProposal.journey[0].status = hostileStatus;
+hostileProposal.productPhases[0].status = hostileStatus;
+const hostileTarget = { id: 'proposal-hostile-status', innerHTML: '' };
+summary.render(hostileTarget, { proposalData: hostileProposal }, {
+  rootId: 'proposal-hostile-root',
+  chartPrefix: 'proposal-hostile',
+  surface: 'public'
+});
+assert(!hostileTarget.innerHTML.includes('data-xss-probe'), 'Status hostil criou markup na proposta.');
+assert(!hostileTarget.innerHTML.includes(hostileStatus), 'Status hostil foi interpolado na proposta.');
+assert(summary.presentationStatus(hostileStatus) === 'upcoming', 'Status fora da allowlist nao usa fallback seguro.');
+['done', 'current', 'upcoming'].forEach((status) => {
+  assert(summary.presentationStatus(status) === status, `Status visual valido foi alterado: ${status}.`);
+});
+
 const defaults = summary.proposalBuilderDefaults;
 const report = {
   ok: failures.length === 0,
@@ -145,6 +163,7 @@ const report = {
     readinessPanel: app.includes('data-proposal-builder-readiness'),
     groupActions: app.includes('setProposalBuilderGroup'),
     selectionSummary: proposalSummary.includes('data-proposal-selection-summary'),
+    hostileStatusRejected: !hostileTarget.innerHTML.includes('data-xss-probe'),
     presets: {
       consultiva: proposalBuilder.includes("preset === 'consultiva'"),
       tecnica: proposalBuilder.includes("preset === 'tecnica'")

@@ -160,6 +160,7 @@ const gitignore = await read('.gitignore');
 const sharedLayout = await read('js/shared-layout.js');
 const loginHtml = await read('pages/login.html');
 const simulatorHtml = await read('pages/simulador.html');
+const publicProposalHtml = await read('pages/proposta.html');
 const contracts = await read('docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md');
 const readme = await read('README.md');
 const server = await read('server.js');
@@ -169,6 +170,13 @@ assert(await exists('.github/workflows/validate.yml'), 'Workflow de validacao pu
 assert(sharedLayout.includes('bf-demo-chip'), 'Shell compartilhado sem selo Demo local.');
 assert(loginHtml.includes('data-public-demo-notice'), 'Login sem aviso publico de demonstracao.');
 assert(simulatorHtml.includes('sim-header__demo'), 'Simulador sem selo publico de demonstracao.');
+const localChartAsset = 'assets/vendor/chart.js/4.4.0/chart.umd.min.js';
+assert(await exists(localChartAsset), 'Chart.js local versionado esta ausente.');
+assert(simulatorHtml.includes('../assets/vendor/chart.js/4.4.0/chart.umd.min.js'), 'Simulador nao usa Chart.js local versionado.');
+assert(publicProposalHtml.includes('../assets/vendor/chart.js/4.4.0/chart.umd.min.js'), 'Proposta publica nao usa Chart.js local versionado.');
+assert(!/<script\b[^>]*\bsrc=["']https?:\/\//i.test(publicProposalHtml), 'Proposta publica carrega script remoto com acesso ao token do fragmento.');
+assert(!/<script\b[^>]*\bsrc=["']https?:\/\//i.test(simulatorHtml), 'Simulador carrega script remoto com autoridade sobre a sessao.');
+assert(server.includes("script-src 'self';") && !server.includes("script-src 'self' https://cdn.jsdelivr.net"), 'CSP da proposta publica ainda autoriza scripts de CDN.');
 assert(contracts.includes('tools/validate-public-release-safety.mjs'), 'Contratos publicos nao documentam validate-public-release-safety.');
 assert(readme.includes('Ambiente publico de demonstracao'), 'README raiz nao explicita ambiente publico de demonstracao.');
 assert(server.includes('path.relative(ROOT_DIR, filePath)'), 'Servidor sem verificacao robusta de containment para arquivos estaticos.');
@@ -185,6 +193,7 @@ const report = {
     staticFallback: true,
     githubWorkflow: true,
     demoDisclosure: true,
+    localChartDependency: true,
     gitignoreProtections: true
   },
   warnings,

@@ -91,12 +91,18 @@ Criterios de aceite:
 
 Objetivo: tirar a operacao real do modelo de contas demonstrativas, mantendo as contas seed apenas para demo/local.
 
+Status em 2026-08-22: concluido no codigo e no gate SQLite/HTTP local. O modo produtivo agora usa a API como autoridade unica, cookie `HttpOnly`, troca obrigatoria de senha temporaria, revogacao total, rate limit, protecao de origem e entrega do login sem contas demo. A homologacao em PostgreSQL externo continua vinculada ao gate da fase 8AO.
+
 Entregas:
 
 - Politica de senha produtiva e fluxo de troca obrigatoria de senha temporaria.
 - Revogacao de sessao, expiracao controlada e auditoria de login/logout/falha.
 - Permissoes server-side por papel: admin, consultor e cliente.
 - Separacao clara entre modo demo/local e modo produtivo.
+- Concluido: `BANCUS_AUTH_MODE` falha fechado, demo fica restrito a loopback e seeds sao recusadas em producao.
+- Concluido: `GET /api/auth/config`, `POST /api/auth/change-password` e `POST /api/auth/logout-all`.
+- Concluido: `tools/validate-auth-production.mjs` cobre startup, cookie, troca, revogacao, origem, rate limit, papeis, PATCH administrativo e auditoria.
+- Concluido: `tools/validate-auth-browser.mjs` cobre login, erro acessivel, troca obrigatoria, retorno seguro, hidratacao em nova aba, descriptor local forjado e reflow a 320 px.
 
 Arquivos provaveis:
 
@@ -106,6 +112,9 @@ Arquivos provaveis:
 - `assets/js/services/backend-api.service.js`
 - `docs/AUTH_ADMIN_LOCAL.md`
 - `tools/validate-auth-navigation.mjs`
+- `tools/validate-auth-production.mjs`
+- `tools/validate-auth-browser.mjs`
+- `tools/bootstrap-production-admin.mjs`
 
 Criterios de aceite:
 
@@ -113,6 +122,8 @@ Criterios de aceite:
 - Consultor e cliente nao acessam registros fora do proprio `owner_email`.
 - Respostas publicas nunca retornam hash, salt, token bruto ou senha.
 - Modo GitHub Pages continua navegavel como demo.
+
+Evidencia local: `validate-auth-production.mjs` e `validate-auth-browser.mjs` aprovados com todos os gates; `validate-database-provider.mjs` aprovado em 46/46 contratos.
 
 ## Fase 8AQ / P3.5 - Migracao Assistida e Reconciliacao
 
@@ -241,4 +252,4 @@ node tools/validate-design-system.mjs
 
 ## Decisao Para O Proximo Ciclo
 
-A Fase 8AO / P3.3B esta concluida no codigo e no gate local `38/38`. A ativacao do ambiente continua condicionada ao smoke contra uma instancia PostgreSQL externa, sem substituir essa evidencia por mocks. O proximo ciclo de produto implementavel e a Fase 8AP / P3.4, autenticacao produtiva; ela deve avancar sem declarar o provider hospedado como aprovado ate migrations, health, CRUD e proposta entre instancias passarem na homologacao real.
+A Fase 8AP / P3.4 esta concluida no codigo, nos contratos HTTP/SQLite e na jornada real de navegador. A ativacao do ambiente continua condicionada ao smoke contra uma instancia PostgreSQL externa, sem substituir essa evidencia por mocks. O proximo ciclo implementavel e a Fase 8AQ / P3.5, migracao assistida e reconciliacao, preservando origem, idempotencia e relatorio de divergencias antes de qualquer corte.

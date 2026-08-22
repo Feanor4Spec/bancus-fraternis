@@ -4,6 +4,38 @@
 
 ---
 
+## [v9.2.0] - 2026-08-22
+
+### Autenticação produtiva e entrada simplificada
+
+#### Adicionado
+- Modo `production` com API como autoridade única, cookie `HttpOnly`, troca obrigatória de senha temporária, logout global e bootstrap controlado do primeiro administrador.
+- Política produtiva de 12 a 128 caracteres, verificação dummy, limite combinado por IP/conta e auditoria de falhas sem persistir o e-mail informado.
+- Gates `tools/validate-auth-production.mjs` e `tools/validate-auth-browser.mjs` para startup fechado, transporte, revogação, origem, rate limit, CSP, privacidade da auditoria e jornada real no navegador.
+
+#### Modificado
+- A página de login passou a usar linguagem direta, estados acessíveis, retorno interno allowlisted e fluxo integrado de criação da senha definitiva.
+- A entrada produtiva passou a priorizar a tarefa em curso, com cabeçalho compacto, foco conduzido, regiões de estado estáveis e composição responsiva até 320 px.
+- O HTML produtivo não entrega contas demonstrativas; GitHub Pages e o modo local preservam os três perfis de navegação.
+- Mudanças de e-mail, papel, status e senha revogam sessões em SQLite e PostgreSQL.
+- `updateUser`, `setUserStatus` e `deleteUser` agora preservam transacionalmente ao menos um administrador ativo: SQLite usa lock de escrita antes da contagem e PostgreSQL usa advisory lock transacional; a segunda remoção concorrente recebe `409 LAST_ACTIVE_ADMIN`, sem alterar o conflito de histórico vinculado.
+- Operações administrativas no navegador aguardam a resposta do servidor no modo produtivo.
+- Páginas protegidas aguardam a validação do cookie no servidor antes de carregar dados ou renderizar painéis, inclusive no inicializador compartilhado.
+- A proposta pública passou a usar Chart.js versionado localmente e allowlist de estados visuais; a CSP não autoriza mais scripts de terceiros com acesso ao link seguro.
+- O guard local de login ganhou hard cap configurável de `32` a `100000` entradas, padrão `10000`, e rejeita novas chaves com HTTP `429` sem apagar bloqueios existentes.
+
+#### Validacao
+- `node tools/validate-auth-production.mjs`
+- `node tools/validate-auth-browser.mjs`
+- `node tools/validate-auth-navigation.mjs`
+- `node tools/validate-local-database.mjs`
+- `node tools/validate-database-provider.mjs` — 46/46 contratos.
+
+#### Pendencia externa
+- O smoke de autenticação contra PostgreSQL real continua dependente da instância de homologação; rate limit compartilhado e auditoria transacional/outbox permanecem no endurecimento operacional.
+
+---
+
 ## [v9.1.0] - 2026-08-22
 
 ### Adapter PostgreSQL piloto e proposta persistida no mesmo provider

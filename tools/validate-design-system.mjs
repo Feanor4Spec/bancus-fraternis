@@ -114,7 +114,9 @@ function hasV8Contract(html) {
 }
 
 function hasShell(html) {
-  return html.includes('data-shell-header') || html.includes('hm-header') || html.includes('sim-header');
+  const hasAuthShell = /\bclass=["'][^"']*\bbf-auth-topbar\b[^"']*["']/i.test(html)
+    && /\bclass=["'][^"']*\bbf-auth-shell\b[^"']*["']/i.test(html);
+  return html.includes('data-shell-header') || html.includes('hm-header') || html.includes('sim-header') || hasAuthShell;
 }
 
 function hasPageIdentity(html) {
@@ -302,6 +304,8 @@ const requiredFiles = [
   'tools/validate-docs-modernization.mjs',
   'tools/validate-handoff-consultant-operations.mjs',
   'tools/validate-auth-navigation.mjs',
+  'tools/validate-auth-production.mjs',
+  'tools/validate-auth-browser.mjs',
   'tools/validate-navigable-journey.mjs',
   'tools/validate-online-journey-smoke.mjs',
   'tools/validate-github-pages-deploy.mjs',

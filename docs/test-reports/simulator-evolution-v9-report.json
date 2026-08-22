@@ -173,8 +173,8 @@
       "title": "simulation-contracts.js e carregado antes do motor financeiro.",
       "ok": true,
       "evidence": {
-        "contractsIndex": 4,
-        "engineIndex": 5
+        "contractsIndex": 5,
+        "engineIndex": 6
       }
     },
     {
@@ -304,10 +304,10 @@
           "await api.publishProposalSnapshot(reviewed.snapshot.id"
         ],
         "indexes": [
-          1085,
-          1289,
-          1601,
-          1939
+          1101,
+          1305,
+          1617,
+          1955
         ]
       }
     },
@@ -446,6 +446,7 @@
           "assets/js/services/backend-api.service.js",
           "assets/js/services/decision-context.service.js",
           "assets/js/services/handoff-consultivo.service.js",
+          "assets/vendor/chart.js/4.4.0/chart.umd.min.js",
           "js/app.js",
           "js/charts.js",
           "js/comparator.js",
