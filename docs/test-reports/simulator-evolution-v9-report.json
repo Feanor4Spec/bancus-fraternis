@@ -304,10 +304,10 @@
           "await api.publishProposalSnapshot(reviewed.snapshot.id"
         ],
         "indexes": [
-          1101,
-          1305,
-          1617,
-          1955
+          1317,
+          1518,
+          1841,
+          2182
         ]
       }
     },

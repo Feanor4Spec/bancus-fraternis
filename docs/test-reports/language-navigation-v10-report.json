@@ -2,7 +2,7 @@
   "schema": "bancus.validation.language-navigation-v10.v1",
   "validator": "tools/validate-language-navigation-v10.mjs",
   "validatorVersion": "10.2.0",
-  "generatedAt": "2026-08-22T15:07:37.754Z",
+  "generatedAt": "2026-08-22T16:44:16.340Z",
   "status": "PASS",
   "scope": {
     "productFilesValidated": [
@@ -142,7 +142,7 @@
       "title": "A pagina publica e a pagina do simulador estao disponiveis no codigo-fonte.",
       "ok": true,
       "evidence": {
-        "simulatorBytes": 80896,
+        "simulatorBytes": 81109,
         "publicBytes": 3780
       }
     },

@@ -169,7 +169,7 @@ try {
   assert(handoffPage.ready === 'true', 'Pagina handoff nao marcou data-handoff-ready=true.', failures);
   assert(handoffPage.cards >= 1, 'Pagina handoff nao renderizou cards.', failures);
   assert(handoffPage.actionPlans >= 1, 'Pagina handoff nao renderizou data-handoff-action-plan.', failures);
-  assert(/DONO|Dono/i.test(handoffPage.actionPlanText), 'Plano de acao do handoff nao mostrou dono.', failures);
+  assert(/RESPONSÁVEL|Responsável/i.test(handoffPage.actionPlanText), 'Plano de acao do atendimento nao mostrou responsavel.', failures);
   assert(/PRAZO|Prazo/i.test(handoffPage.actionPlanText), 'Plano de acao do handoff nao mostrou prazo.', failures);
   assert(handoffPage.expectedFound, 'Pagina handoff nao exibiu o lead criado pela proposta.', failures);
   await page.evaluate(() => {
@@ -421,10 +421,10 @@ try {
   assert(handoffCommercialStage.panels >= 1, 'Handoff nao renderizou painel de etapa comercial.', failures);
   assert(handoffCommercialStage.history >= 1, 'Handoff nao renderizou historico da etapa comercial.', failures);
   assert(/Follow-up/i.test(handoffCommercialStage.detailText), 'Handoff nao exibiu a etapa comercial Follow-up no detalhe.', failures);
-  assert(/Cadencia comercial/i.test(handoffCommercialStage.panelText), 'Painel de etapa comercial nao exibiu cadencia comercial.', failures);
+  assert(/Andamento comercial/i.test(handoffCommercialStage.panelText), 'Painel de etapa comercial nao exibiu o andamento comercial.', failures);
   assert(/Proposta\s*->\s*Follow-up|Follow-up/i.test(handoffCommercialStage.panelText), 'Painel de etapa comercial nao exibiu ultima movimentacao.', failures);
-  assert(/Etapas paradas/i.test(handoffCommercialStage.cockpitText), 'Cockpit nao exibiu metrica de etapas paradas.', failures);
-  assert(/Movidos 24h/i.test(handoffCommercialStage.cockpitText), 'Cockpit nao exibiu metrica de movidos 24h.', failures);
+  assert(/Conversas paradas/i.test(handoffCommercialStage.cockpitText), 'Cockpit nao exibiu metrica de conversas paradas.', failures);
+  assert(/Avanços nas últimas 24h/i.test(handoffCommercialStage.cockpitText), 'Cockpit nao exibiu metrica de avancos nas ultimas 24h.', failures);
   await page.locator('[data-handoff-commercial-stage-panel]').scrollIntoViewIfNeeded();
   await page.screenshot({ path: screenshots.handoffCommercialDesktop, fullPage: false });
 

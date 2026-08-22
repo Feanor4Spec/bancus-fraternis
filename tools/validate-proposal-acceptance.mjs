@@ -46,7 +46,10 @@ assert(app.includes('limparRevisaoProposta'), 'app.js sem limparRevisaoProposta(
 assert(app.includes('BFProposalGovernance'), 'app.js nao delega painel de aceite para BFProposalGovernance.');
 assert(governance.includes('data-proposal-acceptance-history'), 'proposal-governance.js sem historico de aceite.');
 assert(governance.includes('data-proposal-handoff-bridge'), 'proposal-governance.js sem ponte de handoff.');
-assert(app.includes('proposalAcceptance: getCurrentProposalAcceptance()'), 'Payload salvo nao inclui proposalAcceptance.');
+assert(
+  app.includes('proposalAcceptance: overrides.proposalAcceptance || getCurrentProposalAcceptance()'),
+  'Payload salvo nao inclui proposalAcceptance.'
+);
 assert(proposalSummary.includes('renderAcceptance(data)'), 'proposal-summary.js sem bloco renderAcceptance().');
 assert(proposalSummary.includes('ps-section--acceptance'), 'proposal-summary.js sem secao visual de aceite.');
 assert(css.includes('.proposal-acceptance-panel'), 'styles.css sem painel de aceite.');

@@ -1,0 +1,86 @@
+{
+  "ok": true,
+  "browser": "Codex in-app browser",
+  "baseUrl": "http://127.0.0.1:8080",
+  "surfaces": {
+    "login": {
+      "consultantRoute": "pages/handoff-consultivo.html",
+      "directProfileActions": true
+    },
+    "dashboardCliente": {
+      "primaryNavigationItems": 5,
+      "proposalDeepLink": "simulador.html?from=dashboard&proposalId=PROP-2026-0100-0XQE3A&simulationId=SIM-MT4LKE3O&proposalVersionId=PV-MT4LKE4L-1&proposalView=client#proposta",
+      "proposalDeepLinkExact": true,
+      "forbiddenVisibleTerms": []
+    },
+    "atendimento": {
+      "primaryNavigationItems": 5,
+      "emptyMetricsHidden": true,
+      "forbiddenVisibleTerms": []
+    },
+    "simulador": {
+      "journeySteps": 10,
+      "selectedGroups": 2,
+      "selectedQuotas": 2,
+      "contractedCredit": 100000,
+      "ownBid": 20000,
+      "embeddedBid": 30000,
+      "totalBid": 50000,
+      "netCredit": 70000,
+      "futureEvent": {
+        "type": "adiantamento",
+        "month": 12,
+        "value": 10000,
+        "shownInInstallmentSchedule": true
+      },
+      "installments": 100,
+      "comparisonCompleted": true,
+      "proposalId": "PROP-2026-0100-0XQE3A",
+      "proposalReadyToSend": true,
+      "proposalResume": {
+        "activeStep": 10,
+        "readOnly": true,
+        "status": "Pronta para conferir",
+        "clientLabel": "Dados protegidos",
+        "visibleControls": [
+          "Voltar ao painel"
+        ],
+        "comparisonCards": 10,
+        "recalculatedOnOpen": false
+      },
+      "pdfActionVisible": true,
+      "forbiddenVisibleTerms": []
+    }
+  },
+  "forbiddenRules": [
+    "undefined",
+    "null",
+    "NaN",
+    "Infinity",
+    "[object Object]",
+    "IA",
+    "inteligência artificial",
+    "snapshot",
+    "backend",
+    "fallback",
+    "score",
+    "Dashboard v8",
+    "Portal de engenharia",
+    "Componentes v8",
+    "API Docs",
+    "Microconversões locais",
+    "Jornada medida no navegador",
+    "Handoff",
+    "Trilha assistida",
+    "localmente"
+  ],
+  "screenshots": [
+    "docs/test-prints/commercial-ux-v10/09-login-after.png",
+    "docs/test-prints/commercial-ux-v10/10-atendimento-after.png",
+    "docs/test-prints/commercial-ux-v10/11-simulador-inicio-after.png",
+    "docs/test-prints/commercial-ux-v10/12-multigrupos-after.png",
+    "docs/test-prints/commercial-ux-v10/13-proposta-final-after.png",
+    "docs/test-prints/commercial-ux-v10/14-dashboard-cliente-after.png",
+    "docs/test-prints/commercial-ux-v10/15-proposta-retomada-after.png"
+  ]
+}

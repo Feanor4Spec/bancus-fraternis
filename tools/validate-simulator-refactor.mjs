@@ -244,18 +244,23 @@ assert(savedCart[0].groupSnapshot.lanceEmbutidoMaxPct === 25, 'Carrinho salvo na
 assert(restored.length === 1 && restored[0].lanceEmbutidoPct === 25, 'Carrinho restaurado nao limita lance embutido pelo grupo.');
 
 const payload = state.buildSimulationPayload({
+  id: 'SIM-PROP-001',
+  proposalId: 'PROP-2026-0200',
   nome: 'Simulacao QA',
   currentStep: 7,
   params: { valorCarta: 200000, nomeCliente: 'Cliente Local' },
   cart: savedCart,
   filters: { admin: 'Admin A' },
   resultado: { resumo: { cartaLiquida: 180000 }, cronograma: [] },
-  proposalAcceptance: { status: 'reviewed' },
+  proposalAcceptance: { proposalId: 'PROP-2026-0200', status: 'reviewed' },
   decisionContext,
   formSnapshot,
   root: fakeRoot
 });
 assert(payload.origem === 'simulador-consorcio', 'Payload salvo perdeu origem publica.');
+assert(payload.id === 'SIM-PROP-001', 'Payload salvo perdeu id da simulacao vinculada.');
+assert(payload.proposalId === 'PROP-2026-0200', 'Payload salvo perdeu id da proposta vinculada.');
+assert(payload.proposalAcceptance.proposalId === 'PROP-2026-0200', 'Aceite sanitizado perdeu id nao sensivel da proposta.');
 assert(payload.totalCarta === 200000, 'Payload salvo perdeu total de carta.');
 assert(!Object.prototype.hasOwnProperty.call(payload.params, 'nomeCliente'), 'Payload local nao deveria persistir nomeCliente em params.');
 assert(!Object.prototype.hasOwnProperty.call(payload.formSnapshot, 'nomeCliente'), 'Payload local nao deveria persistir nomeCliente no formSnapshot.');

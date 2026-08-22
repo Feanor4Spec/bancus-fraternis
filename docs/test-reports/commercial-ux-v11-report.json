@@ -1,0 +1,428 @@
+{
+  "ok": true,
+  "version": "commercial-ux-v11",
+  "checks": [
+    {
+      "id": "navigation.public.five",
+      "ok": true,
+      "evidence": [
+        {
+          "href": "index.html",
+          "label": "Início"
+        },
+        {
+          "href": "produtos.html",
+          "label": "Produtos"
+        },
+        {
+          "href": "educacao.html",
+          "label": "Como funciona"
+        },
+        {
+          "href": "simulador.html",
+          "label": "Simular"
+        },
+        {
+          "href": "duvidas.html",
+          "label": "Dúvidas"
+        }
+      ]
+    },
+    {
+      "id": "navigation.cliente.five",
+      "ok": true,
+      "evidence": [
+        {
+          "href": "dashboard-cliente.html",
+          "label": "Meu painel"
+        },
+        {
+          "href": "simulador.html",
+          "label": "Simular"
+        },
+        {
+          "href": "dashboard-cliente.html#atividade-recente",
+          "label": "Propostas"
+        },
+        {
+          "href": "comparador.html",
+          "label": "Comparar"
+        },
+        {
+          "href": "dashboard-cliente.html#continuidade-cliente",
+          "label": "Atendimento"
+        }
+      ]
+    },
+    {
+      "id": "navigation.consultor.five",
+      "ok": true,
+      "evidence": [
+        {
+          "href": "handoff-consultivo.html",
+          "label": "Atendimento"
+        },
+        {
+          "href": "simulador.html",
+          "label": "Nova simulação"
+        },
+        {
+          "href": "carteira.html",
+          "label": "Carteira"
+        },
+        {
+          "href": "assembleias.html",
+          "label": "Assembleias"
+        },
+        {
+          "href": "modelos-biblioteca.html",
+          "label": "Modelos"
+        }
+      ]
+    },
+    {
+      "id": "navigation.admin.five",
+      "ok": true,
+      "evidence": [
+        {
+          "href": "dashboard-admin.html",
+          "label": "Operação"
+        },
+        {
+          "href": "handoff-consultivo.html",
+          "label": "Atendimento"
+        },
+        {
+          "href": "carteira.html",
+          "label": "Carteira"
+        },
+        {
+          "href": "simulador.html",
+          "label": "Simular"
+        },
+        {
+          "href": "dashboard-admin.html#admin-usuarios",
+          "label": "Usuários"
+        }
+      ]
+    },
+    {
+      "id": "navigation.role-aware",
+      "ok": true,
+      "evidence": "Navegação recalculada após autenticação."
+    },
+    {
+      "id": "navigation.wrapper-layout",
+      "ok": true,
+      "evidence": "Links preservam o layout flexível."
+    },
+    {
+      "id": "dashboard.internal-copy-hidden",
+      "ok": true,
+      "evidence": [
+        "Dashboard v8",
+        "Portal de engenharia",
+        "Componentes v8",
+        "API Docs",
+        "Microconversões locais",
+        "Jornada medida no navegador"
+      ]
+    },
+    {
+      "id": "dashboard.customer-actions",
+      "ok": true,
+      "evidence": "Quatro ações comerciais visíveis."
+    },
+    {
+      "id": "dashboard.legacy-panels-hidden",
+      "ok": true,
+      "evidence": "Contratos antigos preservados fora da apresentação."
+    },
+    {
+      "id": "dashboard.proposal-route",
+      "ok": true,
+      "evidence": "Atalho identifica versão, simulação e proposta final."
+    },
+    {
+      "id": "dashboard.proposal-client-view",
+      "ok": true,
+      "evidence": "Cliente abre a proposta em modo de conferência; equipe preserva a edição."
+    },
+    {
+      "id": "dashboard.empty-metrics",
+      "ok": true,
+      "evidence": "Linha interna e métricas vazias não ocupam a jornada."
+    },
+    {
+      "id": "handoff.hero-commercial",
+      "ok": true,
+      "evidence": "Objetivo comercial explícito."
+    },
+    {
+      "id": "handoff.filters-human",
+      "ok": true,
+      "evidence": "Filtros usam linguagem da operação."
+    },
+    {
+      "id": "handoff.internal-panels-hidden",
+      "ok": true,
+      "evidence": "Painéis de infraestrutura fora da tela comercial."
+    },
+    {
+      "id": "handoff.dynamic-copy",
+      "ok": true,
+      "evidence": "Textos dinâmicos seguem o vocabulário comercial."
+    },
+    {
+      "id": "handoff.zero-state",
+      "ok": true,
+      "evidence": "Estado vazio orienta uma única ação."
+    },
+    {
+      "id": "handoff.proposal-route",
+      "ok": true,
+      "evidence": "Atendimento retoma a proposta vinculada na etapa final."
+    },
+    {
+      "id": "login.direct-actions",
+      "ok": true,
+      "evidence": "Acesso por intenção de uso."
+    },
+    {
+      "id": "login.consultant-route",
+      "ok": true,
+      "evidence": "Consultor entra direto no atendimento."
+    },
+    {
+      "id": "login.backend-race",
+      "ok": true,
+      "evidence": "Espelhamento conclui antes da navegação."
+    },
+    {
+      "id": "simulator.direct-state",
+      "ok": true,
+      "evidence": "Estados falam em preenchimento e envio."
+    },
+    {
+      "id": "simulator.pdf-action",
+      "ok": true,
+      "evidence": "Entrega em PDF permanece explícita."
+    },
+    {
+      "id": "simulator.share-language",
+      "ok": true,
+      "evidence": "Geração de link sem vocabulário de implantação."
+    },
+    {
+      "id": "simulator.bottom-bar-flow",
+      "ok": true,
+      "evidence": "Barra final não cobre a proposta."
+    },
+    {
+      "id": "simulator.proposal-resume",
+      "ok": true,
+      "evidence": "Retomada valida o vínculo e abre a etapa 10."
+    },
+    {
+      "id": "simulator.resume-identity",
+      "ok": true,
+      "evidence": "Links divergentes falham sem abrir outra proposta."
+    },
+    {
+      "id": "simulator.unique-proposal",
+      "ok": true,
+      "evidence": "Cada jornada recebe uma identidade própria, mesmo com o mesmo valor de crédito."
+    },
+    {
+      "id": "simulator.resume-payload",
+      "ok": true,
+      "evidence": "Simulação preserva identidade, comparação, privacidade e referência da proposta."
+    },
+    {
+      "id": "simulator.client-readonly",
+      "ok": true,
+      "evidence": "Retomada do cliente usa linguagem de consulta e bloqueia edição ou envio sem alterar o gate comercial."
+    },
+    {
+      "id": "simulator.client-readonly-state",
+      "ok": true,
+      "evidence": "Modo cliente mostra somente situação, proposta e retorno ao painel."
+    },
+    {
+      "id": "simulator.client-readonly-snapshot",
+      "ok": true,
+      "evidence": "Conferência usa o resultado salvo sem recalcular, reabrir edição ou exibir alertas de bastidor."
+    },
+    {
+      "id": "evidence.screenshots",
+      "ok": true,
+      "evidence": [
+        {
+          "path": "docs/test-prints/commercial-ux-v10/09-login-after.png",
+          "bytes": 64230,
+          "ok": true
+        },
+        {
+          "path": "docs/test-prints/commercial-ux-v10/10-atendimento-after.png",
+          "bytes": 78878,
+          "ok": true
+        },
+        {
+          "path": "docs/test-prints/commercial-ux-v10/11-simulador-inicio-after.png",
+          "bytes": 56252,
+          "ok": true
+        },
+        {
+          "path": "docs/test-prints/commercial-ux-v10/12-multigrupos-after.png",
+          "bytes": 73608,
+          "ok": true
+        },
+        {
+          "path": "docs/test-prints/commercial-ux-v10/13-proposta-final-after.png",
+          "bytes": 82303,
+          "ok": true
+        },
+        {
+          "path": "docs/test-prints/commercial-ux-v10/14-dashboard-cliente-after.png",
+          "bytes": 74438,
+          "ok": true
+        },
+        {
+          "path": "docs/test-prints/commercial-ux-v10/15-proposta-retomada-after.png",
+          "bytes": 62756,
+          "ok": true
+        }
+      ]
+    }
+  ],
+  "failures": [],
+  "evidence": {
+    "navigation": {
+      "public": [
+        {
+          "href": "index.html",
+          "label": "Início"
+        },
+        {
+          "href": "produtos.html",
+          "label": "Produtos"
+        },
+        {
+          "href": "educacao.html",
+          "label": "Como funciona"
+        },
+        {
+          "href": "simulador.html",
+          "label": "Simular"
+        },
+        {
+          "href": "duvidas.html",
+          "label": "Dúvidas"
+        }
+      ],
+      "cliente": [
+        {
+          "href": "dashboard-cliente.html",
+          "label": "Meu painel"
+        },
+        {
+          "href": "simulador.html",
+          "label": "Simular"
+        },
+        {
+          "href": "dashboard-cliente.html#atividade-recente",
+          "label": "Propostas"
+        },
+        {
+          "href": "comparador.html",
+          "label": "Comparar"
+        },
+        {
+          "href": "dashboard-cliente.html#continuidade-cliente",
+          "label": "Atendimento"
+        }
+      ],
+      "consultor": [
+        {
+          "href": "handoff-consultivo.html",
+          "label": "Atendimento"
+        },
+        {
+          "href": "simulador.html",
+          "label": "Nova simulação"
+        },
+        {
+          "href": "carteira.html",
+          "label": "Carteira"
+        },
+        {
+          "href": "assembleias.html",
+          "label": "Assembleias"
+        },
+        {
+          "href": "modelos-biblioteca.html",
+          "label": "Modelos"
+        }
+      ],
+      "admin": [
+        {
+          "href": "dashboard-admin.html",
+          "label": "Operação"
+        },
+        {
+          "href": "handoff-consultivo.html",
+          "label": "Atendimento"
+        },
+        {
+          "href": "carteira.html",
+          "label": "Carteira"
+        },
+        {
+          "href": "simulador.html",
+          "label": "Simular"
+        },
+        {
+          "href": "dashboard-admin.html#admin-usuarios",
+          "label": "Usuários"
+        }
+      ]
+    },
+    "screenshots": [
+      {
+        "path": "docs/test-prints/commercial-ux-v10/09-login-after.png",
+        "bytes": 64230,
+        "ok": true
+      },
+      {
+        "path": "docs/test-prints/commercial-ux-v10/10-atendimento-after.png",
+        "bytes": 78878,
+        "ok": true
+      },
+      {
+        "path": "docs/test-prints/commercial-ux-v10/11-simulador-inicio-after.png",
+        "bytes": 56252,
+        "ok": true
+      },
+      {
+        "path": "docs/test-prints/commercial-ux-v10/12-multigrupos-after.png",
+        "bytes": 73608,
+        "ok": true
+      },
+      {
+        "path": "docs/test-prints/commercial-ux-v10/13-proposta-final-after.png",
+        "bytes": 82303,
+        "ok": true
+      },
+      {
+        "path": "docs/test-prints/commercial-ux-v10/14-dashboard-cliente-after.png",
+        "bytes": 74438,
+        "ok": true
+      },
+      {
+        "path": "docs/test-prints/commercial-ux-v10/15-proposta-retomada-after.png",
+        "bytes": 62756,
+        "ok": true
+      }
+    ]
+  }
+}

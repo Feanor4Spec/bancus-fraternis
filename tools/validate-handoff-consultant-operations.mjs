@@ -73,9 +73,9 @@ const [pageHtml, uiSource, cssSource, serviceSource, designValidator, contractsD
   'Handoff criado por calculadora',
   'calculator:create',
   'calculator:refresh',
-  'Etapas paradas',
-  'Movidos 24h',
-  'Cadencia comercial'
+  'Conversas paradas',
+  'Avanços nas últimas 24h',
+  'Andamento comercial'
 ].forEach((marker) => assert(uiSource.includes(marker), `handoff-consultivo.js sem ${marker}.`));
 
 [
