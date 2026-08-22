@@ -35,6 +35,7 @@
   let proposalBlocks = [];
   let publication = null;
   let publishing = false;
+  let clientModeLocked = false;
 
   function byId(id) {
     return document.getElementById(id);
@@ -104,8 +105,8 @@
 
     const client = valueOf('nomeCliente');
     return {
-      title: client ? `Proposta de ${client}` : 'Projeto em preparação',
-      detail: client ? 'Cliente identificado' : 'Preencha os dados abaixo'
+      title: client ? `Proposta de ${client}` : 'Nova simulação',
+      detail: client ? 'Cliente identificado' : 'Informe o cliente e o objetivo'
     };
   }
 
@@ -121,7 +122,7 @@
 
   function proposalId() {
     const text = proposalRoot()?.textContent || '';
-    const match = text.match(/(?:PROP|CP)-\d{4}-\d{3,6}/i);
+    const match = text.match(/(?:PROP|CP)-\d{4}-\d{3,6}(?:-[A-Z0-9]{4,12})?/i);
     return match ? match[0].toUpperCase() : 'ID pendente';
   }
 
@@ -180,6 +181,7 @@
       pdfStructure,
       validity,
       releaseIssues,
+      clientReady: calculated && premises && pdfStructure && validity,
       ready: calculated && requiredData && premises && pdfStructure && validity && releaseIssues.length === 0
     };
   }
@@ -189,13 +191,14 @@
     const count = versionCount();
     const id = proposalId();
     const generatedDate = formatDate(valueOf('dataSimulacao')) || 'Aguardando cálculo';
-    let status = 'Em preparação';
+    let status = 'Em preenchimento';
 
-    if (publication?.status === 'active') status = 'Publicada';
-    else if (publication?.status === 'revoked') status = 'Revogada';
-    else if (publishing) status = 'Publicando';
-    else if (state.ready) status = 'Revisada';
-    else if (state.calculated) status = 'Em revisão';
+    if (publication?.status === 'active') status = 'Link disponível';
+    else if (publication?.status === 'revoked') status = 'Link desativado';
+    else if (publishing) status = 'Criando link';
+    else if (clientModeLocked && state.clientReady) status = 'Pronta para conferir';
+    else if (state.ready) status = 'Pronta para enviar';
+    else if (state.calculated) status = 'Em conferência';
 
     setText('sim-evolution-project-name', project.title);
     setText('sim-evolution-project-detail', project.detail);
@@ -236,7 +239,7 @@
     const result = document.querySelector('[data-proposal-validation-result]');
     if (result) {
       result.dataset.state = state.ready ? 'ready' : 'pending';
-      setText(result.querySelector('strong'), state.ready ? 'Tudo pronto' : 'Validação pendente');
+      setText(result.querySelector('strong'), state.ready ? 'Tudo pronto' : 'Conferência pendente');
       setText(
         result.querySelector('span'),
         state.ready ? 'Proposta conferida e pronta para compartilhar.' : 'Revise os itens antes de compartilhar.'
@@ -334,7 +337,9 @@
       else button.removeAttribute('aria-current');
     });
 
-    if (step !== 10 && document.body.classList.contains('proposal-client-mode')) {
+    if (step === 10 && isDashboardProposalContext()) {
+      setClientMode(true, { locked: true });
+    } else if (step !== 10 && document.body.classList.contains('proposal-client-mode')) {
       setClientMode(false);
     }
   }
@@ -363,14 +368,54 @@
     }
   }
 
-  function setClientMode(enabled) {
+  function isDashboardProposalContext() {
+    try {
+      const params = new URLSearchParams(window.location.search || '');
+      const fromDashboard = params.get('from') === 'dashboard';
+      const proposalId = params.get('proposalId') || '';
+      const simulationId = params.get('simulationId') || params.get('simulacaoId') || '';
+      return Boolean(
+        fromDashboard
+        && params.get('proposalView') === 'client'
+        && (proposalId || simulationId)
+      );
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function setClientMode(enabled, options = {}) {
+    clientModeLocked = Boolean(enabled && options.locked);
     document.body.classList.toggle('proposal-client-mode', enabled);
+    document.body.classList.toggle('proposal-client-readonly', clientModeLocked);
     const button = byId('btn-proposal-client-mode');
-    if (!button) return;
-    button.setAttribute('aria-pressed', String(enabled));
-    button.innerHTML = enabled
-      ? '<img src="../assets/icons/ui/ui-arrow.svg" alt=""> Voltar à edição'
-      : '<img src="../assets/icons/ui/ui-users.svg" alt=""> Visualizar como cliente';
+    if (button) {
+      button.setAttribute('aria-pressed', String(enabled));
+      button.innerHTML = enabled
+        ? '<img src="../assets/icons/ui/ui-arrow.svg" alt=""> Voltar à edição'
+        : '<img src="../assets/icons/ui/ui-users.svg" alt=""> Visualizar como cliente';
+    }
+
+    const returnButton = byId('btn-proposal-client-return');
+    if (returnButton) {
+      returnButton.hidden = !enabled;
+      returnButton.innerHTML = clientModeLocked
+        ? '<img src="../assets/icons/ui/ui-arrow.svg" alt=""> Voltar ao painel'
+        : '<img src="../assets/icons/ui/ui-arrow.svg" alt=""> Voltar à edição';
+    }
+
+    const heading = document.querySelector('#step-10 .proposal-evolution-heading');
+    const eyebrow = heading?.querySelector('.section-header__eyebrow');
+    const title = heading?.querySelector('h2');
+    const description = heading?.querySelector('p');
+    setText(eyebrow, enabled ? 'Proposta de consórcio' : 'Etapa 10 de 10 · Proposta final');
+    setText(title, enabled ? 'Confira sua proposta.' : 'Revise a proposta antes de enviar.');
+    setText(
+      description,
+      enabled
+        ? 'Veja os grupos, valores, lances, parcelas e condições desta simulação.'
+        : 'Confira valores, condições e pontos de atenção.'
+    );
   }
 
   function publicationDays() {
@@ -407,10 +452,10 @@
     panel.hidden = false;
     panel.dataset.status = publication.status;
     const active = publication.status === 'active';
-    setText('proposal-share-status', active ? 'Publicação ativa e somente leitura' : 'Acesso revogado');
+    setText('proposal-share-status', active ? 'Pronto para enviar' : 'Link desativado');
     setText('proposal-share-expiry', active
       ? `Válida até ${new Intl.DateTimeFormat('pt-BR', { dateStyle: 'long', timeStyle: 'short' }).format(new Date(publication.expiresAt))}`
-      : 'O link deixou de resolver a proposta.');
+      : 'O link não está mais disponível.');
     const input = byId('proposal-share-link');
     if (input) input.value = publication.url || '';
     const open = byId('btn-proposal-open-link');
@@ -420,6 +465,11 @@
   }
 
   async function publishSecureProposal() {
+    if (clientModeLocked) {
+      publicationMessage('Esta proposta está disponível apenas para conferência.');
+      window.App?.showToast?.('Esta proposta está disponível apenas para conferência.', 'info');
+      return;
+    }
     const state = validationState();
     if (!state.ready) {
       publicationMessage(state.releaseIssues?.[0] || 'A proposta ainda possui itens pendentes. Abra Revisão e validade para conferir.');
@@ -430,8 +480,8 @@
     const api = window.BFBackendApi;
     const session = api?.readSession?.();
     if (!api?.createProposalSnapshot || !hasPublicationSession(session)) {
-      publicationMessage('Entre no portal com um usuário autorizado para publicar e revogar propostas.');
-      window.App?.showToast?.('Autenticação necessária para publicar a proposta.', 'error');
+      publicationMessage('Entre no portal com um usuário autorizado para compartilhar esta proposta.');
+      window.App?.showToast?.('Entre para compartilhar esta proposta.', 'error');
       return;
     }
 
@@ -449,22 +499,22 @@
 
     try {
       const created = await api.createProposalSnapshot(prepared.payload);
-      if (!created?.ok || !created.snapshot?.id) throw new Error(created?.message || 'Não foi possível preparar a proposta.');
+      if (!created?.ok || !created.snapshot?.id) throw new Error(created?.message || 'Não foi possível preparar o envio.');
 
       const validated = await api.transitionProposalSnapshot(created.snapshot.id, 'validada', {
         provenance: { validationGate: 'financial-reconciliation-passed' }
       });
-      if (!validated?.ok || !validated.snapshot?.id) throw new Error(validated?.message || 'Não foi possível validar a proposta.');
+      if (!validated?.ok || !validated.snapshot?.id) throw new Error(validated?.message || 'Não foi possível conferir os dados da proposta.');
 
       const reviewed = await api.transitionProposalSnapshot(validated.snapshot.id, 'revisada', {
         review: prepared.payload.review,
         provenance: { reviewGate: 'human-review-passed' }
       });
-      if (!reviewed?.ok || !reviewed.snapshot?.id) throw new Error(reviewed?.message || 'Não foi possível registrar a revisão.');
+      if (!reviewed?.ok || !reviewed.snapshot?.id) throw new Error(reviewed?.message || 'Não foi possível concluir a conferência.');
 
       const published = await api.publishProposalSnapshot(reviewed.snapshot.id, publicationDays());
       if (!published?.ok || !published.token || !published.share?.id) {
-        throw new Error(published?.message || 'Falha ao publicar o link seguro.');
+        throw new Error(published?.message || 'Não foi possível criar o link da proposta.');
       }
 
       publication = {
@@ -477,7 +527,7 @@
       };
       document.body.dataset.proposalPublicationStatus = 'active';
       syncSharePanel();
-      publicationMessage('Link criado. O acesso é somente leitura e pode ser revogado.', 'success');
+      publicationMessage('Link criado. A proposta está pronta para enviar ao cliente.', 'success');
       window.App?.showToast?.('Link da proposta criado.', 'success');
     } catch (error) {
       publicationMessage(error && error.message ? error.message : 'Não foi possível gerar o link da proposta.');
@@ -507,17 +557,17 @@
 
   async function revokePublication() {
     if (!publication?.shareId || publication.status !== 'active') return;
-    if (!window.confirm('Revogar agora o acesso público a esta proposta?')) return;
+    if (!window.confirm('Desativar o link desta proposta agora?')) return;
     const result = await window.BFBackendApi?.revokeProposalShare?.(publication.shareId);
     if (!result?.ok) {
-      publicationMessage(result?.message || 'Não foi possível revogar o acesso.');
+      publicationMessage(result?.message || 'Não foi possível desativar o link.');
       return;
     }
     publication.status = 'revoked';
     document.body.dataset.proposalPublicationStatus = 'revoked';
     syncSharePanel();
-    publicationMessage('Acesso revogado. O histórico da proposta foi mantido.', 'success');
-    window.App?.showToast?.('Acesso público revogado.', 'warning');
+    publicationMessage('Link desativado. A proposta continua salva.', 'success');
+    window.App?.showToast?.('Link desativado.', 'warning');
     scheduleRefresh();
   }
 
@@ -536,6 +586,14 @@
   function bindControls() {
     byId('btn-proposal-client-mode')?.addEventListener('click', () => {
       setClientMode(!document.body.classList.contains('proposal-client-mode'));
+    });
+
+    byId('btn-proposal-client-return')?.addEventListener('click', () => {
+      if (clientModeLocked) {
+        window.location.assign('dashboard-cliente.html');
+        return;
+      }
+      setClientMode(false);
     });
 
     ['btn-proposal-publish', 'btn-proposal-publish-bottom'].forEach((id) => {

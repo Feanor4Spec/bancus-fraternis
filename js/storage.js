@@ -117,6 +117,8 @@ const Storage = (() => {
       atualizadoEm: entry.atualizadoEm,
       origem: entry.origem || 'simulador-consorcio',
       currentStep: entry.currentStep || 1,
+      proposalId: entry.proposalId || '',
+      privacy: entry.privacy || null,
       consultor: entry.consultor || '',
       consultorEmail: entry.consultorEmail || '',
       consultorTelefone: entry.consultorTelefone || '',
@@ -143,6 +145,8 @@ const Storage = (() => {
       params: entry.params || null,
       carrinho: entry.carrinho || [],
       resultado: entry.resultado || null,
+      comparison: entry.comparison || null,
+      proposalSnapshotRef: entry.proposalSnapshotRef || null,
       proposalAcceptance: entry.proposalAcceptance || null,
       decisionContext: entry.decisionContext || null
     };
@@ -166,6 +170,8 @@ const Storage = (() => {
       atualizadoEm: now,
       origem: data.origem || 'simulador-consorcio',
       currentStep: data.currentStep || data.step || 1,
+      proposalId: data.proposalId || (data.proposalAcceptance && data.proposalAcceptance.proposalId) || '',
+      privacy: data.privacy || null,
       consultor: data.consultor || '',
       consultorEmail: data.consultorEmail || '',
       consultorTelefone: data.consultorTelefone || '',
@@ -184,7 +190,9 @@ const Storage = (() => {
       params: data.params || null,
       carrinho: data.carrinho || [],
       resultado: data.resultado || null,
+      comparison: data.comparison || null,
       resumo: data.resumo || (data.resultado && data.resultado.resumo ? data.resultado.resumo : null),
+      proposalSnapshotRef: data.proposalSnapshotRef || null,
       proposalAcceptance: data.proposalAcceptance || null,
       decisionContext: data.decisionContext || null
     };

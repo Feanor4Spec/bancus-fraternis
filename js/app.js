@@ -17,6 +17,7 @@ const App = (() => {
   let cenarios = null;
   let currentParams = null;
   let compResult = null; // V2: resultado da comparação
+  let currentProposalId = '';
   let projectSimulation = null;
   const visitedSteps = new Set([1]);
   const STEP_LABELS = Object.freeze([
@@ -1114,6 +1115,7 @@ const App = (() => {
 
     if (window.BFSimulatorResult && window.BFSimulatorResult.renderSummary) {
       window.BFSimulatorResult.renderSummary(container, {
+        proposalData: getCurrentProposalData(),
         params: currentParams,
         resultado,
         cenarios,
@@ -1291,7 +1293,7 @@ const App = (() => {
   function renderProposalBuilderReadiness(config) {
     const issues = proposalBuilderReadinessIssues(config);
     const pages = proposalBuilderPageEstimate(config);
-    const statusLabel = issues.length ? 'Revisar' : 'Pronta';
+    const statusLabel = issues.length ? 'Ajustes pendentes' : 'Pronto para salvar';
     const issueList = issues.length
       ? `<ul>${issues.map(issue => `<li>${escapeSettingsText(issue)}</li>`).join('')}</ul>`
       : '<p>Conteúdo pronto para impressão e PDF.</p>';
@@ -1299,7 +1301,7 @@ const App = (() => {
     return `
       <div class="proposal-builder-readiness proposal-builder-readiness--${issues.length ? 'warning' : 'ok'}" data-proposal-builder-readiness>
         <article>
-          <span>Status</span>
+          <span>Conteúdo</span>
           <strong>${statusLabel}</strong>
           <small>${pages} página${pages === 1 ? '' : 's'} estimada${pages === 1 ? '' : 's'}</small>
         </article>
@@ -1309,7 +1311,7 @@ const App = (() => {
           <small>${countEnabledFlags(config.sections)} seções selecionadas</small>
         </article>
         <div>
-          <strong>Antes de baixar</strong>
+          <strong>Antes de salvar</strong>
           ${issueList}
         </div>
       </div>
@@ -1415,6 +1417,7 @@ const App = (() => {
 
     if (window.BFSimulatorResult && window.BFSimulatorResult.renderProposal) {
       window.BFSimulatorResult.renderProposal(container, {
+        proposalData: getCurrentProposalData(),
         params: currentParams,
         resultado,
         cenarios,
@@ -1438,7 +1441,7 @@ const App = (() => {
     if (!currentParams || !resultado || typeof ProposalSummary === 'undefined' || !ProposalSummary.mapSimulationToProposal) {
       return null;
     }
-    return ProposalSummary.mapSimulationToProposal({
+    const proposal = ProposalSummary.mapSimulationToProposal({
       params: currentParams,
       resultado,
       cenarios,
@@ -1446,6 +1449,21 @@ const App = (() => {
       decisionContext: getDecisionContextSnapshot(),
       comparison: compResult
     });
+    if (!currentProposalId) {
+      let suffix = '';
+      try {
+        if (window.crypto?.getRandomValues) {
+          const value = new Uint32Array(1);
+          window.crypto.getRandomValues(value);
+          suffix = value[0].toString(36).toUpperCase().slice(-6).padStart(6, '0');
+        }
+      } catch (e) {
+        suffix = '';
+      }
+      if (!suffix) suffix = `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`.toUpperCase().slice(-6);
+      currentProposalId = `${proposal.id}-${suffix}`;
+    }
+    return { ...proposal, id: currentProposalId };
   }
 
   function jsonSnapshot(value) {
@@ -1487,7 +1505,7 @@ const App = (() => {
     const proposalData = getCurrentProposalData();
     const acceptance = getCurrentProposalAcceptance();
     if (!proposalData || !acceptance) {
-      return { ok: false, issues: ['A proposta revisada não está disponível.'] };
+      return { ok: false, issues: ['A proposta conferida não está disponível.'] };
     }
 
     try {
@@ -1562,7 +1580,7 @@ const App = (() => {
         }
       };
     } catch (error) {
-      return { ok: false, issues: [error && error.message ? error.message : 'Não foi possível preparar o snapshot da proposta.'] };
+      return { ok: false, issues: [error && error.message ? error.message : 'Não foi possível preparar os dados da proposta.'] };
     }
   }
 
@@ -1579,6 +1597,116 @@ const App = (() => {
     } catch (e) {
       return '';
     }
+  }
+
+  function getRequestedProposalId() {
+    try {
+      const proposalId = new URLSearchParams(window.location.search || '').get('proposalId') || '';
+      return /^PROP-[A-Za-z0-9._:-]+$/i.test(proposalId) ? proposalId : '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function getRequestedProposalVersionId() {
+    try {
+      const versionId = new URLSearchParams(window.location.search || '').get('proposalVersionId') || '';
+      return /^PV-[A-Za-z0-9._:-]+$/i.test(versionId) ? versionId : '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function isClientProposalResume(params = null) {
+    try {
+      const search = params || new URLSearchParams(window.location.search || '');
+      return search.get('from') === 'dashboard' && search.get('proposalView') === 'client';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function storedSimulationsWithDetails() {
+    if (typeof Storage === 'undefined' || !Storage.loadSimulations) return [];
+    const items = Storage.loadSimulations({ includeDetails: true });
+    return Array.isArray(items) ? items : [];
+  }
+
+  function simulationMatchesProposal(simulation, proposalId) {
+    if (!simulation || !proposalId) return false;
+    return simulation.proposalId === proposalId
+      || simulation.proposalAcceptance?.proposalId === proposalId;
+  }
+
+  function findSimulationForProposal(proposalId, proposalVersionId = '') {
+    if (!proposalId) return null;
+    const simulations = storedSimulationsWithDetails();
+    if (typeof BFProposalVersions !== 'undefined' && BFProposalVersions.latest) {
+      const version = proposalVersionId && BFProposalVersions.history
+        ? BFProposalVersions.history(proposalId, 120).find((item) => item.id === proposalVersionId)
+        : BFProposalVersions.latest(proposalId);
+      if (version?.simulationId && typeof Storage !== 'undefined' && Storage.loadSimulation) {
+        const linked = Storage.loadSimulation(version.simulationId);
+        if (linked) return linked;
+      }
+      if (proposalVersionId) return null;
+    }
+    const exact = simulations.filter((item) => simulationMatchesProposal(item, proposalId));
+    return exact.length === 1 ? exact[0] : null;
+  }
+
+  function replaceCurrentSimulationId(simulationId) {
+    if (!simulationId || !window.history?.replaceState) return;
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set('simulationId', simulationId);
+      window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
+    } catch (e) {
+      // A retomada continua funcional mesmo quando o navegador bloqueia a troca da URL.
+    }
+  }
+
+  function clearCurrentProposalLink() {
+    if (!window.history?.replaceState) return;
+    try {
+      const url = new URL(window.location.href);
+      ['simulationId', 'simulacaoId', 'proposalId', 'proposalVersionId'].forEach((key) => url.searchParams.delete(key));
+      window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}`);
+    } catch (e) {
+      // O formulario ainda pode ser limpo mesmo sem alterar a URL atual.
+    }
+  }
+
+  function replaceCurrentProposalLink({ proposalId, proposalVersionId, simulationId }) {
+    if (!window.history?.replaceState) return;
+    try {
+      const url = new URL(window.location.href);
+      if (proposalId) url.searchParams.set('proposalId', proposalId);
+      if (proposalVersionId) url.searchParams.set('proposalVersionId', proposalVersionId);
+      if (simulationId) url.searchParams.set('simulationId', simulationId);
+      if (currentStep === 10) url.hash = 'proposta';
+      window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
+    } catch (e) {
+      // A proposta permanece salva mesmo quando o navegador bloqueia a troca da URL.
+    }
+  }
+
+  function persistCurrentSimulationForProposal(proposal, acceptance) {
+    if (!proposal?.id || typeof Storage === 'undefined' || !Storage.saveSimulation) return '';
+    const currentId = getCurrentSimulationId();
+    const existing = currentId && Storage.loadSimulation ? Storage.loadSimulation(currentId) : null;
+    const simulationId = existing?.id || currentId || `SIM-${Date.now().toString(36).toUpperCase()}`;
+    const name = existing?.nome || `Proposta ${proposal.id}`;
+    const payload = buildSimulationPayload(name, {
+      id: simulationId,
+      proposalId: proposal.id,
+      proposalAcceptance: acceptance,
+      currentStep: 10
+    });
+    const saved = Storage.saveSimulation(name, payload);
+    if (!saved?.id) return '';
+    replaceCurrentSimulationId(saved.id);
+    return saved.id;
   }
 
   function getCurrentProposalVersionContext(acceptance = null, builder = null) {
@@ -1662,8 +1790,10 @@ const App = (() => {
     }
     const acceptance = options.acceptance || getCurrentProposalAcceptance();
     const builder = getProposalBuilderConfig();
+    const simulationId = persistCurrentSimulationForProposal(proposal, acceptance);
     const record = BFProposalVersions.save(proposal, {
       ...getCurrentProposalVersionContext(acceptance, builder),
+      simulationId,
       forceNew: !!options.forceNew,
       label: options.label || ''
     });
@@ -1671,6 +1801,11 @@ const App = (() => {
       if (!options.silent) showToast('Não foi possível salvar a versão da proposta.', 'error');
       return null;
     }
+    replaceCurrentProposalLink({
+      proposalId: record.proposalId,
+      proposalVersionId: record.id,
+      simulationId: record.simulationId || simulationId
+    });
     if (!options.skipRender) renderProposalVersionPanel(acceptance, builder);
     if (!options.silent) {
       showToast(record.unchanged ? 'A versão atual já estava salva.' : `Versão ${record.version} da proposta salva.`, record.unchanged ? 'info' : 'success');
@@ -2054,6 +2189,8 @@ const App = (() => {
     cenarios = null;
     currentParams = null;
     compResult = null;
+    currentProposalId = '';
+    clearCurrentProposalLink();
     projectSimulation = null;
     projetoEstruturado.itens = [];
     visitedSteps.clear();
@@ -2135,7 +2272,7 @@ const App = (() => {
     if (!compResult) issues.push('Conclua a comparacao das alternativas do projeto.');
     const acceptance = getCurrentProposalAcceptance();
     if (!acceptance || acceptance.status !== 'reviewed') {
-      issues.push('Conclua a conferência dos dados antes de publicar.');
+      issues.push('Conclua a conferência dos dados antes de compartilhar ou salvar.');
     }
     return Array.from(new Set(issues));
   }
@@ -3605,14 +3742,16 @@ const App = (() => {
       : 1;
   }
 
-  function buildSimulationPayload(nome) {
+  function buildSimulationPayload(nome, overrides = {}) {
     const params = getParams();
     const carrinho = collectSavedCart();
     const decisionContext = getDecisionContextSnapshot();
     return window.BFSimulatorState && window.BFSimulatorState.buildSimulationPayload
       ? window.BFSimulatorState.buildSimulationPayload({
+        id: overrides.id || '',
+        proposalId: overrides.proposalId || currentProposalId || '',
         nome,
-        currentStep,
+        currentStep: overrides.currentStep || currentStep,
         params,
         cart: carrinho,
         filters: getShelfFilters(),
@@ -3621,12 +3760,23 @@ const App = (() => {
         proposalSnapshot: typeof BFProposalSnapshot !== 'undefined' && BFProposalSnapshot.current
           ? BFProposalSnapshot.current()
           : null,
-        proposalAcceptance: getCurrentProposalAcceptance(),
+        proposalAcceptance: overrides.proposalAcceptance || getCurrentProposalAcceptance(),
         decisionContext,
         formSnapshot: collectFormSnapshot(),
         root: document
       })
-      : { nome, origem: 'simulador-consorcio', currentStep, params, carrinho, resultado, comparison: compResult };
+      : {
+        id: overrides.id || '',
+        proposalId: overrides.proposalId || currentProposalId || '',
+        nome,
+        origem: 'simulador-consorcio',
+        currentStep: overrides.currentStep || currentStep,
+        params,
+        carrinho,
+        resultado,
+        comparison: compResult,
+        proposalAcceptance: overrides.proposalAcceptance || getCurrentProposalAcceptance()
+      };
   }
 
   function salvarSimulacao() {
@@ -3638,6 +3788,7 @@ const App = (() => {
     const entry = Storage.saveSimulation(nome, buildSimulationPayload(nome));
 
     if (entry) {
+      replaceCurrentSimulationId(entry.id);
       if (window.BFDecisionContext && typeof window.BFDecisionContext.recordSimulation === 'function') {
         window.BFDecisionContext.recordSimulation(entry);
       }
@@ -3696,17 +3847,22 @@ const App = (() => {
     modal.style.display = 'flex';
   }
 
-  function _carregarSimulacao(id) {
+  function _carregarSimulacao(id, options = {}) {
     const sim = Storage.loadSimulation(id);
     if (!sim) { showToast('Simulação não encontrada.', 'error'); return; }
 
-    showToast(`Carregando "${sim.nome}"...`, 'info');
+    if (!options.clientReadOnly) showToast(`Carregando "${sim.nome}"...`, 'info');
     const resumeModal = document.getElementById('shelf-detail-modal');
     if (resumeModal) resumeModal.style.display = 'none';
 
+    currentProposalId = sim.proposalId || sim.proposalAcceptance?.proposalId || '';
+    const privacyProtected = Boolean(
+      (sim.privacy && sim.privacy.localPIIStored === false)
+      || sim.cliente === 'Dados protegidos'
+    );
+
     // Restaurar dados do consultor/cliente
     applyFormSnapshot(sim.formSnapshot);
-    const fallbackSet = (elId, val) => { const el = document.getElementById(elId); if (el && val && !el.value) el.value = val; };
     restoreDynamicEvents(sim.params);
     if (typeof ShelfEngine !== 'undefined') {
       restoreCartItems(sim.carrinho || []);
@@ -3718,7 +3874,10 @@ const App = (() => {
     cenarios = null;
     // O carrinho restaurado é a fonte atual. Recalcular evita combinar uma
     // seleção multigrupo com um resultado antigo ou parcial salvo localmente.
-    if (currentParams && (sim.carrinho || []).length) calcular();
+    if (currentParams && (sim.carrinho || []).length && !options.clientReadOnly) calcular();
+    if (privacyProtected && currentParams && !currentParams.nomeCliente) {
+      currentParams = { ...currentParams, nomeCliente: 'Dados protegidos' };
+    }
 
     if (resultado) {
       renderResultados();
@@ -3733,19 +3892,54 @@ const App = (() => {
     }
 
     renderSimulatorDecision();
-    goToStep(getResumeStep(sim), { skipValidation: true, skipAutoCalculate: true, skipAutoSearch: true });
-    const privacyNotice = sim.privacy && sim.privacy.localPIIStored === false
-      ? ' Dados identificadores devem ser reinformados por seguranca.'
-      : '';
-    showToast(`Simulacao "${sim.nome}" restaurada com carrinho, parametros e resultado.${privacyNotice}`, 'success');
+    const requestedProposalId = getRequestedProposalId();
+    const restoredProposal = getCurrentProposalData();
+    const proposalMatches = !requestedProposalId || !restoredProposal || restoredProposal.id === requestedProposalId;
+    const targetStep = options.targetStep === 10 && proposalMatches ? 10 : getResumeStep(sim);
+    goToStep(targetStep, { skipValidation: true, skipAutoCalculate: true, skipAutoSearch: true });
+    replaceCurrentSimulationId(sim.id);
+    if (!proposalMatches) {
+      showToast('A proposta solicitada não corresponde a esta simulação.', 'warning');
+      return;
+    }
+    if (options.clientReadOnly && targetStep === 10) {
+      window.ProposalExperience?.setClientMode?.(true, { locked: true });
+      window.ProposalExperience?.refresh?.();
+    }
+    if (!options.clientReadOnly) {
+      showToast(
+        privacyProtected
+          ? 'Proposta retomada. Seus dados pessoais continuam protegidos.'
+          : 'Proposta retomada com sucesso.',
+        'success'
+      );
+    }
   }
 
   function carregarSimulacaoDaUrl() {
     if (typeof Storage === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
-    const id = params.get('simulationId') || params.get('simulacaoId');
-    if (!id) return;
-    window.setTimeout(() => _carregarSimulacao(id), 300);
+    const proposalId = getRequestedProposalId();
+    const proposalVersionId = getRequestedProposalVersionId();
+    const clientReadOnly = isClientProposalResume(params);
+    const linked = proposalId ? findSimulationForProposal(proposalId, proposalVersionId) : null;
+    const explicitId = params.get('simulationId') || params.get('simulacaoId') || '';
+    if (proposalVersionId && (!linked || (explicitId && explicitId !== linked.id))) {
+      window.setTimeout(() => showToast('Este link de proposta não corresponde a uma simulação salva.', 'warning'), 300);
+      return;
+    }
+    const id = explicitId || linked?.id || '';
+    if (!id) {
+      if (proposalId) {
+        window.setTimeout(() => showToast('Não foi possível retomar esta proposta. Abra uma simulação salva ou crie uma nova proposta.', 'warning'), 300);
+      }
+      return;
+    }
+    const proposalTarget = ['#proposta', '#step-10'].includes(window.location.hash) || !!proposalId;
+    window.setTimeout(() => _carregarSimulacao(id, {
+      targetStep: proposalTarget ? 10 : null,
+      clientReadOnly
+    }), 300);
   }
 
   function _excluirSimulacao(id) {

@@ -1632,10 +1632,10 @@ const ProposalSummary = (() => {
     const target = typeof container === 'string' ? document.querySelector(container) : container;
     if (!target) return null;
 
-    const mapped = payload && payload.resultado
-      ? mapSimulationToProposal(payload)
-      : payload && payload.proposalData
-        ? payload.proposalData
+    const mapped = payload && payload.proposalData
+      ? payload.proposalData
+      : payload && payload.resultado
+        ? mapSimulationToProposal(payload)
         : payload && payload.metrics && payload.lances
           ? payload
           : createMockData();

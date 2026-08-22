@@ -60,10 +60,10 @@
   };
 
   const proposalStatusLabels = {
-    reviewed: 'Revisada localmente',
-    partial: 'Revisao parcial',
-    pending: 'Em revisao',
-    expired: 'Revisao vencida'
+    reviewed: 'Pronta para conferir',
+    partial: 'Conferência pendente',
+    pending: 'Em conferência',
+    expired: 'Validade encerrada'
   };
 
   let backendSnapshotState = {
@@ -227,6 +227,11 @@
   function currentUserEmail() {
     const user = window.BFAuth && window.BFAuth.getCurrentUser ? window.BFAuth.getCurrentUser() : null;
     return user && user.email ? user.email : 'anon';
+  }
+
+  function currentUserRole() {
+    const user = window.BFAuth && window.BFAuth.getCurrentUser ? window.BFAuth.getCurrentUser() : null;
+    return user && user.role ? user.role : '';
   }
 
   function calculatorPage(slug) {
@@ -533,12 +538,25 @@
     return sortByRecent(source)[0] || null;
   }
 
+  function proposalHref(snapshot, proposalId, simulationId = '', proposalVersionId = '') {
+    return dashboardHref('simulador.html#proposta', snapshot, {
+      proposalId,
+      simulationId,
+      proposalVersionId,
+      proposalView: currentUserRole() === 'cliente' && (proposalId || simulationId) ? 'client' : ''
+    });
+  }
+
   function proposalDashboardState(snapshot, handoff) {
     const service = window.BFHandoffConsultivoService;
     const proposalId = handoff && handoff.sourceProposalId ? handoff.sourceProposalId : '';
     const handoffProposal = handoff && service && service.proposalState ? service.proposalState(handoff) : null;
     const acceptance = latestByProposalId(snapshot.proposalAcceptances || [], proposalId);
-    const version = latestByProposalId(snapshot.proposalVersions || [], proposalId);
+    const proposalVersions = snapshot.proposalVersions || [];
+    const version = handoff?.sourceProposalVersionId
+      ? proposalVersions.find((item) => item.id === handoff.sourceProposalVersionId)
+        || latestByProposalId(proposalVersions, proposalId)
+      : latestByProposalId(proposalVersions, proposalId);
     const hasProposal = Boolean((handoffProposal && handoffProposal.active) || acceptance || version || hasProposalState(snapshot));
 
     if (handoffProposal && handoffProposal.active) {
@@ -550,7 +568,7 @@
         status: handoffProposal.status || '',
         version: handoffProposal.version || (version && version.version) || '',
         validUntil: handoffProposal.validUntil || (acceptance && acceptance.validUntil) || '',
-        href: dashboardHref('simulador.html#step-9', snapshot, { proposalId })
+        href: proposalHref(snapshot, proposalId, version && version.simulationId, version && version.id)
       };
     }
 
@@ -558,12 +576,12 @@
       return {
         active: true,
         tone: acceptance.status === 'expired' ? 'warning' : acceptance.status === 'reviewed' ? 'stable' : 'info',
-        label: proposalStatusLabels[acceptance.status] || acceptance.statusLabel || 'Proposta em revisao',
-        detail: acceptance.notes || 'Revisao local encontrada para continuidade da proposta.',
+        label: proposalStatusLabels[acceptance.status] || acceptance.statusLabel || 'Proposta em revisão',
+        detail: acceptance.notes || 'Confira as condições e o prazo antes de compartilhar.',
         status: acceptance.status || '',
         version: acceptance.version || '',
         validUntil: acceptance.validUntil || '',
-        href: dashboardHref('simulador.html#step-9', snapshot, { proposalId: acceptance.proposalId || proposalId })
+        href: proposalHref(snapshot, acceptance.proposalId || proposalId, version && version.simulationId, version && version.id)
       };
     }
 
@@ -571,26 +589,26 @@
       return {
         active: true,
         tone: 'stable',
-        label: `Versao ${version.version || '-'} salva`,
-        detail: 'Snapshot versionado da proposta pronto para revisao ou handoff.',
+        label: 'Proposta salva',
+        detail: 'Pronta para conferir e compartilhar com o cliente.',
         status: 'versioned',
         version: version.version || '',
         validUntil: version.validUntil || '',
-        href: dashboardHref('simulador.html#step-9', snapshot, { proposalId: version.proposalId || proposalId })
+        href: proposalHref(snapshot, version.proposalId || proposalId, version.simulationId, version.id)
       };
     }
 
     return {
       active: hasProposal,
       tone: hasProposal ? 'info' : 'warning',
-      label: hasProposal ? 'Proposta detectada' : 'Sem proposta revisada',
+      label: hasProposal ? 'Proposta disponível' : 'Nenhuma proposta criada',
       detail: hasProposal
-        ? 'Existe sinal de proposta no historico local; revise a etapa 9 para travar a versao.'
-        : 'Simule e revise a proposta antes de encaminhar para atendimento.',
+        ? 'Abra a proposta para conferir os valores e as condições.'
+        : 'Comece uma simulação para receber uma proposta completa.',
       status: '',
       version: '',
       validUntil: '',
-      href: dashboardHref('simulador.html#step-9', snapshot)
+      href: proposalHref(snapshot, '', '')
     };
   }
 
@@ -599,8 +617,8 @@
     if (!simulation) {
       return {
         active: false,
-        label: 'Sem simulacao salva',
-        detail: 'Abra o simulador com o contexto do dashboard para criar o primeiro cenario.',
+        label: 'Nenhuma simulação salva',
+        detail: 'Escolha os grupos e monte seu primeiro cenário.',
         href: dashboardHref('simulador.html', snapshot),
         age: '-'
       };
@@ -608,10 +626,8 @@
     const context = simulation.decisionContext || {};
     return {
       active: true,
-      label: simulation.nome || simulation.name || 'Simulacao salva',
-      detail: context.readinessScore
-        ? `Prontidao ${context.readinessScore}/100 e origem ${context.source || 'dashboard'}.`
-        : 'Cenario salvo pronto para proposta, carteira ou comparacao.',
+      label: simulation.nome || simulation.name || 'Simulação salva',
+      detail: 'Continue a simulação ou abra a proposta vinculada.',
       href: dashboardHref(`simulador.html?simulationId=${encodeURIComponent(simulation.id || '')}`, snapshot, {
         calculatorSlug: context.calculatorSlug || '',
         historyId: context.historyId || ''
@@ -631,19 +647,19 @@
         tone: plan.tone || (handoff.priority === 'alta' ? 'warning' : 'stable'),
         eyebrow: 'Atendimento em andamento',
         title: plan.title || (handoff.operational && handoff.operational.nextStep) || 'Acompanhar atendimento',
-        detail: plan.reason || 'Lead local tem plano operacional aberto.',
-        cta: plan.ctaLabel || 'Abrir atendimento',
-        href: dashboardHref(plan.href || 'handoff-consultivo.html#detalhe-handoff', snapshot, { handoffId: handoff.id || '' })
+        detail: 'Seu atendimento já está registrado. Acompanhe as próximas orientações por aqui.',
+        cta: 'Ver andamento',
+        href: dashboardHref('dashboard-cliente.html#atividade-recente', snapshot)
       };
     }
     if (snapshot.journey && snapshot.journey.nextAction) {
       return {
         kind: 'journey',
         tone: 'stable',
-        eyebrow: 'Trilha ativa',
-        title: snapshot.journey.nextAction.title || 'Revisar proximo passo',
-        detail: snapshot.journey.recommendation && snapshot.journey.recommendation.message ? snapshot.journey.recommendation.message : 'A trilha assistida ja definiu a proxima acao.',
-        cta: snapshot.journey.nextAction.label || 'Abrir trilha',
+        eyebrow: 'Planejamento em andamento',
+        title: snapshot.journey.nextAction.title || 'Veja o próximo passo',
+        detail: snapshot.journey.recommendation && snapshot.journey.recommendation.message ? snapshot.journey.recommendation.message : 'Seu planejamento já tem uma próxima ação definida.',
+        cta: snapshot.journey.nextAction.label || 'Continuar planejamento',
         href: dashboardHref(snapshot.journey.nextAction.href || 'trilha-decisao.html', snapshot)
       };
     }
@@ -653,7 +669,7 @@
       return {
         kind: `calculator-${impact.risk}`,
         tone: impact.tone,
-        eyebrow: 'Impacto da calculadora',
+        eyebrow: 'Antes de simular',
         title: impact.title,
         detail: `${impact.riskLabel}: ${impact.detail}`,
         cta: impact.cta,
@@ -664,20 +680,20 @@
       return {
         kind: 'signal',
         tone: topSignal.severity === 'alta' ? 'warning' : 'info',
-        eyebrow: 'Retomada recomendada',
-        title: topSignal.title || 'Retomar jornada',
-        detail: topSignal.reason || 'Existe um ponto recente para continuar.',
-        cta: topSignal.ctaLabel || 'Abrir retomada',
+        eyebrow: 'Continue de onde parou',
+        title: topSignal.title || 'Retomar simulação',
+        detail: topSignal.reason || 'Há uma atividade recente pronta para continuar.',
+        cta: topSignal.ctaLabel || 'Continuar',
         href: topSignal.ctaHref || dashboardHref('dashboard-cliente.html#retomadas-cliente', snapshot)
       };
     }
     return {
       kind: snapshot.hasProfile ? 'simulation' : 'profile',
       tone: snapshot.hasProfile ? 'info' : 'warning',
-      eyebrow: snapshot.hasProfile ? 'Simulacao orientada' : 'Diagnostico pendente',
-      title: snapshot.hasProfile ? 'Criar cenario com contexto' : 'Completar perfil financeiro',
-      detail: snapshot.hasProfile ? 'Use os dados ja salvos para abrir o simulador sem recomecar.' : 'Renda, custos, dividas e reserva destravam a recomendacao.',
-      cta: snapshot.hasProfile ? 'Abrir simulador' : 'Completar diagnostico',
+      eyebrow: snapshot.hasProfile ? 'Nova simulação' : 'Prepare sua simulação',
+      title: snapshot.hasProfile ? 'Criar um novo cenário' : 'Complete seus dados financeiros',
+      detail: snapshot.hasProfile ? 'Seus dados já estão prontos para uma nova simulação.' : 'Renda, despesas e reserva ajudam a encontrar uma parcela confortável.',
+      cta: snapshot.hasProfile ? 'Abrir simulador' : 'Completar dados',
       href: snapshot.hasProfile ? dashboardHref('simulador.html', snapshot) : dashboardHref('calculadora-custos-fixos.html', snapshot, { calculatorSlug: 'custos-fixos' })
     };
   }
@@ -783,26 +799,20 @@
     const topImpact = impactSummary.top;
     const statusLabel = handoff
       ? (service && service.statusLabels ? service.statusLabels[handoff.status] : handoffStatusLabels[handoff.status]) || handoff.status || 'Aberto'
-      : 'Sem handoff';
-    const sourceLabel = handoff && service && service.sourceLabel ? service.sourceLabel(handoff) : 'Jornada local';
-    const handoffHref = handoff
-      ? dashboardHref('handoff-consultivo.html#detalhe-handoff', snapshot, { handoffId: handoff.id || '' })
-      : dashboardHref('handoff-consultivo.html#fila-handoff', snapshot);
-    const stageTone = stage && stage.stale ? 'warning' : stage ? 'stable' : 'info';
+      : 'Nenhum atendimento aberto';
     const proposalTone = uiTone(proposal.tone);
+    const proposalDetail = proposal.validUntil
+      ? `Válida até ${formatDate(proposal.validUntil)}. ${proposal.detail}`
+      : proposal.detail;
 
     target.innerHTML = `
       <div class="bf-client-cockpit">
         <div class="bf-admin-panel-heading">
           <div>
-            <span class="bf-badge bf-badge--gold">Cockpit de retomada</span>
-            <span class="bf-badge bf-badge--navy" data-client-backend-snapshots="${escapeHtml(snapshot.backendSnapshots.source)}">${escapeHtml(snapshot.backendSnapshots.loaded ? 'Snapshots SQLite' : 'Fallback local')}</span>
-            <span class="bf-badge bf-badge--ok" data-client-backend-entities="${escapeHtml(snapshot.backendEntities.source)}">${escapeHtml(snapshot.backendEntities.loaded ? `Entidades ${snapshot.backendEntities.count}` : 'Entidades locais')}</span>
-            <span class="bf-badge bf-badge--gold" data-client-backend-materialized="${escapeHtml(snapshot.backendMaterialized.source)}">${escapeHtml(snapshot.backendMaterialized.loaded ? `Tabelas ${snapshot.backendMaterialized.count}` : 'Tabelas locais')}</span>
-            <h2>Onde voce esta e qual acao seguir agora</h2>
-            <p>Consolida atendimento, proposta, simulacao e cadencia comercial para continuar a jornada sem perder contexto.</p>
+            <span class="bf-badge bf-badge--gold">Próximo passo</span>
+            <h2>Continue de onde parou</h2>
+            <p>Sua simulação, sua proposta e o andamento do atendimento estão reunidos aqui.</p>
           </div>
-          <a class="btn btn--ghost btn--sm" href="${escapeHtml(handoffHref)}">Abrir atendimento</a>
         </div>
         <div class="bf-client-cockpit__grid">
           <article class="bf-client-next-action bf-client-next-action--${escapeHtml(uiTone(nextAction.tone))}" data-client-next-action="${escapeHtml(nextAction.kind)}">
@@ -812,34 +822,29 @@
             <a class="btn btn--primary btn--sm" href="${escapeHtml(nextAction.href)}">${escapeHtml(nextAction.cta)}</a>
           </article>
           <div class="bf-client-cockpit__signals">
-            <article class="bf-client-signal bf-client-signal--${escapeHtml(handoff ? 'stable' : 'info')}" data-client-handoff-status="${escapeHtml(handoff ? handoff.status || 'novo' : 'none')}">
-              <span>Handoff</span>
-              <strong>${escapeHtml(statusLabel)}</strong>
-              <p>${escapeHtml(handoff ? `${handoff.id} - ${sourceLabel} - ${ageLabel(handoff.updatedAt || handoff.createdAt)}` : 'Nenhum atendimento consultivo ativo para esta jornada.')}</p>
-            </article>
             <article class="bf-client-signal bf-client-signal--${escapeHtml(proposalTone || 'info')}" data-client-proposal-status="${escapeHtml(proposal.status || (proposal.active ? 'active' : 'none'))}">
               <span>Proposta</span>
               <strong>${escapeHtml(proposal.label)}</strong>
-              <p>${escapeHtml([proposal.version ? `versao ${proposal.version}` : '', proposal.validUntil ? `validade ${proposal.validUntil}` : '', proposal.detail].filter(Boolean).join(' - '))}</p>
-              <a href="${escapeHtml(proposal.href)}">Revisar proposta</a>
+              <p>${escapeHtml(proposalDetail)}</p>
+              <a href="${escapeHtml(proposal.href)}">Ver proposta</a>
             </article>
             <article class="bf-client-signal bf-client-signal--${escapeHtml(simulation.active ? 'stable' : 'info')}" data-client-simulation-context="${escapeHtml(simulation.active ? 'ready' : 'empty')}">
-              <span>Simulacao</span>
+              <span>Simulação</span>
               <strong>${escapeHtml(simulation.label)}</strong>
-              <p>${escapeHtml(`${simulation.detail} Aging ${simulation.age}.`)}</p>
+              <p>${escapeHtml(simulation.detail)}</p>
               <a href="${escapeHtml(simulation.href)}">Abrir simulador</a>
             </article>
-            <article class="bf-client-signal bf-client-signal--${escapeHtml(topImpact ? topImpact.tone : 'info')}" data-client-calculator-impact="${escapeHtml(topImpact ? topImpact.risk : 'empty')}" data-client-calculator-impact-risk="${escapeHtml(topImpact ? topImpact.risk : 'empty')}">
-              <span>Calculadora</span>
-              <strong>${escapeHtml(topImpact ? topImpact.riskLabel : 'Sem impacto salvo')}</strong>
-              <p>${escapeHtml(topImpact ? `${topImpact.calculatorName}: ${topImpact.metric.label} ${topImpact.metric.value} - score ${topImpact.score}/100.` : 'Salve um calculo para gerar impacto de jornada.')}</p>
-              ${topImpact ? `<a href="${escapeHtml(topImpact.href)}">${escapeHtml(topImpact.cta)}</a>` : '<a href="calculadoras.html">Abrir hub</a>'}
+            <article class="bf-client-signal bf-client-signal--${escapeHtml(handoff ? 'stable' : 'info')}" data-client-handoff-status="${escapeHtml(handoff ? handoff.status || 'novo' : 'none')}">
+              <span>Atendimento</span>
+              <strong>${escapeHtml(statusLabel)}</strong>
+              <p>${escapeHtml(handoff ? 'Seu pedido está em acompanhamento.' : 'Quando precisar, seus dados podem seguir para um consultor.')}</p>
+              <a href="#atividade-recente">Ver atividades</a>
             </article>
-            <article class="bf-client-signal bf-client-signal--${escapeHtml(stageTone)}" data-client-commercial-stage="${escapeHtml(stage ? stage.key || 'contato' : 'none')}">
-              <span>Etapa comercial</span>
-              <strong>${escapeHtml(stage ? stage.label || 'Contato' : 'Nao iniciada')}</strong>
-              <p>${escapeHtml(stage ? `${stage.stale ? 'Retomar etapa' : 'Cadencia ok'} - aging ${stage.stageAgeLabel || '-'} - prazo ${stage.deadlineHours || '-'}h` : 'A etapa comercial aparece quando o handoff entra no funil admin.')}</p>
-            </article>
+            <span hidden data-client-backend-snapshots="${escapeHtml(snapshot.backendSnapshots.source)}"></span>
+            <span hidden data-client-backend-entities="${escapeHtml(snapshot.backendEntities.source)}"></span>
+            <span hidden data-client-backend-materialized="${escapeHtml(snapshot.backendMaterialized.source)}"></span>
+            <span hidden data-client-calculator-impact="${escapeHtml(topImpact ? topImpact.risk : 'empty')}" data-client-calculator-impact-risk="${escapeHtml(topImpact ? topImpact.risk : 'empty')}"></span>
+            <span hidden data-client-commercial-stage="${escapeHtml(stage ? stage.key || 'contato' : 'none')}"></span>
           </div>
         </div>
       </div>
@@ -866,6 +871,18 @@
     const journeyId = snapshot.journey ? snapshot.journey.id : 'dashboard-cliente';
     const objective = snapshot.journey ? snapshot.journey.objective : 'obter_liquidez';
     const simulation = latestSimulation(snapshot);
+    const proposalVersion = sortByRecent(snapshot.proposalVersions || [])[0] || null;
+    const proposalAcceptance = latestByProposalId(
+      snapshot.proposalAcceptances || [],
+      proposalVersion && proposalVersion.proposalId
+    );
+    const timelineProposalId = (proposalVersion && proposalVersion.proposalId)
+      || (proposalAcceptance && proposalAcceptance.proposalId)
+      || (simulation && (simulation.proposalId || simulation.proposalAcceptance?.proposalId))
+      || '';
+    const timelineSimulationId = (proposalVersion && proposalVersion.simulationId)
+      || (simulation && simulation.id)
+      || '';
     const steps = [
       {
         label: 'Diagnostico',
@@ -906,7 +923,12 @@
         label: 'Proposta',
         title: hasProposal ? 'Proposta revisada' : 'Revisar proposta',
         text: hasProposal ? 'Aceite local ou revisao comercial ja aparece no historico.' : 'Use a etapa de proposta para fechar checklist e validade.',
-        href: hasSimulation && simulation ? dashboardHref(`simulador.html?simulationId=${encodeURIComponent(simulation.id)}#proposta`, snapshot) : dashboardHref('simulador.html#proposta', snapshot, { journeyId, preset: objective }),
+        href: proposalHref(
+          snapshot,
+          timelineProposalId,
+          timelineSimulationId,
+          proposalVersion && proposalVersion.id
+        ),
         status: hasProposal ? 'done' : (hasSimulation ? 'active' : 'pending')
       },
       {
@@ -938,10 +960,9 @@
     const events = [];
     snapshot.simulations.forEach((item) => {
       const context = item.decisionContext || {};
-      const source = context.calculatorSlug ? ` via ${context.calculatorSlug}` : context.source ? ` via ${context.source}` : '';
       events.push({
-        type: `Simulador${source}`,
-        title: context.readinessScore ? `${item.nome || 'Simulacao de consorcio'} - prontidao ${context.readinessScore}/100` : (item.nome || 'Simulacao de consorcio'),
+        type: 'Simulação',
+        title: item.nome || 'Simulação de consórcio',
         date: item.atualizadoEm || item.criadoEm,
         href: dashboardHref(`simulador.html?simulationId=${encodeURIComponent(item.id)}`, snapshot, {
           calculatorSlug: context.calculatorSlug || '',
@@ -951,7 +972,7 @@
     });
     snapshot.calculatorHistory.forEach((item) => events.push({
       type: item.calculatorName || 'Calculadora',
-      title: item.recommendation ? item.recommendation.title : 'Calculo salvo',
+      title: item.recommendation ? item.recommendation.title : 'Cálculo salvo',
       date: item.createdAt,
       href: dashboardHref(calculatorPage(item.calculatorSlug), snapshot, {
         calculatorSlug: item.calculatorSlug || '',
@@ -959,40 +980,48 @@
       })
     }));
     snapshot.comparatorModels.forEach((item) => events.push({
-      type: 'Modelo comparador',
+      type: 'Comparação',
       title: item.name,
       date: item.updatedAt || item.createdAt,
       href: window.BFComparatorModels && window.BFComparatorModels.route ? window.BFComparatorModels.route(item.id) : 'comparador.html'
     }));
     if (snapshot.journey) {
       events.push({
-        type: 'Trilha assistida',
+        type: 'Planejamento',
         title: snapshot.journey.recommendation ? snapshot.journey.recommendation.title : snapshot.journey.objectiveLabel,
         date: snapshot.journey.updatedAt || snapshot.journey.createdAt,
         href: dashboardHref('trilha-decisao.html', snapshot)
       });
     }
     snapshot.handoffs.forEach((item) => events.push({
-      type: 'Handoff',
-      title: `${item.id} - ${item.objectiveLabel || 'Atendimento consultivo'}`,
+      type: 'Atendimento',
+      title: item.objectiveLabel || 'Atendimento consultivo',
       date: item.updatedAt || item.createdAt,
       href: dashboardHref('handoff-consultivo.html#fila-handoff', snapshot, { handoffId: item.id || '' })
     }));
     snapshot.proposalVersions.forEach((item) => events.push({
       type: 'Proposta',
-      title: item.title || item.proposalTitle || `Versao ${item.version || item.versionLabel || 'salva'}`,
+      title: item.title || item.proposalTitle || 'Proposta salva',
       date: item.updatedAt || item.createdAt,
-      href: dashboardHref('simulador.html#proposta', snapshot, { proposalId: item.proposalId || item.id || '' })
+      href: proposalHref(snapshot, item.proposalId || item.id || '', item.simulationId || '', item.id || '')
     }));
     snapshot.proposalAcceptances.forEach((item) => events.push({
-      type: 'Aceite de proposta',
-      title: proposalStatusLabels[item.status] || item.status || item.title || 'Revisao registrada',
+      type: 'Proposta',
+      title: proposalStatusLabels[item.status] || item.title || 'Conferência registrada',
       date: item.updatedAt || item.createdAt,
-      href: dashboardHref('simulador.html#proposta', snapshot, { proposalId: item.proposalId || item.id || '' })
+      href: (() => {
+        const version = latestByProposalId(snapshot.proposalVersions || [], item.proposalId || item.id || '');
+        return proposalHref(
+          snapshot,
+          item.proposalId || item.id || '',
+          version?.simulationId || '',
+          version?.id || ''
+        );
+      })()
     }));
     snapshot.recoverySignals.forEach((signal) => events.push({
-      type: 'Retomada recomendada',
-      title: `${signal.title} - ${signal.age || 'sinal local'}`,
+      type: 'Próximo passo',
+      title: signal.title || 'Continuar atividade',
       date: signal.latestEventAt,
       href: signal.ctaHref || 'dashboard-cliente.html'
     }));
@@ -1003,7 +1032,7 @@
       .slice(0, 6);
 
     if (!sorted.length) {
-      target.innerHTML = '<div class="bf-empty-state">Nenhuma atividade recente ainda. Crie um diagnostico, uma simulacao ou uma trilha para ativar a continuidade.</div>';
+      target.innerHTML = '<div class="bf-empty-state">Você ainda não tem atividades. Comece uma simulação para comparar grupos e gerar sua proposta.</div>';
       return;
     }
 
@@ -1336,23 +1365,23 @@
     const impacts = snapshot.calculatorImpacts.slice(0, 8);
     const readiness = snapshot.readiness || { score: profile.readinessScore || 0, complete: false };
     const hasProfile = Object.keys(profile).length > 0;
-    const sourceLabel = snapshot.backendSnapshots.loaded ? 'SQLite local' : 'localStorage';
 
     if (profileTarget) {
       profileTarget.innerHTML = `
         <div class="bf-calculator-profile">
           <div>
-            <span class="bf-badge bf-badge--ok" data-client-backend-snapshots="${escapeHtml(snapshot.backendSnapshots.source)}">${escapeHtml(sourceLabel)}</span>
-            <h2>${hasProfile ? 'Dados reutilizaveis entre calculadoras' : 'Crie o primeiro diagnostico'}</h2>
-            <p>${hasProfile ? 'Renda, custos, reserva, patrimonio e capacidade de aporte foram consolidados localmente para personalizar novas simulacoes.' : 'Abra Custos Fixos ou Reserva de Emergencia para iniciar o perfil financeiro local.'}</p>
+            <span class="bf-badge bf-badge--ok">Planejamento financeiro</span>
+            <h2>${hasProfile ? 'Seus dados estão prontos para novas simulações' : 'Planeje uma parcela que cabe no seu orçamento'}</h2>
+            <p>${hasProfile ? 'Use sua renda, suas despesas e sua reserva para comparar cenários com mais segurança.' : 'Informe renda, despesas e reserva para encontrar uma parcela confortável antes de escolher os grupos.'}</p>
             <div class="bf-inline-actions">
-              <a class="btn btn--primary btn--sm" href="calculadora-custos-fixos.html">Diagnosticar custos</a>
-              <a class="btn btn--ghost btn--sm" href="calculadora-reserva-emergencia.html">Reserva</a>
-              <a class="btn btn--ghost btn--sm" href="simulador.html?from=journey&journeyId=dashboard-cliente">Simular com contexto</a>
+              <a class="btn btn--primary btn--sm" href="calculadora-capacidade-credito.html">Calcular capacidade</a>
+              <a class="btn btn--ghost btn--sm" href="calculadora-lance-consorcio.html">Planejar lance</a>
+              <a class="btn btn--ghost btn--sm" href="simulador.html?from=journey&journeyId=dashboard-cliente">Simular agora</a>
             </div>
+            <span hidden data-client-backend-snapshots="${escapeHtml(snapshot.backendSnapshots.source)}"></span>
           </div>
           <div class="bf-calculator-profile__metrics">
-            <div><small>Prontidao</small><strong>${readiness.score || 0}/100</strong></div>
+            <div><small>Dados preenchidos</small><strong>${readiness.score || 0}%</strong></div>
             <div><small>Renda</small><strong>${profile.rendaMensal ? money(profile.rendaMensal) : '-'}</strong></div>
             <div><small>Capacidade</small><strong>${profile.capacidadePagamento ? money(profile.capacidadePagamento) : (profile.capacidadeAporte ? money(profile.capacidadeAporte) : '-')}</strong></div>
             <div><small>Reserva</small><strong>${profile.reservaAtual ? money(profile.reservaAtual) : '-'}</strong></div>
@@ -1461,13 +1490,13 @@
     target.innerHTML = `
       <div class="bf-user-profile">
         <div>
-          <span class="bf-badge bf-badge--ok">Sessao ativa</span>
-          <h2>Ola, ${escapeHtml(user.name)}</h2>
-          <p>${escapeHtml(user.email)} - ${escapeHtml(user.roleLabel)} - ultimo acesso: ${escapeHtml(formatDate(user.lastLoginAt))}</p>
+          <span class="bf-badge bf-badge--ok">Bem-vindo</span>
+          <h2>Olá, ${escapeHtml(String(user.name || '').split(/\s+/)[0])}</h2>
+          <p>Retome uma proposta ou comece uma nova simulação.</p>
         </div>
         <div class="bf-inline-actions">
-          ${user.role === 'admin' ? '<a class="btn btn--ghost btn--sm" href="dashboard-admin.html">Administracao</a>' : ''}
-          <a class="btn btn--primary btn--sm" href="simulador.html">Nova simulacao</a>
+          ${user.role === 'admin' ? '<a class="btn btn--ghost btn--sm" href="dashboard-admin.html">Operação</a>' : ''}
+          <a class="btn btn--primary btn--sm" href="simulador.html">Nova simulação</a>
         </div>
       </div>
     `;

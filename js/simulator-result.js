@@ -261,6 +261,7 @@
 
   function resultContextPayload(context = {}) {
     return {
+      proposalData: context.proposalData,
       params: context.params,
       resultado: context.resultado,
       cenarios: context.cenarios,

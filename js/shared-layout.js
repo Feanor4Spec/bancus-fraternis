@@ -121,6 +121,53 @@
     return `<a class="nav__link${isActive(href)}" href="${href}">${label}</a>`;
   }
 
+  const navigationByRole = Object.freeze({
+    public: [
+      ['index.html', 'Início'],
+      ['produtos.html', 'Produtos'],
+      ['educacao.html', 'Como funciona'],
+      ['simulador.html', 'Simular'],
+      ['duvidas.html', 'Dúvidas']
+    ],
+    cliente: [
+      ['dashboard-cliente.html', 'Meu painel'],
+      ['simulador.html', 'Simular'],
+      ['dashboard-cliente.html#atividade-recente', 'Propostas'],
+      ['comparador.html', 'Comparar'],
+      ['dashboard-cliente.html#continuidade-cliente', 'Atendimento']
+    ],
+    consultor: [
+      ['handoff-consultivo.html', 'Atendimento'],
+      ['simulador.html', 'Nova simulação'],
+      ['carteira.html', 'Carteira'],
+      ['assembleias.html', 'Assembleias'],
+      ['modelos-biblioteca.html', 'Modelos']
+    ],
+    admin: [
+      ['dashboard-admin.html', 'Operação'],
+      ['handoff-consultivo.html', 'Atendimento'],
+      ['carteira.html', 'Carteira'],
+      ['simulador.html', 'Simular'],
+      ['dashboard-admin.html#admin-usuarios', 'Usuários']
+    ]
+  });
+
+  function activeUser() {
+    return window.BFAuth && typeof window.BFAuth.getCurrentUser === 'function'
+      ? window.BFAuth.getCurrentUser()
+      : null;
+  }
+
+  function roleKey(user = activeUser()) {
+    return user && navigationByRole[user.role] ? user.role : 'public';
+  }
+
+  function primaryNavigation(user = activeUser()) {
+    return navigationByRole[roleKey(user)]
+      .map(([route, label]) => navLink(`${pageDir}${route}`, label))
+      .join('');
+  }
+
   function escapeHtml(value) {
     return String(value || '')
       .replace(/&/g, '&amp;')
@@ -138,13 +185,9 @@
     if (!user) return navLink(`${pageDir}login.html`, 'Entrar');
 
     const firstName = String(user.name || 'Usuario').trim().split(/\s+/)[0];
-    const adminLink = user.role === 'admin' ? navLink(`${pageDir}dashboard-admin.html`, 'Admin') : '';
-
     return `
-      ${adminLink}
       <span class="bf-account-chip" title="${escapeHtml(user.email)}">
         <strong>${escapeHtml(firstName)}</strong>
-        <small>${escapeHtml(user.roleLabel || auth.roleLabel(user.role))}</small>
       </span>
       <button class="bf-logout-button" type="button" data-auth-logout>Sair</button>
     `;
@@ -152,7 +195,55 @@
 
   function demoChip() {
     if (window.BFAuth && window.BFAuth.authMode() === 'production') return '';
-    return '<span class="bf-demo-chip" title="Ambiente publico de demonstracao: dados e sessoes ficam somente no navegador.">Demo local</span>';
+    return '<span class="bf-demo-chip" title="Ambiente de demonstração">Demonstração</span>';
+  }
+
+  function footerContent(user = activeUser()) {
+    const role = roleKey(user);
+    const homeHref = role === 'cliente'
+      ? `${pageDir}dashboard-cliente.html`
+      : role === 'consultor'
+        ? `${pageDir}handoff-consultivo.html`
+        : role === 'admin'
+          ? `${pageDir}dashboard-admin.html`
+          : `${pageDir}index.html`;
+    const adminLinks = role === 'admin' ? `
+      <div>
+        <h5>Administração</h5>
+        <a href="${pageDir}modelos-governanca.html">Modelos</a><br>
+        <a href="${pageDir}calculadoras-governanca.html">Calculadoras</a><br>
+        <a href="${pageDir}api-docs.html">Integrações</a>
+      </div>
+    ` : '';
+    const homeLabel = role === 'consultor'
+      ? 'Atendimento'
+      : role === 'admin'
+        ? 'Operação'
+        : role === 'public'
+          ? 'Início'
+          : 'Meu painel';
+
+    return `
+      <div class="footer__grid">
+        <div>
+          <img src="${rootDir}assets/logos/logo-bank-fratern-dark.svg" alt="Bancus Fraternis" class="footer__logo">
+          <p>Planejamento, simulação e acompanhamento de consórcio em uma única jornada.</p>
+        </div>
+        <div class="footer__links">
+          <div>
+            <h5>Acesso rápido</h5>
+            <a href="${homeHref}">${homeLabel}</a><br>
+            <a href="${pageDir}simulador.html">Simular</a><br>
+            <a href="${pageDir}produtos.html">Produtos</a><br>
+            <a href="${pageDir}duvidas.html">Dúvidas</a><br>
+            <a href="${pageDir}compliance.html">Privacidade</a><br>
+            <a href="${pageDir}sobre-nos.html">Sobre nós</a>
+          </div>
+          ${adminLinks}
+        </div>
+      </div>
+      <div class="footer__bottom">© 2026 Bancus Fraternis</div>
+    `;
   }
 
   const HEADER_HTML = `
@@ -161,18 +252,8 @@
         <a href="${rootDir}index.html" class="logo bf-brand" aria-label="Bancus Fraternis - inicio">
           <img src="${rootDir}assets/logos/logo-bank-fratern-portal.svg" alt="Bancus Fraternis" class="logo__image bf-brand__logo">
         </a>
-        <nav class="nav bf-nav" aria-label="Navegacao principal">
-          ${navLink(`${pageDir}index.html`, 'Inicio')}
-          ${navLink(`${pageDir}educacao.html`, 'Educacao')}
-          ${navLink(`${pageDir}produtos.html`, 'Produtos')}
-          ${navLink(`${pageDir}trilha-decisao.html`, 'Trilha')}
-          ${navLink(`${pageDir}calculadoras.html`, 'Calculadoras')}
-          ${navLink(`${pageDir}comparador.html`, 'Comparador')}
-          ${navLink(`${pageDir}dados-abertos.html`, 'Dados')}
-          ${navLink(`${pageDir}compliance.html`, 'Compliance')}
-          ${navLink(`${pageDir}componentes-v8.html`, 'Design')}
-          ${navLink(`${pageDir}dashboard-cliente.html`, 'Dashboard')}
-          ${navLink(`${pageDir}simulador.html`, 'Simulacao')}
+        <nav class="nav bf-nav" aria-label="Navegação principal">
+          <span data-shell-primary-nav>${primaryNavigation()}</span>
           ${demoChip()}
           <span data-auth-controls>${accountControls()}</span>
         </nav>
@@ -182,40 +263,8 @@
 
   const FOOTER_HTML = `
     <footer class="footer">
-      <div class="container">
-        <div class="footer__grid">
-          <div>
-            <img src="${rootDir}assets/logos/logo-bank-fratern-dark.svg" alt="Bancus Fraternis" class="footer__logo">
-            <p>Plataforma de engenharia de consorcio, educacao financeira aplicada e construcao de propostas estruturadas com foco em clareza, confianca e eficiencia operacional.</p>
-          </div>
-          <div class="footer__links">
-            <div>
-              <h5>Portal</h5>
-              <a href="${pageDir}index.html">Inicio</a><br>
-              <a href="${pageDir}educacao.html">Educacao financeira</a><br>
-              <a href="${pageDir}produtos.html">Produtos</a><br>
-              <a href="${pageDir}trilha-decisao.html">Trilha assistida</a><br>
-              <a href="${pageDir}calculadoras.html">Calculadoras</a><br>
-              <a href="${pageDir}consorcio_user_journey_map_v2.html">Jornada completa</a><br>
-              <a href="${pageDir}simulador.html">Simulacao</a>
-            </div>
-            <div>
-              <h5>Plataforma</h5>
-              <a href="${pageDir}comparador.html">Comparador</a><br>
-              <a href="${pageDir}modelos-biblioteca.html">Biblioteca de modelos</a><br>
-              <a href="${pageDir}trilha-decisao.html">Jornada de decisao</a><br>
-              <a href="${pageDir}handoff-consultivo.html">Handoff consultivo</a><br>
-              <a href="${pageDir}calculadora-custos-fixos.html">Diagnostico financeiro</a><br>
-              <a href="${pageDir}calculadoras-governanca.html">Governanca de calculadoras</a><br>
-              <a href="${pageDir}modelos-governanca.html">Governanca de modelos</a><br>
-              <a href="${pageDir}dados-abertos.html">Dados abertos</a><br>
-              <a href="${pageDir}api-docs.html">API Docs</a><br>
-              <a href="${pageDir}compliance.html">Compliance</a><br>
-              <a href="${pageDir}componentes-v8.html">Componentes v8</a>
-            </div>
-          </div>
-        </div>
-        <div class="footer__bottom">© 2026 Bancus Fraternis - Portal de engenharia de consorcio v.8</div>
+      <div class="container" data-shell-footer-content>
+        ${footerContent()}
       </div>
     </footer>
   `;
@@ -230,8 +279,13 @@
 
   if (window.BFAuth && window.BFAuth.ready) {
     window.BFAuth.ready.then(() => {
+      const user = activeUser();
+      const primaryNav = document.querySelector('[data-shell-primary-nav]');
       const controls = document.querySelector('[data-auth-controls]');
+      const footer = document.querySelector('[data-shell-footer-content]');
+      if (primaryNav) primaryNav.innerHTML = primaryNavigation(user);
       if (controls) controls.innerHTML = accountControls();
+      if (footer) footer.innerHTML = footerContent(user);
     });
   }
 

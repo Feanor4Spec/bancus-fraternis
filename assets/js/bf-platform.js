@@ -2340,11 +2340,17 @@
     const statsTarget = qs('[data-dashboard-stats]');
     if (!statsTarget) return;
     const stats = window.Storage && window.Storage.getPortfolioStats ? window.Storage.getPortfolioStats() : { total: 0, cartaTotal: 0, ticketMedio: 0 };
+    if (!(stats.total || stats.cartaTotal || stats.ticketMedio)) {
+      statsTarget.hidden = true;
+      statsTarget.innerHTML = '';
+      return;
+    }
+    statsTarget.hidden = false;
     statsTarget.innerHTML = `
       <div class="bf-platform-metrics">
-        ${window.BFCards.metric('Simulacoes salvas', stats.total || 0, 'is-strong')}
-        ${window.BFCards.metric('Cartas mapeadas', fmt().currency(stats.cartaTotal || 0))}
-        ${window.BFCards.metric('Ticket medio', fmt().currency(stats.ticketMedio || 0))}
+        ${window.BFCards.metric('Simulações salvas', stats.total || 0, 'is-strong')}
+        ${window.BFCards.metric('Crédito planejado', fmt().currency(stats.cartaTotal || 0))}
+        ${window.BFCards.metric('Valor médio', fmt().currency(stats.ticketMedio || 0))}
       </div>
     `;
   }

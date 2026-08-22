@@ -1965,6 +1965,24 @@
   align-items: stretch;
 }
 
+.bf-nav [data-shell-primary-nav],
+.bf-nav [data-auth-controls] {
+  display: contents;
+}
+
+.client-dashboard-page [data-client-continuity-timeline][hidden],
+.client-dashboard-page [data-client-commercial-internals][hidden] {
+  display: none !important;
+}
+
+.handoff-page [data-handoff-live-data-panel][hidden],
+.handoff-page [data-handoff-operational-strip][hidden],
+.handoff-page [data-handoff-metrics][hidden],
+.handoff-page [data-handoff-recovery-signals][hidden],
+.handoff-page #auditoria-handoff[hidden] {
+  display: none !important;
+}
+
 [data-auth-controls] {
   display: contents;
 }

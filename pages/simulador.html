@@ -66,16 +66,16 @@
           <span class="sim-header__product">Consórcio<strong>Pro</strong></span>
         </a>
         <div class="sim-header__project" aria-live="polite">
-          <strong id="sim-evolution-project-name">Projeto em preparação</strong>
-          <span id="sim-evolution-project-detail">Preencha os dados abaixo</span>
+          <strong id="sim-evolution-project-name">Nova simulação</strong>
+          <span id="sim-evolution-project-detail">Informe o cliente e o objetivo</span>
         </div>
       </div>
 
       <div class="sim-header__system" aria-label="Estado da simulação">
         <div class="sim-header__system-item sim-header__system-item--status">
           <img src="../assets/icons/ui/ui-shield.svg" alt="">
-          <span>Status</span>
-          <strong id="sim-evolution-status">Em preparação</strong>
+          <span>Situação</span>
+          <strong id="sim-evolution-status">Em preenchimento</strong>
         </div>
         <div class="sim-header__system-item" hidden>
           <img src="../assets/icons/ui/ui-document.svg" alt="">
@@ -95,7 +95,7 @@
           <img src="../assets/icons/ui/ui-document.svg" alt=""> Usar exemplo
         </button>
         <button class="btn btn--ghost btn--sm" type="button" onclick="App.salvarSimulacao()" id="btn-salvar"
-          title="Salvar simulação no navegador">
+          title="Salvar para continuar depois">
           <img src="../assets/icons/ui/ui-vault.svg" alt=""> Salvar
         </button>
         <details class="sim-header-menu">
@@ -1124,10 +1124,13 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
         <div class="proposal-command-bar" aria-label="Ações da proposta">
           <div class="proposal-command-bar__state">
             <img src="../assets/icons/ui/ui-shield.svg" alt="">
-            <span>Status da publicação</span>
-            <strong id="proposal-command-status">Em preparação</strong>
+            <span>Situação da proposta</span>
+            <strong id="proposal-command-status">Em preenchimento</strong>
           </div>
           <div class="proposal-command-bar__actions">
+            <button class="btn btn--ghost" type="button" id="btn-proposal-client-return" hidden>
+              <img src="../assets/icons/ui/ui-arrow.svg" alt=""> Voltar à edição
+            </button>
             <details class="proposal-download-menu">
               <summary class="btn btn--ghost">Ver e salvar</summary>
               <div class="proposal-download-menu__panel">
@@ -1137,7 +1140,7 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
               </div>
             </details>
             <button class="btn btn--accent" type="button" id="btn-proposal-publish"
-              title="Gera um link somente leitura com a validade definida." disabled>
+              title="Cria um link para o cliente com a validade definida." disabled>
               <img src="../assets/icons/ui/ui-portal.svg" alt=""> Gerar link
             </button>
           </div>
@@ -1149,16 +1152,16 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
 
         <section id="proposal-share-panel" class="proposal-share-panel" aria-live="polite" hidden>
           <div>
-            <span>Link seguro da proposta</span>
-            <strong id="proposal-share-status">Publicação ativa</strong>
+            <span>Link da proposta</span>
+            <strong id="proposal-share-status">Pronto para enviar</strong>
             <small id="proposal-share-expiry">Validade pendente</small>
           </div>
-          <label class="sr-only" for="proposal-share-link">Link público somente leitura</label>
+          <label class="sr-only" for="proposal-share-link">Link da proposta para o cliente</label>
           <input id="proposal-share-link" type="text" readonly autocomplete="off">
           <div class="proposal-share-panel__actions">
             <button type="button" class="btn btn--primary btn--sm" id="btn-proposal-copy-link">Copiar link</button>
             <button type="button" class="btn btn--ghost btn--sm" id="btn-proposal-open-link">Abrir como cliente</button>
-            <button type="button" class="btn btn--danger btn--sm" id="btn-proposal-revoke">Revogar acesso</button>
+            <button type="button" class="btn btn--danger btn--sm" id="btn-proposal-revoke">Desativar link</button>
           </div>
         </section>
 
@@ -1253,13 +1256,13 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
               </li>
               <li data-proposal-check="validity">
                 <img src="../assets/icons/ui/ui-key.svg" alt="">
-                <div><strong>Validade e aceite</strong><span>Revisão humana com prazo definido.</span></div>
+                <div><strong>Validade e aceite</strong><span>Conferência com prazo definido.</span></div>
                 <small>Aguardando</small>
               </li>
             </ul>
             <div class="proposal-validation-panel__result" data-proposal-validation-result>
               <img src="../assets/icons/ui/ui-lock.svg" alt="">
-              <div><strong>Validação pendente</strong><span>Revise os itens antes da publicação.</span></div>
+              <div><strong>Conferência pendente</strong><span>Revise os itens antes de compartilhar.</span></div>
             </div>
           </aside>
         </div>
@@ -1295,14 +1298,14 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
         <div class="proposal-bottom-bar">
           <button type="button" class="btn btn--ghost" id="btn-proposal-validity"
             aria-controls="proposal-control-drawer">
-            <img src="../assets/icons/ui/ui-document.svg" alt=""> Configurar validade
+            <img src="../assets/icons/ui/ui-document.svg" alt=""> Definir validade
           </button>
         <div class="proposal-bottom-bar__security">
-            <span><img src="../assets/icons/ui/ui-lock.svg" alt=""> O acesso pode ser revogado a qualquer momento</span>
-            <span><img src="../assets/icons/ui/ui-key.svg" alt=""> O link não exibe dados pessoais</span>
+            <span><img src="../assets/icons/ui/ui-lock.svg" alt=""> Você pode desativar este link a qualquer momento</span>
+            <span><img src="../assets/icons/ui/ui-key.svg" alt=""> O link abre a proposta em modo de leitura</span>
           </div>
           <button type="button" class="btn btn--accent" id="btn-proposal-publish-bottom" hidden
-            title="Gera um link somente leitura com a validade definida." disabled>
+            title="Cria um link para o cliente com a validade definida." disabled>
             <img src="../assets/icons/ui/ui-portal.svg" alt=""> Gerar link
           </button>
         </div>

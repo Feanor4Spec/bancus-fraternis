@@ -47,7 +47,11 @@
 
   function sanitizeAcceptance(acceptance) {
     if (!acceptance || typeof acceptance !== 'object') return null;
+    const proposalId = /^PROP-[A-Za-z0-9._:-]+$/i.test(String(acceptance.proposalId || ''))
+      ? String(acceptance.proposalId)
+      : '';
     return {
+      proposalId,
       status: acceptance.status || 'draft',
       reviewedAt: acceptance.reviewedAt || null,
       validUntil: acceptance.validUntil || null,
@@ -236,8 +240,13 @@
     const totalCarta = cart.reduce((sum, item) => sum + (safeNumber(item.valorCartaTotal)), 0) || safeNumber(params.valorCarta);
     const totalCotas = cart.reduce((sum, item) => sum + safeNumber(item.quantidadeCotas), 0);
     const decisionContext = input.decisionContext || {};
+    const proposalId = /^PROP-[A-Za-z0-9._:-]+$/i.test(String(input.proposalId || input.proposalAcceptance?.proposalId || ''))
+      ? String(input.proposalId || input.proposalAcceptance.proposalId)
+      : '';
 
     return {
+      id: /^SIM-[A-Za-z0-9._:-]+$/i.test(String(input.id || '')) ? String(input.id) : '',
+      proposalId,
       nome: input.nome || '',
       origem: 'simulador-consorcio',
       privacy: {

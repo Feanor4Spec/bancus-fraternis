@@ -31,7 +31,9 @@
     const page = requested.split(/[?#]/, 1)[0].toLowerCase();
     const allowedRoles = SAFE_RETURN_ROUTES[page] || [];
     if (requested && user && allowedRoles.includes(user.role)) return requested;
-    return user && user.role === 'admin' ? 'dashboard-admin.html' : 'dashboard-cliente.html';
+    if (user && user.role === 'admin') return 'dashboard-admin.html';
+    if (user && user.role === 'consultor') return 'handoff-consultivo.html';
+    return 'dashboard-cliente.html';
   }
 
   function setStatus(message, tone) {
@@ -183,6 +185,14 @@
       return result;
     }
 
+    if (result.backendLogin && typeof result.backendLogin.then === 'function') {
+      try {
+        await result.backendLogin;
+      } catch (error) {
+        // O acesso demonstrativo continua válido mesmo se o espelhamento estiver indisponível.
+      }
+    }
+
     setStatus('Acesso confirmado.', 'success');
     goToTarget(result.user);
     return result;
@@ -216,7 +226,7 @@
     const shell = qs('.bf-auth-shell');
     if (shell) shell.classList.toggle('bf-auth-shell--single', production);
     const badge = qs('[data-login-badge]');
-    if (badge) badge.textContent = production ? 'Área segura' : 'Demonstração';
+    if (badge) badge.textContent = production ? 'Área segura' : 'Acesso';
     let current = window.BFAuth && window.BFAuth.getCurrentUser ? window.BFAuth.getCurrentUser() : null;
     if (!current && production && window.BFAuth && typeof window.BFAuth.validateServerSession === 'function') {
       const result = await window.BFAuth.validateServerSession();

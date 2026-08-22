@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Handoff Consultivo - Bancus Fraternis</title>
+  <title>Atendimento Comercial - Bancus Fraternis</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -17,51 +17,43 @@
   <main class="bf-platform-shell">
     <section class="bf-platform-hero">
       <div class="bf-platform-hero__content">
-        <span class="bf-badge bf-badge--gold">Handoff consultivo</span>
-        <h1>Transforme trilhas em leads acompanhaveis.</h1>
-        <p>Painel local para consultores e administradores priorizarem jornadas, revisar checklist, registrar notas e acompanhar status sem enviar dados para fora do navegador.</p>
+        <span class="bf-badge bf-badge--gold">Atendimento comercial</span>
+        <h1>Priorize oportunidades e conduza cada próximo passo.</h1>
+        <p>Organize retornos, propostas e pendências para avançar cada conversa com clareza.</p>
       </div>
       <aside class="bf-platform-hero__rail">
-        <a href="trilha-decisao.html">Trilha assistida <span>TR</span></a>
-        <a href="dashboard-cliente.html">Dashboard cliente <span>CL</span></a>
-        <a href="dashboard-admin.html">Admin <span>AD</span></a>
-        <a href="comparador.html">Comparador <span>CP</span></a>
+        <a href="#painel-consultor">Prioridades <span>PR</span></a>
+        <a href="#fila-handoff">Atendimentos <span>AT</span></a>
+        <a href="simulador.html">Nova simulação <span>SI</span></a>
+        <a href="carteira.html">Carteira <span>CA</span></a>
       </aside>
     </section>
 
-    <section class="bf-v8-stagebar bf-v8-stagebar--inside" aria-label="Atalhos operacionais do handoff" data-v8-stagebar>
+    <section class="bf-v8-stagebar bf-v8-stagebar--inside" aria-label="Atalhos do atendimento" data-v8-stagebar>
       <div class="bf-v8-stagebar__intro">
-        <span>Handoff v8</span>
-        <strong>Fila, prioridade, atendimento e auditoria conectados.</strong>
+        <span>Atendimento</span>
+        <strong>Do primeiro contato ao próximo passo.</strong>
       </div>
-      <a class="bf-v8-stagebar__item" href="#operacao-handoff" data-step="1">
-        <span>Operação</span>
-        <strong>Resumo da fila</strong>
+      <a class="bf-v8-stagebar__item" href="#painel-consultor" data-step="1">
+        <span>Hoje</span>
+        <strong>Ver prioridades</strong>
       </a>
-      <a class="bf-v8-stagebar__item" href="#painel-consultor" data-step="2">
-        <span>Consultor</span>
-        <strong>Aging e prioridade</strong>
+      <a class="bf-v8-stagebar__item" href="#sinais-retomada" data-step="2">
+        <span>Retomar</span>
+        <strong>Clientes aguardando</strong>
       </a>
       <a class="bf-v8-stagebar__item" href="#fila-handoff" data-step="3">
-        <span>Leads</span>
-        <strong>Fila local</strong>
+        <span>Carteira</span>
+        <strong>Todos os atendimentos</strong>
       </a>
       <a class="bf-v8-stagebar__item" href="#detalhe-handoff" data-step="4">
-        <span>Checklist</span>
-        <strong>Atendimento</strong>
-      </a>
-      <a class="bf-v8-stagebar__item" href="#auditoria-handoff" data-step="5">
-        <span>Auditoria</span>
-        <strong>Eventos locais</strong>
-      </a>
-      <a class="bf-v8-stagebar__item" href="dashboard-admin.html#operacao-admin" data-step="6">
-        <span>Admin</span>
-        <strong>Governança</strong>
+        <span>Detalhes</span>
+        <strong>Conduzir conversa</strong>
       </a>
     </section>
 
-    <section class="bf-platform-panel bf-platform-section" id="dados-vivos-handoff" data-handoff-live-data-panel></section>
-    <section class="bf-v8-decision-strip bf-v8-decision-strip--outer" id="operacao-handoff" aria-label="Resumo operacional do handoff consultivo" data-handoff-operational-strip></section>
+    <section class="bf-platform-panel bf-platform-section" id="dados-vivos-handoff" data-handoff-live-data-panel hidden aria-hidden="true"></section>
+    <section class="bf-v8-decision-strip bf-v8-decision-strip--outer" id="operacao-handoff" aria-label="Resumo operacional" data-handoff-operational-strip hidden aria-hidden="true"></section>
     <section class="bf-platform-panel" data-handoff-metrics></section>
     <section class="bf-platform-panel bf-platform-section" id="painel-consultor" data-handoff-consultant-cockpit></section>
     <section class="bf-platform-panel bf-platform-section" id="sinais-retomada" data-handoff-recovery-signals></section>
@@ -69,14 +61,14 @@
     <section class="bf-platform-panel bf-platform-section" id="fila-handoff">
       <div class="bf-admin-panel-heading">
         <div>
-          <span class="bf-badge bf-badge--navy">Fila local</span>
-          <h2>Leads consultivos</h2>
+          <span class="bf-badge bf-badge--navy">Carteira de atendimentos</span>
+          <h2>Oportunidades</h2>
         </div>
-        <a class="btn btn--ghost btn--sm" href="trilha-decisao.html">Criar pela trilha</a>
+        <a class="btn btn--primary btn--sm" href="simulador.html">Nova simulação</a>
       </div>
       <div class="bf-admin-toolbar">
         <label>Busca
-          <input type="search" data-handoff-search placeholder="Lead, e-mail, objetivo, produto ou modelo">
+          <input type="search" data-handoff-search placeholder="Cliente, e-mail, objetivo, produto ou modelo">
         </label>
         <label>Status
           <select data-handoff-status-filter>
@@ -92,34 +84,34 @@
           <select data-handoff-priority-filter>
             <option value="">Todas</option>
             <option value="alta">Alta</option>
-            <option value="media">Media</option>
+            <option value="media">Média</option>
             <option value="baixa">Baixa</option>
           </select>
         </label>
         <label>Origem
           <select data-handoff-source-filter>
             <option value="">Todas</option>
-            <option value="proposal">Proposta revisada</option>
-            <option value="journey">Trilha assistida</option>
-            <option value="calculator">Calculadora</option>
-            <option value="signal">Sinal de retomada</option>
-            <option value="imported">Pacote importado</option>
-            <option value="manual">Origem local</option>
+            <option value="proposal">Proposta</option>
+            <option value="journey">Planejamento</option>
+            <option value="calculator">Planejamento financeiro</option>
+            <option value="signal">Retomada</option>
+            <option value="imported">Indicação</option>
+            <option value="manual">Criado pela equipe</option>
           </select>
         </label>
-        <label>Responsavel
+        <label>Responsável
           <select data-handoff-assignee-filter>
             <option value="">Todos</option>
-            <option value="sem_responsavel">Sem responsavel</option>
+            <option value="sem_responsavel">Sem responsável</option>
           </select>
         </label>
-        <label>Aging
+        <label>Tempo sem atualização
           <select data-handoff-aging-filter>
             <option value="">Todos</option>
-            <option value="sla">SLA vencido</option>
-            <option value="24h">24h+</option>
-            <option value="72h">72h+</option>
-            <option value="aguardando">Aguardando cliente 48h+</option>
+            <option value="sla">Retorno vencido</option>
+            <option value="24h">Mais de 24 horas</option>
+            <option value="72h">Mais de 3 dias</option>
+            <option value="aguardando">Cliente aguardando há 2 dias</option>
           </select>
         </label>
       </div>
@@ -128,11 +120,11 @@
         <article class="bf-platform-card bf-handoff-detail" id="detalhe-handoff" data-handoff-detail></article>
       </div>
     </section>
-    <section class="bf-platform-panel bf-platform-section" id="auditoria-handoff">
+    <section class="bf-platform-panel bf-platform-section" id="auditoria-handoff" hidden aria-hidden="true">
       <div class="bf-admin-panel-heading">
         <div>
-          <span class="bf-badge bf-badge--ok">Auditoria local</span>
-          <h2>Eventos recentes do handoff</h2>
+          <span class="bf-badge bf-badge--ok">Histórico</span>
+          <h2>Atividades recentes</h2>
         </div>
         <a class="btn btn--ghost btn--sm" href="dashboard-admin.html#operacao-admin">Ver governança</a>
       </div>

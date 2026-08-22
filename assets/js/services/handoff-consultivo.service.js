@@ -445,8 +445,11 @@
 
   function actionHref(type, item) {
     if (type === 'proposal') {
-      const proposalId = item && item.sourceProposalId ? `?from=handoff&proposalId=${encodeURIComponent(item.sourceProposalId)}` : '?from=handoff';
-      return `simulador.html${proposalId}#step-9`;
+      const params = ['from=handoff'];
+      if (item && item.sourceProposalId) params.push(`proposalId=${encodeURIComponent(item.sourceProposalId)}`);
+      if (item && item.sourceProposalVersionId) params.push(`proposalVersionId=${encodeURIComponent(item.sourceProposalVersionId)}`);
+      if (item && item.sourceSimulationId) params.push(`simulationId=${encodeURIComponent(item.sourceSimulationId)}`);
+      return `simulador.html?${params.join('&')}#proposta`;
     }
     const id = item && item.id ? `?handoffId=${encodeURIComponent(item.id)}` : '';
     return `handoff-consultivo.html${id}#detalhe-handoff`;
@@ -963,6 +966,11 @@
     const cliente = proposal && proposal.cliente ? proposal.cliente : '';
     const produto = proposal && proposal.produto ? proposal.produto : '';
     const proposalId = proposal && proposal.id ? proposal.id : '';
+    const proposalVersion = acceptance && acceptance.proposalVersion ? acceptance.proposalVersion : null;
+    const proposalParams = ['from=handoff'];
+    if (proposalId) proposalParams.push(`proposalId=${encodeURIComponent(proposalId)}`);
+    if (proposalVersion && proposalVersion.id) proposalParams.push(`proposalVersionId=${encodeURIComponent(proposalVersion.id)}`);
+    if (proposalVersion && proposalVersion.simulationId) proposalParams.push(`simulationId=${encodeURIComponent(proposalVersion.simulationId)}`);
     return {
       objective: 'proposta_consorcio',
       objectiveLabel: proposalId ? `Proposta ${proposalId}` : 'Proposta de consorcio',
@@ -972,7 +980,7 @@
       modelName: acceptance && acceptance.statusLabel ? acceptance.statusLabel : 'Revisao da proposta',
       nextActionType: 'proposal-handoff',
       nextActionTitle: 'Conduzir proposta revisada',
-      nextActionHref: 'simulador.html#step-9',
+      nextActionHref: `simulador.html?${proposalParams.join('&')}#proposta`,
       rendaMensal: 0,
       gastoMensal: 0,
       dividasMensais: 0,
@@ -1246,6 +1254,7 @@
     const proposalStatus = acceptance && acceptance.status ? acceptance.status : 'pending';
     const proposalStatusLabel = acceptance && acceptance.statusLabel ? acceptance.statusLabel : 'Proposta em revisao';
     const proposalVersion = acceptance && acceptance.proposalVersion ? acceptance.proposalVersion : null;
+    const sourceSimulationId = proposalVersion && proposalVersion.simulationId ? proposalVersion.simulationId : '';
     const patch = {
       schema: SCHEMA,
       sourceType: 'proposal',
@@ -1255,6 +1264,7 @@
       sourceProposalVersion: proposalVersion && proposalVersion.version ? proposalVersion.version : (acceptance && acceptance.version ? acceptance.version : 0),
       sourceProposalVersionId: proposalVersion && proposalVersion.id ? proposalVersion.id : '',
       sourceProposalVersionHash: proposalVersion && proposalVersion.sourceHash ? proposalVersion.sourceHash : '',
+      sourceSimulationId,
       sourceProposalUpdatedAt: acceptance && acceptance.updatedAt ? acceptance.updatedAt : now,
       sourceProposalValidUntil: acceptance && acceptance.validUntil ? acceptance.validUntil : '',
       ownerEmail,
@@ -1274,7 +1284,7 @@
         type: 'proposal-handoff',
         title: 'Abrir proposta revisada',
         label: 'Rever proposta',
-        href: 'simulador.html#step-9'
+        href: `simulador.html?from=handoff&proposalId=${encodeURIComponent(proposal.id)}${proposalVersion?.id ? `&proposalVersionId=${encodeURIComponent(proposalVersion.id)}` : ''}${sourceSimulationId ? `&simulationId=${encodeURIComponent(sourceSimulationId)}` : ''}#proposta`
       },
       updatedAt: now
     };

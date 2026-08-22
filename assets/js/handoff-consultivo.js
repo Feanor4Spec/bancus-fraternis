@@ -1,6 +1,8 @@
 (function () {
   'use strict';
 
+  // Contrato de integração não renderizado: Handoff criado por calculadora.
+
   let selectedId = '';
   let backendLeadState = {
     loading: false,
@@ -21,6 +23,69 @@
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
+  }
+
+  function commercialText(value) {
+    return String(value == null ? '' : value)
+      .replace(/\bhandoffs\b/gi, 'atendimentos')
+      .replace(/\bhandoff\b/gi, 'atendimento')
+      .replace(/\bpela\s+trilha\b/gi, 'pelo planejamento')
+      .replace(/\bda\s+trilha\b/gi, 'do planejamento')
+      .replace(/\btrilha\s+assistida\b/gi, 'planejamento do cliente')
+      .replace(/\bsnapshots\b/gi, 'registros')
+      .replace(/\bsnapshot\b/gi, 'registro')
+      .replace(/\bproposta\s+versionada\b/gi, 'proposta salva')
+      .replace(/\bversionamento\b/gi, 'revisão')
+      .replace(/\bvers(?:ao|ão)\b/gi, 'revisão')
+      .replace(/\btravada\b/gi, 'salva')
+      .replace(/\bleads\b/gi, 'oportunidades')
+      .replace(/\blead\b/gi, 'oportunidade')
+      .replace(/\bsqlite(?:\s+local)?\b/gi, 'sistema')
+      .replace(/\bapi\s+local\b/gi, 'serviço')
+      .replace(/\blocalstorage\b/gi, 'sistema')
+      .replace(/\bserver-side\b/gi, '')
+      .replace(/\bfunil\s+admin\b/gi, 'gestão comercial')
+      .replace(/\bscore\b/gi, 'indicador')
+      .replace(/\baging\b/gi, 'tempo sem atualização')
+      .replace(/\bsla\b/gi, 'prazo de retorno')
+      .replace(/\bgovernanca\s+operacional\b/gi, 'processo de atendimento')
+      .replace(/\bgovernança\s+operacional\b/gi, 'processo de atendimento')
+      .replace(/\bnotas\s+locais\b/gi, 'anotações')
+      .replace(/\bnota\s+local\b/gi, 'anotação')
+      .replace(/\bdados?\s+vivos?\b/gi, 'dados atualizados')
+      .replace(/\bregistro\s+vivo\b/gi, 'registro atualizado')
+      .replace(/\bfila\s+local\b/gi, 'carteira')
+      .replace(/\bhistorico\s+local\b/gi, 'histórico')
+      .replace(/\bhistórico\s+local\b/gi, 'histórico')
+      .replace(/\blog\s+local\b/gi, 'histórico')
+      .replace(/\beventos?\s+locais?\b/gi, 'atividades')
+      .replace(/\brevisada\s+localmente\b/gi, 'revisada')
+      .replace(/\bsalv([ao])\s+localmente\b/gi, 'salv$1')
+      .replace(/\bcriad([ao])\s+localmente\b/gi, 'criad$1')
+      .replace(/\bcliente\s+local\b/gi, 'cliente')
+      .replace(/\borigem\s+local\b/gi, 'origem não informada')
+      .replace(/\bjornada\s+local\b/gi, 'jornada')
+      .replace(/\bresponsavel\s+local\b/gi, 'responsável')
+      .replace(/\bresponsável\s+local\b/gi, 'responsável')
+      .replace(/\bsuitability(?:\s+educativa)?\b/gi, 'adequação ao perfil')
+      .replace(/\bproposta\s+real\b/gi, 'proposta')
+      .replace(/\bdashboard\s+cliente\b/gi, 'área do cliente')
+      .replace(/\bhistorico\b/gi, 'histórico')
+      .replace(/\bproximo\b/gi, 'próximo')
+      .replace(/\bresponsavel\b/gi, 'responsável')
+      .replace(/\bate\b/gi, 'até')
+      .replace(/\bacoes\b/gi, 'ações')
+      .replace(/\bacao\b/gi, 'ação')
+      .replace(/\bexecucao\b/gi, 'execução')
+      .replace(/\bobservacao\b/gi, 'observação')
+      .replace(/\s+([.,;:])/g, '$1')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+  }
+
+  function actorLabel(value) {
+    const actor = String(value || '').trim();
+    return !actor || actor.toLowerCase() === 'anon' ? 'Equipe comercial' : actor;
   }
 
   function money(value) {
@@ -94,15 +159,15 @@
       ownerEmail: row.ownerEmail || payload.ownerEmail || '',
       ownerName: payload.ownerName || row.ownerEmail || '',
       objective: payload.objective || payload.objetivo || '',
-      objectiveLabel: row.title || payload.objectiveLabel || payload.title || 'Lead server-side',
+      objectiveLabel: row.title || payload.objectiveLabel || payload.title || 'Oportunidade',
       status,
       priority,
       assignedTo: payload.assignedTo || row.assignedTo || '',
       summary: {
         ...summary,
         valorCredito: Number(summary.valorCredito || summary.ticket || row.amount || 0),
-        productName: summary.productName || payload.productName || payload.product || row.source || 'SQLite local',
-        modelName: summary.modelName || payload.modelName || row.stage || 'Registro vivo'
+        productName: summary.productName || payload.productName || payload.product || 'Produto a confirmar',
+        modelName: summary.modelName || payload.modelName || 'Atendimento em andamento'
       },
       checklist: Array.isArray(payload.checklist) ? payload.checklist : [],
       notes: Array.isArray(payload.notes) ? payload.notes : [],
@@ -165,7 +230,7 @@
       .sort((a, b) => a.localeCompare(b));
     select.innerHTML = `
       <option value="">Todos</option>
-      <option value="sem_responsavel">Sem responsavel</option>
+      <option value="sem_responsavel">Sem responsável</option>
       ${assignees.map((email) => `<option value="${escapeHtml(email)}">${escapeHtml(email)}</option>`).join('')}
     `;
     if (current && Array.from(select.options).some((option) => option.value === current)) {
@@ -250,7 +315,7 @@
         loading: false,
         loaded: false,
         leads: [],
-        error: result && result.message ? result.message : 'Nao foi possivel ler leads vivos.',
+        error: result && result.message ? result.message : 'Não foi possível atualizar os atendimentos.',
         refreshedAt: new Date().toISOString()
       };
       document.body.dataset.handoffLiveDataReady = 'error';
@@ -347,7 +412,7 @@
     }).catch((error) => {
       backendLeadState = {
         ...backendLeadState,
-        error: error && error.message ? error.message : 'Falha ao sincronizar lead vivo.'
+        error: error && error.message ? error.message : 'Não foi possível atualizar este atendimento.'
       };
       document.body.dataset.handoffLiveDataReady = 'error';
       return { ok: false, message: backendLeadState.error };
@@ -363,14 +428,14 @@
     const visibleCount = (filteredItems || allItems || []).length;
     const source = backendLeadState.loaded ? 'sqlite' : 'localStorage';
     const readiness = backendLeadState.loading ? 'loading' : backendLeadState.loaded ? 'true' : backendLeadState.error ? 'error' : 'fallback';
-    const sourceLabel = backendLeadState.loaded ? 'SQLite local' : 'localStorage';
+    const sourceLabel = backendLeadState.loaded ? 'Atualizado' : 'Disponível';
     const copy = backendLeadState.loading
-      ? 'Atualizando fila server-side.'
+      ? 'Atualizando os atendimentos.'
       : backendLeadState.loaded
         ? (liveCount
-          ? 'Leads vivos do SQLite foram mesclados com a fila local para priorizacao consultiva.'
-          : 'API local ativa; nenhum lead vivo retornado para este usuario, e a fila local permanece disponivel.')
-        : 'A fila continua operacional via localStorage; use localhost com login para ativar a leitura de leads vivos.';
+          ? 'Os atendimentos mais recentes já estão disponíveis para priorização.'
+          : 'A carteira está atualizada e pronta para uso.')
+        : 'A carteira está pronta para consulta.';
 
     target.dataset.handoffLiveSource = source;
     target.dataset.handoffLiveRefresh = backendLeadState.refreshedAt || '';
@@ -383,18 +448,17 @@
       <div class="bf-admin-panel-heading">
         <div>
           <span class="bf-badge ${liveCount ? 'bf-badge--ok' : 'bf-badge--gold'}" data-handoff-live-source="${escapeHtml(source)}">${escapeHtml(sourceLabel)}</span>
-          <h2>Fila consultiva com dados vivos</h2>
+          <h2>Atendimentos disponíveis</h2>
           <p>${escapeHtml(copy)}</p>
-          ${backendLeadState.error ? `<small>${escapeHtml(backendLeadState.error)}</small>` : ''}
+          ${backendLeadState.error ? '<small>Não foi possível buscar atualizações agora.</small>' : ''}
         </div>
-        <button class="btn btn--ghost btn--sm" type="button" data-handoff-live-refresh>${backendLeadState.loading ? 'Atualizando...' : 'Atualizar fila'}</button>
+        <button class="btn btn--ghost btn--sm" type="button" data-handoff-live-refresh>${backendLeadState.loading ? 'Atualizando...' : 'Atualizar atendimentos'}</button>
       </div>
       <div class="bf-platform-metrics">
-        ${metric('Leads vivos', liveCount, liveCount ? 'strong' : '')}
-        ${metric('Leads locais', localCount)}
-        ${metric('Fila unificada', mergedCount, mergedCount ? 'strong' : '')}
-        ${metric('Visiveis no filtro', visibleCount)}
-        ${metric('Fonte', sourceLabel)}
+        ${metric('Atualizados agora', liveCount, liveCount ? 'strong' : '')}
+        ${metric('Salvos', localCount)}
+        ${metric('Atendimentos', mergedCount, mergedCount ? 'strong' : '')}
+        ${metric('Nesta busca', visibleCount)}
       </div>
     `;
   }
@@ -403,17 +467,23 @@
     const target = qs('[data-handoff-metrics]');
     if (!target) return;
     const data = service().metrics(items);
+    if (!data.total) {
+      target.hidden = true;
+      target.innerHTML = '';
+      return;
+    }
+    target.hidden = false;
     target.innerHTML = `
       <div class="bf-platform-metrics">
-        ${metric('Leads na fila', data.total, 'strong')}
+        ${metric('Oportunidades', data.total, 'strong')}
         ${metric('Em aberto', data.open)}
         ${metric('Alta prioridade', data.highPriority, data.highPriority ? 'warn' : '')}
-        ${metric('SLA vencido', data.overdue || 0, data.overdue ? 'warn' : '')}
-        ${metric('Sem responsavel', data.unassigned || 0, data.unassigned ? 'warn' : '')}
+        ${metric('Retorno vencido', data.overdue || 0, data.overdue ? 'warn' : '')}
+        ${metric('Sem responsável', data.unassigned || 0, data.unassigned ? 'warn' : '')}
         ${metric('Propostas', data.proposal || 0)}
-        ${metric('Trilhas', data.journey || 0)}
-        ${metric('Retomadas', (data.signal || 0) + (data.imported || 0))}
-        ${metric('Checklist medio', `${data.completion}%`)}
+        ${metric('Planejamentos', data.journey || 0)}
+        ${metric('Para retomar', (data.signal || 0) + (data.imported || 0))}
+        ${metric('Avanço médio', `${data.completion}%`)}
       </div>
     `;
   }
@@ -438,10 +508,10 @@
     const cards = [
       {
         tone: data.open ? 'info' : 'stable',
-        eyebrow: 'Fila',
-        title: data.open ? `${data.open} lead${data.open === 1 ? '' : 's'} em aberto` : 'Fila sem pendencias',
-        body: data.total ? `${data.total} handoff${data.total === 1 ? '' : 's'} locais com checklist medio de ${data.completion}%.` : 'Nenhum handoff criado ainda. Gere a partir da trilha assistida.',
-        action: data.open ? 'Priorizar atendimento' : 'Criar pela trilha'
+        eyebrow: 'Carteira',
+        title: data.open ? `${data.open} oportunidade${data.open === 1 ? '' : 's'} em aberto` : 'Tudo em dia',
+        body: data.total ? `${data.total} atendimento${data.total === 1 ? '' : 's'} com ${data.completion}% das etapas concluídas.` : 'Nenhum atendimento criado ainda. Inicie uma nova simulação.',
+        action: data.open ? 'Priorizar atendimento' : 'Criar simulação'
       },
       {
         tone: data.highPriority || signalSummary.high ? 'warning' : 'stable',
@@ -451,40 +521,40 @@
           ? `${nextLead.id} - ${nextLead.objectiveLabel || 'objetivo'} com status ${service().statusLabels[nextLead.status] || nextLead.status}.`
           : topSignal
             ? `${topSignal.title}: ${topSignal.reason}`
-            : 'Sem lead pendente para destacar.',
-        action: nextLead ? 'Abrir detalhe' : topSignal ? 'Criar handoff do sinal' : 'Aguardar nova trilha'
+            : 'Nenhuma oportunidade pendente para destacar.',
+        action: nextLead ? 'Abrir detalhe' : topSignal ? 'Criar atendimento' : 'Aguardar nova oportunidade'
       },
       {
         tone: waiting ? 'warning' : 'info',
         eyebrow: 'Atendimento',
-        title: waiting ? `${waiting} aguardando cliente` : 'Sem espera critica',
-        body: waiting ? 'Revise notas e defina retorno para leads parados em aguardando cliente.' : 'Use status, responsavel e checklist para manter a fila em movimento.',
+        title: waiting ? `${waiting} aguardando cliente` : 'Sem espera crítica',
+        body: waiting ? 'Revise as anotações e defina o próximo retorno.' : 'Atualize o status, o responsável e as etapas concluídas.',
         action: 'Atualizar status'
       },
       {
         tone: audit.length ? 'stable' : 'info',
-        eyebrow: 'Auditoria',
-        title: `${audit.length} evento${audit.length === 1 ? '' : 's'} locais`,
-        body: lastAudit ? `${lastAudit.action} em ${lastAudit.handoffId || 'handoff'} por ${lastAudit.actorEmail || 'anon'}.` : 'As acoes de status, checklist, notas e atribuicao entram no log local.',
-        action: 'Ver eventos'
+        eyebrow: 'Histórico',
+        title: `${audit.length} atividade${audit.length === 1 ? '' : 's'} registrada${audit.length === 1 ? '' : 's'}`,
+        body: lastAudit ? `${commercialText(lastAudit.action)} em ${lastAudit.handoffId || 'atendimento'} por ${actorLabel(lastAudit.actorEmail)}.` : 'As mudanças de status, responsável e anotações ficam registradas.',
+        action: 'Ver histórico'
       }
     ];
 
     target.innerHTML = `
       <div class="bf-v8-decision-strip__head">
-        <span class="bf-badge bf-badge--gold">Operação consultiva</span>
+        <span class="bf-badge bf-badge--gold">Atendimentos</span>
         <div>
-          <h2>Fila pronta para acompanhamento.</h2>
-          <p>O painel transforma trilhas em atendimento rastreável, com prioridade, checklist, status e auditoria local.</p>
+          <h2>Prioridades e próximos passos.</h2>
+          <p>Veja o que precisa de atenção e avance cada conversa.</p>
         </div>
       </div>
       <div class="bf-v8-decision-strip__grid">
         ${cards.map((card) => `
           <article class="bf-v8-decision-card bf-v8-decision-card--${card.tone}">
-            <span>${escapeHtml(card.eyebrow)}</span>
-            <strong>${escapeHtml(card.title)}</strong>
-            <p>${escapeHtml(card.body)}</p>
-            <small>${escapeHtml(card.action)}</small>
+            <span>${escapeHtml(commercialText(card.eyebrow))}</span>
+            <strong>${escapeHtml(commercialText(card.title))}</strong>
+            <p>${escapeHtml(commercialText(card.body))}</p>
+            <small>${escapeHtml(commercialText(card.action))}</small>
           </article>
         `).join('')}
       </div>
@@ -498,50 +568,65 @@
       ? service().consultantBoard(items || operationalItems())
       : { total: 0, open: 0, overdue: 0, waiting: 0, unassigned: 0, highPriority: 0, nextActions: [] };
     const actions = board.nextActions || [];
+    if (!board.total && !actions.length) {
+      target.innerHTML = `
+        <div class="bf-admin-panel-heading">
+          <div>
+            <span class="bf-badge bf-badge--gold">Prioridades do dia</span>
+            <h2>Sua carteira está pronta para começar.</h2>
+            <p>Crie uma simulação para iniciar o primeiro atendimento.</p>
+          </div>
+          <a class="btn btn--primary btn--sm" href="simulador.html">Nova simulação</a>
+        </div>
+        <div class="bf-empty-state">Nenhum cliente aguardando retorno.</div>
+      `;
+      document.body.dataset.handoffConsultantCockpitReady = 'true';
+      document.body.dataset.handoffConsultantActionCount = '0';
+      return;
+    }
     target.innerHTML = `
       <div class="bf-admin-panel-heading">
         <div>
-          <span class="bf-badge bf-badge--gold">Cockpit do consultor</span>
-          <h2>Aging, prioridade e proximo passo por lead.</h2>
-          <p>A fila destaca SLA vencido, handoff sem responsavel, cliente aguardando retorno e qual acao iniciar agora.</p>
+          <span class="bf-badge bf-badge--gold">Prioridades do dia</span>
+          <h2>Comece pelos clientes que precisam de retorno.</h2>
+          <p>Veja propostas vencidas, conversas sem responsável e os próximos passos mais urgentes.</p>
         </div>
-        <a class="btn btn--ghost btn--sm" href="dashboard-admin.html?from=handoff#admin-proximos-passos">Ver admin</a>
       </div>
       <div class="bf-handoff-consultant-grid">
         ${metric('Em aberto', board.open || 0, 'strong')}
         ${metric('Alta prioridade', board.highPriority || 0, board.highPriority ? 'warn' : '')}
-        ${metric('SLA vencido', board.overdue || 0, board.overdue ? 'warn' : '')}
-        ${metric('Sem responsavel', board.unassigned || 0, board.unassigned ? 'warn' : '')}
-        ${metric('Aguardando 48h+', board.waiting || 0, board.waiting ? 'warn' : '')}
+        ${metric('Retorno vencido', board.overdue || 0, board.overdue ? 'warn' : '')}
+        ${metric('Sem responsável', board.unassigned || 0, board.unassigned ? 'warn' : '')}
+        ${metric('Aguardando há 2 dias', board.waiting || 0, board.waiting ? 'warn' : '')}
         ${metric('Propostas vencidas', board.proposalExpired || 0, board.proposalExpired ? 'warn' : '')}
-        ${metric('Sem snapshot', board.proposalUnversioned || 0, board.proposalUnversioned ? 'warn' : '')}
-        ${metric('Etapas paradas', board.commercialStale || 0, board.commercialStale ? 'warn' : '')}
-        ${metric('Movidos 24h', board.commercialMoved24 || 0)}
+        ${metric('Conferência pendente', board.proposalUnversioned || 0, board.proposalUnversioned ? 'warn' : '')}
+        ${metric('Conversas paradas', board.commercialStale || 0, board.commercialStale ? 'warn' : '')}
+        ${metric('Avanços nas últimas 24h', board.commercialMoved24 || 0)}
       </div>
       <div class="bf-handoff-action-grid">
         ${actions.length ? actions.map((action) => `
           <article class="bf-handoff-action bf-handoff-action--${escapeHtml(action.tone || 'media')}" data-handoff-action-plan="${escapeHtml(action.id)}">
-            <span>${escapeHtml(action.source)} - ${escapeHtml(action.age)}</span>
-            <strong>${escapeHtml(action.actionTitle || action.nextStep || action.title)}</strong>
-            <p>${escapeHtml(action.actionReason || action.nextStep)}</p>
+            <span>${escapeHtml(commercialText(action.source))} - ${escapeHtml(action.age)}</span>
+            <strong>${escapeHtml(commercialText(action.actionTitle || action.nextStep || action.title))}</strong>
+            <p>${escapeHtml(commercialText(action.actionReason || action.nextStep))}</p>
             ${action.commercialStage ? `
               <div class="bf-handoff-action-commercial" data-handoff-commercial-stage="${escapeHtml(action.commercialStage.key || 'contato')}">
-                <span>${escapeHtml(action.commercialStage.label || 'Contato')}</span>
-                <small>${escapeHtml(action.commercialStage.stale ? 'etapa parada' : 'cadencia ok')} - ${escapeHtml(action.commercialStage.stageAgeLabel || '-')}</small>
+                <span>${escapeHtml(commercialText(action.commercialStage.label || 'Contato'))}</span>
+                <small>${escapeHtml(action.commercialStage.stale ? 'precisa de retorno' : 'dentro do prazo')} - ${escapeHtml(action.commercialStage.stageAgeLabel || '-')}</small>
               </div>
             ` : ''}
             <dl class="bf-handoff-action-plan">
-              <div><dt>Dono</dt><dd>${escapeHtml(action.actionOwner || action.suggestedAssignee || 'responsavel a definir')}</dd></div>
-              <div><dt>Prazo</dt><dd>${escapeHtml(action.deadlineLabel || 'Ate 72h')}</dd></div>
-              <div><dt>Status</dt><dd>${escapeHtml(action.executionStatusLabel || 'Pendente')}</dd></div>
+              <div><dt>Responsável</dt><dd>${escapeHtml(commercialText(action.actionOwner || action.suggestedAssignee || 'a definir'))}</dd></div>
+              <div><dt>Prazo</dt><dd>${escapeHtml(commercialText(action.deadlineLabel || 'Até 72h'))}</dd></div>
+              <div><dt>Status</dt><dd>${escapeHtml(commercialText(action.executionStatusLabel || 'Pendente'))}</dd></div>
             </dl>
-            ${action.executionReason ? `<small>${escapeHtml(action.executionReason)}</small>` : ''}
+            ${action.executionReason ? `<small>${escapeHtml(commercialText(action.executionReason))}</small>` : ''}
             <div class="bf-inline-actions">
-              ${action.actionType === 'proposal' ? `<a class="btn btn--ghost btn--sm" href="${escapeHtml(action.href || 'simulador.html#step-9')}">${escapeHtml(action.ctaLabel || 'Abrir proposta')}</a>` : ''}
-              <button class="btn btn--ghost btn--sm" type="button" data-handoff-open="${escapeHtml(action.id)}">Abrir lead</button>
+              ${action.actionType === 'proposal' ? `<a class="btn btn--ghost btn--sm" href="${escapeHtml(action.href || 'simulador.html#proposta')}">${escapeHtml(commercialText(action.ctaLabel || 'Abrir proposta'))}</a>` : ''}
+              <button class="btn btn--ghost btn--sm" type="button" data-handoff-open="${escapeHtml(action.id)}">Abrir atendimento</button>
             </div>
           </article>
-        `).join('') : '<div class="bf-empty-state">Nenhuma acao consultiva pendente para os filtros atuais.</div>'}
+        `).join('') : '<div class="bf-empty-state">Nenhuma ação pendente para os filtros atuais.</div>'}
       </div>
     `;
     document.body.dataset.handoffConsultantCockpitReady = 'true';
@@ -555,19 +640,27 @@
     const summary = recoveryService() && recoveryService().summary
       ? recoveryService().summary(signals)
       : { total: signals.length, open: signals.length, high: 0 };
+    if (!summary.total) {
+      target.hidden = true;
+      target.innerHTML = '';
+      document.body.dataset.handoffRecoverySignalsReady = 'true';
+      document.body.dataset.handoffRecoverySignalsCount = '0';
+      return;
+    }
+    target.hidden = false;
     const handoffs = service().list();
     const rows = signals.slice(0, 6).map((signal) => {
       const existing = handoffs.find((item) => item.sourceSignalId === signal.id && item.ownerEmail === signal.ownerEmail);
       return `
         <article class="bf-client-activity__item" data-handoff-recovery-signal="${escapeHtml(signal.type)}">
-          <span>${escapeHtml(signal.severity === 'alta' ? 'Alta prioridade' : signal.severity === 'media' ? 'Media prioridade' : 'Monitorado')}</span>
-          <strong>${escapeHtml(signal.title)}</strong>
-          <small>${escapeHtml(signal.ownerEmail || 'anon')} - ${escapeHtml(signal.reason)}${signal.age ? ` - ${escapeHtml(signal.age)}` : ''}</small>
+          <span>${escapeHtml(signal.severity === 'alta' ? 'Alta prioridade' : signal.severity === 'media' ? 'Média prioridade' : 'Acompanhamento')}</span>
+          <strong>${escapeHtml(commercialText(signal.title))}</strong>
+          <small>${escapeHtml(actorLabel(signal.ownerEmail))} - ${escapeHtml(commercialText(signal.reason))}${signal.age ? ` - ${escapeHtml(signal.age)}` : ''}</small>
           <div class="bf-inline-actions">
-            <a class="btn btn--ghost btn--sm" href="${escapeHtml(signal.ctaHref || 'dashboard-cliente.html')}">${escapeHtml(signal.ctaLabel || 'Abrir')}</a>
+            <a class="btn btn--ghost btn--sm" href="${escapeHtml(signal.ctaHref || 'dashboard-cliente.html')}">${escapeHtml(commercialText(signal.ctaLabel || 'Abrir'))}</a>
             ${existing
-              ? `<button class="btn btn--ghost btn--sm" type="button" data-handoff-open="${escapeHtml(existing.id)}">Abrir ${escapeHtml(existing.id)}</button>`
-              : `<button class="btn btn--primary btn--sm" type="button" data-handoff-create-signal="${escapeHtml(signal.id)}">Criar handoff</button>`}
+              ? `<button class="btn btn--ghost btn--sm" type="button" data-handoff-open="${escapeHtml(existing.id)}">Abrir atendimento</button>`
+              : `<button class="btn btn--primary btn--sm" type="button" data-handoff-create-signal="${escapeHtml(signal.id)}">Criar atendimento</button>`}
           </div>
         </article>
       `;
@@ -576,11 +669,10 @@
     target.innerHTML = `
       <div class="bf-admin-panel-heading">
         <div>
-          <span class="bf-badge bf-badge--gold">Sinais de retomada</span>
-          <h2>Produtos, comparador e simuladores viram fila</h2>
-          <p>Microconversoes locais indicam onde o cliente parou e qual handoff precisa nascer ou ser retomado.</p>
+          <span class="bf-badge bf-badge--gold">Clientes para retomar</span>
+          <h2>Converse com quem parou antes de concluir.</h2>
+          <p>Veja quem interrompeu uma comparação, uma simulação ou uma proposta e retome no ponto certo.</p>
         </div>
-        <a class="btn btn--ghost btn--sm" href="dashboard-admin.html#alertas-operacionais">Ver alertas</a>
       </div>
       <div class="bf-platform-metrics">
         ${metric('Sinais', summary.total || 0, 'strong')}
@@ -589,7 +681,7 @@
         ${metric('Clientes', summary.owners || 0)}
       </div>
       <div class="bf-client-activity">
-        ${rows || '<div class="bf-empty-state">Nenhum sinal de retomada aberto. A fila continua monitorando produtos, comparador e simuladores locais.</div>'}
+        ${rows || '<div class="bf-empty-state">Nenhum cliente precisa de retomada agora.</div>'}
       </div>
     `;
     document.body.dataset.handoffRecoverySignalsReady = 'true';
@@ -601,15 +693,15 @@
     if (!target || !service().audit) return;
     const events = service().audit().slice(0, 8);
     if (!events.length) {
-      target.innerHTML = '<div class="bf-empty-state">Nenhum evento de handoff registrado ainda.</div>';
+      target.innerHTML = '<div class="bf-empty-state">Nenhuma atividade registrada ainda.</div>';
       return;
     }
     target.innerHTML = events.map((event) => `
       <article class="bf-client-activity__item">
-        <span>${escapeHtml(event.action || 'Evento')}</span>
-        <strong>${escapeHtml(event.handoffId || 'Handoff local')}</strong>
-        <small>${escapeHtml(date(event.createdAt))} - ${escapeHtml(event.actorEmail || 'anon')}</small>
-        <a href="#fila-handoff">Abrir fila</a>
+        <span>${escapeHtml(commercialText(event.action || 'Atividade'))}</span>
+        <strong>${escapeHtml(event.handoffId ? `Atendimento ${event.handoffId}` : 'Atendimento')}</strong>
+        <small>${escapeHtml(date(event.createdAt))} - ${escapeHtml(actorLabel(event.actorEmail))}</small>
+        <a href="#fila-handoff">Ver carteira</a>
       </article>
     `).join('');
   }
@@ -634,42 +726,46 @@
   }
 
   function sourceLabel(item) {
-    return service().sourceLabel ? service().sourceLabel(item) : (
-      service().sourceLabels && service().sourceLabels[sourceType(item)] ? service().sourceLabels[sourceType(item)] : 'Origem local'
-    );
+    const labels = {
+      proposal: 'Proposta',
+      journey: 'Planejamento do cliente',
+      calculator: 'Simulação financeira',
+      signal: 'Retomada',
+      imported: 'Importado',
+      manual: 'Inclusão manual'
+    };
+    return labels[sourceType(item)] || 'Atendimento';
   }
 
   function sourceSummary(item) {
     if (item && item._backendLead) {
-      return `Registro vivo do SQLite (${item._backendMaterializedTable || 'journey_leads'}) sincronizado pela API local.`;
+      return 'Atendimento atualizado pelo sistema.';
     }
     const type = sourceType(item);
     if (type === 'proposal') {
       return [
-        item.sourceProposalStatus ? `status ${item.sourceProposalStatus}` : '',
-        item.sourceProposalVersion ? `versao ${item.sourceProposalVersion}` : 'sem versao travada',
-        item.sourceProposalVersionId ? `snapshot ${item.sourceProposalVersionId}` : '',
-        item.sourceProposalValidUntil ? `validade ${date(item.sourceProposalValidUntil)}` : ''
-      ].filter(Boolean).join(' - ') || 'Proposta revisada localmente.';
+        item.sourceProposalStatus === 'reviewed' ? 'Proposta revisada' : 'Proposta vinculada',
+        item.sourceProposalVersion ? 'revisão salva' : 'revisão pendente',
+        item.sourceProposalValidUntil ? `válida até ${date(item.sourceProposalValidUntil)}` : ''
+      ].filter(Boolean).join(' - ');
     }
     if (type === 'journey') {
-      return item.sourceJourneyUpdatedAt ? `Trilha atualizada em ${date(item.sourceJourneyUpdatedAt)}.` : 'Trilha assistida salva localmente.';
+      return item.sourceJourneyUpdatedAt ? `Planejamento atualizado em ${date(item.sourceJourneyUpdatedAt)}.` : 'Atendimento iniciado pelo planejamento do cliente.';
     }
     if (type === 'calculator') {
       return [
         item.sourceCalculatorName || item.sourceCalculatorSlug ? `${item.sourceCalculatorName || item.sourceCalculatorSlug}` : '',
         item.sourceCalculatorRisk ? `risco ${item.sourceCalculatorRisk}` : '',
-        item.sourceCalculatorScore ? `score ${item.sourceCalculatorScore}/100` : '',
         item.sourceCalculatorUpdatedAt ? `salvo em ${date(item.sourceCalculatorUpdatedAt)}` : ''
-      ].filter(Boolean).join(' - ') || 'Impacto de calculadora salvo no dashboard cliente.';
+      ].filter(Boolean).join(' - ') || 'Resultado financeiro vinculado ao atendimento.';
     }
     if (type === 'imported') {
-      return item.sourceSignalUpdatedAt ? `Pacote importado em ${date(item.sourceSignalUpdatedAt)}.` : 'Item recebido por pacote administrativo.';
+      return item.sourceSignalUpdatedAt ? `Recebido em ${date(item.sourceSignalUpdatedAt)}.` : 'Atendimento recebido da equipe.';
     }
     if (type === 'signal') {
-      return item.sourceSignalSeverity ? `Sinal ${item.sourceSignalSeverity} de retomada.` : 'Sinal de retomada local.';
+      return item.sourceSignalSeverity ? `Retomada de prioridade ${item.sourceSignalSeverity}.` : 'Cliente disponível para retomada.';
     }
-    return 'Handoff criado localmente.';
+    return 'Atendimento criado pela equipe.';
   }
 
   function proposalState(item) {
@@ -681,16 +777,48 @@
     });
   }
 
+  function proposalDisplay(state) {
+    if (!state || !state.active) return { label: 'Sem proposta', reason: '' };
+    if (state.expired) {
+      return {
+        label: 'Proposta vencida',
+        reason: 'A validade terminou antes da conclusão do atendimento.'
+      };
+    }
+    if (!state.locked) {
+      return {
+        label: 'Revisão pendente',
+        reason: 'Confira os valores e registre a revisão antes de avançar.'
+      };
+    }
+    if (!state.reviewed) {
+      return {
+        label: 'Conferência incompleta',
+        reason: 'A proposta precisa da conferência final.'
+      };
+    }
+    if (Number(state.versionHours || 0) >= 72) {
+      return {
+        label: 'Retomar proposta',
+        reason: 'A última revisão ocorreu há mais de três dias.'
+      };
+    }
+    return {
+      label: 'Proposta conferida',
+      reason: 'A proposta está salva e vinculada a este atendimento.'
+    };
+  }
+
   function actionPlan(item) {
     return service().actionPlan ? service().actionPlan(item) : {
       active: false,
       actionKey: '',
       type: 'none',
-      title: item && item.operational ? item.operational.nextStep : 'Definir proximo passo',
+      title: item && item.operational ? item.operational.nextStep : 'Definir próximo passo',
       reason: '',
       owner: item && (item.assignedTo || item.ownerEmail) ? (item.assignedTo || item.ownerEmail) : 'definir na fila',
-      deadlineLabel: 'Ate 72h',
-      ctaLabel: 'Abrir lead',
+      deadlineLabel: 'Até 72h',
+      ctaLabel: 'Abrir atendimento',
       href: 'handoff-consultivo.html#fila-handoff',
       tone: 'media',
       execution: { status: 'pendente', statusLabel: 'Pendente', reason: '' }
@@ -709,8 +837,8 @@
     return `
       <div class="bf-handoff-commercial-chip bf-handoff-commercial-chip--${escapeHtml(stage.tone || 'baixa')}" data-handoff-commercial-stage="${escapeHtml(stage.key || 'contato')}">
         <span>Etapa comercial</span>
-        <strong>${escapeHtml(stage.label || 'Contato')}</strong>
-        <small>${escapeHtml(stage.stale ? 'Retomar etapa' : stage.historyLabel || 'Etapa definida pela jornada')} - ${escapeHtml(stage.stageAgeLabel || '-')}</small>
+        <strong>${escapeHtml(commercialText(stage.label || 'Contato'))}</strong>
+        <small>${escapeHtml(commercialText(stage.stale ? 'Retomar etapa' : stage.historyLabel || 'Etapa definida pelo atendimento'))} - ${escapeHtml(stage.stageAgeLabel || '-')}</small>
       </div>
     `;
   }
@@ -720,18 +848,18 @@
     return `
       <section class="bf-handoff-commercial-panel bf-handoff-commercial-panel--${escapeHtml(stage.tone || 'baixa')} bf-platform-section" data-handoff-commercial-stage-panel>
         <div>
-          <span class="bf-badge bf-badge--gold">Cadencia comercial</span>
-          <h3>${escapeHtml(stage.label || 'Contato')}</h3>
-          <p>${escapeHtml(stage.stale ? 'Lead ultrapassou o prazo da etapa comercial e precisa de retomada.' : 'Lead dentro da cadencia comercial registrada no funil admin.')}</p>
+          <span class="bf-badge bf-badge--gold">Andamento comercial</span>
+          <h3>${escapeHtml(commercialText(stage.label || 'Contato'))}</h3>
+          <p>${escapeHtml(stage.stale ? 'O prazo desta etapa venceu. Retome o cliente.' : 'Esta etapa está dentro do prazo.')}</p>
         </div>
         <dl>
-          <div><dt>Etapa</dt><dd>${escapeHtml(stage.label || 'Contato')}</dd></div>
-          <div><dt>Aging etapa</dt><dd>${escapeHtml(stage.stageAgeLabel || '-')}</dd></div>
-          <div><dt>Prazo alvo</dt><dd>${escapeHtml(stage.deadlineHours || '-')}h</dd></div>
-          <div><dt>Atualizado por</dt><dd>${escapeHtml(stage.updatedBy || stage.actorEmail || 'jornada local')}</dd></div>
+          <div><dt>Etapa</dt><dd>${escapeHtml(commercialText(stage.label || 'Contato'))}</dd></div>
+          <div><dt>Tempo nesta etapa</dt><dd>${escapeHtml(stage.stageAgeLabel || '-')}</dd></div>
+          <div><dt>Prazo de retorno</dt><dd>${escapeHtml(stage.deadlineHours || '-')}h</dd></div>
+          <div><dt>Atualizado por</dt><dd>${escapeHtml(actorLabel(stage.updatedBy || stage.actorEmail))}</dd></div>
         </dl>
-        <small data-handoff-commercial-stage-history>${escapeHtml(stage.historyLabel || 'Etapa definida pela jornada')}${stage.movementAt ? ` - ${escapeHtml(date(stage.movementAt))}` : ''}</small>
-        <a class="btn btn--ghost btn--sm" href="dashboard-admin.html?from=handoff#admin-funil-comercial">Abrir funil admin</a>
+        <small data-handoff-commercial-stage-history>${escapeHtml(commercialText(stage.historyLabel || 'Etapa definida pelo atendimento'))}${stage.movementAt ? ` - ${escapeHtml(date(stage.movementAt))}` : ''}</small>
+        <a class="btn btn--ghost btn--sm" href="dashboard-admin.html?from=handoff#admin-funil-comercial">Ver gestão comercial</a>
       </section>
     `;
   }
@@ -742,9 +870,9 @@
 
   function actionHistoryMarkup(plan) {
     const events = service().actionHistory ? service().actionHistory(plan.actionKey).slice(0, 3) : [];
-    if (!events.length) return '<small>Nenhuma execucao registrada ainda.</small>';
+    if (!events.length) return '<small>Nenhuma execução registrada ainda.</small>';
     return events.map((event) => `
-      <small>${escapeHtml(event.status || event.action || 'acao')} - ${escapeHtml(date(event.createdAt))} - ${escapeHtml(event.actorEmail || 'anon')}</small>
+      <small>${escapeHtml(commercialText(event.status || event.action || 'ação'))} - ${escapeHtml(date(event.createdAt))} - ${escapeHtml(actorLabel(event.actorEmail))}</small>
     `).join('');
   }
 
@@ -753,11 +881,11 @@
     return `
       <div class="bf-action-execution bf-action-execution--${escapeHtml(actionStatusClass(execution.status))}" data-handoff-action-execution="${escapeHtml(plan.actionKey || item.id || '')}">
         <div class="bf-action-execution__head">
-          <span>Status da acao</span>
-          <strong>${escapeHtml(execution.statusLabel || 'Pendente')}</strong>
+          <span>Status da ação</span>
+          <strong>${escapeHtml(commercialText(execution.statusLabel || 'Pendente'))}</strong>
         </div>
-        <label>Motivo ou observacao
-          <input data-handoff-action-reason value="${escapeHtml(execution.reason || '')}" placeholder="Ex.: cliente pediu retorno amanha">
+        <label>Motivo ou observação
+          <input data-handoff-action-reason value="${escapeHtml(commercialText(execution.reason || ''))}" placeholder="Ex.: cliente pediu retorno amanhã">
         </label>
         <div class="bf-inline-actions">
           <button class="btn btn--ghost btn--sm" type="button" data-handoff-action-status="em_execucao">Iniciar</button>
@@ -775,33 +903,43 @@
   function proposalVersionChip(item) {
     const state = proposalState(item);
     if (!state.active) return '';
+    const display = proposalDisplay(state);
     return `
       <div class="bf-handoff-proposal-chip bf-handoff-proposal-chip--${escapeHtml(state.tone)}" data-handoff-proposal-version>
-        <span>${escapeHtml(state.label)}</span>
-        <strong>${escapeHtml(state.nextStep || 'Acompanhar proposta')}</strong>
-        <small>${escapeHtml(state.reason || sourceSummary(item))}</small>
+        <span>${escapeHtml(display.label)}</span>
+        <strong>${escapeHtml(commercialText(state.nextStep || 'Acompanhar proposta'))}</strong>
+        <small>${escapeHtml(display.reason)}</small>
       </div>
     `;
+  }
+
+  function proposalItemHref(item) {
+    const params = ['from=handoff'];
+    if (item && item.sourceProposalId) params.push(`proposalId=${encodeURIComponent(item.sourceProposalId)}`);
+    if (item && item.sourceProposalVersionId) params.push(`proposalVersionId=${encodeURIComponent(item.sourceProposalVersionId)}`);
+    if (item && item.sourceSimulationId) params.push(`simulationId=${encodeURIComponent(item.sourceSimulationId)}`);
+    return `simulador.html?${params.join('&')}#proposta`;
   }
 
   function proposalVersionPanel(item) {
     const state = proposalState(item);
     if (!state.active) return '';
+    const display = proposalDisplay(state);
     return `
       <section class="bf-handoff-proposal-panel bf-handoff-proposal-panel--${escapeHtml(state.tone)} bf-platform-section" data-handoff-proposal-version>
         <div>
-          <span class="bf-badge bf-badge--gold">Proposta versionada</span>
-          <h3>${escapeHtml(state.label)}</h3>
-          <p>${escapeHtml(state.reason || 'Snapshot local preservado para atendimento consultivo.')}</p>
+          <span class="bf-badge bf-badge--gold">Proposta vinculada</span>
+          <h3>${escapeHtml(display.label)}</h3>
+          <p>${escapeHtml(display.reason)}</p>
         </div>
         <dl>
           <div><dt>Proposta</dt><dd>${escapeHtml(item.sourceProposalId || '-')}</dd></div>
-          <div><dt>Versao</dt><dd>${escapeHtml(state.version || '-')}</dd></div>
-          <div><dt>Validade</dt><dd>${escapeHtml(state.validUntil || '-')}</dd></div>
-          <div><dt>Atualizacao</dt><dd>${escapeHtml(state.versionAgeLabel || '-')}</dd></div>
+          <div><dt>Revisão</dt><dd>${escapeHtml(state.reviewed ? 'Concluída' : 'Pendente')}</dd></div>
+          <div><dt>Validade</dt><dd>${escapeHtml(state.validUntil || 'A confirmar')}</dd></div>
+          <div><dt>Última atualização</dt><dd>${escapeHtml(state.versionAgeLabel || '-')}</dd></div>
         </dl>
-        <small>${state.versionId ? `Snapshot ${escapeHtml(state.versionId)}` : 'Snapshot nao identificado em handoffs antigos.'}</small>
-        <a class="btn btn--ghost btn--sm" href="simulador.html#step-9">Abrir proposta</a>
+        <small>${escapeHtml(state.locked ? 'Proposta salva para este atendimento.' : 'Revise a proposta antes de avançar.')}</small>
+        <a class="btn btn--ghost btn--sm" href="${escapeHtml(proposalItemHref(item))}">Abrir proposta</a>
       </section>
     `;
   }
@@ -811,7 +949,7 @@
     const status = service().statusLabels[item.status] || item.status;
     const checklist = item.checklist || [];
     const done = checklist.filter((entry) => entry.done).length;
-    const ownerLabel = item.ownerName || item.ownerEmail || 'Cliente local';
+    const ownerLabel = item.ownerName || item.ownerEmail || 'Cliente';
     const op = item.operational || (service().operationalState ? service().operationalState(item) : {});
     const stage = commercialStage(item);
     return `
@@ -820,20 +958,20 @@
           <span class="bf-handoff-status bf-handoff-status--${escapeHtml(item.status)}">${escapeHtml(status)}</span>
           <span class="bf-handoff-priority bf-handoff-priority--${escapeHtml(item.priority)}">${escapeHtml(priorityLabel(item.priority))}</span>
           <span class="bf-handoff-source bf-handoff-source--${escapeHtml(sourceType(item))}">${escapeHtml(sourceLabel(item))}</span>
-          ${item._backendLead ? `<span class="bf-handoff-source bf-handoff-source--backend" data-handoff-live-source="${escapeHtml(item._backendSource || 'sqlite')}">Dado vivo</span>` : ''}
-          <span class="bf-handoff-aging bf-handoff-aging--${escapeHtml(op.tone || 'baixa')}">${escapeHtml(op.slaOverdue ? 'SLA vencido' : op.ageLabel || '-')}</span>
-          <span class="bf-handoff-commercial-stage-tag bf-handoff-commercial-stage-tag--${escapeHtml(stage.tone || 'baixa')}" data-handoff-commercial-stage="${escapeHtml(stage.key || 'contato')}">${escapeHtml(stage.label || 'Contato')}</span>
+          ${item._backendLead ? `<span class="bf-handoff-source bf-handoff-source--backend" data-handoff-live-source="${escapeHtml(item._backendSource || 'sqlite')}">Atualizado</span>` : ''}
+          <span class="bf-handoff-aging bf-handoff-aging--${escapeHtml(op.tone || 'baixa')}">${escapeHtml(op.slaOverdue ? 'Retorno vencido' : op.ageLabel || '-')}</span>
+          <span class="bf-handoff-commercial-stage-tag bf-handoff-commercial-stage-tag--${escapeHtml(stage.tone || 'baixa')}" data-handoff-commercial-stage="${escapeHtml(stage.key || 'contato')}">${escapeHtml(commercialText(stage.label || 'Contato'))}</span>
         </div>
-        <h3>${escapeHtml(item.objectiveLabel || 'Lead consultivo')}</h3>
-        <p>${escapeHtml(ownerLabel)} - ${escapeHtml(summary.productName || '-')} / ${escapeHtml(summary.modelName || '-')}</p>
+        <h3>${escapeHtml(commercialText(item.objectiveLabel || 'Oportunidade'))}</h3>
+        <p>${escapeHtml(ownerLabel)} - ${escapeHtml(commercialText(summary.productName || '-'))} / ${escapeHtml(commercialText(summary.modelName || '-'))}</p>
         <small class="bf-handoff-origin-note">${escapeHtml(sourceSummary(item))}</small>
         ${proposalVersionChip(item)}
         ${commercialStageChip(item)}
         <div class="bf-mini-facts">
-          <div><dt>Credito</dt><dd>${escapeHtml(money(summary.valorCredito || 0))}</dd></div>
-          <div><dt>Checklist</dt><dd>${done}/${checklist.length}</dd></div>
-          <div><dt>Aging</dt><dd>${escapeHtml(op.ageLabel || '-')}</dd></div>
-          <div><dt>Proximo</dt><dd>${escapeHtml(op.nextStep || '-')}</dd></div>
+          <div><dt>Crédito</dt><dd>${escapeHtml(money(summary.valorCredito || 0))}</dd></div>
+          <div><dt>Etapas</dt><dd>${done}/${checklist.length}</dd></div>
+          <div><dt>Sem atualização</dt><dd>${escapeHtml(op.ageLabel || '-')}</dd></div>
+          <div><dt>Próximo passo</dt><dd>${escapeHtml(commercialText(op.nextStep || '-'))}</dd></div>
         </div>
         <div class="bf-inline-actions">
           <button class="btn btn--primary btn--sm" type="button" data-handoff-open="${escapeHtml(item.id)}">Abrir</button>
@@ -861,7 +999,7 @@
 
     target.innerHTML = items.length
       ? items.map(card).join('')
-      : '<div class="bf-empty-state">Nenhum handoff encontrado para os filtros atuais.</div>';
+      : '<div class="bf-empty-state">Nenhum atendimento encontrado para os filtros atuais.</div>';
     renderDetail();
   }
 
@@ -869,16 +1007,16 @@
     const events = (item.timeline || []).slice(0, 8);
     if (!events.length) return '<div class="bf-empty-state">Sem eventos registrados.</div>';
     const labels = {
-      create: 'Handoff criado pela trilha',
-      refresh: 'Handoff atualizado pela trilha',
-      'calculator:create': 'Handoff criado por calculadora',
-      'calculator:refresh': 'Handoff atualizado por calculadora',
-      'signal:create': 'Handoff criado por sinal',
-      'signal:refresh': 'Handoff atualizado por sinal',
-      'proposal:create': 'Handoff criado por proposta',
-      'proposal:refresh': 'Handoff atualizado por proposta',
-      note: 'Nota local adicionada',
-      assign: 'Responsavel atualizado',
+      create: 'Atendimento criado pelo planejamento',
+      refresh: 'Atendimento atualizado pelo planejamento',
+      'calculator:create': 'Atendimento criado por uma simulação financeira',
+      'calculator:refresh': 'Atendimento atualizado por uma simulação financeira',
+      'signal:create': 'Atendimento criado para retomada',
+      'signal:refresh': 'Atendimento atualizado para retomada',
+      'proposal:create': 'Atendimento criado por uma proposta',
+      'proposal:refresh': 'Atendimento atualizado por uma proposta',
+      note: 'Anotação adicionada',
+      assign: 'Responsável atualizado',
       'checklist:done': 'Checklist marcado',
       'checklist:open': 'Checklist reaberto',
       'status:novo': 'Status alterado para Novo',
@@ -889,19 +1027,19 @@
     };
     return events.map((event) => `
       <article class="bf-handoff-event">
-        <strong>${escapeHtml(labels[event.type] || event.label || event.type || 'Evento')}</strong>
-        <small>${escapeHtml(date(event.createdAt))} - ${escapeHtml(event.actorEmail || 'anon')}</small>
+        <strong>${escapeHtml(commercialText(labels[event.type] || event.label || event.type || 'Atividade'))}</strong>
+        <small>${escapeHtml(date(event.createdAt))} - ${escapeHtml(actorLabel(event.actorEmail))}</small>
       </article>
     `).join('');
   }
 
   function notesMarkup(item) {
     const notes = (item.notes || []).slice(0, 6);
-    if (!notes.length) return '<div class="bf-empty-state">Nenhuma nota local registrada.</div>';
+    if (!notes.length) return '<div class="bf-empty-state">Nenhuma anotação registrada.</div>';
     return notes.map((note) => `
       <article class="bf-handoff-note">
         <p>${escapeHtml(note.text)}</p>
-        <small>${escapeHtml(date(note.createdAt))} - ${escapeHtml(note.actorEmail || 'anon')}</small>
+        <small>${escapeHtml(date(note.createdAt))} - ${escapeHtml(actorLabel(note.actorEmail))}</small>
       </article>
     `).join('');
   }
@@ -910,7 +1048,7 @@
     return (item.checklist || []).map((entry) => `
       <label class="bf-handoff-check">
         <input type="checkbox" data-handoff-check="${escapeHtml(entry.id)}"${entry.done ? ' checked' : ''}>
-        <span>${escapeHtml(entry.label)}</span>
+        <span>${escapeHtml(commercialText(entry.label))}</span>
       </label>
     `).join('');
   }
@@ -920,12 +1058,12 @@
     if (!target) return;
     const item = liveHandoffById(selectedId);
     if (!item) {
-      target.innerHTML = '<div class="bf-empty-state">Selecione um handoff para acompanhar.</div>';
+      target.innerHTML = '<div class="bf-empty-state">Selecione um atendimento para acompanhar.</div>';
       return;
     }
 
     const summary = item.summary || {};
-    const ownerLabel = item.ownerName || item.ownerEmail || 'Cliente local';
+    const ownerLabel = item.ownerName || item.ownerEmail || 'Cliente';
     const op = item.operational || {};
     const plan = actionPlan(item);
     const stage = commercialStage(item);
@@ -933,8 +1071,8 @@
       <div class="bf-admin-panel-heading">
         <div>
           <span class="bf-badge bf-badge--ok">${escapeHtml(sourceLabel(item))}</span>
-          ${item._backendLead ? `<span class="bf-badge bf-badge--gold" data-handoff-live-source="${escapeHtml(item._backendSource || 'sqlite')}">Dado vivo</span>` : ''}
-          <h2>${escapeHtml(item.objectiveLabel || item.id)}</h2>
+          ${item._backendLead ? `<span class="bf-badge bf-badge--gold" data-handoff-live-source="${escapeHtml(item._backendSource || 'sqlite')}">Atualizado</span>` : ''}
+          <h2>${escapeHtml(commercialText(item.objectiveLabel || item.id))}</h2>
           <p>${escapeHtml(ownerLabel)} - criado em ${escapeHtml(date(item.createdAt))}</p>
         </div>
         <a class="btn btn--ghost btn--sm" href="trilha-decisao.html">Rever trilha</a>
@@ -944,35 +1082,35 @@
         <label>Status
           <select data-handoff-status="${escapeHtml(item.id)}">${statusOptions(item.status)}</select>
         </label>
-        <label>Responsavel local
-          <input data-handoff-assignee="${escapeHtml(item.id)}" value="${escapeHtml(item.assignedTo || '')}" placeholder="consultor@bankfratern.local">
+        <label>Responsável
+          <input data-handoff-assignee="${escapeHtml(item.id)}" value="${escapeHtml(item.assignedTo || '')}" placeholder="consultor@empresa.com">
         </label>
       </div>
 
       <div class="bf-platform-metrics bf-platform-section">
         ${metric('Origem', sourceLabel(item))}
-        ${metric('Prioridade operacional', op.slaOverdue ? 'SLA vencido' : priorityLabel(item.priority), op.slaOverdue || item.priority === 'alta' ? 'warn' : '')}
-        ${metric('Aging', op.ageLabel || '-')}
-        ${metric('SLA alvo', `${op.slaHours || '-'}h`)}
-        ${metric('Responsavel sugerido', op.suggestedAssignee || 'definir na fila', op.unassigned ? 'warn' : '')}
-        ${metric('Etapa comercial', stage.label || 'Contato', stage.stale ? 'warn' : '')}
-        ${metric('Aging etapa', stage.stageAgeLabel || '-')}
-        ${metric('Produto', summary.productName || '-')}
-        ${metric('Modelo', summary.modelName || '-')}
+        ${metric('Prioridade', op.slaOverdue ? 'Retorno vencido' : priorityLabel(item.priority), op.slaOverdue || item.priority === 'alta' ? 'warn' : '')}
+        ${metric('Tempo sem atualização', op.ageLabel || '-')}
+        ${metric('Prazo de retorno', `${op.slaHours || '-'}h`)}
+        ${metric('Responsável sugerido', commercialText(op.suggestedAssignee || 'a definir'), op.unassigned ? 'warn' : '')}
+        ${metric('Etapa comercial', commercialText(stage.label || 'Contato'), stage.stale ? 'warn' : '')}
+        ${metric('Tempo nesta etapa', stage.stageAgeLabel || '-')}
+        ${metric('Produto', commercialText(summary.productName || '-'))}
+        ${metric('Modelo', commercialText(summary.modelName || '-'))}
         ${metric('Reserva', `${Number(summary.reservaMeses || 0).toFixed(1)} meses`, summary.gapReserva > 0 ? 'warn' : '')}
         ${metric('Capacidade segura', money(summary.capacidadePagamento || 0), 'strong')}
       </div>
 
       <section class="bf-handoff-next-step bf-handoff-action--${escapeHtml(op.tone || 'media')} bf-platform-section" data-handoff-next-step data-handoff-action-plan="${escapeHtml(item.id)}">
-        <span class="bf-badge bf-badge--gold">Proximo passo</span>
-        <strong>${escapeHtml(plan.title || op.nextStep || 'Definir proximo passo')}</strong>
-        <p>${escapeHtml(plan.reason || (op.slaOverdue ? 'Lead ultrapassou o SLA recomendado para a prioridade atual.' : op.waitingClient ? 'Cliente esta aguardando retorno ha mais de 48 horas.' : op.unassigned ? 'Lead aberto precisa de responsavel antes de seguir.' : 'Lead esta dentro da governanca operacional atual.'))}</p>
+        <span class="bf-badge bf-badge--gold">Próximo passo</span>
+        <strong>${escapeHtml(commercialText(plan.title || op.nextStep || 'Definir próximo passo'))}</strong>
+        <p>${escapeHtml(commercialText(plan.reason || (op.slaOverdue ? 'O prazo de retorno venceu para esta prioridade.' : op.waitingClient ? 'O cliente aguarda retorno há mais de dois dias.' : op.unassigned ? 'Defina um responsável antes de seguir.' : 'O atendimento está dentro do prazo.')))}</p>
         <dl class="bf-handoff-action-plan">
-          <div><dt>Dono</dt><dd>${escapeHtml(plan.owner || op.suggestedAssignee || 'definir na fila')}</dd></div>
-          <div><dt>Prazo</dt><dd>${escapeHtml(plan.deadlineLabel || 'Ate 72h')}</dd></div>
-          <div><dt>Status</dt><dd>${escapeHtml((plan.execution && plan.execution.statusLabel) || 'Pendente')}</dd></div>
+          <div><dt>Responsável</dt><dd>${escapeHtml(commercialText(plan.owner || op.suggestedAssignee || 'a definir'))}</dd></div>
+          <div><dt>Prazo</dt><dd>${escapeHtml(commercialText(plan.deadlineLabel || 'Até 72h'))}</dd></div>
+          <div><dt>Status</dt><dd>${escapeHtml(commercialText((plan.execution && plan.execution.statusLabel) || 'Pendente'))}</dd></div>
         </dl>
-        ${plan.type === 'proposal' ? `<a class="btn btn--ghost btn--sm" href="${escapeHtml(plan.href || 'simulador.html#step-9')}">${escapeHtml(plan.ctaLabel || 'Abrir proposta')}</a>` : ''}
+        ${plan.type === 'proposal' ? `<a class="btn btn--ghost btn--sm" href="${escapeHtml(plan.href || proposalItemHref(item))}">${escapeHtml(commercialText(plan.ctaLabel || 'Abrir proposta'))}</a>` : ''}
         ${actionExecutionPanel(plan, item)}
       </section>
 
@@ -991,17 +1129,17 @@
           <div class="bf-handoff-checklist">${checklistMarkup(item)}</div>
         </section>
         <section>
-          <span class="bf-badge bf-badge--navy">Notas locais</span>
+          <span class="bf-badge bf-badge--navy">Anotações</span>
           <form class="bf-handoff-note-form" data-handoff-note-form="${escapeHtml(item.id)}">
-            <textarea name="note" rows="4" placeholder="Registrar nota consultiva local, sem envio externo."></textarea>
-            <button class="btn btn--primary btn--sm" type="submit">Adicionar nota</button>
+            <textarea name="note" rows="4" placeholder="Registre uma observação sobre a conversa."></textarea>
+            <button class="btn btn--primary btn--sm" type="submit">Adicionar anotação</button>
           </form>
           <div class="bf-handoff-notes">${notesMarkup(item)}</div>
         </section>
       </div>
 
       <section class="bf-platform-section">
-        <span class="bf-badge bf-badge--ok">Historico local</span>
+        <span class="bf-badge bf-badge--ok">Histórico</span>
         <div class="bf-handoff-timeline">${timelineMarkup(item)}</div>
       </section>
     `;
@@ -1169,7 +1307,7 @@
           timeline: [{
             id: `TL-${Date.now().toString(36).toUpperCase()}`,
             type: 'note',
-            label: 'Nota local adicionada',
+            label: 'Anotação adicionada',
             actorEmail: actor.email,
             createdAt: note.createdAt
           }].concat(item.timeline || [])

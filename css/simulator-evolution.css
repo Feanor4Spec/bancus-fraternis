@@ -1382,8 +1382,7 @@ body.proposal-outline-collapsed .proposal-outline-panel__collapse img {
 }
 
 .proposal-bottom-bar {
-  position: sticky;
-  bottom: 10px;
+  position: static;
   z-index: 40;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
@@ -1432,8 +1431,10 @@ body.proposal-client-mode .proposal-validation-panel,
 body.proposal-client-mode .proposal-control-drawer,
 body.proposal-client-mode .proposal-bottom-bar,
 body.proposal-client-mode .proposal-final-navigation,
+body.proposal-client-mode .proposal-evolution-feedback,
+body.proposal-client-mode .proposal-share-panel,
 body.proposal-client-mode .proposal-command-bar__state,
-body.proposal-client-mode .proposal-command-bar__actions > :not(#btn-proposal-client-mode) {
+body.proposal-client-mode .proposal-command-bar__actions > :not(#btn-proposal-client-return) {
   display: none !important;
 }
 
@@ -1460,7 +1461,15 @@ body.proposal-client-mode .proposal-command-bar {
 }
 
 body.proposal-client-mode .proposal-command-bar__actions {
-  display: block;
+  display: flex;
+}
+
+body.proposal-client-readonly .proposal-command-bar {
+  justify-content: space-between;
+}
+
+body.proposal-client-readonly .proposal-command-bar__state {
+  display: grid !important;
 }
 
 /* Responsive */
