@@ -2,7 +2,9 @@
   'use strict';
 
   const SESSION_KEY = 'bf_backend_session_v1';
-  const REQUEST_TIMEOUT_MS = 1800;
+  // Maior que o orcamento maximo documentado de conexao + query do provider.
+  // Evita declarar fallback local enquanto uma escrita hospedada ainda pode confirmar.
+  const REQUEST_TIMEOUT_MS = 20000;
 
   function canUseApi() {
     return /^https?:$/i.test(location.protocol || '');
@@ -263,6 +265,44 @@
     return request(`/api/proposals/${encodeURIComponent(id)}`, { method: 'PATCH', body: payload || {} });
   }
 
+  function createProposalSnapshot(payload) {
+    return request('/api/proposal-snapshots', { method: 'POST', body: payload || {} });
+  }
+
+  function getProposalSnapshot(id) {
+    if (!id) return Promise.resolve({ ok: false, message: 'Snapshot ausente.' });
+    return request(`/api/proposal-snapshots/${encodeURIComponent(id)}`);
+  }
+
+  function transitionProposalSnapshot(id, status, patch = {}) {
+    if (!id) return Promise.resolve({ ok: false, message: 'Snapshot ausente.' });
+    return request(`/api/proposal-snapshots/${encodeURIComponent(id)}/transitions`, {
+      method: 'POST',
+      body: { status, ...patch }
+    });
+  }
+
+  function publishProposalSnapshot(id, validityDays = 30) {
+    if (!id) return Promise.resolve({ ok: false, message: 'Snapshot ausente.' });
+    return request(`/api/proposal-snapshots/${encodeURIComponent(id)}/publish`, {
+      method: 'POST',
+      body: { validityDays }
+    });
+  }
+
+  function revokeProposalShare(id) {
+    if (!id) return Promise.resolve({ ok: false, message: 'Compartilhamento ausente.' });
+    return request(`/api/proposal-shares/${encodeURIComponent(id)}/revoke`, { method: 'POST' });
+  }
+
+  function getPublicProposal(token) {
+    if (!token) return Promise.resolve({ ok: false, message: 'Token ausente.' });
+    return request('/api/public/proposals/resolve', {
+      method: 'POST',
+      body: { token }
+    });
+  }
+
   window.BFBackendApi = {
     SESSION_KEY,
     available: canUseApi,
@@ -297,6 +337,12 @@
     updateSimulation,
     saveProposal,
     getProposal,
-    updateProposal
+    updateProposal,
+    createProposalSnapshot,
+    getProposalSnapshot,
+    transitionProposalSnapshot,
+    publishProposalSnapshot,
+    revokeProposalShare,
+    getPublicProposal
   };
 })();

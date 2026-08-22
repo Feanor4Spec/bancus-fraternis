@@ -19,7 +19,8 @@ temp/
 
 # Ambiente e segredos
 .env
-.env.local
+.env.*
+!.env.example
 *.key
 *.pem
 

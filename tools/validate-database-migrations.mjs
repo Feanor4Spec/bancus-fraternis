@@ -94,9 +94,9 @@ try {
 
 assert(manifest.schemaVersion === SCHEMA_VERSION, 'Manifest nao preserva SCHEMA_VERSION atual.');
 assert(manifest.provider === DEFAULT_DB_PROVIDER, 'Manifest nao preserva provider padrao.');
-assert(Array.isArray(manifest.futureProviders) && manifest.futureProviders.includes('postgresql'), 'Manifest nao registra postgresql como provider futuro.');
-assert(Array.isArray(SUPPORTED_DB_PROVIDERS) && SUPPORTED_DB_PROVIDERS.includes('sqlite'), 'db.js deveria continuar suportando sqlite.');
-assert(Array.isArray(FUTURE_DB_PROVIDERS) && FUTURE_DB_PROVIDERS.includes('postgresql'), 'db.js deveria manter postgresql como provider futuro.');
+assert(Array.isArray(manifest.pilotProviders) && manifest.pilotProviders.includes('postgresql'), 'Manifest nao registra postgresql como provider piloto.');
+assert(Array.isArray(SUPPORTED_DB_PROVIDERS) && SUPPORTED_DB_PROVIDERS.includes('sqlite') && SUPPORTED_DB_PROVIDERS.includes('postgresql'), 'db.js deveria suportar sqlite e o piloto postgresql.');
+assert(Array.isArray(FUTURE_DB_PROVIDERS) && !FUTURE_DB_PROVIDERS.includes('postgresql'), 'db.js nao deveria manter postgresql como provider futuro depois da implementacao.');
 assert(manifest.currentMigration === path.basename(migrationRelativePath), 'Manifest nao aponta para a migration baseline.');
 assert(manifest.rollback === path.basename(rollbackRelativePath), 'Manifest nao aponta para rollback baseline.');
 assert(manifest.passwordAlgorithm === 'scrypt-sha256', 'Manifest nao documenta algoritmo de senha atual.');

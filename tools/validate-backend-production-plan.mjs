@@ -141,7 +141,7 @@ assert(backendDb.includes('SUPPORTED_DB_PROVIDERS') && backendDb.includes('norma
 assert(backendDb.includes('BANCUS_DB_PROVIDER') && backendDb.includes('assertSupportedDbProvider'), 'db.js sem bloqueio explicito de provider nao implementado.');
 assert(backendDb.includes('isSupportedDbProvider') && backendDb.includes('postgresql'), 'db.js deveria permitir validar provider futuro nao implementado.');
 assert(backendDb.includes('SCHEMA_MANIFEST_PATH') && backendDb.includes('SCHEMA_MIGRATIONS_DIR'), 'db.js sem caminhos publicos de migrations.');
-assert(server.includes('provider: localDatabase ? localDatabase.provider : null'), 'server.js sem provider no health da API.');
+assert(server.includes('provider: database ? database.provider : requestedDatabaseProvider'), 'server.js sem provider solicitado/ativo no health da API.');
 
 const report = {
   ok: failures.length === 0,

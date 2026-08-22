@@ -3,18 +3,70 @@ const fs = require('fs');
 const path = require('path');
 
 const PORT = Number(process.env.PORT) || 8080;
+const DEFAULT_HOST = '127.0.0.1';
 const ROOT_DIR = __dirname;
 const MAX_JSON_BODY_BYTES = 4 * 1024 * 1024;
 let localDatabase = null;
 let SCHEMA_VERSION = 'bancus-fraternis.local-db.v1';
+let databaseReady = Promise.resolve(null);
+let databaseStartupError = null;
+let requestedDatabaseProvider = String(process.env.BANCUS_DB_PROVIDER || 'sqlite').trim().toLowerCase() || 'sqlite';
+let proposalShareRepository = null;
+let proposalShareService = null;
+let proposalShareReady = Promise.resolve(null);
+let proposalShareStartupError = null;
+let PROPOSAL_SHARE_SCHEMA = 'bancus.proposal-secure-share.v1';
 
 try {
   const databaseModule = require('./js/backend/db');
   SCHEMA_VERSION = databaseModule.SCHEMA_VERSION;
   const { createDatabase } = databaseModule;
-  localDatabase = createDatabase();
+  requestedDatabaseProvider = databaseModule.normalizeDbProvider(requestedDatabaseProvider);
+  databaseReady = Promise.resolve(createDatabase())
+    .then((database) => {
+      localDatabase = database;
+      databaseStartupError = null;
+      return database;
+    })
+    .catch((error) => {
+      databaseStartupError = sanitizeInfrastructureError(error);
+      console.warn(`Bancus Fraternis database unavailable (${databaseStartupError.code}): ${databaseStartupError.message}`);
+      return null;
+    });
 } catch (error) {
-  console.warn(`Bancus Fraternis local database disabled: ${error.message}`);
+  databaseStartupError = sanitizeInfrastructureError(error);
+  databaseReady = Promise.resolve(null);
+  console.warn(`Bancus Fraternis database unavailable (${databaseStartupError.code}): ${databaseStartupError.message}`);
+}
+
+try {
+  const shareModule = require('./js/proposal-share');
+  PROPOSAL_SHARE_SCHEMA = shareModule.SCHEMA;
+  proposalShareReady = databaseReady.then(async (database) => {
+    if (!database) return null;
+    if (database.provider === 'postgresql') {
+      const { createPostgresqlProposalShareRepository } = require('./js/backend/proposal-share-postgresql-repository');
+      proposalShareRepository = await createPostgresqlProposalShareRepository({ database });
+    } else {
+      const { createProposalShareRepository } = require('./js/backend/proposal-share-repository');
+      proposalShareRepository = createProposalShareRepository();
+    }
+    proposalShareService = shareModule.createProposalShareService({
+      repository: proposalShareRepository
+    });
+    proposalShareStartupError = null;
+    return proposalShareService;
+  }).catch((error) => {
+    proposalShareStartupError = sanitizeInfrastructureError(error);
+    proposalShareRepository = null;
+    proposalShareService = null;
+    console.warn(`Bancus Fraternis secure proposal share disabled (${proposalShareStartupError.code}): ${proposalShareStartupError.message}`);
+    return null;
+  });
+} catch (error) {
+  proposalShareStartupError = sanitizeInfrastructureError(error);
+  proposalShareReady = Promise.resolve(null);
+  console.warn(`Bancus Fraternis secure proposal share disabled (${proposalShareStartupError.code}): ${proposalShareStartupError.message}`);
 }
 
 const PAGE_ALIASES = new Set([
@@ -85,19 +137,60 @@ const MIME_TYPES = {
   '.ico': 'image/x-icon'
 };
 
+const PUBLIC_STATIC_ROOTS = new Set(['assets', 'css', 'data_base', 'js', 'pages']);
+const PRIVATE_STATIC_PATHS = new Set(['js/server.js']);
+const PRIVATE_STATIC_PREFIXES = ['js/backend/'];
+
+function isPublicStaticPath(relativePath) {
+  const normalized = String(relativePath || '').replace(/\\/g, '/').replace(/^\/+/, '');
+  const segments = normalized.split('/').filter(Boolean);
+  const unsafeWindowsName = (segment) => {
+    const value = String(segment || '');
+    const basename = value.split('.')[0].toLowerCase();
+    return !value
+      || value !== value.trim()
+      || value.startsWith('.')
+      || /[. ]$/.test(value)
+      || value.includes(':')
+      || /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/.test(basename);
+  };
+  if (!segments.length || segments.some(unsafeWindowsName)) return false;
+
+  const publicRoot = segments[0].toLowerCase();
+  if (!PUBLIC_STATIC_ROOTS.has(publicRoot)) return false;
+  // Todo JavaScript publico desta aplicacao fica diretamente em /js. Qualquer
+  // subdiretorio pertence ao runtime do backend e nunca deve ser servido.
+  if (publicRoot === 'js' && segments.length !== 2) return false;
+
+  const normalizedLower = normalized.toLowerCase();
+  if (PRIVATE_STATIC_PATHS.has(normalizedLower)) return false;
+  if (PRIVATE_STATIC_PREFIXES.some((prefix) => normalizedLower.startsWith(prefix))) return false;
+
+  return Object.prototype.hasOwnProperty.call(MIME_TYPES, path.extname(normalizedLower));
+}
+
 function resolveRequestPath(reqUrl) {
   const rawPath = (reqUrl || '/').split('?')[0].split('#')[0];
-  const decodedPath = decodeURIComponent(rawPath);
+  let decodedPath;
+  try {
+    decodedPath = decodeURIComponent(rawPath);
+  } catch (error) {
+    return null;
+  }
+  if (decodedPath.includes('\\') || decodedPath.includes('\0')) return null;
   let relativePath = decodedPath === '/' ? '/pages/index.html' : decodedPath;
   const cleanName = relativePath.replace(/^\/+/, '');
   if (PAGE_ALIASES.has(cleanName)) {
     relativePath = `/pages/${cleanName}`;
   }
   const filePath = path.resolve(ROOT_DIR, `.${relativePath}`);
+  const pathInsideRoot = path.relative(ROOT_DIR, filePath);
 
-  if (!filePath.startsWith(ROOT_DIR)) {
+  if (pathInsideRoot.startsWith('..') || path.isAbsolute(pathInsideRoot)) {
     return null;
   }
+
+  if (!isPublicStaticPath(pathInsideRoot)) return null;
 
   return filePath;
 }
@@ -106,6 +199,19 @@ function sendJson(res, status, data) {
   res.writeHead(status, {
     'Content-Type': 'application/json; charset=utf-8',
     'Cache-Control': 'no-store'
+  });
+  res.end(JSON.stringify(data));
+}
+
+function sendPublicShareJson(res, status, data) {
+  res.writeHead(status, {
+    'Content-Type': 'application/json; charset=utf-8',
+    'Cache-Control': 'private, no-store',
+    'X-Robots-Tag': 'noindex, nofollow, noarchive',
+    'Referrer-Policy': 'no-referrer',
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'"
   });
   res.end(JSON.stringify(data));
 }
@@ -120,16 +226,36 @@ function methodNotAllowed(res) {
 
 function readRequestBody(req) {
   return new Promise((resolve, reject) => {
-    let body = '';
-    req.on('data', (chunk) => {
-      body += chunk;
-      if (body.length > MAX_JSON_BODY_BYTES) {
-        reject(new Error('Payload excede o limite de 4MB.'));
-        req.destroy();
+    const chunks = [];
+    let receivedBytes = 0;
+    let settled = false;
+    const onData = (chunk) => {
+      if (settled) return;
+      const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk), 'utf8');
+      receivedBytes += buffer.length;
+      if (receivedBytes > MAX_JSON_BODY_BYTES) {
+        settled = true;
+        const payloadError = new Error('Payload excede o limite de 4 MiB.');
+        payloadError.code = 'BANCUS_HTTP_PAYLOAD_TOO_LARGE';
+        payloadError.status = 413;
+        req.removeListener('data', onData);
+        req.resume();
+        reject(payloadError);
+        return;
       }
+      chunks.push(buffer);
+    };
+    req.on('data', onData);
+    req.on('end', () => {
+      if (settled) return;
+      settled = true;
+      resolve(Buffer.concat(chunks).toString('utf8'));
     });
-    req.on('end', () => resolve(body));
-    req.on('error', reject);
+    req.on('error', (error) => {
+      if (settled) return;
+      settled = true;
+      reject(error);
+    });
   });
 }
 
@@ -145,19 +271,51 @@ async function readJsonBody(req) {
   }
 }
 
+async function readJsonObject(req) {
+  const body = await readJsonBody(req);
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    const payloadError = new Error('O corpo JSON precisa ser um objeto.');
+    payloadError.status = 400;
+    throw payloadError;
+  }
+  return body;
+}
+
 function bearerToken(req) {
   const header = String(req.headers.authorization || '');
   return header.toLowerCase().startsWith('bearer ') ? header.slice(7).trim() : '';
 }
 
-function authContext(req) {
-  const token = bearerToken(req);
-  if (!token || !localDatabase) return null;
-  return localDatabase.authenticateToken(token);
+function sanitizeInfrastructureError(error) {
+  const rawCode = String(error && error.code ? error.code : 'DATABASE_STARTUP_FAILED').toUpperCase();
+  const code = /^[A-Z0-9_:-]{3,80}$/.test(rawCode) ? rawCode : 'DATABASE_STARTUP_FAILED';
+  const rawMessage = String(error && error.message ? error.message : 'Provider de banco indisponivel.');
+  const message = rawMessage
+    .replace(/postgres(?:ql)?:\/\/[^\s]+/gi, '[database-url-redacted]')
+    .replace(/(password|senha|token|secret)\s*[=:]\s*[^\s,;]+/gi, '$1=[redacted]')
+    .slice(0, 240);
+  return { code, message };
 }
 
-function requireAuth(req, res, roles = []) {
-  const context = authContext(req);
+async function getDatabase() {
+  if (localDatabase) return localDatabase;
+  return databaseReady;
+}
+
+async function getProposalShareService() {
+  if (proposalShareService) return proposalShareService;
+  return proposalShareReady;
+}
+
+async function authContext(req) {
+  const token = bearerToken(req);
+  const database = await getDatabase();
+  if (!token || !database) return null;
+  return database.authenticateToken(token);
+}
+
+async function requireAuth(req, res, roles = []) {
+  const context = await authContext(req);
   if (!context || !context.user) {
     sendJson(res, 401, { ok: false, message: 'Sessao de API ausente ou expirada.' });
     return null;
@@ -172,18 +330,24 @@ function requireAuth(req, res, roles = []) {
   return context;
 }
 
-function recordApiEvent(type, details, context) {
-  if (!localDatabase) return null;
-  return localDatabase.recordEvent({
-    type,
-    source: 'server-api',
-    ownerEmail: details && details.ownerEmail ? details.ownerEmail : '',
-    actorEmail: context && context.user ? context.user.email : (details && details.actorEmail ? details.actorEmail : ''),
-    sessionId: context && context.session ? context.session.id : '',
-    entityType: details && details.entityType ? details.entityType : '',
-    entityId: details && details.entityId ? details.entityId : '',
-    payload: details && details.payload ? details.payload : {}
-  });
+async function recordApiEvent(type, details, context, databaseOverride = null) {
+  try {
+    const database = databaseOverride || await getDatabase();
+    if (!database) return null;
+    return await database.recordEvent({
+      type,
+      source: 'server-api',
+      ownerEmail: details && details.ownerEmail ? details.ownerEmail : '',
+      actorEmail: context && context.user ? context.user.email : (details && details.actorEmail ? details.actorEmail : ''),
+      sessionId: context && context.session ? context.session.id : '',
+      entityType: details && details.entityType ? details.entityType : '',
+      entityId: details && details.entityId ? details.entityId : '',
+      payload: details && details.payload ? details.payload : {}
+    });
+  } catch (error) {
+    console.warn('Bancus Fraternis: um evento de auditoria nao pôde ser persistido; a operacao principal foi preservada.');
+    return null;
+  }
 }
 
 function statusFromResult(result, fallback = 200) {
@@ -196,18 +360,221 @@ async function handleApiRequest(req, res) {
   if (!pathname.startsWith('/api/')) return false;
 
   if (pathname === '/api/health' && req.method === 'GET') {
-    sendJson(res, 200, {
-      ok: true,
-      database: Boolean(localDatabase),
-      provider: localDatabase ? localDatabase.provider : null,
+    const database = await getDatabase();
+    const shareService = await getProposalShareService();
+    const databaseOk = Boolean(database);
+    const proposalShareOk = Boolean(shareService);
+    const readyOk = databaseOk && proposalShareOk;
+    sendJson(res, readyOk ? 200 : 503, {
+      ok: readyOk,
+      database: databaseOk,
+      provider: database ? database.provider : requestedDatabaseProvider,
       schema: SCHEMA_VERSION,
-      stats: localDatabase ? localDatabase.stats() : null
+      stats: database ? await database.stats() : null,
+      startupError: databaseStartupError,
+      proposalShare: {
+        enabled: proposalShareOk,
+        schema: PROPOSAL_SHARE_SCHEMA,
+        provider: proposalShareRepository ? proposalShareRepository.provider : requestedDatabaseProvider,
+        stats: proposalShareRepository ? await proposalShareRepository.stats() : null,
+        startupError: proposalShareStartupError
+      }
     });
     return true;
   }
 
-  if (!localDatabase) {
-    sendJson(res, 503, { ok: false, message: 'Banco local indisponivel neste runtime.' });
+  if (pathname === '/api/public/proposals/resolve') {
+    if (req.method !== 'POST') {
+      sendPublicShareJson(res, 405, { ok: false, readOnly: true, message: 'Metodo nao permitido.' });
+      return true;
+    }
+    const shareService = await getProposalShareService();
+    if (!shareService) {
+      sendPublicShareJson(res, 503, { ok: false, readOnly: true, message: 'Compartilhamento indisponivel.' });
+      return true;
+    }
+    try {
+      const body = await readJsonObject(req);
+      const proposal = await shareService.resolve(body.token);
+      sendPublicShareJson(res, 200, { ok: true, ...proposal });
+    } catch (error) {
+      sendPublicShareJson(res, Number(error.status) || 500, {
+        ok: false,
+        readOnly: true,
+        message: Number(error.status) >= 400 && Number(error.status) < 500
+          ? error.message
+          : 'Compartilhamento indisponivel.'
+      });
+    }
+    return true;
+  }
+
+  const database = await getDatabase();
+  if (!database) {
+    sendJson(res, 503, {
+      ok: false,
+      message: 'Provider de banco indisponivel neste runtime.',
+      provider: requestedDatabaseProvider,
+      error: databaseStartupError
+    });
+    return true;
+  }
+  await getProposalShareService();
+
+  if (pathname === '/api/proposal-snapshots') {
+    if (req.method !== 'POST') {
+      methodNotAllowed(res);
+      return true;
+    }
+    const context = await requireAuth(req, res);
+    if (!context) return true;
+    if (!proposalShareService) {
+      sendJson(res, 503, { ok: false, message: 'Compartilhamento seguro indisponivel.' });
+      return true;
+    }
+    const body = await readJsonObject(req);
+    const snapshot = await proposalShareService.createSnapshot({
+      proposalId: body.proposalId,
+      engineVersion: body.engineVersion,
+      dataBase: body.dataBase,
+      project: body.project,
+      result: body.result,
+      review: body.review || {},
+      provenance: {
+        ...(body.provenance && typeof body.provenance === 'object' ? body.provenance : {}),
+        source: 'server-api',
+        actorId: context.user.id
+      }
+    }, { ownerId: context.user.id });
+    await recordApiEvent('proposal-snapshot-created', {
+      ownerEmail: context.user.email,
+      entityType: 'proposal-snapshot',
+      entityId: snapshot.id,
+      payload: {
+        version: snapshot.version,
+        status: snapshot.status,
+        engineVersion: snapshot.engineVersion,
+        dataBase: snapshot.dataBase
+      }
+    }, context);
+    sendJson(res, 201, { ok: true, snapshot });
+    return true;
+  }
+
+  const proposalSnapshotMatch = pathname.match(/^\/api\/proposal-snapshots\/([^/]+)$/);
+  if (proposalSnapshotMatch) {
+    if (req.method !== 'GET') {
+      methodNotAllowed(res);
+      return true;
+    }
+    const context = await requireAuth(req, res);
+    if (!context) return true;
+    if (!proposalShareService) {
+      sendJson(res, 503, { ok: false, message: 'Compartilhamento seguro indisponivel.' });
+      return true;
+    }
+    const snapshot = await proposalShareService.getSnapshot(
+      decodeURIComponent(proposalSnapshotMatch[1]),
+      { ownerId: context.user.id }
+    );
+    sendJson(res, 200, { ok: true, snapshot });
+    return true;
+  }
+
+  const proposalTransitionMatch = pathname.match(/^\/api\/proposal-snapshots\/([^/]+)\/transitions$/);
+  if (proposalTransitionMatch) {
+    if (req.method !== 'POST') {
+      methodNotAllowed(res);
+      return true;
+    }
+    const context = await requireAuth(req, res);
+    if (!context) return true;
+    if (!proposalShareService) {
+      sendJson(res, 503, { ok: false, message: 'Compartilhamento seguro indisponivel.' });
+      return true;
+    }
+    const body = await readJsonObject(req);
+    const snapshot = await proposalShareService.transitionSnapshot(
+      decodeURIComponent(proposalTransitionMatch[1]),
+      body.status,
+      {
+        review: body.review,
+        provenance: {
+          ...(body.provenance && typeof body.provenance === 'object' ? body.provenance : {}),
+          actorId: context.user.id
+        }
+      },
+      { ownerId: context.user.id }
+    );
+    await recordApiEvent('proposal-snapshot-transitioned', {
+      ownerEmail: context.user.email,
+      entityType: 'proposal-snapshot',
+      entityId: snapshot.id,
+      payload: {
+        version: snapshot.version,
+        status: snapshot.status,
+        parentSnapshotId: snapshot.parentSnapshotId
+      }
+    }, context);
+    sendJson(res, 201, { ok: true, snapshot });
+    return true;
+  }
+
+  const proposalPublishMatch = pathname.match(/^\/api\/proposal-snapshots\/([^/]+)\/publish$/);
+  if (proposalPublishMatch) {
+    if (req.method !== 'POST') {
+      methodNotAllowed(res);
+      return true;
+    }
+    const context = await requireAuth(req, res);
+    if (!context) return true;
+    if (!proposalShareService) {
+      sendJson(res, 503, { ok: false, message: 'Compartilhamento seguro indisponivel.' });
+      return true;
+    }
+    const body = await readJsonObject(req);
+    const publication = await proposalShareService.publish(
+      decodeURIComponent(proposalPublishMatch[1]),
+      { validityDays: body.validityDays },
+      { ownerId: context.user.id }
+    );
+    await recordApiEvent('proposal-share-published', {
+      ownerEmail: context.user.email,
+      entityType: 'proposal-share',
+      entityId: publication.share.id,
+      payload: {
+        snapshotId: publication.share.snapshotId,
+        status: publication.share.status,
+        expiresAt: publication.share.expiresAt
+      }
+    }, context);
+    sendJson(res, 201, { ok: true, ...publication });
+    return true;
+  }
+
+  const proposalShareRevokeMatch = pathname.match(/^\/api\/proposal-shares\/([^/]+)\/revoke$/);
+  if (proposalShareRevokeMatch) {
+    if (req.method !== 'POST') {
+      methodNotAllowed(res);
+      return true;
+    }
+    const context = await requireAuth(req, res);
+    if (!context) return true;
+    if (!proposalShareService) {
+      sendJson(res, 503, { ok: false, message: 'Compartilhamento seguro indisponivel.' });
+      return true;
+    }
+    const share = await proposalShareService.revoke(
+      decodeURIComponent(proposalShareRevokeMatch[1]),
+      { ownerId: context.user.id }
+    );
+    await recordApiEvent('proposal-share-revoked', {
+      ownerEmail: context.user.email,
+      entityType: 'proposal-share',
+      entityId: share.id,
+      payload: { snapshotId: share.snapshotId, status: share.status, revokedAt: share.revokedAt }
+    }, context);
+    sendJson(res, 200, { ok: true, share });
     return true;
   }
 
@@ -217,9 +584,9 @@ async function handleApiRequest(req, res) {
       return true;
     }
     const body = await readJsonBody(req);
-    const result = localDatabase.login(body.email, body.password);
+    const result = await localDatabase.login(body.email, body.password);
     if (result.ok) {
-      recordApiEvent('auth-login', {
+      await recordApiEvent('auth-login', {
         ownerEmail: result.user.email,
         actorEmail: result.user.email,
         entityType: 'user',
@@ -227,7 +594,7 @@ async function handleApiRequest(req, res) {
         payload: { role: result.user.role }
       }, { user: result.user, session: result.session });
     } else {
-      recordApiEvent('auth-login-failed', {
+      await recordApiEvent('auth-login-failed', {
         ownerEmail: body.email,
         actorEmail: body.email,
         entityType: 'user',
@@ -243,10 +610,10 @@ async function handleApiRequest(req, res) {
       methodNotAllowed(res);
       return true;
     }
-    const context = authContext(req);
-    const revoked = localDatabase.revokeToken(bearerToken(req));
+    const context = await authContext(req);
+    const revoked = await localDatabase.revokeToken(bearerToken(req));
     if (context && context.user) {
-      recordApiEvent('auth-logout', {
+      await recordApiEvent('auth-logout', {
         ownerEmail: context.user.email,
         entityType: 'user',
         entityId: context.user.id
@@ -261,7 +628,7 @@ async function handleApiRequest(req, res) {
       methodNotAllowed(res);
       return true;
     }
-    const context = requireAuth(req, res);
+    const context = await requireAuth(req, res);
     if (!context) return true;
     sendJson(res, 200, { ok: true, user: context.user, session: context.session });
     return true;
@@ -272,9 +639,9 @@ async function handleApiRequest(req, res) {
       methodNotAllowed(res);
       return true;
     }
-    const context = requireAuth(req, res, ['admin']);
+    const context = await requireAuth(req, res, ['admin']);
     if (!context) return true;
-    sendJson(res, 200, localDatabase.databaseStatus());
+    sendJson(res, 200, await localDatabase.databaseStatus());
     return true;
   }
 
@@ -283,15 +650,15 @@ async function handleApiRequest(req, res) {
       methodNotAllowed(res);
       return true;
     }
-    const context = requireAuth(req, res, ['admin']);
+    const context = await requireAuth(req, res, ['admin']);
     if (!context) return true;
     const body = await readJsonBody(req);
-    const result = localDatabase.importLocalSnapshot(body, {
+    const result = await localDatabase.importLocalSnapshot(body, {
       dryRun: body.dryRun !== false,
       actorEmail: context.user.email
     });
     if (!result.dryRun) {
-      recordApiEvent('local-storage-import', {
+      await recordApiEvent('local-storage-import', {
         ownerEmail: context.user.email,
         entityType: 'database',
         entityId: 'local-storage-import',
@@ -312,13 +679,13 @@ async function handleApiRequest(req, res) {
 
   if (pathname === '/api/snapshots') {
     if (req.method === 'POST') {
-      const context = requireAuth(req, res);
+      const context = await requireAuth(req, res);
       if (!context) return true;
       const body = await readJsonBody(req);
       const ownerEmail = context.user.role === 'admin'
         ? body.ownerEmail
         : context.user.email;
-      const result = localDatabase.upsertSnapshot({
+      const result = await localDatabase.upsertSnapshot({
         id: body.id,
         type: body.type,
         source: body.source || 'browser',
@@ -332,7 +699,11 @@ async function handleApiRequest(req, res) {
         createdAt: body.createdAt,
         updatedAt: body.updatedAt
       });
-      recordApiEvent(result.created ? 'snapshot-created' : 'snapshot-updated', {
+      if (!result || result.ok === false) {
+        sendJson(res, statusFromResult(result, 409), result || { ok: false, message: 'Snapshot nao pode ser salvo.' });
+        return true;
+      }
+      await recordApiEvent(result.created ? 'snapshot-created' : 'snapshot-updated', {
         ownerEmail: result.snapshot.ownerEmail,
         entityType: 'snapshot',
         entityId: result.snapshot.id,
@@ -347,7 +718,7 @@ async function handleApiRequest(req, res) {
     }
 
     if (req.method === 'GET') {
-      const context = requireAuth(req, res);
+      const context = await requireAuth(req, res);
       if (!context) return true;
       const limit = Number(parsedUrl.searchParams.get('limit') || 100);
       const type = parsedUrl.searchParams.get('type') || '';
@@ -360,7 +731,7 @@ async function handleApiRequest(req, res) {
       sendJson(res, 200, {
         ok: true,
         scope: isAdmin ? 'all' : 'own',
-        snapshots: localDatabase.listSnapshots(options)
+        snapshots: await localDatabase.listSnapshots(options)
       });
       return true;
     }
@@ -374,7 +745,7 @@ async function handleApiRequest(req, res) {
       methodNotAllowed(res);
       return true;
     }
-    const context = requireAuth(req, res);
+    const context = await requireAuth(req, res);
     if (!context) return true;
     const limit = Number(parsedUrl.searchParams.get('limit') || 100);
     const kind = parsedUrl.searchParams.get('kind') || '';
@@ -387,8 +758,8 @@ async function handleApiRequest(req, res) {
     sendJson(res, 200, {
       ok: true,
       scope: isAdmin ? 'all' : 'own',
-      summary: localDatabase.journeyEntitySummary(options),
-      entities: localDatabase.listJourneyEntities(options)
+      summary: await localDatabase.journeyEntitySummary(options),
+      entities: await localDatabase.listJourneyEntities(options)
     });
     return true;
   }
@@ -399,7 +770,7 @@ async function handleApiRequest(req, res) {
     '/api/proposals': { kind: 'proposal', key: 'proposals', singular: 'proposal', list: 'listProposals', segment: 'proposals' }
   };
   if (materializedRoutes[pathname]) {
-    const context = requireAuth(req, res);
+    const context = await requireAuth(req, res);
     if (!context) return true;
     const route = materializedRoutes[pathname];
     const isAdmin = context.user.role === 'admin';
@@ -414,7 +785,7 @@ async function handleApiRequest(req, res) {
         ok: true,
         scope: isAdmin ? 'all' : 'own',
         kind: route.kind,
-        [route.key]: localDatabase[route.list](options)
+        [route.key]: await localDatabase[route.list](options)
       });
       return true;
     }
@@ -424,7 +795,7 @@ async function handleApiRequest(req, res) {
       const ownerEmail = isAdmin
         ? (body.ownerEmail || body.owner_email || context.user.email)
         : context.user.email;
-      const result = localDatabase.upsertDirectJourneyRow(route.kind, {
+      const result = await localDatabase.upsertDirectJourneyRow(route.kind, {
         ...body,
         ownerEmail,
         actorEmail: context.user.email,
@@ -432,7 +803,7 @@ async function handleApiRequest(req, res) {
       });
       const record = result[route.singular] || result.record;
       if (result.ok && record) {
-        recordApiEvent(`${route.kind}-direct-${result.created ? 'created' : 'updated'}`, {
+        await recordApiEvent(`${route.kind}-direct-${result.created ? 'created' : 'updated'}`, {
           ownerEmail: record.ownerEmail,
           entityType: route.kind,
           entityId: record.id,
@@ -459,11 +830,11 @@ async function handleApiRequest(req, res) {
       notFoundJson(res);
       return true;
     }
-    const context = requireAuth(req, res);
+    const context = await requireAuth(req, res);
     if (!context) return true;
     const id = decodeURIComponent(materializedItemMatch[2]);
     const isAdmin = context.user.role === 'admin';
-    const existing = localDatabase.findMaterializedJourneyRow(route.kind, id);
+    const existing = await localDatabase.findMaterializedJourneyRow(route.kind, id);
     if (!existing || (!isAdmin && existing.ownerEmail !== context.user.email)) {
       sendJson(res, 404, { ok: false, message: 'Registro de jornada nao encontrado.' });
       return true;
@@ -484,7 +855,7 @@ async function handleApiRequest(req, res) {
       const ownerEmail = isAdmin
         ? (body.ownerEmail || body.owner_email || existing.ownerEmail || context.user.email)
         : context.user.email;
-      const result = localDatabase.upsertDirectJourneyRow(route.kind, {
+      const result = await localDatabase.upsertDirectJourneyRow(route.kind, {
         ...body,
         id,
         ownerEmail,
@@ -493,7 +864,7 @@ async function handleApiRequest(req, res) {
       });
       const record = result[route.singular] || result.record;
       if (result.ok && record) {
-        recordApiEvent(`${route.kind}-direct-updated`, {
+        await recordApiEvent(`${route.kind}-direct-updated`, {
           ownerEmail: record.ownerEmail,
           entityType: route.kind,
           entityId: record.id,
@@ -514,19 +885,19 @@ async function handleApiRequest(req, res) {
   }
 
   if (pathname === '/api/users') {
-    const context = requireAuth(req, res, ['admin']);
+    const context = await requireAuth(req, res, ['admin']);
     if (!context) return true;
 
     if (req.method === 'GET') {
-      sendJson(res, 200, { ok: true, users: localDatabase.listUsers() });
+      sendJson(res, 200, { ok: true, users: await localDatabase.listUsers() });
       return true;
     }
 
     if (req.method === 'POST') {
       const body = await readJsonBody(req);
-      const result = localDatabase.createUser(body);
+      const result = await localDatabase.createUser(body);
       if (result.ok) {
-        recordApiEvent('user-created', {
+        await recordApiEvent('user-created', {
           ownerEmail: result.user.email,
           entityType: 'user',
           entityId: result.user.id,
@@ -543,16 +914,16 @@ async function handleApiRequest(req, res) {
 
   const userMatch = pathname.match(/^\/api\/users\/([^/]+)(?:\/(password|status))?$/);
   if (userMatch) {
-    const context = requireAuth(req, res, ['admin']);
+    const context = await requireAuth(req, res, ['admin']);
     if (!context) return true;
     const id = decodeURIComponent(userMatch[1]);
     const action = userMatch[2] || '';
 
     if (!action && req.method === 'PATCH') {
       const body = await readJsonBody(req);
-      const result = localDatabase.updateUser(id, body);
+      const result = await localDatabase.updateUser(id, body);
       if (result.ok) {
-        recordApiEvent('user-updated', {
+        await recordApiEvent('user-updated', {
           ownerEmail: result.user.email,
           entityType: 'user',
           entityId: result.user.id,
@@ -568,10 +939,22 @@ async function handleApiRequest(req, res) {
         sendJson(res, 400, { ok: false, message: 'Nao e possivel excluir o usuario em sessao.' });
         return true;
       }
-      const publicUser = localDatabase.findPublicUser(id);
-      const result = localDatabase.deleteUser(id);
+      if (!proposalShareRepository || typeof proposalShareRepository.hasOwnerRecords !== 'function') {
+        sendJson(res, 503, { ok: false, message: 'Nao foi possivel validar os vinculos de proposta deste usuario.' });
+        return true;
+      }
+      if (await proposalShareRepository.hasOwnerRecords(id)) {
+        sendJson(res, 409, {
+          ok: false,
+          code: 'BANCUS_USER_HAS_RELATED_RECORDS',
+          message: 'Este usuario possui historico vinculado. Inative o acesso em vez de excluir.'
+        });
+        return true;
+      }
+      const publicUser = await localDatabase.findPublicUser(id);
+      const result = await localDatabase.deleteUser(id);
       if (result.ok) {
-        recordApiEvent('user-deleted', {
+        await recordApiEvent('user-deleted', {
           ownerEmail: publicUser ? publicUser.email : '',
           entityType: 'user',
           entityId: id
@@ -583,10 +966,10 @@ async function handleApiRequest(req, res) {
 
     if (action === 'password' && req.method === 'POST') {
       const body = await readJsonBody(req);
-      const publicUser = localDatabase.findPublicUser(id);
-      const result = localDatabase.setPassword(id, body.password);
+      const publicUser = await localDatabase.findPublicUser(id);
+      const result = await localDatabase.setPassword(id, body.password);
       if (result.ok) {
-        recordApiEvent('user-password-reset', {
+        await recordApiEvent('user-password-reset', {
           ownerEmail: publicUser ? publicUser.email : '',
           entityType: 'user',
           entityId: id
@@ -602,9 +985,9 @@ async function handleApiRequest(req, res) {
         return true;
       }
       const body = await readJsonBody(req);
-      const result = localDatabase.setUserStatus(id, body.status);
+      const result = await localDatabase.setUserStatus(id, body.status);
       if (result.ok) {
-        recordApiEvent('user-status-changed', {
+        await recordApiEvent('user-status-changed', {
           ownerEmail: result.user.email,
           entityType: 'user',
           entityId: result.user.id,
@@ -621,14 +1004,18 @@ async function handleApiRequest(req, res) {
 
   if (pathname === '/api/events') {
     if (req.method === 'POST') {
-      const context = authContext(req);
+      const context = await requireAuth(req, res);
+      if (!context) return true;
       const body = await readJsonBody(req);
-      const event = localDatabase.recordEvent({
+      const ownerEmail = context.user.role === 'admin'
+        ? (body.ownerEmail || context.user.email)
+        : context.user.email;
+      const event = await localDatabase.recordEvent({
         type: body.type,
         source: body.source || 'browser',
-        ownerEmail: body.ownerEmail,
-        actorEmail: context && context.user ? context.user.email : body.actorEmail,
-        sessionId: context && context.session ? context.session.id : body.sessionId,
+        ownerEmail,
+        actorEmail: context.user.email,
+        sessionId: context.session.id,
         entityType: body.entityType,
         entityId: body.entityId,
         payload: body.payload || body.details || {},
@@ -639,10 +1026,10 @@ async function handleApiRequest(req, res) {
     }
 
     if (req.method === 'GET') {
-      const context = requireAuth(req, res, ['admin']);
+      const context = await requireAuth(req, res, ['admin']);
       if (!context) return true;
       const limit = Number(parsedUrl.searchParams.get('limit') || 100);
-      sendJson(res, 200, { ok: true, events: localDatabase.listEvents({ limit }) });
+      sendJson(res, 200, { ok: true, events: await localDatabase.listEvents({ limit }) });
       return true;
     }
 
@@ -681,7 +1068,21 @@ async function handleRequest(req, res) {
     }
 
     const extname = path.extname(filePath).toLowerCase();
-    res.writeHead(200, { 'Content-Type': MIME_TYPES[extname] || 'application/octet-stream' });
+    const relativePath = path.relative(ROOT_DIR, filePath).replace(/\\/g, '/').toLowerCase();
+    const publicProposalPage = relativePath === 'pages/proposta.html';
+    const headers = { 'Content-Type': MIME_TYPES[extname] || 'application/octet-stream' };
+    if (publicProposalPage) {
+      Object.assign(headers, {
+        'Cache-Control': 'no-store, max-age=0',
+        Pragma: 'no-cache',
+        'X-Robots-Tag': 'noindex, nofollow, noarchive, nosnippet',
+        'Referrer-Policy': 'no-referrer',
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'DENY',
+        'Content-Security-Policy': "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"
+      });
+    }
+    res.writeHead(200, headers);
     res.end(content);
   });
 }
@@ -690,7 +1091,15 @@ const server = http.createServer((req, res) => {
   handleRequest(req, res).catch((error) => {
     const status = Number(error.status) || 500;
     if ((req.url || '').startsWith('/api/')) {
-      sendJson(res, status, { ok: false, message: status === 500 ? 'Erro interno da API local.' : error.message });
+      const rawCode = String(error && error.code ? error.code : '');
+      const publicCode = status === 500
+        ? 'BANCUS_INTERNAL_ERROR'
+        : (/^[A-Z0-9_:-]{3,80}$/.test(rawCode) ? rawCode : 'BANCUS_REQUEST_REJECTED');
+      sendJson(res, status, {
+        ok: false,
+        code: publicCode,
+        message: status === 500 ? 'Erro interno da API local.' : error.message
+      });
       return;
     }
     res.writeHead(status, { 'Content-Type': 'text/plain; charset=utf-8' });
@@ -698,7 +1107,51 @@ const server = http.createServer((req, res) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`Bancus Fraternis local server running at http://localhost:${PORT}/pages/index.html`);
-  if (localDatabase) console.log(`Local database ready: ${SCHEMA_VERSION} (${localDatabase.provider})`);
-});
+function startServer(options = {}) {
+  const requestedPort = options.port === 0 ? 0 : Number(options.port);
+  const port = Number.isFinite(requestedPort) ? requestedPort : PORT;
+  const host = String(options.host || process.env.BANCUS_HOST || DEFAULT_HOST).trim() || DEFAULT_HOST;
+  if (server.listening) return server;
+  server.listen(port, host, () => {
+    const address = server.address();
+    const activePort = address && typeof address === 'object' ? address.port : port;
+    const displayHost = ['127.0.0.1', '::1'].includes(host) ? 'localhost' : host;
+    console.log(`Bancus Fraternis server running at http://${displayHost}:${activePort}/pages/index.html`);
+    databaseReady.then((database) => {
+      if (database) console.log(`Database ready: ${SCHEMA_VERSION} (${database.provider})`);
+    });
+    proposalShareReady.then(() => {
+      if (proposalShareRepository) {
+        console.log(`Secure proposal share ready: ${PROPOSAL_SHARE_SCHEMA} (${proposalShareRepository.provider})`);
+      }
+    });
+  });
+  return server;
+}
+
+async function closeInfrastructure() {
+  await proposalShareReady;
+  const closeTasks = [];
+  if (proposalShareRepository) {
+    closeTasks.push(Promise.resolve(proposalShareRepository.close()));
+    proposalShareRepository = null;
+    proposalShareService = null;
+  }
+  if (localDatabase) {
+    closeTasks.push(Promise.resolve(localDatabase.close()));
+    localDatabase = null;
+  }
+  return Promise.all(closeTasks);
+}
+
+if (require.main === module) startServer();
+
+module.exports = {
+  server,
+  startServer,
+  handleRequest,
+  handleApiRequest,
+  sendPublicShareJson,
+  recordApiEvent,
+  closeInfrastructure
+};

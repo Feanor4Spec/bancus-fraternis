@@ -1,9 +1,30 @@
 {
   "schemaVersion": "bancus-fraternis.local-db.v1",
   "provider": "sqlite",
-  "futureProviders": ["postgresql"],
+  "futureProviders": [],
+  "pilotProviders": ["postgresql"],
   "currentMigration": "001_bancus_fraternis_local_db.sql",
   "rollback": "001_bancus_fraternis_local_db.rollback.sql",
+  "providerMigrations": {
+    "sqlite": "001_bancus_fraternis_local_db.sql",
+    "postgresql": "postgresql/001_bancus_fraternis.sql"
+  },
+  "providerRollbacks": {
+    "sqlite": "001_bancus_fraternis_local_db.rollback.sql",
+    "postgresql": "postgresql/001_bancus_fraternis.rollback.sql"
+  },
+  "proposalShareMigrations": {
+    "sqlite": "002_proposal_secure_share.sql",
+    "postgresql": "postgresql/002_proposal_secure_share.sql"
+  },
+  "migrationChecksums": {
+    "postgresql/001_bancus_fraternis.sql": "sha256:6f1564fe5da28e4df03db11f14299a64ae8b681f1b012e6a371d053e1f856a42",
+    "postgresql/002_proposal_secure_share.sql": "sha256:bcf2c62eb88ba89ae14028a612695a0e8818b47528209b483a16922d25fea710"
+  },
+  "proposalShareRollbacks": {
+    "sqlite": "002_proposal_secure_share.rollback.sql",
+    "postgresql": "postgresql/002_proposal_secure_share.rollback.sql"
+  },
   "passwordAlgorithm": "scrypt-sha256",
   "sensitiveFields": [
     "password_hash",

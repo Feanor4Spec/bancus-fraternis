@@ -1,7 +1,6 @@
 const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
-const { DatabaseSync } = require('node:sqlite');
 
 const SCHEMA_VERSION = 'bancus-fraternis.local-db.v1';
 const DEFAULT_DB_PROVIDER = 'sqlite';
@@ -11,15 +10,20 @@ const SCHEMA_MANIFEST_PATH = path.join(SCHEMA_MIGRATIONS_DIR, 'schema-manifest.j
 const SESSION_TTL_MS = 1000 * 60 * 60 * 8;
 const PASSWORD_ALGORITHM = 'scrypt-sha256';
 const MAX_EVENT_PAYLOAD_CHARS = 50000;
+const MAX_PERSISTED_PAYLOAD_CHARS = 4 * 1024 * 1024;
 const IMPORT_TEMP_PASSWORD = 'Temp@123';
-const SUPPORTED_DB_PROVIDERS = ['sqlite'];
-const FUTURE_DB_PROVIDERS = ['postgresql'];
+const SUPPORTED_DB_PROVIDERS = ['sqlite', 'postgresql'];
+const PILOT_DB_PROVIDERS = ['postgresql'];
+const FUTURE_DB_PROVIDERS = [];
 const DB_PROVIDER_ALIASES = {
   sqlite: 'sqlite',
   'node:sqlite': 'sqlite',
   local: 'sqlite',
   development: 'sqlite',
-  dev: 'sqlite'
+  dev: 'sqlite',
+  postgres: 'postgresql',
+  postgresql: 'postgresql',
+  pg: 'postgresql'
 };
 
 const ROLE_LABELS = {
@@ -93,6 +97,45 @@ function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase();
 }
 
+const OWNER_CONFLICT_CODE = 'BANCUS_OWNER_CONFLICT';
+const USER_EMAIL_CONFLICT_CODE = 'BANCUS_USER_EMAIL_CONFLICT';
+const USER_DELETE_CONFLICT_CODE = 'BANCUS_USER_HAS_RELATED_RECORDS';
+const IDENTITY_OWNERSHIP_TABLES = Object.freeze([
+  'events',
+  'snapshots',
+  'journey_entities',
+  'journey_leads',
+  'journey_simulations',
+  'journey_proposals'
+]);
+
+function ownerConflictResponse() {
+  return {
+    ok: false,
+    status: 409,
+    code: OWNER_CONFLICT_CODE,
+    message: 'Registro nao encontrado ou pertence a outro responsavel.'
+  };
+}
+
+function userEmailConflictResponse() {
+  return {
+    ok: false,
+    status: 409,
+    code: USER_EMAIL_CONFLICT_CODE,
+    message: 'Nao foi possivel atualizar este usuario com o e-mail informado.'
+  };
+}
+
+function linkedUserDeleteResponse() {
+  return {
+    ok: false,
+    status: 409,
+    code: USER_DELETE_CONFLICT_CODE,
+    message: 'Este usuario possui historico vinculado. Inative o acesso em vez de excluir.'
+  };
+}
+
 function normalizeRole(role) {
   return ROLE_LABELS[role] ? role : 'cliente';
 }
@@ -113,7 +156,10 @@ function isSupportedDbProvider(provider) {
 function assertSupportedDbProvider(provider) {
   const normalized = normalizeDbProvider(provider);
   if (isSupportedDbProvider(normalized)) return normalized;
-  throw new Error(`BANCUS_DB_PROVIDER=${normalized} ainda nao possui adapter implementado. Providers suportados nesta versao: ${SUPPORTED_DB_PROVIDERS.join(', ')}. Providers futuros planejados: ${FUTURE_DB_PROVIDERS.join(', ')}.`);
+  const future = FUTURE_DB_PROVIDERS.length
+    ? ` Providers futuros planejados: ${FUTURE_DB_PROVIDERS.join(', ')}.`
+    : '';
+  throw new Error(`BANCUS_DB_PROVIDER=${normalized} nao possui adapter implementado. Providers suportados nesta versao: ${SUPPORTED_DB_PROVIDERS.join(', ')}.${future}`);
 }
 
 function normalizeText(value, fallback = '') {
@@ -136,11 +182,29 @@ function tokenHash(token) {
   return crypto.createHash('sha256').update(String(token || '')).digest('hex');
 }
 
-function safeJson(value) {
+function safeJson(value, options = {}) {
+  const requestedLimit = Number(options.maxChars);
+  const maxChars = Number.isFinite(requestedLimit) && requestedLimit > 0
+    ? Math.min(Math.trunc(requestedLimit), MAX_PERSISTED_PAYLOAD_CHARS)
+    : MAX_PERSISTED_PAYLOAD_CHARS;
   try {
     const json = JSON.stringify(value === undefined ? {} : value);
-    return json.length > MAX_EVENT_PAYLOAD_CHARS ? json.slice(0, MAX_EVENT_PAYLOAD_CHARS) : json;
+    if (typeof json !== 'string') return JSON.stringify({ error: 'payload-not-serializable' });
+    if (json.length <= maxChars) return json;
+    if (options.envelopeOnOverflow) {
+      return JSON.stringify({
+        truncated: true,
+        reason: 'payload-exceeds-storage-limit',
+        originalLength: json.length,
+        maxLength: maxChars
+      });
+    }
+    const error = new Error(`Payload excede o limite de persistencia de ${maxChars} caracteres.`);
+    error.code = 'BANCUS_PAYLOAD_TOO_LARGE';
+    error.status = 413;
+    throw error;
   } catch (error) {
+    if (error && error.code === 'BANCUS_PAYLOAD_TOO_LARGE') throw error;
     return JSON.stringify({ error: 'payload-not-serializable' });
   }
 }
@@ -190,6 +254,30 @@ function sanitizeEventPayload(value, depth = 0) {
     }, {});
   }
   if (typeof value === 'string') return value.length > 800 ? `${value.slice(0, 800)}...` : value;
+  return value;
+}
+
+function sanitizePersistedPayload(value, depth = 0, seen = new WeakSet()) {
+  if (value === null || value === undefined) return value;
+  if (depth > 20) return '[truncated-depth]';
+  if (typeof value === 'object') {
+    if (seen.has(value)) return '[circular]';
+    seen.add(value);
+  }
+  if (Array.isArray(value)) {
+    const sanitized = value.map((item) => sanitizePersistedPayload(item, depth + 1, seen));
+    seen.delete(value);
+    return sanitized;
+  }
+  if (typeof value === 'object') {
+    const sanitized = Object.entries(value).reduce((acc, [key, entry]) => {
+      if (isSensitiveKey(key)) return acc;
+      acc[key] = sanitizePersistedPayload(entry, depth + 1, seen);
+      return acc;
+    }, {});
+    seen.delete(value);
+    return sanitized;
+  }
   return value;
 }
 
@@ -696,26 +784,112 @@ class BancusDatabase {
     const validation = validateUserPayload(payload, { editing: true });
     if (!validation.ok) return validation;
     const data = validation.data;
-    const duplicated = this.getUserByEmail(data.email);
-    if (duplicated && duplicated.id !== current.id) {
-      return { ok: false, status: 409, message: 'Ja existe outro usuario com este e-mail.' };
-    }
-
+    const currentEmail = normalizeEmail(current.email);
+    const nextEmail = normalizeEmail(data.email);
     const timestamp = nowIso();
-    this.db.prepare(`
-      UPDATE users
-      SET name = ?, email = ?, role = ?, status = ?, department = ?, phone = ?, updated_at = ?
-      WHERE id = ?
-    `).run(data.name, data.email, data.role, data.status, data.department, data.phone, timestamp, current.id);
 
-    if (data.password) this.setPassword(current.id, data.password);
-    return { ok: true, status: 200, user: this.findPublicUser(current.id), message: 'Usuario atualizado com sucesso.' };
+    this.db.exec('SAVEPOINT bancus_user_identity_update');
+    try {
+      // Adquire o lock de escrita antes de verificar colisoes em tabelas sem FK.
+      this.db.prepare('UPDATE users SET updated_at = updated_at WHERE id = ?').run(current.id);
+      if (nextEmail !== currentEmail) {
+        const duplicated = this.db.prepare('SELECT id FROM users WHERE email = ? AND id <> ? LIMIT 1').get(nextEmail, current.id);
+        if (duplicated) {
+          this.db.exec('ROLLBACK TO bancus_user_identity_update');
+          this.db.exec('RELEASE bancus_user_identity_update');
+          return userEmailConflictResponse();
+        }
+        const ownershipCollision = IDENTITY_OWNERSHIP_TABLES.some((table) => this.db.prepare(`
+          SELECT 1 AS conflict
+          FROM ${quoteIdentifier(table)}
+          WHERE LOWER(TRIM(owner_email)) = ? OR LOWER(TRIM(actor_email)) = ?
+          LIMIT 1
+        `).get(nextEmail, nextEmail));
+        if (ownershipCollision) {
+          this.db.exec('ROLLBACK TO bancus_user_identity_update');
+          this.db.exec('RELEASE bancus_user_identity_update');
+          return userEmailConflictResponse();
+        }
+
+        IDENTITY_OWNERSHIP_TABLES.forEach((table) => {
+          this.db.prepare(`
+            UPDATE ${quoteIdentifier(table)}
+            SET owner_email = CASE WHEN LOWER(TRIM(owner_email)) = ? THEN ? ELSE owner_email END,
+                actor_email = CASE WHEN LOWER(TRIM(actor_email)) = ? THEN ? ELSE actor_email END
+            WHERE LOWER(TRIM(owner_email)) = ? OR LOWER(TRIM(actor_email)) = ?
+          `).run(currentEmail, nextEmail, currentEmail, nextEmail, currentEmail, currentEmail);
+        });
+      }
+
+      this.db.prepare(`
+        UPDATE users
+        SET name = ?, email = ?, role = ?, status = ?, department = ?, phone = ?, updated_at = ?
+        WHERE id = ?
+      `).run(data.name, nextEmail, data.role, data.status, data.department, data.phone, timestamp, current.id);
+
+      if (data.password) {
+        const passwordResult = this.setPassword(current.id, data.password);
+        if (!passwordResult.ok) {
+          this.db.exec('ROLLBACK TO bancus_user_identity_update');
+          this.db.exec('RELEASE bancus_user_identity_update');
+          return passwordResult;
+        }
+      }
+      this.db.exec('RELEASE bancus_user_identity_update');
+      return { ok: true, status: 200, user: this.findPublicUser(current.id), message: 'Usuario atualizado com sucesso.' };
+    } catch (error) {
+      try {
+        this.db.exec('ROLLBACK TO bancus_user_identity_update');
+        this.db.exec('RELEASE bancus_user_identity_update');
+      } catch (rollbackError) {
+        // Mantem o erro original.
+      }
+      if (error && /UNIQUE constraint failed:\s*users\.email/i.test(String(error.message || ''))) {
+        return userEmailConflictResponse();
+      }
+      throw error;
+    }
   }
 
   deleteUser(id) {
     const current = this.getUserById(id);
     if (!current) return { ok: false, status: 404, message: 'Usuario nao encontrado.' };
-    this.db.prepare('DELETE FROM users WHERE id = ?').run(current.id);
+    const deleteResult = this.db.prepare(`
+      DELETE FROM users
+      WHERE id = ?
+        AND NOT EXISTS (SELECT 1 FROM sessions WHERE user_id = users.id)
+        AND NOT EXISTS (
+          SELECT 1 FROM events
+          WHERE LOWER(TRIM(owner_email)) = LOWER(TRIM(users.email))
+             OR LOWER(TRIM(actor_email)) = LOWER(TRIM(users.email))
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM snapshots
+          WHERE LOWER(TRIM(owner_email)) = LOWER(TRIM(users.email))
+             OR LOWER(TRIM(actor_email)) = LOWER(TRIM(users.email))
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM journey_entities
+          WHERE LOWER(TRIM(owner_email)) = LOWER(TRIM(users.email))
+             OR LOWER(TRIM(actor_email)) = LOWER(TRIM(users.email))
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM journey_leads
+          WHERE LOWER(TRIM(owner_email)) = LOWER(TRIM(users.email))
+             OR LOWER(TRIM(actor_email)) = LOWER(TRIM(users.email))
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM journey_simulations
+          WHERE LOWER(TRIM(owner_email)) = LOWER(TRIM(users.email))
+             OR LOWER(TRIM(actor_email)) = LOWER(TRIM(users.email))
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM journey_proposals
+          WHERE LOWER(TRIM(owner_email)) = LOWER(TRIM(users.email))
+             OR LOWER(TRIM(actor_email)) = LOWER(TRIM(users.email))
+        )
+    `).run(current.id);
+    if (Number(deleteResult && deleteResult.changes || 0) === 0) return linkedUserDeleteResponse();
     return { ok: true, status: 200, message: 'Usuario removido.' };
   }
 
@@ -728,12 +902,25 @@ class BancusDatabase {
     if (!current) return { ok: false, status: 404, message: 'Usuario nao encontrado.' };
     const timestamp = nowIso();
     const credentials = hashPassword(nextPassword);
-    this.db.prepare(`
-      UPDATE users
-      SET password_hash = ?, password_salt = ?, password_algorithm = ?, password_updated_at = ?, updated_at = ?
-      WHERE id = ?
-    `).run(credentials.hash, credentials.salt, credentials.algorithm, timestamp, timestamp, current.id);
-    return { ok: true, status: 200, message: 'Senha atualizada com seguranca.' };
+    this.db.exec('SAVEPOINT bancus_password_reset');
+    try {
+      this.db.prepare(`
+        UPDATE users
+        SET password_hash = ?, password_salt = ?, password_algorithm = ?, password_updated_at = ?, updated_at = ?
+        WHERE id = ?
+      `).run(credentials.hash, credentials.salt, credentials.algorithm, timestamp, timestamp, current.id);
+      this.db.prepare("UPDATE sessions SET revoked_at = ? WHERE user_id = ? AND revoked_at = ''").run(timestamp, current.id);
+      this.db.exec('RELEASE bancus_password_reset');
+      return { ok: true, status: 200, message: 'Senha atualizada com seguranca.' };
+    } catch (error) {
+      try {
+        this.db.exec('ROLLBACK TO bancus_password_reset');
+        this.db.exec('RELEASE bancus_password_reset');
+      } catch (rollbackError) {
+        // Mantem o erro original.
+      }
+      throw error;
+    }
   }
 
   setUserStatus(id, status) {
@@ -741,16 +928,29 @@ class BancusDatabase {
     if (!current) return { ok: false, status: 404, message: 'Usuario nao encontrado.' };
     const nextStatus = normalizeStatus(status || (current.status === 'active' ? 'inactive' : 'active'));
     const timestamp = nowIso();
-    this.db.prepare('UPDATE users SET status = ?, updated_at = ? WHERE id = ?').run(nextStatus, timestamp, current.id);
-    if (nextStatus !== 'active') {
-      this.db.prepare("UPDATE sessions SET revoked_at = ? WHERE user_id = ? AND revoked_at = ''").run(timestamp, current.id);
+    this.db.exec('SAVEPOINT bancus_user_status_update');
+    try {
+      this.db.prepare('UPDATE users SET status = ?, updated_at = ? WHERE id = ?').run(nextStatus, timestamp, current.id);
+      if (nextStatus !== 'active') {
+        this.db.prepare("UPDATE sessions SET revoked_at = ? WHERE user_id = ? AND revoked_at = ''").run(timestamp, current.id);
+      }
+      const user = this.findPublicUser(current.id);
+      this.db.exec('RELEASE bancus_user_status_update');
+      return {
+        ok: true,
+        status: 200,
+        user,
+        message: `Usuario ${(STATUS_LABELS[nextStatus] || nextStatus).toLowerCase()}.`
+      };
+    } catch (error) {
+      try {
+        this.db.exec('ROLLBACK TO bancus_user_status_update');
+        this.db.exec('RELEASE bancus_user_status_update');
+      } catch (rollbackError) {
+        // Mantem o erro original.
+      }
+      throw error;
     }
-    return {
-      ok: true,
-      status: 200,
-      user: this.findPublicUser(current.id),
-      message: `Usuario ${(STATUS_LABELS[nextStatus] || nextStatus).toLowerCase()}.`
-    };
   }
 
   login(email, password) {
@@ -831,6 +1031,10 @@ class BancusDatabase {
       payload: sanitizeEventPayload(input.payload || input.details || {}),
       createdAt: normalizeText(input.createdAt) || nowIso()
     };
+    const payloadJson = safeJson(event.payload, {
+      maxChars: MAX_EVENT_PAYLOAD_CHARS,
+      envelopeOnOverflow: true
+    });
     this.db.prepare(`
       INSERT INTO events (
         id, type, source, owner_email, actor_email, session_id, entity_type, entity_id, payload_json, created_at
@@ -845,7 +1049,7 @@ class BancusDatabase {
       event.sessionId,
       event.entityType,
       event.entityId,
-      safeJson(event.payload),
+      payloadJson,
       event.createdAt
     );
     return publicEvent({
@@ -857,7 +1061,7 @@ class BancusDatabase {
       session_id: event.sessionId,
       entity_type: event.entityType,
       entity_id: event.entityId,
-      payload_json: safeJson(event.payload),
+      payload_json: payloadJson,
       created_at: event.createdAt
     });
   }
@@ -880,12 +1084,12 @@ class BancusDatabase {
       title: normalizeText(input.title),
       status: normalizeText(input.status),
       storageKey: normalizeText(input.storageKey),
-      payload: sanitizeEventPayload(input.payload || input.details || {}),
+      payload: sanitizePersistedPayload(input.payload || input.details || {}),
       createdAt: normalizeText(input.createdAt) || timestamp,
       updatedAt: normalizeText(input.updatedAt) || timestamp
     };
     const exists = this.hasSnapshot(snapshot.id);
-    this.db.prepare(`
+    const writeResult = this.db.prepare(`
       INSERT INTO snapshots (
         id, type, source, owner_email, actor_email, entity_id, title, status, storage_key, payload_json, created_at, updated_at
       )
@@ -893,7 +1097,6 @@ class BancusDatabase {
       ON CONFLICT(id) DO UPDATE SET
         type = excluded.type,
         source = excluded.source,
-        owner_email = excluded.owner_email,
         actor_email = excluded.actor_email,
         entity_id = excluded.entity_id,
         title = excluded.title,
@@ -901,6 +1104,7 @@ class BancusDatabase {
         storage_key = excluded.storage_key,
         payload_json = excluded.payload_json,
         updated_at = excluded.updated_at
+      WHERE LOWER(TRIM(snapshots.owner_email)) = LOWER(TRIM(excluded.owner_email))
     `).run(
       snapshot.id,
       snapshot.type,
@@ -915,6 +1119,9 @@ class BancusDatabase {
       snapshot.createdAt,
       snapshot.updatedAt
     );
+    if (Number(writeResult && writeResult.changes || 0) === 0) {
+      return ownerConflictResponse();
+    }
     const publicRecord = publicSnapshot({
       id: snapshot.id,
       type: snapshot.type,
@@ -939,7 +1146,7 @@ class BancusDatabase {
   upsertJourneyEntityFromSnapshot(snapshot = {}) {
     const entity = buildJourneyEntity(snapshot);
     if (!entity || !entity.id || !entity.kind) return null;
-    this.db.prepare(`
+    const writeResult = this.db.prepare(`
       INSERT INTO journey_entities (
         id, kind, source_snapshot_id, snapshot_type, owner_email, actor_email,
         title, status, stage, priority, source, related_id, amount, payload_json, created_at, updated_at
@@ -948,7 +1155,6 @@ class BancusDatabase {
       ON CONFLICT(kind, id) DO UPDATE SET
         source_snapshot_id = excluded.source_snapshot_id,
         snapshot_type = excluded.snapshot_type,
-        owner_email = excluded.owner_email,
         actor_email = excluded.actor_email,
         title = excluded.title,
         status = excluded.status,
@@ -959,6 +1165,7 @@ class BancusDatabase {
         amount = excluded.amount,
         payload_json = excluded.payload_json,
         updated_at = excluded.updated_at
+      WHERE LOWER(TRIM(journey_entities.owner_email)) = LOWER(TRIM(excluded.owner_email))
     `).run(
       entity.id,
       entity.kind,
@@ -977,6 +1184,7 @@ class BancusDatabase {
       entity.createdAt,
       entity.updatedAt
     );
+    if (Number(writeResult && writeResult.changes || 0) === 0) return null;
     const publicRecord = publicJourneyEntity({
       id: entity.id,
       kind: entity.kind,
@@ -1072,6 +1280,10 @@ class BancusDatabase {
     const timestamp = nowIso();
     const id = normalizeText(input.id) || makeId(defaults.prefix);
     const existing = this.findMaterializedJourneyRow(normalizedKind, id);
+    const requestedOwnerEmail = normalizeEmail(input.ownerEmail || input.owner_email);
+    if (existing && normalizeEmail(existing.ownerEmail) !== requestedOwnerEmail) {
+      return ownerConflictResponse();
+    }
     const explicitPayload = input.payload !== undefined
       ? input.payload
       : (input.details !== undefined ? input.details : input.data);
@@ -1081,14 +1293,14 @@ class BancusDatabase {
     const payloadSource = explicitPayload !== undefined
       ? explicitPayload
       : { ...basePayload, ...input };
-    const payload = sanitizeEventPayload(payloadSource);
+    const payload = sanitizePersistedPayload(payloadSource);
     const payloadObject = payload && typeof payload === 'object' && !Array.isArray(payload) ? payload : {};
     const entity = {
       id,
       kind: normalizedKind,
       sourceSnapshotId: firstText(input.sourceSnapshotId, input.source_snapshot_id, payloadObject.sourceSnapshotId, existing && existing.sourceSnapshotId),
       snapshotType: firstText(input.snapshotType, input.snapshot_type, input.type, payloadObject.snapshotType, existing && existing.snapshotType, `direct-${normalizedKind}`),
-      ownerEmail: normalizeEmail(input.ownerEmail || input.owner_email || (existing && existing.ownerEmail)),
+      ownerEmail: requestedOwnerEmail,
       actorEmail: normalizeEmail(input.actorEmail || input.actor_email || (existing && existing.actorEmail)),
       title: firstText(input.title, input.name, input.nome, payloadObject.title, payloadObject.name, payloadObject.nome, existing && existing.title, defaults.title),
       status: firstText(input.status, payloadObject.status, existing && existing.status, defaults.status),
@@ -1123,45 +1335,6 @@ class BancusDatabase {
       updatedAt: firstText(input.updatedAt, input.updated_at, payloadObject.updatedAt, timestamp)
     };
 
-    this.db.prepare(`
-      INSERT INTO journey_entities (
-        id, kind, source_snapshot_id, snapshot_type, owner_email, actor_email,
-        title, status, stage, priority, source, related_id, amount, payload_json, created_at, updated_at
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(kind, id) DO UPDATE SET
-        source_snapshot_id = excluded.source_snapshot_id,
-        snapshot_type = excluded.snapshot_type,
-        owner_email = excluded.owner_email,
-        actor_email = excluded.actor_email,
-        title = excluded.title,
-        status = excluded.status,
-        stage = excluded.stage,
-        priority = excluded.priority,
-        source = excluded.source,
-        related_id = excluded.related_id,
-        amount = excluded.amount,
-        payload_json = excluded.payload_json,
-        updated_at = excluded.updated_at
-    `).run(
-      entity.id,
-      entity.kind,
-      entity.sourceSnapshotId,
-      entity.snapshotType,
-      entity.ownerEmail,
-      entity.actorEmail,
-      entity.title,
-      entity.status,
-      entity.stage,
-      entity.priority,
-      entity.source,
-      entity.relatedId,
-      entity.amount,
-      safeJson(entity.payload),
-      entity.createdAt,
-      entity.updatedAt
-    );
-
     const publicRecord = publicJourneyEntity({
       id: entity.id,
       kind: entity.kind,
@@ -1180,25 +1353,86 @@ class BancusDatabase {
       created_at: entity.createdAt,
       updated_at: entity.updatedAt
     });
-    this.upsertMaterializedJourneyRow(publicRecord);
-    const record = this.findMaterializedJourneyRow(normalizedKind, entity.id) || {
-      ...publicRecord,
-      materializedTable: table
-    };
-    const responseKey = this.materializedResponseKey(normalizedKind);
-    return {
-      ok: true,
-      created: !existing,
-      kind: normalizedKind,
-      record,
-      [responseKey]: record
-    };
+    this.db.exec('SAVEPOINT bancus_direct_owner_guard');
+    try {
+      const entityWriteResult = this.db.prepare(`
+        INSERT INTO journey_entities (
+          id, kind, source_snapshot_id, snapshot_type, owner_email, actor_email,
+          title, status, stage, priority, source, related_id, amount, payload_json, created_at, updated_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(kind, id) DO UPDATE SET
+          source_snapshot_id = excluded.source_snapshot_id,
+          snapshot_type = excluded.snapshot_type,
+          actor_email = excluded.actor_email,
+          title = excluded.title,
+          status = excluded.status,
+          stage = excluded.stage,
+          priority = excluded.priority,
+          source = excluded.source,
+          related_id = excluded.related_id,
+          amount = excluded.amount,
+          payload_json = excluded.payload_json,
+          updated_at = excluded.updated_at
+        WHERE LOWER(TRIM(journey_entities.owner_email)) = LOWER(TRIM(excluded.owner_email))
+      `).run(
+        entity.id,
+        entity.kind,
+        entity.sourceSnapshotId,
+        entity.snapshotType,
+        entity.ownerEmail,
+        entity.actorEmail,
+        entity.title,
+        entity.status,
+        entity.stage,
+        entity.priority,
+        entity.source,
+        entity.relatedId,
+        entity.amount,
+        safeJson(entity.payload),
+        entity.createdAt,
+        entity.updatedAt
+      );
+      if (Number(entityWriteResult && entityWriteResult.changes || 0) === 0) {
+        this.db.exec('ROLLBACK TO bancus_direct_owner_guard');
+        this.db.exec('RELEASE bancus_direct_owner_guard');
+        return ownerConflictResponse();
+      }
+
+      const materializedRecord = this.upsertMaterializedJourneyRow(publicRecord);
+      if (!materializedRecord) {
+        this.db.exec('ROLLBACK TO bancus_direct_owner_guard');
+        this.db.exec('RELEASE bancus_direct_owner_guard');
+        return ownerConflictResponse();
+      }
+      const record = this.findMaterializedJourneyRow(normalizedKind, entity.id) || {
+        ...publicRecord,
+        materializedTable: table
+      };
+      const responseKey = this.materializedResponseKey(normalizedKind);
+      this.db.exec('RELEASE bancus_direct_owner_guard');
+      return {
+        ok: true,
+        created: !existing,
+        kind: normalizedKind,
+        record,
+        [responseKey]: record
+      };
+    } catch (error) {
+      try {
+        this.db.exec('ROLLBACK TO bancus_direct_owner_guard');
+        this.db.exec('RELEASE bancus_direct_owner_guard');
+      } catch (rollbackError) {
+        // Mantem o erro original.
+      }
+      throw error;
+    }
   }
 
   upsertMaterializedJourneyRow(entity = {}) {
     const table = this.materializedTableFor(entity.kind);
     if (!table || !entity.id) return null;
-    this.db.prepare(`
+    const writeResult = this.db.prepare(`
       INSERT INTO ${quoteIdentifier(table)} (
         id, kind, source_snapshot_id, snapshot_type, owner_email, actor_email,
         title, status, stage, priority, source, related_id, amount, payload_json, created_at, updated_at
@@ -1207,7 +1441,6 @@ class BancusDatabase {
       ON CONFLICT(id) DO UPDATE SET
         source_snapshot_id = excluded.source_snapshot_id,
         snapshot_type = excluded.snapshot_type,
-        owner_email = excluded.owner_email,
         actor_email = excluded.actor_email,
         title = excluded.title,
         status = excluded.status,
@@ -1218,6 +1451,7 @@ class BancusDatabase {
         amount = excluded.amount,
         payload_json = excluded.payload_json,
         updated_at = excluded.updated_at
+      WHERE LOWER(TRIM(${quoteIdentifier(table)}.owner_email)) = LOWER(TRIM(excluded.owner_email))
     `).run(
       entity.id,
       entity.kind,
@@ -1236,15 +1470,13 @@ class BancusDatabase {
       entity.createdAt,
       entity.updatedAt
     );
+    if (Number(writeResult && writeResult.changes || 0) === 0) return null;
     return entity;
   }
 
   rebuildJourneyEntities() {
-    this.db.exec(`
-      DELETE FROM journey_leads;
-      DELETE FROM journey_simulations;
-      DELETE FROM journey_proposals;
-    `);
+    // Reindexacao aditiva: preserva registros diretos e atualiza somente as
+    // entidades derivadas dos snapshots existentes.
     const rows = this.db.prepare('SELECT * FROM snapshots ORDER BY updated_at DESC').all().map(publicSnapshot);
     const indexed = [];
     rows.forEach((snapshot) => {
@@ -1582,13 +1814,65 @@ function resolveDbPath(inputPath) {
   return path.resolve(inputPath || process.env.BANCUS_DB_PATH || DEFAULT_DB_PATH);
 }
 
+function createPostgresqlContext() {
+  return Object.freeze({
+    SCHEMA_VERSION,
+    SESSION_TTL_MS,
+    MAX_EVENT_PAYLOAD_CHARS,
+    MAX_PERSISTED_PAYLOAD_CHARS,
+    IMPORT_TEMP_PASSWORD,
+    ROLE_LABELS,
+    STATUS_LABELS,
+    SEED_USERS,
+    nowIso,
+    makeId,
+    normalizeEmail,
+    normalizeStatus,
+    normalizeText,
+    hashPassword,
+    verifyPassword,
+    tokenHash,
+    safeJson,
+    sanitizeEventPayload,
+    sanitizePersistedPayload,
+    publicUser,
+    publicEvent,
+    publicSnapshot,
+    publicJourneyEntity,
+    publicMaterializedJourneyRow,
+    countBy,
+    firstText,
+    firstNumber,
+    buildJourneyEntity,
+    validateUserPayload,
+    quoteIdentifier,
+    createSessionToken: () => crypto.randomBytes(32).toString('hex')
+  });
+}
+
 function createDatabase(options = {}) {
   const provider = assertSupportedDbProvider(options.provider);
-  const dbPath = resolveDbPath(options.dbPath);
-  fs.mkdirSync(path.dirname(dbPath), { recursive: true });
-  const db = new DatabaseSync(dbPath);
-  initializeSchema(db);
-  return new BancusDatabase(db, dbPath, { provider });
+  if (provider === 'sqlite') {
+    const { createSqliteProvider } = require('./providers/sqlite');
+    const adapter = createSqliteProvider({
+      dbPath: resolveDbPath(options.dbPath),
+      DatabaseSync: options.DatabaseSync,
+      initializeSchema
+    });
+    return new BancusDatabase(adapter.db, adapter.dbPath, { provider: adapter.provider });
+  }
+
+  // O driver PostgreSQL e carregado somente quando este provider e escolhido.
+  // A Promise e intencional: SQLite preserva a API sincrona atual, enquanto o
+  // provider hospedado usa o contrato async do pool sem fallback silencioso.
+  const { createPostgresqlProvider, requireDatabaseUrl } = require('./providers/postgresql');
+  const databaseUrl = requireDatabaseUrl(options);
+  return createPostgresqlProvider({
+    ...options,
+    provider,
+    databaseUrl,
+    schemaManifestPath: options.schemaManifestPath || SCHEMA_MANIFEST_PATH
+  }, createPostgresqlContext());
 }
 
 module.exports = {
@@ -1597,14 +1881,20 @@ module.exports = {
   DEFAULT_DB_PATH,
   SCHEMA_MIGRATIONS_DIR,
   SCHEMA_MANIFEST_PATH,
+  MAX_EVENT_PAYLOAD_CHARS,
+  MAX_PERSISTED_PAYLOAD_CHARS,
   SUPPORTED_DB_PROVIDERS,
+  PILOT_DB_PROVIDERS,
   FUTURE_DB_PROVIDERS,
   ROLE_LABELS,
   STATUS_LABELS,
+  BancusDatabase,
   normalizeDbProvider,
   isSupportedDbProvider,
+  assertSupportedDbProvider,
   createDatabase,
   hashPassword,
   verifyPassword,
-  sanitizeEventPayload
+  sanitizeEventPayload,
+  sanitizePersistedPayload
 };

@@ -42,20 +42,22 @@ const {
 
 assert(DEFAULT_DB_PROVIDER === 'sqlite', 'Provider padrao deveria continuar sqlite.');
 assert(Array.isArray(SUPPORTED_DB_PROVIDERS) && SUPPORTED_DB_PROVIDERS.includes('sqlite'), 'Providers suportados deveriam incluir sqlite.');
-assert(Array.isArray(FUTURE_DB_PROVIDERS) && FUTURE_DB_PROVIDERS.includes('postgresql'), 'Providers futuros deveriam registrar postgresql como proximo candidato.');
+assert(Array.isArray(SUPPORTED_DB_PROVIDERS) && SUPPORTED_DB_PROVIDERS.includes('postgresql'), 'Providers suportados deveriam incluir o piloto postgresql.');
+assert(Array.isArray(FUTURE_DB_PROVIDERS) && !FUTURE_DB_PROVIDERS.includes('postgresql'), 'postgresql nao deveria continuar classificado como provider futuro.');
 assert(String(SCHEMA_MIGRATIONS_DIR).includes('migrations'), 'db.js deveria exportar diretorio de migrations.');
 assert(String(SCHEMA_MANIFEST_PATH).endsWith('schema-manifest.json'), 'db.js deveria exportar caminho do manifest de schema.');
 assert(normalizeDbProvider('node:sqlite') === 'sqlite', 'Alias node:sqlite deveria normalizar para sqlite.');
 assert(normalizeDbProvider('local') === 'sqlite', 'Alias local deveria normalizar para sqlite.');
+assert(normalizeDbProvider('pg') === 'postgresql', 'Alias pg deveria normalizar para postgresql.');
 assert(isSupportedDbProvider('sqlite'), 'sqlite deveria ser provider suportado.');
-assert(!isSupportedDbProvider('postgresql'), 'postgresql ainda nao deveria estar marcado como provider suportado.');
+assert(isSupportedDbProvider('postgresql'), 'postgresql deveria estar marcado como provider piloto suportado.');
 let unsupportedProviderMessage = '';
 try {
-  createDatabase({ provider: 'postgresql', dbPath: `${dbPath}.unsupported` });
+  createDatabase({ provider: 'mysql', dbPath: `${dbPath}.unsupported` });
 } catch (error) {
   unsupportedProviderMessage = error.message || '';
 }
-assert(unsupportedProviderMessage.includes('BANCUS_DB_PROVIDER=postgresql'), 'Provider postgresql deveria falhar com mensagem explicita.');
+assert(unsupportedProviderMessage.includes('BANCUS_DB_PROVIDER=mysql'), 'Provider desconhecido deveria falhar com mensagem explicita.');
 
 const localDb = createDatabase({ dbPath });
 
@@ -351,7 +353,8 @@ try {
     '/api/leads',
     '/api/simulations',
     '/api/proposals',
-    'provider: localDatabase ? localDatabase.provider : null',
+    'requestedDatabaseProvider',
+    'databaseStartupError',
     'upsertDirectJourneyRow',
     'findMaterializedJourneyRow',
     '-direct-',
