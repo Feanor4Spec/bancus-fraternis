@@ -25,7 +25,8 @@
       <strong id="public-proposal-status">Abrindo proposta</strong>
     </div>
     <nav class="proposal-public-header__actions" hidden id="public-proposal-actions" aria-label="Ações da proposta">
-      <button type="button" class="btn btn--primary" id="public-proposal-print">Imprimir ou salvar em PDF</button>
+      <button type="button" class="btn btn--ghost" id="public-proposal-print">Imprimir ou salvar em PDF</button>
+      <button type="button" class="btn btn--primary" data-public-proposal-interest>Quero falar com um consultor</button>
     </nav>
   </header>
 
@@ -61,6 +62,16 @@
     </section>
 
     <section id="public-proposal-container" class="proposal-public-document" aria-live="polite"></section>
+
+    <section class="proposal-public-interest" id="public-proposal-interest" data-proposal-interest-state="idle" hidden>
+      <div>
+        <span class="proposal-public-eyebrow">Próximo passo</span>
+        <strong id="public-proposal-interest-title">Quer conversar sobre esta proposta?</strong>
+        <p id="public-proposal-interest-copy">Peça um contato para tirar dúvidas sobre valores, lances, parcelas e condições.</p>
+        <small id="public-proposal-interest-status" role="status" aria-live="polite"></small>
+      </div>
+      <button type="button" class="btn btn--primary" data-public-proposal-interest>Quero falar com um consultor</button>
+    </section>
   </main>
 
   <footer class="proposal-public-footer">

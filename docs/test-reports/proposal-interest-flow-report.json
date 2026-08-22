@@ -1,0 +1,451 @@
+{
+  "ok": true,
+  "schema": "bancus.proposal-interest.v1",
+  "source": "proposal-interest",
+  "generatedAt": "2026-08-22T19:47:13.906Z",
+  "checks": 110,
+  "passed": 110,
+  "results": [
+    {
+      "name": "service.idempotent-write",
+      "ok": true
+    },
+    {
+      "name": "service.stable-id",
+      "ok": true
+    },
+    {
+      "name": "service.safe-summary",
+      "ok": true
+    },
+    {
+      "name": "service.persistent-status",
+      "ok": true
+    },
+    {
+      "name": "service.consultant-contract",
+      "ok": true
+    },
+    {
+      "name": "service.exact-deep-link",
+      "ok": true
+    },
+    {
+      "name": "service.legacy-dedupe-key",
+      "ok": true
+    },
+    {
+      "name": "service.concurrent-single-insert",
+      "ok": true
+    },
+    {
+      "name": "service.concurrent-stable-original",
+      "ok": true
+    },
+    {
+      "name": "surface.public-cta",
+      "ok": true
+    },
+    {
+      "name": "surface.public-persistent-state",
+      "ok": true
+    },
+    {
+      "name": "surface.public-print-safe",
+      "ok": true
+    },
+    {
+      "name": "surface.client-cta",
+      "ok": true
+    },
+    {
+      "name": "surface.client-persistent-state",
+      "ok": true
+    },
+    {
+      "name": "surface.client-mode-only",
+      "ok": true
+    },
+    {
+      "name": "surface.client-top-cta-visible",
+      "ok": true
+    },
+    {
+      "name": "security.assigned-resume-sanitized",
+      "ok": true
+    },
+    {
+      "name": "security.analytical-row-escaped",
+      "ok": true
+    },
+    {
+      "name": "security.legacy-export-escaped",
+      "ok": true
+    },
+    {
+      "name": "security.comparison-narrative-escaped",
+      "ok": true
+    },
+    {
+      "name": "surface.protected-assignee-readonly",
+      "ok": true
+    },
+    {
+      "name": "surface.rendered-resume-grant",
+      "ok": true
+    },
+    {
+      "name": "contract.private-version-provenance",
+      "ok": true
+    },
+    {
+      "name": "contract.internal-resolution-only",
+      "ok": true
+    },
+    {
+      "name": "contract.public-post-no-query-token",
+      "ok": true
+    },
+    {
+      "name": "contract.server-endpoints",
+      "ok": true
+    },
+    {
+      "name": "contract.server-controlled-routing",
+      "ok": true
+    },
+    {
+      "name": "contract.server-backed-resume",
+      "ok": true
+    },
+    {
+      "name": "contract.reserved-interest-leads",
+      "ok": true
+    },
+    {
+      "name": "contract.atomic-create-only-service",
+      "ok": true
+    },
+    {
+      "name": "contract.atomic-create-only-sqlite",
+      "ok": true
+    },
+    {
+      "name": "contract.atomic-create-only-postgresql",
+      "ok": true
+    },
+    {
+      "name": "http.consultant-login",
+      "ok": true
+    },
+    {
+      "name": "http.admin-login",
+      "ok": true
+    },
+    {
+      "name": "http.second-consultant-created",
+      "ok": true
+    },
+    {
+      "name": "http.second-consultant-login",
+      "ok": true
+    },
+    {
+      "name": "http.INTEREST-E2E.simulation",
+      "ok": true
+    },
+    {
+      "name": "http.INTEREST-E2E.draft",
+      "ok": true
+    },
+    {
+      "name": "http.INTEREST-E2E.validated",
+      "ok": true
+    },
+    {
+      "name": "http.INTEREST-E2E.reviewed",
+      "ok": true
+    },
+    {
+      "name": "http.INTEREST-E2E.published",
+      "ok": true
+    },
+    {
+      "name": "http.public-initial-state",
+      "ok": true
+    },
+    {
+      "name": "http.public-interest-created",
+      "ok": true
+    },
+    {
+      "name": "http.public-interest-no-token-url",
+      "ok": true
+    },
+    {
+      "name": "http.public-interest-safe-response",
+      "ok": true
+    },
+    {
+      "name": "http.public-interest-security-headers",
+      "ok": true
+    },
+    {
+      "name": "http.public-interest-idempotent",
+      "ok": true
+    },
+    {
+      "name": "http.INTEREST-RACE.simulation",
+      "ok": true
+    },
+    {
+      "name": "http.INTEREST-RACE.draft",
+      "ok": true
+    },
+    {
+      "name": "http.INTEREST-RACE.validated",
+      "ok": true
+    },
+    {
+      "name": "http.INTEREST-RACE.reviewed",
+      "ok": true
+    },
+    {
+      "name": "http.INTEREST-RACE.published",
+      "ok": true
+    },
+    {
+      "name": "http.public-interest-concurrent-status",
+      "ok": true
+    },
+    {
+      "name": "http.public-interest-concurrent-stable-original",
+      "ok": true
+    },
+    {
+      "name": "http.public-interest-concurrent-single-event",
+      "ok": true
+    },
+    {
+      "name": "http.public-interest-concurrent-single-audit-event",
+      "ok": true
+    },
+    {
+      "name": "http.public-interest-persists-on-reload",
+      "ok": true
+    },
+    {
+      "name": "http.consultant-opportunity-visible",
+      "ok": true
+    },
+    {
+      "name": "http.public-content-cannot-steer-consultant",
+      "ok": true
+    },
+    {
+      "name": "http.consultant-opportunity-linked",
+      "ok": true
+    },
+    {
+      "name": "http.public-interest-same-owner-resume",
+      "ok": true
+    },
+    {
+      "name": "http.ADMIN-OWNER-INTEREST.simulation",
+      "ok": true
+    },
+    {
+      "name": "http.ADMIN-OWNER-INTEREST.draft",
+      "ok": true
+    },
+    {
+      "name": "http.ADMIN-OWNER-INTEREST.validated",
+      "ok": true
+    },
+    {
+      "name": "http.ADMIN-OWNER-INTEREST.reviewed",
+      "ok": true
+    },
+    {
+      "name": "http.ADMIN-OWNER-INTEREST.published",
+      "ok": true
+    },
+    {
+      "name": "http.admin-interest-same-owner-resume",
+      "ok": true
+    },
+    {
+      "name": "http.admin-interest-same-owner-forgery-blocked",
+      "ok": true
+    },
+    {
+      "name": "http.consultant-progress-saved",
+      "ok": true
+    },
+    {
+      "name": "http.public-progress-persists",
+      "ok": true
+    },
+    {
+      "name": "http.public-revoked",
+      "ok": true
+    },
+    {
+      "name": "http.revoked-interest-blocked",
+      "ok": true
+    },
+    {
+      "name": "http.INTEREST-EXPIRED.simulation",
+      "ok": true
+    },
+    {
+      "name": "http.INTEREST-EXPIRED.draft",
+      "ok": true
+    },
+    {
+      "name": "http.INTEREST-EXPIRED.validated",
+      "ok": true
+    },
+    {
+      "name": "http.INTEREST-EXPIRED.reviewed",
+      "ok": true
+    },
+    {
+      "name": "http.INTEREST-EXPIRED.published",
+      "ok": true
+    },
+    {
+      "name": "http.expired-interest-blocked",
+      "ok": true
+    },
+    {
+      "name": "http.expired-interest-not-persisted",
+      "ok": true
+    },
+    {
+      "name": "http.client-login",
+      "ok": true
+    },
+    {
+      "name": "http.client-simulation-saved",
+      "ok": true
+    },
+    {
+      "name": "http.client-proposal-saved",
+      "ok": true
+    },
+    {
+      "name": "http.client-interest-created",
+      "ok": true
+    },
+    {
+      "name": "http.client-interest-safe-response",
+      "ok": true
+    },
+    {
+      "name": "http.client-interest-persists",
+      "ok": true
+    },
+    {
+      "name": "http.client-version-ownership",
+      "ok": true
+    },
+    {
+      "name": "http.client-interest-visible-to-consultant",
+      "ok": true
+    },
+    {
+      "name": "http.client-cannot-steer-consultant",
+      "ok": true
+    },
+    {
+      "name": "http.client-interest-deep-link",
+      "ok": true
+    },
+    {
+      "name": "http.resume-requires-interest-context",
+      "ok": true
+    },
+    {
+      "name": "http.resume-cross-device-authorized",
+      "ok": true
+    },
+    {
+      "name": "http.resume-cross-role-html-sanitized",
+      "ok": true
+    },
+    {
+      "name": "http.resume-cross-role-data-minimized",
+      "ok": true
+    },
+    {
+      "name": "http.resume-admin-cross-owner-sanitized",
+      "ok": true
+    },
+    {
+      "name": "http.resume-assigned-access-read-only",
+      "ok": true
+    },
+    {
+      "name": "http.resume-cross-consultant-blocked",
+      "ok": true
+    },
+    {
+      "name": "http.resume-forged-snapshot-interest-blocked",
+      "ok": true
+    },
+    {
+      "name": "http.resume-snapshot-downgrade-blocked",
+      "ok": true
+    },
+    {
+      "name": "http.resume-snapshot-id-fallback-downgrade-blocked",
+      "ok": true
+    },
+    {
+      "name": "http.resume-snapshot-downgrade-preserves-grant",
+      "ok": true
+    },
+    {
+      "name": "http.resume-forged-interest-blocked",
+      "ok": true
+    },
+    {
+      "name": "http.client-legacy-simulation-saved",
+      "ok": true
+    },
+    {
+      "name": "http.client-legacy-proposal-saved",
+      "ok": true
+    },
+    {
+      "name": "http.client-legacy-interest-created",
+      "ok": true
+    },
+    {
+      "name": "http.client-legacy-interest-idempotent",
+      "ok": true
+    },
+    {
+      "name": "http.client-legacy-interest-linked",
+      "ok": true
+    },
+    {
+      "name": "http.client-legacy-unverified-identifiers-ignored",
+      "ok": true
+    },
+    {
+      "name": "http.internal-auth-required",
+      "ok": true
+    },
+    {
+      "name": "http.internal-interest-client-only",
+      "ok": true
+    },
+    {
+      "name": "http.public-interest-post-only",
+      "ok": true
+    }
+  ],
+  "failures": []
+}

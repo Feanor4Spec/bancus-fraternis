@@ -93,6 +93,14 @@
     error: null
   };
 
+  let proposalInterestState = {
+    loading: false,
+    loaded: false,
+    identityKey: '',
+    interest: null,
+    error: null
+  };
+
   function backendApi() {
     return window.BFBackendApi && typeof window.BFBackendApi === 'object' ? window.BFBackendApi : null;
   }
@@ -229,9 +237,29 @@
     return user && user.email ? user.email : 'anon';
   }
 
+  function formatCalendarDate(value) {
+    if (!value) return '';
+    const text = String(value).trim();
+    const civilDate = /^(\d{4})-(\d{2})-(\d{2})(?:$|T)/.exec(text);
+    if (civilDate) return `${civilDate[3]}/${civilDate[2]}/${civilDate[1]}`;
+    try {
+      return new Intl.DateTimeFormat('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      }).format(new Date(value));
+    } catch (error) {
+      return text;
+    }
+  }
+
   function currentUserRole() {
     const user = window.BFAuth && window.BFAuth.getCurrentUser ? window.BFAuth.getCurrentUser() : null;
     return user && user.role ? user.role : '';
+  }
+
+  function currentUser() {
+    return window.BFAuth && window.BFAuth.getCurrentUser ? window.BFAuth.getCurrentUser() : null;
   }
 
   function calculatorPage(slug) {
@@ -300,12 +328,16 @@
   }
 
   function hasProposalState(snapshot) {
-    return (snapshot.simulations || []).some((item) => (
+    return Boolean(
+      (snapshot.proposalVersions || []).length
+      || (snapshot.proposalAcceptances || []).length
+      || (snapshot.simulations || []).some((item) => (
       item.proposalAcceptance ||
       item.proposta ||
       item.proposal ||
       item.statusProposta
-    ));
+      ))
+    );
   }
 
   function hoursSince(value) {
@@ -538,6 +570,49 @@
     return sortByRecent(source)[0] || null;
   }
 
+  function proposalContext(snapshot, handoff) {
+    const versions = sortByRecent(snapshot.proposalVersions || []);
+    const acceptances = sortByRecent(snapshot.proposalAcceptances || []);
+    const simulations = snapshot.simulations || [];
+    const handoffProposalId = compactText(handoff && handoff.sourceProposalId, '');
+    const requestedVersion = handoff && handoff.sourceProposalVersionId
+      ? versions.find((item) => item.id === handoff.sourceProposalVersionId || item.versionId === handoff.sourceProposalVersionId)
+      : null;
+    const initialVersion = requestedVersion
+      || latestByProposalId(versions, handoffProposalId)
+      || versions[0]
+      || null;
+    const initialAcceptance = latestByProposalId(acceptances, handoffProposalId || (initialVersion && initialVersion.proposalId))
+      || acceptances[0]
+      || null;
+    const inlineSimulation = simulations.find((item) => item.proposalAcceptance || item.proposta || item.proposal || item.statusProposta) || null;
+    const inlineAcceptance = inlineSimulation && inlineSimulation.proposalAcceptance && typeof inlineSimulation.proposalAcceptance === 'object'
+      ? inlineSimulation.proposalAcceptance
+      : null;
+    const proposalId = handoffProposalId
+      || compactText(initialVersion && initialVersion.proposalId, '')
+      || compactText(initialAcceptance && initialAcceptance.proposalId, '')
+      || compactText(inlineAcceptance && inlineAcceptance.proposalId, '')
+      || compactText(inlineSimulation && (inlineSimulation.proposalId || inlineSimulation.id), '');
+    const version = requestedVersion || latestByProposalId(versions, proposalId) || initialVersion;
+    const acceptance = latestByProposalId(acceptances, proposalId) || initialAcceptance || inlineAcceptance;
+    const simulationId = compactText(
+      (version && version.simulationId)
+        || (acceptance && acceptance.simulationId)
+        || (inlineSimulation && inlineSimulation.id),
+      ''
+    );
+
+    return {
+      proposalId,
+      version,
+      acceptance,
+      simulationId,
+      versionId: compactText(version && (version.id || version.versionId), ''),
+      active: Boolean(proposalId || version || acceptance || hasProposalState(snapshot))
+    };
+  }
+
   function proposalHref(snapshot, proposalId, simulationId = '', proposalVersionId = '') {
     return dashboardHref('simulador.html#proposta', snapshot, {
       proposalId,
@@ -547,41 +622,90 @@
     });
   }
 
+  function consultativeServiceHref(snapshot, extra = {}) {
+    return currentUserRole() === 'cliente'
+      ? dashboardHref('dashboard-cliente.html#continuidade-cliente', snapshot)
+      : dashboardHref('handoff-consultivo.html#fila-handoff', snapshot, extra);
+  }
+
+  function proposalInterestView() {
+    const interest = proposalInterestState.interest;
+    const status = compactText(interest && interest.status, '');
+    if (status === 'in_progress') {
+      return {
+        active: true,
+        status,
+        label: 'Atendimento em andamento',
+        detail: 'A equipe já está acompanhando esta proposta.'
+      };
+    }
+    if (status === 'closed') {
+      return {
+        active: true,
+        status,
+        label: 'Atendimento concluído',
+        detail: 'O retorno sobre esta proposta foi concluído.'
+      };
+    }
+    if (status === 'requested') {
+      return {
+        active: true,
+        status,
+        label: 'Solicitação recebida',
+        detail: 'Um consultor acompanhará esta proposta com você.'
+      };
+    }
+    return { active: false, status: '', label: '', detail: '' };
+  }
+
   function proposalDashboardState(snapshot, handoff) {
     const service = window.BFHandoffConsultivoService;
-    const proposalId = handoff && handoff.sourceProposalId ? handoff.sourceProposalId : '';
+    const context = proposalContext(snapshot, handoff);
+    const proposalId = context.proposalId;
     const handoffProposal = handoff && service && service.proposalState ? service.proposalState(handoff) : null;
-    const acceptance = latestByProposalId(snapshot.proposalAcceptances || [], proposalId);
-    const proposalVersions = snapshot.proposalVersions || [];
-    const version = handoff?.sourceProposalVersionId
-      ? proposalVersions.find((item) => item.id === handoff.sourceProposalVersionId)
-        || latestByProposalId(proposalVersions, proposalId)
-      : latestByProposalId(proposalVersions, proposalId);
-    const hasProposal = Boolean((handoffProposal && handoffProposal.active) || acceptance || version || hasProposalState(snapshot));
+    const acceptance = context.acceptance;
+    const version = context.version;
+    const hasProposal = Boolean((handoffProposal && handoffProposal.active) || context.active);
+    const href = proposalHref(snapshot, proposalId, context.simulationId, context.versionId);
 
     if (handoffProposal && handoffProposal.active) {
       return {
         active: true,
         tone: handoffProposal.tone || 'info',
         label: handoffProposal.label || 'Proposta vinculada',
-        detail: handoffProposal.reason || 'Proposta conectada ao atendimento consultivo.',
+        detail: currentUserRole() === 'cliente'
+          ? 'Confira os valores, as parcelas e as condições da proposta.'
+          : handoffProposal.reason || 'Proposta vinculada ao atendimento.',
         status: handoffProposal.status || '',
         version: handoffProposal.version || (version && version.version) || '',
         validUntil: handoffProposal.validUntil || (acceptance && acceptance.validUntil) || '',
-        href: proposalHref(snapshot, proposalId, version && version.simulationId, version && version.id)
+        proposalId,
+        simulationId: context.simulationId,
+        versionId: context.versionId,
+        updatedAt: (acceptance && (acceptance.updatedAt || acceptance.createdAt)) || (version && (version.updatedAt || version.createdAt)) || '',
+        href
       };
     }
 
     if (acceptance) {
+      const status = acceptance.status || '';
       return {
         active: true,
-        tone: acceptance.status === 'expired' ? 'warning' : acceptance.status === 'reviewed' ? 'stable' : 'info',
-        label: proposalStatusLabels[acceptance.status] || acceptance.statusLabel || 'Proposta em revisão',
-        detail: acceptance.notes || 'Confira as condições e o prazo antes de compartilhar.',
-        status: acceptance.status || '',
-        version: acceptance.version || '',
-        validUntil: acceptance.validUntil || '',
-        href: proposalHref(snapshot, acceptance.proposalId || proposalId, version && version.simulationId, version && version.id)
+        tone: status === 'expired' ? 'warning' : status === 'reviewed' ? 'stable' : 'info',
+        label: proposalStatusLabels[status] || acceptance.statusLabel || 'Proposta em conferência',
+        detail: status === 'expired'
+          ? 'Peça uma versão atualizada para continuar.'
+          : status === 'reviewed'
+            ? 'Confira os valores, o plano de parcelas e as condições.'
+            : 'As condições estão sendo conferidas antes do próximo passo.',
+        status,
+        version: acceptance.version || (version && version.version) || '',
+        validUntil: acceptance.validUntil || (version && version.validUntil) || '',
+        proposalId: acceptance.proposalId || proposalId,
+        simulationId: context.simulationId,
+        versionId: context.versionId,
+        updatedAt: acceptance.updatedAt || acceptance.createdAt || '',
+        href
       };
     }
 
@@ -589,12 +713,16 @@
       return {
         active: true,
         tone: 'stable',
-        label: 'Proposta salva',
-        detail: 'Pronta para conferir e compartilhar com o cliente.',
+        label: 'Proposta pronta',
+        detail: 'Confira os valores, o plano de parcelas e as condições.',
         status: 'versioned',
         version: version.version || '',
         validUntil: version.validUntil || '',
-        href: proposalHref(snapshot, version.proposalId || proposalId, version.simulationId, version.id)
+        proposalId: version.proposalId || proposalId,
+        simulationId: context.simulationId,
+        versionId: context.versionId,
+        updatedAt: version.updatedAt || version.createdAt || '',
+        href
       };
     }
 
@@ -608,7 +736,11 @@
       status: '',
       version: '',
       validUntil: '',
-      href: proposalHref(snapshot, '', '')
+      proposalId,
+      simulationId: context.simulationId,
+      versionId: context.versionId,
+      updatedAt: '',
+      href
     };
   }
 
@@ -624,9 +756,10 @@
       };
     }
     const context = simulation.decisionContext || {};
+    const simulationLabel = simulation.nome || simulation.name || 'Simulação salva';
     return {
       active: true,
-      label: simulation.nome || simulation.name || 'Simulação salva',
+      label: /^Proposta\s+PROP-/i.test(simulationLabel) ? 'Cenário vinculado à proposta' : simulationLabel,
       detail: 'Continue a simulação ou abra a proposta vinculada.',
       href: dashboardHref(`simulador.html?simulationId=${encodeURIComponent(simulation.id || '')}`, snapshot, {
         calculatorSlug: context.calculatorSlug || '',
@@ -639,7 +772,25 @@
   function nextClientAction(snapshot) {
     const handoff = activeHandoff(snapshot);
     const service = window.BFHandoffConsultivoService;
-    const topSignal = snapshot.recoverySignals && snapshot.recoverySignals.length ? snapshot.recoverySignals[0] : null;
+    const proposal = proposalDashboardState(snapshot, handoff);
+    const interest = proposalInterestView();
+    if (proposal.active) {
+      const expired = proposal.status === 'expired';
+      const validity = proposal.validUntil ? formatCalendarDate(proposal.validUntil) : '';
+      return {
+        kind: 'proposal',
+        tone: expired ? 'warning' : 'stable',
+        eyebrow: expired ? 'Proposta vencida' : interest.active ? interest.label : handoff ? 'Atendimento em andamento' : 'Sua proposta está pronta',
+        title: expired ? 'Peça uma proposta atualizada' : (interest.active || handoff) ? 'Sua proposta está em acompanhamento' : 'Confira valores e condições',
+        detail: expired
+          ? 'Abra a proposta para solicitar uma atualização antes de decidir.'
+          : (interest.active || handoff)
+            ? `${interest.active ? interest.detail : 'Seu pedido foi recebido.'} Você também pode rever crédito, parcelas e condições.${validity ? ` A proposta é válida até ${validity}.` : ''}`
+            : `Revise o crédito, as parcelas, o lance e os próximos eventos.${validity ? ` A proposta é válida até ${validity}.` : ''}`,
+        cta: expired ? 'Ver e pedir atualização' : 'Ver proposta',
+        href: proposal.href
+      };
+    }
     if (handoff && service && service.actionPlan) {
       const plan = service.actionPlan(handoff);
       return {
@@ -676,6 +827,7 @@
         href: impact.href
       };
     }
+    const topSignal = snapshot.recoverySignals && snapshot.recoverySignals.length ? snapshot.recoverySignals[0] : null;
     if (topSignal) {
       return {
         kind: 'signal',
@@ -784,6 +936,75 @@
     `;
   }
 
+  function renderDashboardShell() {
+    const snapshot = dashboardSnapshot();
+    const handoff = activeHandoff(snapshot);
+    const proposal = proposalDashboardState(snapshot, handoff);
+    const interest = proposalInterestView();
+    const user = currentUser();
+    const firstName = String((user && user.name) || '').trim().split(/\s+/)[0];
+    const sessionBadge = document.querySelector('[data-client-session]');
+    const hero = document.querySelector('[data-client-dashboard-hero]');
+    const title = document.querySelector('[data-client-dashboard-title]');
+    const description = document.querySelector('[data-client-dashboard-description]');
+    const rail = document.querySelector('[data-client-dashboard-actions]');
+    const stats = document.querySelector('[data-dashboard-stats]');
+    const financialProfile = document.querySelector('[data-client-financial-profile]');
+    const activityTitle = document.querySelector('[data-client-activity-title]');
+
+    document.body.dataset.clientPostProposal = proposal.active ? 'true' : 'false';
+    document.body.dataset.clientProposalId = proposal.proposalId || '';
+    document.body.dataset.clientProposalInterest = interest.status || 'none';
+    if (hero) hero.classList.toggle('is-post-proposal', proposal.active);
+    if (sessionBadge) {
+      sessionBadge.textContent = user && user.role === 'cliente'
+        ? (firstName ? `Olá, ${firstName}` : 'Minha conta')
+        : 'Visão do cliente';
+    }
+
+    if (proposal.active) {
+      const expired = proposal.status === 'expired';
+      const validity = proposal.validUntil ? ` até ${formatCalendarDate(proposal.validUntil)}` : '';
+      if (title) title.textContent = expired
+        ? 'Sua proposta precisa ser atualizada.'
+        : interest.status === 'requested'
+          ? 'Seu pedido foi recebido.'
+          : (interest.active || handoff)
+            ? 'Seu atendimento está em andamento.'
+            : 'Sua proposta está pronta para conferir.';
+      if (description) description.textContent = expired
+        ? 'Confira as condições e peça uma nova versão antes de avançar.'
+        : (interest.active || handoff)
+          ? `${interest.active ? interest.detail : 'Acompanhe o retorno'} Consulte sua proposta sempre que precisar.`
+          : `Revise valores, parcelas e próximos passos${validity}.`;
+      if (rail) {
+        rail.innerHTML = `
+          <a href="${escapeHtml(proposal.href)}">Ver proposta <span aria-hidden="true">PR</span></a>
+          <a href="simulador.html?from=dashboard">Nova simulação <span aria-hidden="true">NS</span></a>
+          <a href="#continuidade-cliente">${interest.active || handoff ? 'Ver atendimento' : 'Próximo passo'} <span aria-hidden="true">AT</span></a>
+        `;
+      }
+      if (activityTitle) activityTitle.textContent = 'Sua proposta e atividades recentes';
+    } else {
+      if (title) title.textContent = 'Planeje seu consórcio com clareza.';
+      if (description) description.textContent = 'Simule grupos, compare cenários e acompanhe suas propostas.';
+      if (rail) {
+        rail.innerHTML = `
+          <a href="simulador.html?from=dashboard">Nova simulação <span aria-hidden="true">NS</span></a>
+          <a href="#atividade-recente">Minhas propostas <span aria-hidden="true">PR</span></a>
+          <a href="comparador.html?from=dashboard">Comparar cenários <span aria-hidden="true">CP</span></a>
+        `;
+      }
+      if (activityTitle) activityTitle.textContent = 'Propostas e simulações recentes';
+    }
+
+    [stats, financialProfile].forEach((section) => {
+      if (!section) return;
+      section.hidden = proposal.active;
+      section.setAttribute('aria-hidden', proposal.active ? 'true' : 'false');
+    });
+  }
+
   function renderContinuityCockpit() {
     const target = document.querySelector('[data-client-continuity-cockpit]');
     if (!target) return;
@@ -793,25 +1014,40 @@
     const service = window.BFHandoffConsultivoService;
     const stage = commercialStageFor(handoff);
     const proposal = proposalDashboardState(snapshot, handoff);
+    const interest = proposalInterestView();
     const simulation = simulationDashboardState(snapshot);
     const nextAction = nextClientAction(snapshot);
     const impactSummary = calculatorImpactSummary(snapshot);
     const topImpact = impactSummary.top;
     const statusLabel = handoff
       ? (service && service.statusLabels ? service.statusLabels[handoff.status] : handoffStatusLabels[handoff.status]) || handoff.status || 'Aberto'
-      : 'Nenhum atendimento aberto';
+      : interest.active ? interest.label : proposal.active ? 'Disponível pela proposta' : 'Ainda não solicitado';
     const proposalTone = uiTone(proposal.tone);
     const proposalDetail = proposal.validUntil
-      ? `Válida até ${formatDate(proposal.validUntil)}. ${proposal.detail}`
+      ? `Válida até ${formatCalendarDate(proposal.validUntil)}. ${proposal.detail}`
       : proposal.detail;
+    const proposalIsPrimary = nextAction.kind === 'proposal';
+    const proposalSignal = proposalIsPrimary
+      ? `<span hidden data-client-proposal-status="${escapeHtml(proposal.status || 'active')}"></span>`
+      : `
+        <article class="bf-client-signal bf-client-signal--${escapeHtml(proposalTone || 'info')}" data-client-proposal-status="${escapeHtml(proposal.status || (proposal.active ? 'active' : 'none'))}">
+          <span>Proposta</span>
+          <strong>${escapeHtml(proposal.label)}</strong>
+          <p>${escapeHtml(proposalDetail)}</p>
+          <a href="${escapeHtml(proposal.href)}">Ver proposta</a>
+        </article>
+      `;
+    const serviceActive = Boolean(handoff || interest.active);
+    const serviceHref = serviceActive ? '#atividade-recente' : proposal.active ? proposal.href : 'simulador.html?from=dashboard';
+    const serviceAction = serviceActive ? 'Ver atividades' : proposal.active ? 'Solicitar pela proposta' : 'Começar simulação';
 
     target.innerHTML = `
       <div class="bf-client-cockpit">
         <div class="bf-admin-panel-heading">
           <div>
-            <span class="bf-badge bf-badge--gold">Próximo passo</span>
-            <h2>Continue de onde parou</h2>
-            <p>Sua simulação, sua proposta e o andamento do atendimento estão reunidos aqui.</p>
+            <span class="bf-badge bf-badge--gold">${proposal.active ? 'Sua proposta' : 'Próximo passo'}</span>
+            <h2>${proposal.active ? 'Avance sem perder o contexto' : 'Continue de onde parou'}</h2>
+            <p>${proposal.active ? 'Condições, cenário e atendimento estão reunidos aqui.' : 'Sua simulação e seus próximos passos estão reunidos aqui.'}</p>
           </div>
         </div>
         <div class="bf-client-cockpit__grid">
@@ -822,23 +1058,18 @@
             <a class="btn btn--primary btn--sm" href="${escapeHtml(nextAction.href)}">${escapeHtml(nextAction.cta)}</a>
           </article>
           <div class="bf-client-cockpit__signals">
-            <article class="bf-client-signal bf-client-signal--${escapeHtml(proposalTone || 'info')}" data-client-proposal-status="${escapeHtml(proposal.status || (proposal.active ? 'active' : 'none'))}">
-              <span>Proposta</span>
-              <strong>${escapeHtml(proposal.label)}</strong>
-              <p>${escapeHtml(proposalDetail)}</p>
-              <a href="${escapeHtml(proposal.href)}">Ver proposta</a>
-            </article>
+            ${proposalSignal}
             <article class="bf-client-signal bf-client-signal--${escapeHtml(simulation.active ? 'stable' : 'info')}" data-client-simulation-context="${escapeHtml(simulation.active ? 'ready' : 'empty')}">
-              <span>Simulação</span>
+              <span>${proposal.active ? 'Cenário da proposta' : 'Simulação'}</span>
               <strong>${escapeHtml(simulation.label)}</strong>
-              <p>${escapeHtml(simulation.detail)}</p>
-              <a href="${escapeHtml(simulation.href)}">Abrir simulador</a>
+              <p>${escapeHtml(proposal.active ? 'Confira os grupos, as parcelas e o lance usados nesta proposta.' : simulation.detail)}</p>
+              <a href="${escapeHtml(simulation.href)}">${proposal.active ? 'Ver cenário' : 'Abrir simulador'}</a>
             </article>
-            <article class="bf-client-signal bf-client-signal--${escapeHtml(handoff ? 'stable' : 'info')}" data-client-handoff-status="${escapeHtml(handoff ? handoff.status || 'novo' : 'none')}">
+            <article class="bf-client-signal bf-client-signal--${escapeHtml(serviceActive ? 'stable' : 'info')}" data-client-handoff-status="${escapeHtml(handoff ? handoff.status || 'novo' : interest.status || 'none')}">
               <span>Atendimento</span>
               <strong>${escapeHtml(statusLabel)}</strong>
-              <p>${escapeHtml(handoff ? 'Seu pedido está em acompanhamento.' : 'Quando precisar, seus dados podem seguir para um consultor.')}</p>
-              <a href="#atividade-recente">Ver atividades</a>
+              <p>${escapeHtml(handoff ? 'Seu pedido está em acompanhamento.' : interest.active ? interest.detail : proposal.active ? 'Peça ajuda ou tire dúvidas diretamente na proposta.' : 'Simule para receber uma proposta e falar com um consultor.')}</p>
+              <a href="${escapeHtml(serviceHref)}">${escapeHtml(serviceAction)}</a>
             </article>
             <span hidden data-client-backend-snapshots="${escapeHtml(snapshot.backendSnapshots.source)}"></span>
             <span hidden data-client-backend-entities="${escapeHtml(snapshot.backendEntities.source)}"></span>
@@ -935,7 +1166,7 @@
         label: 'Handoff',
         title: hasHandoff ? 'Atendimento consultivo criado' : 'Preparar atendimento',
         text: hasHandoff ? 'Lead local pronto para acompanhamento operacional.' : 'Gere handoff quando a trilha estiver revisada.',
-        href: dashboardHref('handoff-consultivo.html#fila-handoff', snapshot, { journeyId }),
+        href: consultativeServiceHref(snapshot, { journeyId }),
         status: hasHandoff ? 'done' : (hasProposal || hasJourney ? 'active' : 'pending')
       }
     ];
@@ -952,15 +1183,66 @@
     `).join('');
   }
 
+  function proposalActivityItems(snapshot) {
+    const proposals = new Map();
+    const ensure = (proposalId, fallbackId) => {
+      const key = compactText(proposalId || fallbackId, '');
+      if (!key) return null;
+      if (!proposals.has(key)) proposals.set(key, { proposalId: key, version: null, acceptance: null });
+      return proposals.get(key);
+    };
+
+    sortByRecent(snapshot.proposalVersions || []).forEach((item) => {
+      const proposal = ensure(item.proposalId, item.id || item.versionId);
+      if (proposal && !proposal.version) proposal.version = item;
+    });
+    sortByRecent(snapshot.proposalAcceptances || []).forEach((item) => {
+      const proposal = ensure(item.proposalId, item.id);
+      if (proposal && !proposal.acceptance) proposal.acceptance = item;
+    });
+
+    return Array.from(proposals.values()).map((proposal) => {
+      const version = proposal.version || {};
+      const acceptance = proposal.acceptance || {};
+      const status = acceptance.status || '';
+      const versionLabel = acceptance.version || version.versionLabel || version.version || '';
+      const validUntil = acceptance.validUntil || version.validUntil || '';
+      const meta = [];
+      if (versionLabel) meta.push(/^vers[aã]o/i.test(String(versionLabel)) ? String(versionLabel) : `Versão ${versionLabel}`);
+      if (validUntil) meta.push(`Válida até ${formatCalendarDate(validUntil)}`);
+      return {
+        key: `proposal:${proposal.proposalId}`,
+        proposalId: proposal.proposalId,
+        simulationId: version.simulationId || acceptance.simulationId || '',
+        type: 'Proposta',
+        title: proposalStatusLabels[status] || acceptance.statusLabel || 'Proposta pronta',
+        meta: meta.join(' · '),
+        date: acceptance.updatedAt || acceptance.createdAt || version.updatedAt || version.createdAt,
+        href: proposalHref(
+          snapshot,
+          proposal.proposalId,
+          version.simulationId || acceptance.simulationId || '',
+          version.id || version.versionId || ''
+        )
+      };
+    });
+  }
+
   function renderClientActivity() {
     const target = document.querySelector('[data-client-activity]');
     if (!target) return;
 
     const snapshot = dashboardSnapshot();
     const events = [];
+    const proposalEvents = proposalActivityItems(snapshot);
+    const linkedSimulationIds = new Set(proposalEvents.map((item) => item.simulationId).filter(Boolean));
+    const linkedProposalIds = new Set(proposalEvents.map((item) => item.proposalId).filter(Boolean));
     snapshot.simulations.forEach((item) => {
+      const linkedProposalId = item.proposalId || (item.proposalAcceptance && item.proposalAcceptance.proposalId) || '';
+      if (linkedSimulationIds.has(item.id) || linkedProposalIds.has(linkedProposalId)) return;
       const context = item.decisionContext || {};
       events.push({
+        key: `simulation:${item.id || item.nome || item.name || ''}`,
         type: 'Simulação',
         title: item.nome || 'Simulação de consórcio',
         date: item.atualizadoEm || item.criadoEm,
@@ -971,6 +1253,7 @@
       });
     });
     snapshot.calculatorHistory.forEach((item) => events.push({
+      key: `calculator:${item.id || item.createdAt || ''}`,
       type: item.calculatorName || 'Calculadora',
       title: item.recommendation ? item.recommendation.title : 'Cálculo salvo',
       date: item.createdAt,
@@ -980,6 +1263,7 @@
       })
     }));
     snapshot.comparatorModels.forEach((item) => events.push({
+      key: `comparison:${item.id || item.modelId || ''}`,
       type: 'Comparação',
       title: item.name,
       date: item.updatedAt || item.createdAt,
@@ -987,6 +1271,7 @@
     }));
     if (snapshot.journey) {
       events.push({
+        key: `journey:${snapshot.journey.id || ''}`,
         type: 'Planejamento',
         title: snapshot.journey.recommendation ? snapshot.journey.recommendation.title : snapshot.journey.objectiveLabel,
         date: snapshot.journey.updatedAt || snapshot.journey.createdAt,
@@ -994,32 +1279,26 @@
       });
     }
     snapshot.handoffs.forEach((item) => events.push({
+      key: `service:${item.id || item.handoffId || ''}`,
       type: 'Atendimento',
       title: item.objectiveLabel || 'Atendimento consultivo',
       date: item.updatedAt || item.createdAt,
-      href: dashboardHref('handoff-consultivo.html#fila-handoff', snapshot, { handoffId: item.id || '' })
+      href: consultativeServiceHref(snapshot, { handoffId: item.id || '' })
     }));
-    snapshot.proposalVersions.forEach((item) => events.push({
-      type: 'Proposta',
-      title: item.title || item.proposalTitle || 'Proposta salva',
-      date: item.updatedAt || item.createdAt,
-      href: proposalHref(snapshot, item.proposalId || item.id || '', item.simulationId || '', item.id || '')
-    }));
-    snapshot.proposalAcceptances.forEach((item) => events.push({
-      type: 'Proposta',
-      title: proposalStatusLabels[item.status] || item.title || 'Conferência registrada',
-      date: item.updatedAt || item.createdAt,
-      href: (() => {
-        const version = latestByProposalId(snapshot.proposalVersions || [], item.proposalId || item.id || '');
-        return proposalHref(
-          snapshot,
-          item.proposalId || item.id || '',
-          version?.simulationId || '',
-          version?.id || ''
-        );
-      })()
-    }));
+    events.push(...proposalEvents);
+    const interest = proposalInterestView();
+    if (interest.active) {
+      events.push({
+        key: `proposal-interest:${proposalInterestState.interest.id || interest.status}`,
+        type: 'Atendimento',
+        title: interest.label,
+        meta: interest.detail,
+        date: proposalInterestState.interest.requestedAt || '',
+        href: '#continuidade-cliente'
+      });
+    }
     snapshot.recoverySignals.forEach((signal) => events.push({
+      key: `recovery:${signal.id || signal.type || signal.latestEventAt || ''}`,
       type: 'Próximo passo',
       title: signal.title || 'Continuar atividade',
       date: signal.latestEventAt,
@@ -1029,6 +1308,7 @@
     const sorted = events
       .filter((item) => item.title)
       .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')))
+      .filter((item, index, items) => items.findIndex((candidate) => candidate.key === item.key) === index)
       .slice(0, 6);
 
     if (!sorted.length) {
@@ -1037,10 +1317,10 @@
     }
 
     target.innerHTML = sorted.map((item) => `
-      <article class="bf-client-activity__item">
+      <article class="bf-client-activity__item" data-client-activity-key="${escapeHtml(item.key || '')}">
         <span>${escapeHtml(item.type)}</span>
         <strong>${escapeHtml(item.title)}</strong>
-        <small>${escapeHtml(formatDate(item.date))}</small>
+        <small>${escapeHtml(item.meta ? `${item.meta} · ${formatDate(item.date)}` : formatDate(item.date))}</small>
         <a href="${escapeHtml(item.href)}">Abrir</a>
       </article>
     `).join('');
@@ -1070,7 +1350,7 @@
           <h2>Prioridade a partir da jornada real</h2>
           <p>Produtos, comparador e simuladores alimentam sinais locais para continuar do ponto exato de abandono ou decisao.</p>
         </div>
-        <a class="btn btn--ghost btn--sm" href="${escapeHtml(dashboardHref('handoff-consultivo.html#fila-handoff', snapshot))}">Enviar para handoff</a>
+        <a class="btn btn--ghost btn--sm" href="${escapeHtml(consultativeServiceHref(snapshot))}">${currentUserRole() === 'cliente' ? 'Pedir atendimento' : 'Abrir atendimento'}</a>
       </div>
       <div class="bf-platform-metrics">
         ${window.BFCards ? window.BFCards.metric('Sinais', summary.total || 0, 'is-strong') : ''}
@@ -1237,6 +1517,45 @@
     return true;
   }
 
+  async function loadProposalInterest() {
+    const api = backendApi();
+    if (!api || typeof api.available !== 'function' || !api.available() || typeof api.getProposalInterest !== 'function') {
+      document.body.dataset.clientProposalInterestReady = 'fallback';
+      return false;
+    }
+
+    const snapshot = dashboardSnapshot();
+    const context = proposalContext(snapshot, activeHandoff(snapshot));
+    if (!context.active || !context.proposalId || !context.versionId) {
+      proposalInterestState = { loading: false, loaded: true, identityKey: '', interest: null, error: null };
+      document.body.dataset.clientProposalInterestReady = 'none';
+      return false;
+    }
+
+    const identityKey = `${context.proposalId}|${context.versionId}|${context.simulationId}`;
+    if (proposalInterestState.loading || (proposalInterestState.loaded && proposalInterestState.identityKey === identityKey)) {
+      return Boolean(proposalInterestState.interest);
+    }
+
+    proposalInterestState = { loading: true, loaded: false, identityKey, interest: null, error: null };
+    document.body.dataset.clientProposalInterestReady = 'loading';
+    const response = await api.getProposalInterest({
+      proposalId: context.proposalId,
+      proposalVersionId: context.versionId,
+      simulationId: context.simulationId
+    });
+    proposalInterestState = {
+      loading: false,
+      loaded: Boolean(response && response.ok),
+      identityKey,
+      interest: response && response.ok ? response.interest || null : null,
+      error: response && response.ok ? null : (response && response.message) || 'Atendimento indisponível.'
+    };
+    document.body.dataset.clientProposalInterestReady = response && response.ok ? 'true' : 'fallback';
+    document.body.dataset.clientProposalInterest = proposalInterestState.interest?.status || 'none';
+    return Boolean(response && response.ok);
+  }
+
   function renderLiveDataPanel() {
     const target = document.querySelector('[data-client-live-data-panel]');
     if (!target) return;
@@ -1298,6 +1617,7 @@
   }
 
   function renderSnapshotAwareSections() {
+    renderDashboardShell();
     renderLiveDataPanel();
     renderCalculatorProfile();
     renderDecisionJourney();
@@ -1365,30 +1685,41 @@
     const impacts = snapshot.calculatorImpacts.slice(0, 8);
     const readiness = snapshot.readiness || { score: profile.readinessScore || 0, complete: false };
     const hasProfile = Object.keys(profile).length > 0;
+    const proposal = proposalDashboardState(snapshot, activeHandoff(snapshot));
 
     if (profileTarget) {
-      profileTarget.innerHTML = `
-        <div class="bf-calculator-profile">
-          <div>
-            <span class="bf-badge bf-badge--ok">Planejamento financeiro</span>
-            <h2>${hasProfile ? 'Seus dados estão prontos para novas simulações' : 'Planeje uma parcela que cabe no seu orçamento'}</h2>
-            <p>${hasProfile ? 'Use sua renda, suas despesas e sua reserva para comparar cenários com mais segurança.' : 'Informe renda, despesas e reserva para encontrar uma parcela confortável antes de escolher os grupos.'}</p>
-            <div class="bf-inline-actions">
-              <a class="btn btn--primary btn--sm" href="calculadora-capacidade-credito.html">Calcular capacidade</a>
-              <a class="btn btn--ghost btn--sm" href="calculadora-lance-consorcio.html">Planejar lance</a>
-              <a class="btn btn--ghost btn--sm" href="simulador.html?from=journey&journeyId=dashboard-cliente">Simular agora</a>
+      if (proposal.active) {
+        profileTarget.hidden = true;
+        profileTarget.setAttribute('aria-hidden', 'true');
+        profileTarget.dataset.clientFinancialProfileState = 'deferred';
+        profileTarget.innerHTML = '';
+      } else {
+        profileTarget.hidden = false;
+        profileTarget.setAttribute('aria-hidden', 'false');
+        profileTarget.dataset.clientFinancialProfileState = 'active';
+        profileTarget.innerHTML = `
+          <div class="bf-calculator-profile">
+            <div>
+              <span class="bf-badge bf-badge--ok">Planejamento financeiro</span>
+              <h2>${hasProfile ? 'Seus dados estão prontos para novas simulações' : 'Planeje uma parcela que cabe no seu orçamento'}</h2>
+              <p>${hasProfile ? 'Use sua renda, suas despesas e sua reserva para comparar cenários com mais segurança.' : 'Informe renda, despesas e reserva para encontrar uma parcela confortável antes de escolher os grupos.'}</p>
+              <div class="bf-inline-actions">
+                <a class="btn btn--primary btn--sm" href="calculadora-capacidade-credito.html">Calcular capacidade</a>
+                <a class="btn btn--ghost btn--sm" href="calculadora-lance-consorcio.html">Planejar lance</a>
+                <a class="btn btn--ghost btn--sm" href="simulador.html?from=journey&journeyId=dashboard-cliente">Simular agora</a>
+              </div>
+              <span hidden data-client-backend-snapshots="${escapeHtml(snapshot.backendSnapshots.source)}"></span>
             </div>
-            <span hidden data-client-backend-snapshots="${escapeHtml(snapshot.backendSnapshots.source)}"></span>
+            <div class="bf-calculator-profile__metrics">
+              <div><small>Dados preenchidos</small><strong>${readiness.score || 0}%</strong></div>
+              <div><small>Renda</small><strong>${profile.rendaMensal ? money(profile.rendaMensal) : '-'}</strong></div>
+              <div><small>Capacidade</small><strong>${profile.capacidadePagamento ? money(profile.capacidadePagamento) : (profile.capacidadeAporte ? money(profile.capacidadeAporte) : '-')}</strong></div>
+              <div><small>Reserva</small><strong>${profile.reservaAtual ? money(profile.reservaAtual) : '-'}</strong></div>
+              <div><small>Comprometimento</small><strong>${profile.comprometimentoRenda ? percent(profile.comprometimentoRenda) : '-'}</strong></div>
+            </div>
           </div>
-          <div class="bf-calculator-profile__metrics">
-            <div><small>Dados preenchidos</small><strong>${readiness.score || 0}%</strong></div>
-            <div><small>Renda</small><strong>${profile.rendaMensal ? money(profile.rendaMensal) : '-'}</strong></div>
-            <div><small>Capacidade</small><strong>${profile.capacidadePagamento ? money(profile.capacidadePagamento) : (profile.capacidadeAporte ? money(profile.capacidadeAporte) : '-')}</strong></div>
-            <div><small>Reserva</small><strong>${profile.reservaAtual ? money(profile.reservaAtual) : '-'}</strong></div>
-            <div><small>Comprometimento</small><strong>${profile.comprometimentoRenda ? percent(profile.comprometimentoRenda) : '-'}</strong></div>
-          </div>
-        </div>
-      `;
+        `;
+      }
     }
 
     if (!historyTarget) return;
@@ -1452,7 +1783,7 @@
     const comparatorHref = dashboardHref('comparador.html', snapshot, {
       preset: journey.objective || 'obter_liquidez'
     });
-    const handoffHref = dashboardHref('handoff-consultivo.html#fila-handoff', snapshot, {
+    const handoffHref = consultativeServiceHref(snapshot, {
       handoffId: handoff ? handoff.id : ''
     });
     target.innerHTML = `
@@ -1485,26 +1816,13 @@
     if (!user) return;
 
     const target = document.querySelector('[data-client-session]');
-    if (!target) return;
-
-    target.innerHTML = `
-      <div class="bf-user-profile">
-        <div>
-          <span class="bf-badge bf-badge--ok">Bem-vindo</span>
-          <h2>Olá, ${escapeHtml(String(user.name || '').split(/\s+/)[0])}</h2>
-          <p>Retome uma proposta ou comece uma nova simulação.</p>
-        </div>
-        <div class="bf-inline-actions">
-          ${user.role === 'admin' ? '<a class="btn btn--ghost btn--sm" href="dashboard-admin.html">Operação</a>' : ''}
-          <a class="btn btn--primary btn--sm" href="simulador.html">Nova simulação</a>
-        </div>
-      </div>
-    `;
+    if (target) target.textContent = String(user.name || '').trim().split(/\s+/)[0] || 'Minha conta';
 
     renderSnapshotAwareSections();
     renderStandardModels();
-    Promise.all([loadBackendSnapshots(), loadBackendEntities(), loadBackendMaterializedTables()]).then((results) => {
-      if (results.some(Boolean)) renderSnapshotAwareSections();
+    Promise.all([loadBackendSnapshots(), loadBackendEntities(), loadBackendMaterializedTables()]).then(async (results) => {
+      const interestLoaded = await loadProposalInterest();
+      if (results.some(Boolean) || interestLoaded) renderSnapshotAwareSections();
     });
 
     document.addEventListener('click', (event) => {
@@ -1513,6 +1831,7 @@
         refreshButton.disabled = true;
         renderLiveDataPanel();
         Promise.all([loadBackendSnapshots(), loadBackendEntities(), loadBackendMaterializedTables()])
+          .then(() => loadProposalInterest())
           .then(() => renderSnapshotAwareSections())
           .catch(() => renderSnapshotAwareSections());
         return;

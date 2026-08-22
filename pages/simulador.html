@@ -1096,7 +1096,7 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
             <div hidden>
               <img src="../assets/icons/ui/ui-calculator.svg" alt="">
               <dt>Motor</dt>
-              <dd id="proposal-meta-engine">ConsórcioPro</dd>
+              <dd id="proposal-meta-engine">Bancus Fraternis</dd>
             </div>
             <div hidden>
               <img src="../assets/icons/ui/ui-vault.svg" alt="">
@@ -1131,6 +1131,8 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
             <button class="btn btn--ghost" type="button" id="btn-proposal-client-return" hidden>
               <img src="../assets/icons/ui/ui-arrow.svg" alt=""> Voltar à edição
             </button>
+            <button class="btn btn--accent" type="button" id="btn-proposal-interest-top"
+              data-proposal-interest-action hidden>Quero falar com um consultor</button>
             <details class="proposal-download-menu">
               <summary class="btn btn--ghost">Ver e salvar</summary>
               <div class="proposal-download-menu__panel">
@@ -1266,6 +1268,17 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
             </div>
           </aside>
         </div>
+
+        <section class="proposal-client-interest" id="proposal-client-interest" data-proposal-interest-state="idle" hidden>
+          <div>
+            <span>Próximo passo</span>
+            <strong id="proposal-client-interest-title">Quer conversar sobre esta proposta?</strong>
+            <p id="proposal-client-interest-copy">Peça um contato para tirar dúvidas sobre valores, lances, parcelas e condições.</p>
+            <small id="proposal-client-interest-status" role="status" aria-live="polite"></small>
+          </div>
+          <button type="button" class="btn btn--accent" id="btn-proposal-interest"
+            data-proposal-interest-action>Quero falar com um consultor</button>
+        </section>
 
         <details class="proposal-control-drawer" id="proposal-control-drawer">
           <summary>

@@ -105,7 +105,12 @@ check('navigation.wrapper-layout', platformCss.includes('[data-shell-primary-nav
 const dashboardSurface = dashboardHtml.split('<div hidden aria-hidden="true" data-client-commercial-internals>')[0];
 const dashboardBanned = ['Dashboard v8', 'Portal de engenharia', 'Componentes v8', 'API Docs', 'Microconversões locais', 'Jornada medida no navegador'];
 check('dashboard.internal-copy-hidden', dashboardBanned.every((term) => !dashboardSurface.includes(term)), dashboardBanned);
-check('dashboard.customer-actions', ['Nova simulação', 'Propostas', 'Comparar', 'Atendimento'].every((term) => dashboardSurface.includes(term)), 'Quatro ações comerciais visíveis.');
+check(
+  'dashboard.customer-actions',
+  ['Nova simulação', 'Minhas propostas', 'Comparar cenários'].every((term) => dashboardSurface.includes(term))
+    && ['Ver proposta', 'Próximo passo'].every((term) => dashboardJs.includes(term)),
+  'Ações comerciais respondem ao momento da jornada e priorizam a proposta ativa.'
+);
 check('dashboard.legacy-panels-hidden', dashboardHtml.includes('data-client-commercial-internals') && platformCss.includes('[data-client-commercial-internals][hidden]'), 'Contratos antigos preservados fora da apresentação.');
 check('dashboard.proposal-route', dashboardJs.includes("simulador.html#proposta") && dashboardJs.includes('proposalVersionId') && !dashboardJs.includes("dashboardHref('simulador.html#step-9'"), 'Atalho identifica versão, simulação e proposta final.');
 check('dashboard.proposal-client-view', dashboardJs.includes("proposalView: currentUserRole() === 'cliente'") && dashboardJs.includes('href: proposalHref('), 'Cliente abre a proposta em modo de conferência; equipe preserva a edição.');

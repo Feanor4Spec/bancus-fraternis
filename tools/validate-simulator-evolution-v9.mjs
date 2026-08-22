@@ -775,12 +775,17 @@ addCheck(
 const publicControls = [...sources.publicHtml.matchAll(/<(input|textarea|select|form)\b/gi)].map((match) => match[1].toLowerCase());
 addCheck(
   'public-page.read-only',
-  'A pagina publica oferece apenas leitura, impressao e PDF, sem controles de edicao.',
+  'A pagina publica preserva a proposta somente para leitura e oferece PDF ou pedido de contato, sem controles de edicao.',
   /somente leitura/i.test(sources.publicHtml)
     && publicControls.length === 0
     && !/\b(?:POST|PUT|PATCH|DELETE)\b/.test(sources.proposalPublic)
-    && /getPublicProposal\(token\)/.test(sources.proposalPublic),
-  { editControls: publicControls, readOperation: /getPublicProposal\(token\)/.test(sources.proposalPublic) }
+    && /getPublicProposal\(proposalToken\)/.test(sources.proposalPublic)
+    && /requestPublicProposalInterest\(proposalToken\)/.test(sources.proposalPublic),
+  {
+    editControls: publicControls,
+    readOperation: /getPublicProposal\(proposalToken\)/.test(sources.proposalPublic),
+    contactRequest: /requestPublicProposalInterest\(proposalToken\)/.test(sources.proposalPublic)
+  }
 );
 addCheck(
   'public-page.redacted-fallback',

@@ -11,43 +11,18 @@
 <body class="bf-platform-body client-dashboard-page" data-bf-page="dashboard-cliente" data-auth-required="true" data-auth-roles="admin,consultor,cliente">
   <div data-shell-header></div>
   <main class="bf-platform-shell">
-    <section class="bf-platform-hero">
+    <section class="bf-platform-hero" data-client-dashboard-hero>
       <div class="bf-platform-hero__content">
-        <span class="bf-badge bf-badge--ok">Minha conta</span>
-        <h1>Sua jornada de consórcio, em um só lugar.</h1>
-        <p>Retome uma simulação, acompanhe propostas ou comece um novo plano.</p>
+        <span class="bf-badge bf-badge--ok" data-client-session>Minha conta</span>
+        <h1 data-client-dashboard-title>Planeje seu consórcio com clareza.</h1>
+        <p data-client-dashboard-description>Simule grupos, compare cenários e acompanhe suas propostas.</p>
       </div>
-      <aside class="bf-platform-hero__rail">
-        <a href="simulador.html?from=dashboard">Nova simulação <span>SI</span></a>
-        <a href="#atividade-recente">Propostas <span>PR</span></a>
-        <a href="comparador.html?from=dashboard">Comparar <span>CP</span></a>
-        <a href="#continuidade-cliente">Atendimento <span>AT</span></a>
+      <aside class="bf-platform-hero__rail" aria-label="Ações principais" data-client-dashboard-actions>
+        <a href="simulador.html?from=dashboard">Nova simulação <span aria-hidden="true">NS</span></a>
+        <a href="#atividade-recente">Minhas propostas <span aria-hidden="true">PR</span></a>
+        <a href="comparador.html?from=dashboard">Comparar cenários <span aria-hidden="true">CP</span></a>
       </aside>
-      <span hidden aria-hidden="true"><a href="trilha-decisao.html?from=dashboard">Planejar</a><a href="produtos.html?from=dashboard">Produtos</a></span>
     </section>
-    <section class="bf-v8-stagebar bf-v8-stagebar--inside" aria-label="Ações rápidas" data-v8-stagebar>
-      <div class="bf-v8-stagebar__intro">
-        <span>Acesso rápido</span>
-        <strong>Escolha o que precisa fazer.</strong>
-      </div>
-      <a class="bf-v8-stagebar__item" href="simulador.html?from=dashboard" data-step="1">
-        <span>Simular</span>
-        <strong>Escolher grupos</strong>
-      </a>
-      <a class="bf-v8-stagebar__item" href="#atividade-recente" data-step="2">
-        <span>Propostas</span>
-        <strong>Acompanhar</strong>
-      </a>
-      <a class="bf-v8-stagebar__item" href="comparador.html?from=dashboard" data-step="3">
-        <span>Comparar</span>
-        <strong>Ver alternativas</strong>
-      </a>
-      <a class="bf-v8-stagebar__item" href="#continuidade-cliente" data-step="4">
-        <span>Atendimento</span>
-        <strong>Ver próximo passo</strong>
-      </a>
-    </section>
-    <section class="bf-platform-panel" data-client-session></section>
     <section class="bf-platform-panel bf-platform-section" id="continuidade-cliente" data-client-continuity-cockpit></section>
     <section class="bf-platform-panel bf-platform-section" data-dashboard-stats></section>
     <section class="bf-platform-panel bf-platform-section" id="perfil-financeiro" data-client-financial-profile></section>
@@ -55,9 +30,8 @@
       <div class="bf-admin-panel-heading">
         <div>
           <span class="bf-badge bf-badge--navy">Atividade recente</span>
-          <h2>Simulações, propostas e decisões</h2>
+          <h2 data-client-activity-title>Propostas e simulações recentes</h2>
         </div>
-        <a class="btn btn--ghost btn--sm" href="carteira.html#simulacoes-salvas">Ver carteira</a>
       </div>
       <div class="bf-client-timeline" data-client-continuity-timeline hidden aria-hidden="true"></div>
       <div class="bf-client-activity" data-client-activity></div>

@@ -36,6 +36,10 @@
   let publication = null;
   let publishing = false;
   let clientModeLocked = false;
+  let proposalInterest = null;
+  let proposalInterestBusy = false;
+  let proposalInterestLoadedKey = '';
+  let proposalInterestError = '';
 
   function byId(id) {
     return document.getElementById(id);
@@ -376,6 +380,7 @@
         proposalView: params.get('proposalView') || '',
         proposalId: params.get('proposalId') || '',
         proposalVersionId: params.get('proposalVersionId') || '',
+        interestId: params.get('interestId') || '',
         hash: window.location.hash || '',
         targetStep: Number(document.body.dataset.activeStep || 0)
       };
@@ -396,6 +401,171 @@
     } catch (error) {
       return false;
     }
+  }
+
+  function currentUserRole() {
+    try {
+      return String(window.BFAuth?.getCurrentUser?.()?.role || '').toLowerCase();
+    } catch (error) {
+      return '';
+    }
+  }
+
+  function currentProposalInterestIdentity() {
+    try {
+      const proposal = window.App?.getCurrentProposalData?.();
+      const params = new URLSearchParams(window.location.search || '');
+      const proposalId = params.get('proposalId') || proposal?.id || '';
+      const latestVersion = proposalId && window.BFProposalVersions?.latest
+        ? window.BFProposalVersions.latest(proposalId)
+        : null;
+      const proposalVersionId = params.get('proposalVersionId') || latestVersion?.id || '';
+      const simulationId = params.get('simulationId') || params.get('simulacaoId') || latestVersion?.simulationId || '';
+      if (!/^PROP-[A-Za-z0-9._:-]+$/i.test(proposalId) || !/^PV-[A-Za-z0-9._:-]+$/i.test(proposalVersionId)) return null;
+      return { proposalId, proposalVersionId, simulationId };
+    } catch (error) {
+      return null;
+    }
+  }
+
+  async function ensureProposalInterestVersion(identity) {
+    const api = window.BFBackendApi;
+    const versions = window.BFProposalVersions;
+    if (!identity || !api?.saveSimulation || typeof Storage === 'undefined' || !Storage.loadSimulation) return false;
+    const simulation = identity.simulationId ? Storage.loadSimulation(identity.simulationId) : null;
+    const simulationProposalId = simulation?.proposalId || simulation?.proposalAcceptance?.proposalId || '';
+    if (!simulation || simulation.id !== identity.simulationId || simulationProposalId !== identity.proposalId) return false;
+    const simulationResponse = await api.saveSimulation({
+      id: simulation.id,
+      title: simulation.nome || `Proposta ${identity.proposalId}`,
+      status: simulation.status || 'saved',
+      stage: 'simulacao',
+      priority: 'media',
+      source: 'proposal-version-snapshot',
+      relatedId: identity.proposalId,
+      amount: simulation.totalCarta || simulation.resumo?.creditoTotal || simulation.resultado?.resumo?.creditoTotal || 0,
+      payload: simulation,
+      createdAt: simulation.criadoEm || '',
+      updatedAt: simulation.atualizadoEm || ''
+    });
+    if (!simulationResponse?.ok) return false;
+    if (!api.recordSnapshot || !versions?.latest) return true;
+    const history = versions.history
+      ? versions.history(identity.proposalId, 200)
+      : [];
+    const version = history.find((item) => item?.id === identity.proposalVersionId)
+      || versions.latest(identity.proposalId);
+    if (!version || version.id !== identity.proposalVersionId || version.proposalId !== identity.proposalId) return true;
+    const response = await api.recordSnapshot('proposal-version', version, {
+      id: `SNP-PV-${version.id}`,
+      source: 'proposal-versioning',
+      entityId: identity.proposalId,
+      title: version.label || `Versão ${version.version || ''}`.trim(),
+      status: version.status || 'draft',
+      storageKey: 'bank_fratern_proposal_versions_v1',
+      createdAt: version.createdAt || '',
+      updatedAt: version.updatedAt || version.createdAt || ''
+    });
+    return Boolean(response?.ok);
+  }
+
+  function renderProposalInterest(options = {}) {
+    const panel = byId('proposal-client-interest');
+    if (!panel) return;
+    const available = document.body.classList.contains('proposal-client-mode') && currentUserIsClient();
+    panel.hidden = !available;
+    const topButton = byId('btn-proposal-interest-top');
+    if (topButton) topButton.hidden = !available;
+    if (!available) return;
+
+    const errorMessage = options.error === undefined ? proposalInterestError : options.error;
+    const status = proposalInterest?.status || (errorMessage ? 'error' : 'idle');
+    panel.dataset.proposalInterestState = status;
+    const complete = ['requested', 'in_progress', 'closed'].includes(status);
+    const title = byId('proposal-client-interest-title');
+    const copy = byId('proposal-client-interest-copy');
+    const feedback = byId('proposal-client-interest-status');
+    const buttons = Array.from(document.querySelectorAll('[data-proposal-interest-action]'));
+
+    if (status === 'requested') {
+      setText(title, 'Pedido recebido.');
+      setText(copy, 'Um consultor acompanhará esta proposta e orientará os próximos passos.');
+    } else if (status === 'in_progress') {
+      setText(title, 'Seu atendimento está em andamento.');
+      setText(copy, 'A equipe já está acompanhando esta proposta.');
+    } else if (status === 'closed') {
+      setText(title, 'Atendimento concluído.');
+      setText(copy, 'Se precisar retomar, fale com seu consultor pelos canais já combinados.');
+    } else {
+      setText(title, 'Quer conversar sobre esta proposta?');
+      setText(copy, 'Peça um contato para tirar dúvidas sobre valores, lances, parcelas e condições.');
+    }
+    setText(feedback, errorMessage || (proposalInterestBusy ? 'Registrando seu pedido...' : ''));
+    buttons.forEach((button) => {
+      button.disabled = proposalInterestBusy || complete || !currentProposalInterestIdentity();
+      button.setAttribute('aria-disabled', String(button.disabled));
+      button.textContent = complete ? 'Pedido registrado' : (proposalInterestBusy ? 'Registrando...' : 'Quero falar com um consultor');
+    });
+  }
+
+  async function syncProposalInterest(options = {}) {
+    if (!document.body.classList.contains('proposal-client-mode') || !currentUserIsClient()) return;
+    const identity = currentProposalInterestIdentity();
+    const api = window.BFBackendApi;
+    if (!identity || !api?.getProposalInterest) {
+      proposalInterestError = identity ? 'O atendimento não está disponível agora.' : '';
+      renderProposalInterest();
+      return;
+    }
+    const key = `${identity.proposalId}|${identity.proposalVersionId}|${identity.simulationId}`;
+    if (proposalInterestLoadedKey && proposalInterestLoadedKey !== key) {
+      proposalInterest = null;
+      proposalInterestLoadedKey = '';
+      proposalInterestError = '';
+    }
+    if (proposalInterestBusy || (!options.force && proposalInterestLoadedKey === key)) {
+      renderProposalInterest();
+      return;
+    }
+    proposalInterestBusy = true;
+    proposalInterestError = '';
+    renderProposalInterest();
+    await ensureProposalInterestVersion(identity);
+    const response = await api.getProposalInterest(identity);
+    proposalInterestBusy = false;
+    if (!response?.ok) {
+      proposalInterestError = 'Não foi possível consultar o atendimento agora.';
+      renderProposalInterest();
+      return;
+    }
+    proposalInterestLoadedKey = key;
+    proposalInterest = response.interest || null;
+    proposalInterestError = '';
+    renderProposalInterest();
+  }
+
+  async function requestProposalInterest() {
+    if (!currentUserIsClient()) return;
+    const identity = currentProposalInterestIdentity();
+    const api = window.BFBackendApi;
+    if (proposalInterestBusy || !identity || !api?.requestProposalInterest) return;
+    proposalInterestBusy = true;
+    proposalInterestError = '';
+    renderProposalInterest();
+    await ensureProposalInterestVersion(identity);
+    const response = await api.requestProposalInterest(identity);
+    proposalInterestBusy = false;
+    if (!response?.ok || !response.interest) {
+      proposalInterestError = response?.message || 'Não foi possível registrar o pedido. Tente novamente.';
+      renderProposalInterest();
+      window.App?.showToast?.(proposalInterestError, 'error');
+      return;
+    }
+    proposalInterest = response.interest;
+    proposalInterestLoadedKey = `${identity.proposalId}|${identity.proposalVersionId}|${identity.simulationId}`;
+    proposalInterestError = '';
+    renderProposalInterest();
+    window.App?.showToast?.('Pedido de contato registrado.', 'success');
   }
 
   function setClientMode(enabled, options = {}) {
@@ -430,6 +600,8 @@
         ? 'Veja os grupos, valores, lances, parcelas e condições desta simulação.'
         : 'Confira valores, condições e pontos de atenção.'
     );
+    renderProposalInterest();
+    if (enabled) syncProposalInterest();
   }
 
   function publicationDays(validUntil) {
@@ -603,7 +775,10 @@
 
     byId('btn-proposal-client-return')?.addEventListener('click', () => {
       if (clientModeLocked) {
-        window.location.assign('dashboard-cliente.html');
+        const role = currentUserRole();
+        window.location.assign(role === 'consultor' || role === 'admin'
+          ? 'handoff-consultivo.html'
+          : 'dashboard-cliente.html');
         return;
       }
       setClientMode(false);
@@ -618,6 +793,9 @@
     byId('btn-proposal-revoke')?.addEventListener('click', revokePublication);
 
     byId('btn-proposal-validity')?.addEventListener('click', openGovernance);
+    document.querySelectorAll('[data-proposal-interest-action]').forEach((button) => {
+      button.addEventListener('click', requestProposalInterest);
+    });
 
     byId('btn-proposal-outline-collapse')?.addEventListener('click', (event) => {
       const panel = event.currentTarget.closest('.proposal-outline-panel');
@@ -697,7 +875,9 @@
     setClientMode,
     validationState,
     hasPublicationSession,
-    publishSecureProposal
+    publishSecureProposal,
+    syncProposalInterest,
+    requestProposalInterest
   });
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

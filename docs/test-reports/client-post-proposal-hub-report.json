@@ -1,0 +1,102 @@
+{
+  "ok": true,
+  "version": "client-post-proposal-hub-v2",
+  "checks": [
+    {
+      "id": "post-proposal.next-action-priority",
+      "ok": true,
+      "evidence": {
+        "functionFound": true,
+        "proposalPriorityIndex": 159,
+        "competingPriorityIndex": 2012
+      }
+    },
+    {
+      "id": "post-proposal.civil-date",
+      "ok": true,
+      "evidence": {
+        "formatter": "formatCalendarDate",
+        "parsesDateParts": true,
+        "omitsClock": true,
+        "usedForValidUntil": true
+      }
+    },
+    {
+      "id": "post-proposal.history-grouped",
+      "ok": true,
+      "evidence": {
+        "helper": "proposalActivityItems",
+        "groupsByProposalId": true,
+        "parallelVersionAndAcceptanceLoops": false
+      }
+    },
+    {
+      "id": "post-proposal.dynamic-hero",
+      "ok": true,
+      "evidence": {
+        "marker": "data-client-dashboard-hero",
+        "helper": "renderDashboardShell",
+        "proposalBranch": true,
+        "commercialCopy": true
+      }
+    },
+    {
+      "id": "post-proposal.no-duplicate-action-bar",
+      "ok": true,
+      "evidence": {
+        "hasHeroRail": true,
+        "hasStageBar": false
+      }
+    },
+    {
+      "id": "post-proposal.mobile-navigation",
+      "ok": true,
+      "evidence": {
+        "hasMobileNavControl": true,
+        "mobileNavUpdatesState": true,
+        "mobileNavHasVisibleState": true
+      }
+    },
+    {
+      "id": "post-proposal.mobile-panel-width",
+      "ok": true,
+      "evidence": {
+        "legacyNarrowRule": false,
+        "responsivePanelsUseFullWidth": true
+      }
+    },
+    {
+      "id": "post-proposal.secondary-sections-hidden",
+      "ok": true,
+      "evidence": {
+        "helper": "renderDashboardShell",
+        "hasProposalMarker": true,
+        "statsHidden": true,
+        "planningHidden": true,
+        "usesProposalState": true
+      }
+    },
+    {
+      "id": "post-proposal.no-client-handoff-route",
+      "ok": true,
+      "evidence": {
+        "totalOccurrences": 1,
+        "directClientOccurrences": 0,
+        "roleGatedHelper": true
+      }
+    },
+    {
+      "id": "post-proposal.commercial-language",
+      "ok": true,
+      "evidence": {
+        "internalLanguageHits": [],
+        "commercialSignals": [
+          "proposta",
+          "simulação",
+          "atendimento"
+        ]
+      }
+    }
+  ],
+  "failures": []
+}

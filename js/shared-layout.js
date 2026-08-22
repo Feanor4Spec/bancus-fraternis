@@ -252,7 +252,8 @@
         <a href="${rootDir}index.html" class="logo bf-brand" aria-label="Bancus Fraternis - inicio">
           <img src="${rootDir}assets/logos/logo-bank-fratern-portal.svg" alt="Bancus Fraternis" class="logo__image bf-brand__logo">
         </a>
-        <nav class="nav bf-nav" aria-label="Navegação principal">
+        <button class="bf-mobile-nav-toggle" type="button" aria-expanded="false" aria-controls="bf-primary-navigation" data-mobile-nav-toggle>Menu</button>
+        <nav class="nav bf-nav" id="bf-primary-navigation" aria-label="Navegação principal" data-mobile-nav>
           <span data-shell-primary-nav>${primaryNavigation()}</span>
           ${demoChip()}
           <span data-auth-controls>${accountControls()}</span>
@@ -292,6 +293,25 @@
   applySharedSettings();
 
   document.addEventListener('click', async function (e) {
+    const mobileNavButton = e.target.closest('[data-mobile-nav-toggle]');
+    const mobileNav = document.querySelector('[data-mobile-nav]');
+    if (mobileNavButton && mobileNav) {
+      const expanded = mobileNavButton.getAttribute('aria-expanded') === 'true';
+      mobileNavButton.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+      mobileNavButton.textContent = expanded ? 'Menu' : 'Fechar';
+      mobileNav.classList.toggle('is-open', !expanded);
+      return;
+    }
+
+    if (mobileNav && mobileNav.classList.contains('is-open') && e.target.closest('[data-mobile-nav] a')) {
+      const button = document.querySelector('[data-mobile-nav-toggle]');
+      mobileNav.classList.remove('is-open');
+      if (button) {
+        button.setAttribute('aria-expanded', 'false');
+        button.textContent = 'Menu';
+      }
+    }
+
     const logoutButton = e.target.closest('[data-auth-logout]');
     if (logoutButton && window.BFAuth) {
       logoutButton.disabled = true;
@@ -305,6 +325,19 @@
 
     const sw = e.target.closest('.switch');
     if (sw) sw.classList.toggle('is-on');
+  });
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key !== 'Escape') return;
+    const mobileNav = document.querySelector('[data-mobile-nav]');
+    const button = document.querySelector('[data-mobile-nav-toggle]');
+    if (!mobileNav || !mobileNav.classList.contains('is-open')) return;
+    mobileNav.classList.remove('is-open');
+    if (button) {
+      button.setAttribute('aria-expanded', 'false');
+      button.textContent = 'Menu';
+      button.focus();
+    }
   });
 
   document.querySelectorAll('.faq-q').forEach(function (btn) {

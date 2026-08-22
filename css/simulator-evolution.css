@@ -1434,7 +1434,7 @@ body.proposal-client-mode .proposal-final-navigation,
 body.proposal-client-mode .proposal-evolution-feedback,
 body.proposal-client-mode .proposal-share-panel,
 body.proposal-client-mode .proposal-command-bar__state,
-body.proposal-client-mode .proposal-command-bar__actions > :not(#btn-proposal-client-return) {
+body.proposal-client-mode .proposal-command-bar__actions > :not(#btn-proposal-client-return):not(#btn-proposal-interest-top) {
   display: none !important;
 }
 
@@ -1470,6 +1470,42 @@ body.proposal-client-readonly .proposal-command-bar {
 
 body.proposal-client-readonly .proposal-command-bar__state {
   display: grid !important;
+}
+
+.proposal-client-interest {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  max-width: 1100px;
+  margin: 24px auto 0;
+  padding: 26px 28px;
+  border: 1px solid #cbd8e4;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 16px 40px rgba(10, 42, 78, .09);
+}
+
+.proposal-client-interest[hidden],
+body:not(.proposal-client-mode) .proposal-client-interest {
+  display: none !important;
+}
+
+.proposal-client-interest > div { display: grid; gap: 6px; }
+.proposal-client-interest span { color: #a66f1f; font-size: .7rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.proposal-client-interest strong { color: #0b2c52; font-size: 1.12rem; }
+.proposal-client-interest p { max-width: 700px; margin: 0; color: #60758a; line-height: 1.55; }
+.proposal-client-interest small { min-height: 1.2em; color: #60758a; }
+.proposal-client-interest[data-proposal-interest-state="requested"],
+.proposal-client-interest[data-proposal-interest-state="in_progress"],
+.proposal-client-interest[data-proposal-interest-state="closed"] {
+  border-color: #a9d4c0;
+  background: #f5fbf8;
+}
+
+.proposal-client-interest[data-proposal-interest-state="error"] {
+  border-color: #e5b8b8;
+  background: #fff8f8;
 }
 
 /* Responsive */
@@ -1639,6 +1675,14 @@ body.proposal-client-readonly .proposal-command-bar__state {
   #step-10 .ps-section--nested {
     grid-template-columns: 1fr;
   }
+
+  .proposal-client-interest {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 22px;
+  }
+
+  .proposal-client-interest .btn { width: 100%; }
 }
 
 @media (max-width: 640px) {

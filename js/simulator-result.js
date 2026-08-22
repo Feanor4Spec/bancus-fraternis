@@ -21,6 +21,15 @@
     return Number.isFinite(number) ? number : fallback;
   }
 
+  function escapeHTML(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   function roundMoney(value) {
     return Math.round((safeNumber(value) + Number.EPSILON) * 100) / 100;
   }
@@ -315,22 +324,22 @@
     const rows = Array.isArray(cronograma) ? cronograma : [];
     return rows.map((month) => {
       const detailedCols = `
-        <td class="text-right col-detail-cell" style="display:${displayVal}">${money(month.saldoAnterior, helpers)}</td>
+        <td class="text-right col-detail-cell" style="display:${displayVal}">${escapeHTML(money(month.saldoAnterior, helpers))}</td>
         <td class="text-right col-detail-cell" style="display:${displayVal}">${month.indiceAplicado > 0 ? (month.indiceAplicado * 100).toFixed(2) + '%' : '-'}</td>
-        <td class="text-right col-detail-cell" style="display:${displayVal}">${money(month.saldoAjustado, helpers)}</td>
-        <td class="text-right col-detail-cell" style="display:${displayVal}">${month.valorLance > 0 ? money(month.valorLance, helpers) : '-'}</td>
-        <td class="text-right col-detail-cell" style="display:${displayVal}">${month.valorAdiantado > 0 ? money(month.valorAdiantado, helpers) : '-'}</td>
-        <td class="text-right col-detail-cell" style="display:${displayVal}">${month.multa > 0 ? money(month.multa, helpers) : '-'}</td>
-        <td class="text-right col-detail-cell" style="display:${displayVal}">${month.juros > 0 ? money(month.juros, helpers) : '-'}</td>
-        <td class="text-right col-detail-cell" style="display:${displayVal}">${money(month.saldoFinal, helpers)}</td>
-        <td class="text-center col-detail-cell" style="display:${displayVal}">${month.prazoRestante || 0}</td>
+        <td class="text-right col-detail-cell" style="display:${displayVal}">${escapeHTML(money(month.saldoAjustado, helpers))}</td>
+        <td class="text-right col-detail-cell" style="display:${displayVal}">${escapeHTML(month.valorLance > 0 ? money(month.valorLance, helpers) : '-')}</td>
+        <td class="text-right col-detail-cell" style="display:${displayVal}">${escapeHTML(month.valorAdiantado > 0 ? money(month.valorAdiantado, helpers) : '-')}</td>
+        <td class="text-right col-detail-cell" style="display:${displayVal}">${escapeHTML(month.multa > 0 ? money(month.multa, helpers) : '-')}</td>
+        <td class="text-right col-detail-cell" style="display:${displayVal}">${escapeHTML(month.juros > 0 ? money(month.juros, helpers) : '-')}</td>
+        <td class="text-right col-detail-cell" style="display:${displayVal}">${escapeHTML(money(month.saldoFinal, helpers))}</td>
+        <td class="text-center col-detail-cell" style="display:${displayVal}">${escapeHTML(month.prazoRestante || 0)}</td>
       `;
 
       return `<tr>
-        <td class="text-center">${month.mes || 0}</td>
-        <td class="text-right">${money(month.parcelaTotal, helpers)}</td>
+        <td class="text-center">${escapeHTML(month.mes || 0)}</td>
+        <td class="text-right">${escapeHTML(money(month.parcelaTotal, helpers))}</td>
         ${detailedCols}
-        <td class="text-center"><span class="badge ${badgeClass(month.evento)}">${month.evento || 'normal'}</span></td>
+        <td class="text-center"><span class="badge ${badgeClass(month.evento)}">${escapeHTML(month.evento || 'normal')}</span></td>
       </tr>`;
     }).join('');
   }

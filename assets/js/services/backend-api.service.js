@@ -292,9 +292,12 @@
     return request('/api/simulations', { method: 'POST', body: payload || {} });
   }
 
-  function getSimulation(id) {
+  function getSimulation(id, options = {}) {
     if (!id) return Promise.resolve({ ok: false, message: 'Simulacao ausente.' });
-    return request(`/api/simulations/${encodeURIComponent(id)}`);
+    const query = new URLSearchParams();
+    if (options.interestId) query.set('interestId', options.interestId);
+    const suffix = query.toString() ? `?${query.toString()}` : '';
+    return request(`/api/simulations/${encodeURIComponent(id)}${suffix}`);
   }
 
   function updateSimulation(id, payload) {
@@ -388,6 +391,28 @@
     });
   }
 
+  function requestPublicProposalInterest(token) {
+    if (!token) return Promise.resolve({ ok: false, message: 'Proposta indisponivel.' });
+    return request('/api/public/proposals/interest', {
+      method: 'POST',
+      body: { token }
+    });
+  }
+
+  function getProposalInterest(identity) {
+    return request('/api/proposal-interests/resolve', {
+      method: 'POST',
+      body: identity || {}
+    });
+  }
+
+  function requestProposalInterest(identity) {
+    return request('/api/proposal-interests', {
+      method: 'POST',
+      body: identity || {}
+    });
+  }
+
   window.BFBackendApi = {
     SESSION_KEY,
     PUBLIC_SESSION_KEY,
@@ -434,6 +459,9 @@
     transitionProposalSnapshot,
     publishProposalSnapshot,
     revokeProposalShare,
-    getPublicProposal
+    getPublicProposal,
+    requestPublicProposalInterest,
+    getProposalInterest,
+    requestProposalInterest
   };
 })();

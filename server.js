@@ -4,6 +4,7 @@ const fs = require('fs');
 const net = require('net');
 const path = require('path');
 const databaseContract = require('./js/backend/db');
+const proposalInterestContract = require('./js/backend/proposal-interest-service');
 
 const PORT = Number(process.env.PORT) || 8080;
 const DEFAULT_HOST = '127.0.0.1';
@@ -36,6 +37,10 @@ const AUTH_COOKIE_SECURE = process.env.BANCUS_AUTH_COOKIE_SECURE === undefined
   : ['1', 'true', 'on', 'yes'].includes(String(process.env.BANCUS_AUTH_COOKIE_SECURE).trim().toLowerCase());
 const AUTH_COOKIE_NAME = AUTH_COOKIE_SECURE ? '__Host-bf_session' : 'bf_session';
 const AUTH_DEMO_EMAIL_SUFFIX = '@bankfratern.local';
+const PROPOSAL_INTEREST_QUEUE_EMAIL = String(
+  process.env.BANCUS_PROPOSAL_INTEREST_QUEUE_EMAIL
+    || (AUTH_MODE === 'demo' ? 'consultor@bankfratern.local' : '')
+).trim().toLowerCase();
 const AUTH_TRUST_PROXY = ['1', 'true', 'on', 'yes'].includes(String(process.env.BANCUS_TRUST_PROXY || '').trim().toLowerCase());
 const AUTH_TRUSTED_PROXY_IPS = new Set(String(process.env.BANCUS_TRUSTED_PROXY_IPS || '')
   .split(',')
@@ -636,6 +641,455 @@ function statusFromResult(result, fallback = 200) {
   return Number(result && result.status) || fallback;
 }
 
+function proposalInterestObject(value) {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+}
+
+function proposalInterestText(value, maxLength = 240) {
+  return String(value == null ? '' : value).replace(/\s+/g, ' ').trim().slice(0, maxLength);
+}
+
+function proposalInterestSystemId(value, prefix) {
+  const id = proposalInterestText(value, 160);
+  return id && new RegExp(`^${prefix}-[A-Za-z0-9._:-]+$`, 'i').test(id) ? id : '';
+}
+
+function proposalInterestNumber(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : 0;
+}
+
+function proposalInterestDetailsFromPayload(payload = {}) {
+  const source = proposalInterestObject(payload);
+  const metrics = proposalInterestObject(source.metrics);
+  const summary = proposalInterestObject(source.summary);
+  return {
+    ownerName: source.cliente || source.ownerName || '',
+    amount: metrics.creditoTotal || summary.valorCredito || source.amount || 0,
+    productName: source.produto || summary.productName || '',
+    proposalVersion: source.version || source.acceptanceVersion || 0,
+    proposalStatus: source.status || 'reviewed',
+    validUntil: source.validUntil || '',
+    sourceHash: source.sourceHash || '',
+    proposalUpdatedAt: source.updatedAt || source.createdAt || ''
+  };
+}
+
+async function proposalInterestConsultantEmail(database, candidates = []) {
+  if (!database) return '';
+  const values = Array.from(new Set((Array.isArray(candidates) ? candidates : [candidates])
+    .map((value) => proposalInterestText(value, 254).toLowerCase())
+    .filter(Boolean)));
+  if (typeof database.getUserByEmail === 'function') {
+    for (const email of values) {
+      const user = await database.getUserByEmail(email);
+      if (user && user.role === 'consultor' && user.status === 'active') return proposalInterestText(user.email, 254).toLowerCase();
+    }
+  }
+  return '';
+}
+
+async function proposalInterestQueueEmail(database, candidates = []) {
+  return proposalInterestConsultantEmail(database, [
+    ...(Array.isArray(candidates) ? candidates : [candidates]),
+    PROPOSAL_INTEREST_QUEUE_EMAIL
+  ]);
+}
+
+function requireProposalInterestConsultant(email) {
+  if (email) return email;
+  const error = new Error('Nenhum consultor esta disponivel para receber este pedido.');
+  error.status = 503;
+  throw error;
+}
+
+function proposalInterestSimulationProposalId(record) {
+  const payload = proposalInterestObject(record && record.payload);
+  const acceptance = proposalInterestObject(payload.proposalAcceptance);
+  return proposalInterestSystemId(
+    payload.proposalId || acceptance.proposalId || (record && record.relatedId),
+    'PROP'
+  );
+}
+
+async function proposalInterestCanonicalSimulation(database, options = {}) {
+  if (!database || typeof database.listSimulations !== 'function') return null;
+  const ownerEmail = proposalInterestText(options.ownerEmail, 254).toLowerCase();
+  const proposalId = proposalInterestSystemId(options.proposalId, 'PROP');
+  const preferredId = proposalInterestSystemId(options.preferredId, 'SIM');
+  if (!ownerEmail || !proposalId) return null;
+  const rows = await database.listSimulations({ limit: 500, ownerEmail });
+  const linked = (Array.isArray(rows) ? rows : [])
+    .filter((row) => proposalInterestSimulationProposalId(row) === proposalId);
+  if (preferredId) return linked.find((row) => row && row.id === preferredId) || null;
+  return linked[0] || null;
+}
+
+function proposalInterestLegacyVersionId(proposal, proposalId) {
+  const payload = proposalInterestObject(proposal && proposal.payload);
+  const sourceId = proposalInterestText(payload.id || payload.acceptanceId || (proposal && proposal.id), 160);
+  const digest = crypto
+    .createHash('sha256')
+    .update(`${proposalId}|${sourceId}|${proposalInterestText(proposal && proposal.createdAt, 40)}`)
+    .digest('hex')
+    .slice(0, 16)
+    .toUpperCase();
+  return `PV-LEGACY-${digest}`;
+}
+
+async function proposalInterestFromShare(resolved, database) {
+  const snapshot = proposalInterestObject(resolved && resolved.snapshot);
+  const project = proposalInterestObject(snapshot.project);
+  const client = proposalInterestObject(project.client);
+  const result = proposalInterestObject(snapshot.result);
+  const proposalData = proposalInterestObject(result.proposalData);
+  const metrics = proposalInterestObject(proposalData.metrics);
+  const review = proposalInterestObject(snapshot.review);
+  const provenance = proposalInterestObject(snapshot.provenance);
+  const firstItem = Array.isArray(project.items) ? proposalInterestObject(project.items[0]) : {};
+  const owner = database && typeof database.getUserById === 'function'
+    ? await database.getUserById(resolved.ownerId)
+    : null;
+  const ownerEmail = requireProposalInterestConsultant(await proposalInterestQueueEmail(database, [
+    owner && owner.role === 'consultor' ? owner.email : ''
+  ]));
+  const proposalId = proposalInterestSystemId(snapshot.proposalId || proposalData.id, 'PROP');
+  const preferredSimulationId = proposalInterestSystemId(
+    provenance.simulationId || proposalData.simulationId,
+    'SIM'
+  );
+  const simulation = await proposalInterestCanonicalSimulation(database, {
+    ownerEmail: owner && owner.email,
+    proposalId,
+    preferredId: preferredSimulationId
+  });
+  if (!simulation) {
+    const error = new Error('A simulacao vinculada a esta proposta ainda nao esta disponivel para atendimento.');
+    error.status = 409;
+    throw error;
+  }
+
+  return {
+    identity: {
+      proposalId,
+      proposalVersionId: provenance.proposalVersionId || proposalData.proposalVersionId,
+      snapshotId: resolved.snapshotId || snapshot.id,
+      simulationId: simulation.id,
+      ownerEmail
+    },
+    details: {
+      ownerName: client.name || proposalData.cliente || '',
+      consultantEmail: ownerEmail,
+      amount: metrics.creditoTotal || proposalData.creditoTotal || 0,
+      productName: proposalData.produto || firstItem.segmento || firstItem.categoria || 'Consorcio',
+      proposalVersion: review.version || 0,
+      proposalStatus: review.status || 'reviewed',
+      validUntil: review.validUntil || '',
+      sourceHash: provenance.sourceHash || '',
+      proposalUpdatedAt: review.reviewedAt || snapshot.createdAt || ''
+    }
+  };
+}
+
+async function proposalInterestVersionContext(database, proposal, proposalId, proposalVersionId, ownerEmail) {
+  const proposalPayload = proposalInterestObject(proposal && proposal.payload);
+  const directVersionId = proposalInterestSystemId(
+    proposalPayload.id || proposalPayload.proposalVersionId,
+    'PV'
+  );
+  if (directVersionId === proposalVersionId) {
+    return {
+      found: true,
+      simulationId: proposalInterestSystemId(proposalPayload.simulationId, 'SIM')
+    };
+  }
+  if (!database || typeof database.listSnapshots !== 'function') return { found: false, simulationId: '' };
+  const snapshots = await database.listSnapshots({
+    limit: 200,
+    type: 'proposal-version',
+    ownerEmail
+  });
+  const version = (Array.isArray(snapshots) ? snapshots : []).find((snapshot) => {
+    const payload = proposalInterestObject(snapshot && snapshot.payload);
+    return proposalInterestSystemId(payload.id || payload.proposalVersionId, 'PV') === proposalVersionId
+      && proposalInterestSystemId(payload.proposalId, 'PROP') === proposalId;
+  });
+  const versionPayload = proposalInterestObject(version && version.payload);
+  return {
+    found: Boolean(version),
+    simulationId: proposalInterestSystemId(versionPayload.simulationId, 'SIM')
+  };
+}
+
+function proposalInterestLegacyAcceptance(proposal, proposalId) {
+  const payload = proposalInterestObject(proposal && proposal.payload);
+  const payloadProposalId = proposalInterestSystemId(payload.proposalId, 'PROP');
+  const source = proposalInterestText((proposal && proposal.source) || '', 80).toLowerCase();
+  const schema = proposalInterestText(payload.schema || '', 120).toLowerCase();
+  const status = proposalInterestText(payload.status || (proposal && proposal.status) || '', 40).toLowerCase();
+  return payloadProposalId === proposalId
+    && (source === 'proposal-acceptance' || schema === 'bank-fratern.proposal-acceptance.v1')
+    && ['reviewed', 'accepted', 'sent'].includes(status);
+}
+
+async function proposalInterestFromSession(body, context, database) {
+  const proposalId = proposalInterestSystemId(body && body.proposalId, 'PROP');
+  if (!proposalId) {
+    const error = new Error('Proposta invalida para solicitar contato.');
+    error.status = 422;
+    throw error;
+  }
+
+  const isAdmin = context.user.role === 'admin';
+  const scopedOwnerEmail = isAdmin ? '' : context.user.email;
+  const proposal = await database.findMaterializedJourneyRow('proposal', proposalId, {
+    ownerEmail: scopedOwnerEmail
+  });
+  if (!proposal) {
+    const error = new Error('Proposta indisponivel para este perfil.');
+    error.status = 404;
+    throw error;
+  }
+  const payload = proposalInterestObject(proposal && proposal.payload);
+  const payloadDetails = proposalInterestDetailsFromPayload(payload);
+  const requestedProposalVersionId = proposalInterestSystemId(
+    (body && body.proposalVersionId) || payload.id || payload.proposalVersionId,
+    'PV'
+  );
+  if (!requestedProposalVersionId) {
+    const error = new Error('Versao da proposta ausente.');
+    error.status = 422;
+    throw error;
+  }
+  const requestedSimulationId = proposalInterestSystemId(body && body.simulationId, 'SIM');
+  const proposalOwnerEmail = proposalInterestText(proposal.ownerEmail, 254).toLowerCase();
+  const versionContext = await proposalInterestVersionContext(
+    database,
+    proposal,
+    proposalId,
+    requestedProposalVersionId,
+    proposalOwnerEmail
+  );
+  const legacyAcceptance = !versionContext.found && proposalInterestLegacyAcceptance(proposal, proposalId);
+  if (!versionContext.found && !legacyAcceptance) {
+    const error = new Error('Versao da proposta indisponivel para este perfil.');
+    error.status = 404;
+    throw error;
+  }
+  if (versionContext.found && requestedSimulationId && versionContext.simulationId !== requestedSimulationId) {
+    const error = new Error('A simulacao informada nao corresponde a versao da proposta.');
+    error.status = 404;
+    throw error;
+  }
+  const proposalVersionId = legacyAcceptance
+    ? proposalInterestLegacyVersionId(proposal, proposalId)
+    : requestedProposalVersionId;
+  const simulation = await proposalInterestCanonicalSimulation(database, {
+    ownerEmail: proposalOwnerEmail,
+    proposalId,
+    preferredId: legacyAcceptance ? '' : versionContext.simulationId
+  });
+  if (!simulation) {
+    const error = new Error('A simulacao vinculada a esta proposta ainda nao esta disponivel para atendimento.');
+    error.status = 409;
+    throw error;
+  }
+  const interestKey = legacyAcceptance ? `PIK-LEGACY-${proposalId}` : '';
+  const ownerEmail = requireProposalInterestConsultant(await proposalInterestQueueEmail(database, [
+    context.user.role === 'consultor' ? context.user.email : '',
+    proposal && proposal.actorEmail
+  ]));
+
+  return {
+    identity: {
+      proposalId,
+      proposalVersionId,
+      snapshotId: '',
+      simulationId: simulation.id,
+      interestKey,
+      ownerEmail
+    },
+    details: {
+      ...payloadDetails,
+      consultantEmail: ownerEmail,
+      proposalVersion: payload.version || payloadDetails.proposalVersion || 0,
+      amount: proposalInterestNumber(payloadDetails.amount)
+    }
+  };
+}
+
+function proposalInterestService(database) {
+  return proposalInterestContract.createProposalInterestService({ database });
+}
+
+function isProposalInterestLead(record = {}) {
+  const source = proposalInterestObject(record);
+  const payload = proposalInterestObject(source.payload);
+  return /^LEAD-PI-[A-F0-9]+$/i.test(proposalInterestText(source.id, 160))
+    && proposalInterestText(source.source || payload.source, 80).toLowerCase() === proposalInterestContract.SOURCE
+    && proposalInterestText(payload.interestSchema, 120) === proposalInterestContract.SCHEMA;
+}
+
+function attemptsReservedProposalInterestLead(input = {}) {
+  const payload = proposalInterestObject(input.payload);
+  return /^LEAD-PI-/i.test(proposalInterestText(input.id, 160))
+    || proposalInterestText(input.source || payload.source, 80).toLowerCase() === proposalInterestContract.SOURCE
+    || proposalInterestText(payload.interestSchema, 120) === proposalInterestContract.SCHEMA;
+}
+
+function preserveProposalInterestLeadIdentity(input = {}, existing = {}) {
+  if (!isProposalInterestLead(existing)) return input;
+  const original = proposalInterestObject(existing.payload);
+  const requested = proposalInterestObject(input.payload);
+  return {
+    ...input,
+    id: existing.id,
+    ownerEmail: existing.ownerEmail,
+    source: existing.source,
+    relatedId: existing.relatedId,
+    payload: {
+      ...original,
+      ...requested,
+      id: original.id,
+      source: original.source,
+      sourceType: original.sourceType,
+      sourceProposalId: original.sourceProposalId,
+      sourceProposalVersionId: original.sourceProposalVersionId,
+      sourceSimulationId: original.sourceSimulationId,
+      ownerEmail: original.ownerEmail,
+      assignedTo: original.assignedTo,
+      nextAction: original.nextAction,
+      interestSchema: original.interestSchema,
+      interestRequestedAt: original.interestRequestedAt,
+      createdAt: original.createdAt
+    }
+  };
+}
+
+function proposalInterestLeadLinksSimulation(lead, simulation) {
+  if (!isProposalInterestLead(lead) || !simulation) return false;
+  const payload = proposalInterestObject(lead.payload);
+  const proposalId = proposalInterestSimulationProposalId(simulation);
+  return proposalInterestSystemId(payload.sourceSimulationId, 'SIM') === simulation.id
+    && proposalInterestSystemId(payload.sourceProposalId, 'PROP') === proposalId
+    && proposalInterestSystemId(lead.relatedId, 'PROP') === proposalId;
+}
+
+function proposalInterestLeadAllowsSimulation(lead, simulation, consultantEmail) {
+  if (!proposalInterestLeadLinksSimulation(lead, simulation)) return false;
+  const payload = proposalInterestObject(lead.payload);
+  const email = proposalInterestText(consultantEmail, 254).toLowerCase();
+  return proposalInterestText(lead.ownerEmail, 254).toLowerCase() === email
+    && proposalInterestText(payload.assignedTo, 254).toLowerCase() === email;
+}
+
+function proposalInterestEscapeResumeText(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+const PROPOSAL_INTEREST_RESUME_FIELDS = new Set([
+  'proposalId',
+  'origem',
+  'privacy',
+  'currentStep',
+  'totalCarta',
+  'totalGrupos',
+  'totalCotas',
+  'segmentos',
+  'params',
+  'carrinho',
+  'resultado',
+  'resumo',
+  'comparison',
+  'proposalSnapshotRef',
+  'proposalAcceptance'
+]);
+
+const PROPOSAL_INTEREST_RESUME_PRIVATE_KEYS = new Set([
+  'name', 'nome', 'cliente', 'client', 'clientname', 'clientid', 'nomecliente',
+  'consultor', 'consultant', 'reviewer', 'revisor', 'cpf', 'cnpj', 'rg',
+  'titular', 'responsavel', 'beneficiario', 'nomecompleto', 'razaosocial',
+  'nomefantasia', 'contactperson', 'matricula', 'passport', 'passaporte',
+  'document', 'documento', 'email', 'phone', 'telefone', 'celular', 'mobile',
+  'whatsapp', 'address', 'endereco', 'cep', 'birthdate', 'nascimento',
+  'password', 'senha', 'secret', 'token', 'cookie', 'sessiontoken',
+  'actorid', 'ownerid', 'userid', 'createdby', 'reviewedby', 'observacao',
+  'observacoes', 'observacaoitem', 'note', 'notes', 'comentario', 'comentarios',
+  'mensagem', 'mensagens', 'recado', 'narrativa', 'notice'
+]);
+
+const PROPOSAL_INTEREST_RESUME_PRIVATE_FRAGMENTS = Object.freeze([
+  'email', 'telefone', 'phone', 'celular', 'mobile', 'whatsapp', 'cpf', 'cnpj',
+  'passport', 'passaporte', 'documento', 'password', 'senha', 'secret', 'token',
+  'cookie', 'session', 'owner', 'actor', 'userid', 'createdby', 'reviewedby',
+  'address', 'endereco', 'birth', 'nascimento', 'matricula', 'contactperson',
+  'contato'
+]);
+
+function proposalInterestNormalizeResumeKey(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/gi, '')
+    .toLowerCase();
+}
+
+function proposalInterestResumePrivateKey(value) {
+  const normalized = proposalInterestNormalizeResumeKey(value);
+  if (!normalized || PROPOSAL_INTEREST_RESUME_PRIVATE_KEYS.has(normalized)) return true;
+  return PROPOSAL_INTEREST_RESUME_PRIVATE_FRAGMENTS.some((fragment) => normalized.includes(fragment));
+}
+
+function proposalInterestRedactResumeText(value) {
+  return String(value == null ? '' : value)
+    .slice(0, 4096)
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[dado removido]')
+    .replace(/\b\d{3}[.\s-]?\d{3}[.\s-]?\d{3}[-\s]?\d{2}\b/g, '[dado removido]')
+    .replace(/\b\d{2}[.\s-]?\d{3}[.\s-]?\d{3}[\/\s-]?\d{4}[-\s]?\d{2}\b/g, '[dado removido]')
+    .replace(/(^|[^A-Z0-9-])((?:\+?55\s*)?(?:\(?\d{2}\)?\s*)?9?\d{4}[-\s]?\d{4})\b/gi, '$1[dado removido]');
+}
+
+function proposalInterestSanitizeResumeValue(value, depth = 0) {
+  if (depth > 32) return null;
+  if (value == null || typeof value === 'boolean') return value;
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  if (typeof value === 'string') {
+    return proposalInterestEscapeResumeText(proposalInterestRedactResumeText(value));
+  }
+  if (Array.isArray(value)) {
+    return value.slice(0, 10000).map((item) => proposalInterestSanitizeResumeValue(item, depth + 1));
+  }
+  if (typeof value !== 'object') return null;
+
+  const sanitized = Object.create(null);
+  Object.entries(value).forEach(([key, item]) => {
+    if (key === '__proto__' || key === 'prototype' || key === 'constructor') return;
+    if (proposalInterestResumePrivateKey(key)) return;
+    sanitized[key] = proposalInterestSanitizeResumeValue(item, depth + 1);
+  });
+  return sanitized;
+}
+
+function proposalInterestSanitizeResumePayload(value) {
+  const source = proposalInterestObject(value);
+  const sanitized = Object.create(null);
+  PROPOSAL_INTEREST_RESUME_FIELDS.forEach((key) => {
+    if (!Object.prototype.hasOwnProperty.call(source, key)) return;
+    sanitized[key] = proposalInterestSanitizeResumeValue(source[key], 1);
+  });
+  sanitized.proposalId = proposalInterestSystemId(source.proposalId, 'PROP');
+  sanitized.privacy = {
+    localPIIStored: false,
+    notice: 'Dados identificadores nao sao compartilhados nesta revisao.'
+  };
+  return sanitized;
+}
+
 async function handleApiRequest(req, res) {
   const parsedUrl = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
   const pathname = parsedUrl.pathname;
@@ -683,20 +1137,69 @@ async function handleApiRequest(req, res) {
     return true;
   }
 
+  if (pathname === '/api/public/proposals/interest') {
+    if (req.method !== 'POST') {
+      sendPublicShareJson(res, 405, { ok: false, readOnly: true, message: 'Metodo nao permitido.' });
+      return true;
+    }
+    const [shareService, database] = await Promise.all([getProposalShareService(), getDatabase()]);
+    if (!shareService || !database) {
+      sendPublicShareJson(res, 503, { ok: false, readOnly: true, message: 'Atendimento indisponivel.' });
+      return true;
+    }
+    try {
+      const body = await readJsonObject(req);
+      const resolved = await shareService.resolveContext(body.token);
+      const interestInput = await proposalInterestFromShare(resolved, database);
+      const requested = await proposalInterestService(database).request(interestInput.identity, interestInput.details);
+      if (requested.created) {
+        await recordApiEvent('proposal-interest-requested', {
+          ownerEmail: interestInput.identity.ownerEmail,
+          entityType: 'lead',
+          entityId: requested.interest.id,
+          payload: { source: 'proposal-interest', status: requested.interest.status }
+        }, null, database);
+      }
+      sendPublicShareJson(res, requested.created ? 201 : 200, {
+        ok: true,
+        readOnly: true,
+        interest: requested.interest
+      });
+    } catch (error) {
+      sendPublicShareJson(res, Number(error.status) || 500, {
+        ok: false,
+        readOnly: true,
+        message: Number(error.status) >= 400 && Number(error.status) < 500
+          ? error.message
+          : 'Nao foi possivel registrar o pedido de contato.'
+      });
+    }
+    return true;
+  }
+
   if (pathname === '/api/public/proposals/resolve') {
     if (req.method !== 'POST') {
       sendPublicShareJson(res, 405, { ok: false, readOnly: true, message: 'Metodo nao permitido.' });
       return true;
     }
-    const shareService = await getProposalShareService();
+    const [shareService, database] = await Promise.all([getProposalShareService(), getDatabase()]);
     if (!shareService) {
       sendPublicShareJson(res, 503, { ok: false, readOnly: true, message: 'Compartilhamento indisponivel.' });
       return true;
     }
     try {
       const body = await readJsonObject(req);
-      const proposal = await shareService.resolve(body.token);
-      sendPublicShareJson(res, 200, { ok: true, ...proposal });
+      const resolved = await shareService.resolveContext(body.token);
+      let interest = null;
+      if (database) {
+        try {
+          const interestInput = await proposalInterestFromShare(resolved, database);
+          interest = await proposalInterestService(database).resolve(interestInput.identity);
+        } catch (interestError) {
+          // A proposta continua legivel mesmo quando o acompanhamento comercial nao esta disponivel.
+        }
+      }
+      sendPublicShareJson(res, 200, { ok: true, ...resolved.publicView, interest });
     } catch (error) {
       sendPublicShareJson(res, Number(error.status) || 500, {
         ok: false,
@@ -720,6 +1223,43 @@ async function handleApiRequest(req, res) {
     return true;
   }
   await getProposalShareService();
+
+  if (pathname === '/api/proposal-interests/resolve' || pathname === '/api/proposal-interests') {
+    if (req.method !== 'POST') {
+      methodNotAllowed(res);
+      return true;
+    }
+    const context = await requireAuth(req, res, ['cliente']);
+    if (!context) return true;
+    try {
+      const body = await readJsonObject(req);
+      const interestInput = await proposalInterestFromSession(body, context, database);
+      const service = proposalInterestService(database);
+      if (pathname.endsWith('/resolve')) {
+        const interest = await service.resolve(interestInput.identity);
+        sendJson(res, 200, { ok: true, interest });
+        return true;
+      }
+      const requested = await service.request(interestInput.identity, interestInput.details);
+      if (requested.created) {
+        await recordApiEvent('proposal-interest-requested', {
+          ownerEmail: interestInput.identity.ownerEmail,
+          entityType: 'lead',
+          entityId: requested.interest.id,
+          payload: { source: 'proposal-interest', status: requested.interest.status }
+        }, context, database);
+      }
+      sendJson(res, requested.created ? 201 : 200, { ok: true, interest: requested.interest });
+    } catch (error) {
+      sendJson(res, Number(error.status) || 500, {
+        ok: false,
+        message: Number(error.status) >= 400 && Number(error.status) < 500
+          ? error.message
+          : 'Nao foi possivel registrar o pedido de contato.'
+      });
+    }
+    return true;
+  }
 
   if (pathname === '/api/proposal-snapshots') {
     if (req.method !== 'POST') {
@@ -1111,7 +1651,30 @@ async function handleApiRequest(req, res) {
       const context = await requireAuth(req, res);
       if (!context) return true;
       const requestedBody = await readJsonBody(req);
-      if (context.user.role === 'cliente' && String(requestedBody.type || '').trim().toLowerCase() === 'handoff') {
+      const requestedSnapshotType = String(requestedBody.type || '').trim().toLowerCase();
+      const requestedSnapshotPayload = proposalInterestObject(requestedBody.payload || requestedBody.details);
+      const requestedSnapshotTargetId = proposalInterestText(
+        requestedBody.entityId
+          || requestedSnapshotPayload.id
+          || requestedSnapshotPayload.handoffId
+          || requestedBody.id,
+        160
+      );
+      const existingSnapshotTargetLead = requestedSnapshotType === 'handoff' && requestedSnapshotTargetId
+        ? await database.findMaterializedJourneyRow('lead', requestedSnapshotTargetId)
+        : null;
+      if (
+        requestedSnapshotType === 'handoff'
+        && (
+          attemptsReservedProposalInterestLead(requestedSnapshotPayload)
+          || /^LEAD-PI-/i.test(requestedSnapshotTargetId)
+          || isProposalInterestLead(existingSnapshotTargetLead)
+        )
+      ) {
+        sendJson(res, 403, { ok: false, message: 'Pedidos originados por propostas usam o fluxo comercial protegido.' });
+        return true;
+      }
+      if (context.user.role === 'cliente' && requestedSnapshotType === 'handoff') {
         sendJson(res, 403, { ok: false, message: 'Perfil sem permissao para operar o atendimento consultivo.' });
         return true;
       }
@@ -1232,6 +1795,10 @@ async function handleApiRequest(req, res) {
 
     if (req.method === 'POST') {
       const requestedBody = await readJsonBody(req);
+      if (route.kind === 'lead' && attemptsReservedProposalInterestLead(requestedBody)) {
+        sendJson(res, 403, { ok: false, message: 'Pedidos originados por propostas usam o fluxo comercial protegido.' });
+        return true;
+      }
       const body = context.user.role === 'cliente' && ['simulation', 'proposal'].includes(route.kind)
         ? sanitizeClientJourneyPayload(route.kind, requestedBody)
         : requestedBody;
@@ -1278,17 +1845,49 @@ async function handleApiRequest(req, res) {
     const id = decodeURIComponent(materializedItemMatch[2]);
     const isAdmin = context.user.role === 'admin';
     const existing = await localDatabase.findMaterializedJourneyRow(route.kind, id);
-    if (!existing || (!isAdmin && existing.ownerEmail !== context.user.email)) {
+    let assignedProposalInterestAccess = false;
+    let proposalInterestReviewRequested = false;
+    if (
+      existing
+      && route.kind === 'simulation'
+      && req.method === 'GET'
+      && ['consultor', 'admin'].includes(context.user.role)
+    ) {
+      proposalInterestReviewRequested = parsedUrl.searchParams.has('interestId');
+      if (proposalInterestReviewRequested) {
+        const interestId = proposalInterestSystemId(parsedUrl.searchParams.get('interestId'), 'LEAD');
+        const interest = interestId
+          ? await localDatabase.findMaterializedJourneyRow('lead', interestId, isAdmin ? {} : { ownerEmail: context.user.email })
+          : null;
+        assignedProposalInterestAccess = isAdmin
+          ? proposalInterestLeadLinksSimulation(interest, existing)
+          : proposalInterestLeadAllowsSimulation(interest, existing, context.user.email);
+      }
+    }
+    if (
+      !existing
+      || (proposalInterestReviewRequested && !assignedProposalInterestAccess)
+      || (!isAdmin && existing.ownerEmail !== context.user.email && !assignedProposalInterestAccess)
+    ) {
       sendJson(res, 404, { ok: false, message: 'Registro de jornada nao encontrado.' });
       return true;
     }
 
     if (req.method === 'GET') {
+      const crossOwnerRead = route.kind === 'simulation' && existing.ownerEmail !== context.user.email;
+      const protectedResumeRead = crossOwnerRead || assignedProposalInterestAccess;
+      const responseRecord = protectedResumeRead
+        ? {
+            id: proposalInterestSystemId(existing.id, 'SIM'),
+            payload: proposalInterestSanitizeResumePayload(existing.payload)
+          }
+        : existing;
       sendJson(res, 200, {
         ok: true,
-        scope: isAdmin ? 'all' : 'own',
+        scope: isAdmin ? 'all' : (assignedProposalInterestAccess ? 'assigned-proposal-interest' : 'own'),
+        readOnly: protectedResumeRead,
         kind: route.kind,
-        [route.singular]: existing
+        [route.singular]: responseRecord
       });
       return true;
     }
@@ -1299,9 +1898,16 @@ async function handleApiRequest(req, res) {
         return true;
       }
       const requestedBody = await readJsonBody(req);
-      const body = context.user.role === 'cliente' && ['simulation', 'proposal'].includes(route.kind)
-        ? sanitizeClientJourneyPayload(route.kind, requestedBody, existing)
+      if (route.kind === 'lead' && attemptsReservedProposalInterestLead(requestedBody) && !isProposalInterestLead(existing)) {
+        sendJson(res, 403, { ok: false, message: 'Pedidos originados por propostas usam o fluxo comercial protegido.' });
+        return true;
+      }
+      const scopedBody = route.kind === 'lead'
+        ? preserveProposalInterestLeadIdentity(requestedBody, existing)
         : requestedBody;
+      const body = context.user.role === 'cliente' && ['simulation', 'proposal'].includes(route.kind)
+        ? sanitizeClientJourneyPayload(route.kind, scopedBody, existing)
+        : scopedBody;
       const ownerEmail = isAdmin
         ? (body.ownerEmail || body.owner_email || existing.ownerEmail || context.user.email)
         : context.user.email;

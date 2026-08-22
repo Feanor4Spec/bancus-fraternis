@@ -373,11 +373,12 @@
     },
     {
       "id": "public-page.read-only",
-      "title": "A pagina publica oferece apenas leitura, impressao e PDF, sem controles de edicao.",
+      "title": "A pagina publica preserva a proposta somente para leitura e oferece PDF ou pedido de contato, sem controles de edicao.",
       "ok": true,
       "evidence": {
         "editControls": [],
-        "readOperation": true
+        "readOperation": true,
+        "contactRequest": true
       }
     },
     {

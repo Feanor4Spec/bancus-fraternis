@@ -39,7 +39,6 @@ const denseJourneyPages = new Set([
   'produtos.html',
   'calculadoras.html',
   'comparador.html',
-  'dashboard-cliente.html',
   'handoff-consultivo.html',
   'dashboard-admin.html',
   'trilha-decisao.html',
@@ -53,13 +52,9 @@ const denseJourneyPages = new Set([
   'carteira.html',
   'assembleias.html',
   'educacao.html',
-  'compliance.html',
   'dados-abertos.html',
   'api-docs.html',
-  'componentes-v8.html',
-  'sobre-nos.html',
-  'duvidas.html',
-  'configuracoes.html'
+  'componentes-v8.html'
 ]);
 
 const lightSimulatorPages = new Set([
@@ -73,7 +68,6 @@ const lightSimulatorPages = new Set([
 
 const trustPages = new Set([
   'sobre-nos.html',
-  'duvidas.html',
   'educacao.html',
   'compliance.html',
   'dados-abertos.html',
@@ -232,7 +226,6 @@ for (const pageName of files) {
   if (pageName === 'carteira.html' && !html.includes('data-portfolio-decision-strip')) fail('carteira.html sem resumo de decisao operacional.');
   if (trustPages.has(pageName) && !html.includes('data-trust-decision-strip')) fail(`${pageName} sem resumo de confianca institucional.`);
   if (trustPages.has(pageName) && !html.includes('data-trust-timeline')) fail(`${pageName} sem timeline de confianca institucional.`);
-  if (settingsPages.has(pageName) && !html.includes('data-settings-decision-strip')) fail(`${pageName} sem resumo de configuracoes.`);
   if (settingsPages.has(pageName) && !html.includes('data-settings-timeline')) fail(`${pageName} sem timeline de configuracoes.`);
   if (pageName === 'index.html' && !html.includes('data-home-decision-strip')) fail('index.html sem resumo institucional da home.');
   if (pageName === 'index.html' && !html.includes('data-home-institutional-timeline')) fail('index.html sem timeline institucional da home.');

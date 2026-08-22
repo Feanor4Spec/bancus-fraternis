@@ -1975,6 +1975,24 @@
   display: none !important;
 }
 
+.client-dashboard-page[data-client-post-proposal="true"] [data-dashboard-stats],
+.client-dashboard-page[data-client-post-proposal="true"] [data-client-financial-profile] {
+  display: none !important;
+}
+
+.client-dashboard-page[data-client-post-proposal="true"] .bf-platform-hero__content {
+  border-color: rgba(212, 175, 55, .42);
+  background: linear-gradient(150deg, #FFFFFF 0%, #FFF9E8 100%);
+}
+
+.client-dashboard-page[data-client-post-proposal="true"] [data-client-continuity-cockpit] {
+  margin-top: 0;
+}
+
+.bf-mobile-nav-toggle {
+  display: none;
+}
+
 .handoff-page [data-handoff-live-data-panel][hidden],
 .handoff-page [data-handoff-operational-strip][hidden],
 .handoff-page [data-handoff-metrics][hidden],
@@ -4344,8 +4362,8 @@ body[data-bf-page="login"] .bf-auth-form {
   .bf-platform-card,
   .bf-platform-hero__content,
   .bf-platform-panel {
-    width: calc(100vw - 96px);
-    max-width: calc(100vw - 96px);
+    width: 100%;
+    max-width: 100%;
     margin-top: 18px;
   }
 
@@ -4426,5 +4444,61 @@ body[data-bf-page="login"] .bf-auth-form {
     max-width: 100%;
     white-space: normal !important;
     overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 960px) {
+  .bf-platform-body .bf-header__inner {
+    position: relative;
+  }
+
+  .bf-mobile-nav-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 9px 15px;
+    border: 1px solid var(--bf-line);
+    border-radius: 999px;
+    color: var(--bf-navy-900);
+    background: var(--bf-white);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 850;
+    cursor: pointer;
+  }
+
+  .bf-platform-body .nav {
+    position: absolute;
+    z-index: 1200;
+    top: calc(100% + 8px);
+    right: 0;
+    left: 0;
+    display: none;
+    max-height: calc(100vh - 100px);
+    padding: 14px;
+    overflow-y: auto;
+    border: 1px solid var(--bf-line);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, .98);
+    box-shadow: var(--bf-shadow-md);
+  }
+
+  .bf-platform-body .nav.is-open {
+    display: grid;
+    gap: 8px;
+  }
+
+  .bf-platform-body .bf-nav [data-shell-primary-nav],
+  .bf-platform-body .bf-nav [data-auth-controls] {
+    display: grid;
+    gap: 6px;
+  }
+
+  .bf-platform-body .nav__link,
+  .bf-platform-body .bf-account-chip,
+  .bf-platform-body .bf-logout-button {
+    width: 100%;
+    justify-content: flex-start;
   }
 }

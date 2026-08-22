@@ -1322,7 +1322,7 @@ class PostgresqlBancusDatabase {
     return result.rows[0] ? h.publicMaterializedJourneyRow(result.rows[0], kind) : null;
   }
 
-  async upsertDirectJourneyRow(kind, input = {}) {
+  async upsertDirectJourneyRow(kind, input = {}, options = {}) {
     const h = this.helpers;
     const normalizedKind = h.normalizeText(kind);
     const table = this.materializedTableFor(normalizedKind);
@@ -1330,7 +1330,8 @@ class PostgresqlBancusDatabase {
     const defaults = this.materializedDefaultsFor(normalizedKind);
     const timestamp = h.nowIso();
     const id = h.normalizeText(input.id) || h.makeId(defaults.prefix);
-    const existing = await this.findMaterializedJourneyRow(normalizedKind, id);
+    const createOnly = options && options.createOnly === true;
+    const existing = createOnly ? null : await this.findMaterializedJourneyRow(normalizedKind, id);
     const requestedOwnerEmail = h.normalizeEmail(input.ownerEmail || input.owner_email);
     if (existing && h.normalizeEmail(existing.ownerEmail) !== requestedOwnerEmail) {
       return ownerConflictResponse();
@@ -1390,7 +1391,15 @@ class PostgresqlBancusDatabase {
     });
     try {
       return await this.withTransaction(async () => {
-        const entityWriteResult = await this.query(`
+        const createSql = `
+          INSERT INTO journey_entities (
+            id, kind, source_snapshot_id, snapshot_type, owner_email, actor_email,
+            title, status, stage, priority, source, related_id, amount, payload_json, created_at, updated_at
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+          ON CONFLICT(kind, id) DO NOTHING
+          RETURNING id
+        `;
+        const upsertSql = `
           INSERT INTO journey_entities (
             id, kind, source_snapshot_id, snapshot_type, owner_email, actor_email,
             title, status, stage, priority, source, related_id, amount, payload_json, created_at, updated_at
@@ -1410,12 +1419,28 @@ class PostgresqlBancusDatabase {
             updated_at = excluded.updated_at
           WHERE LOWER(BTRIM(journey_entities.owner_email)) = LOWER(BTRIM(excluded.owner_email))
           RETURNING id
-        `, [
+        `;
+        const entityWriteResult = await this.query(createOnly ? createSql : upsertSql, [
           entity.id, entity.kind, entity.sourceSnapshotId, entity.snapshotType, entity.ownerEmail,
           entity.actorEmail, entity.title, entity.status, entity.stage, entity.priority, entity.source,
           entity.relatedId, entity.amount, payloadJson, entity.createdAt, entity.updatedAt
         ]);
-        if (!writeChanged(entityWriteResult)) throw ownerConflictError();
+        if (!writeChanged(entityWriteResult)) {
+          if (createOnly) {
+            const record = await this.findMaterializedJourneyRow(normalizedKind, entity.id);
+            if (record && h.normalizeEmail(record.ownerEmail) === requestedOwnerEmail) {
+              const responseKey = this.materializedResponseKey(normalizedKind);
+              return {
+                ok: true,
+                created: false,
+                kind: normalizedKind,
+                record,
+                [responseKey]: record
+              };
+            }
+          }
+          throw ownerConflictError();
+        }
 
         const materializedRecord = await this.upsertMaterializedJourneyRow(publicRecord);
         if (!materializedRecord) throw ownerConflictError();
@@ -1424,7 +1449,7 @@ class PostgresqlBancusDatabase {
           materializedTable: table
         };
         const responseKey = this.materializedResponseKey(normalizedKind);
-        return { ok: true, created: !existing, kind: normalizedKind, record, [responseKey]: record };
+        return { ok: true, created: createOnly ? true : !existing, kind: normalizedKind, record, [responseKey]: record };
       });
     } catch (error) {
       if (error && error.code === ERROR_CODES.OWNER_CONFLICT) return ownerConflictResponse();

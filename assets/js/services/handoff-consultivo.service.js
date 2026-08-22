@@ -443,12 +443,23 @@
     return labels[type] || 'Abrir acao';
   }
 
+  function proposalInterestResumeId(item) {
+    if (!item || item.interestSchema !== 'bancus.proposal-interest.v1') return '';
+    const id = String(item.id || '').trim();
+    return /^LEAD-PI-[A-F0-9]+$/i.test(id) ? id : '';
+  }
+
   function actionHref(type, item) {
     if (type === 'proposal') {
       const params = ['from=handoff'];
       if (item && item.sourceProposalId) params.push(`proposalId=${encodeURIComponent(item.sourceProposalId)}`);
       if (item && item.sourceProposalVersionId) params.push(`proposalVersionId=${encodeURIComponent(item.sourceProposalVersionId)}`);
       if (item && item.sourceSimulationId) params.push(`simulationId=${encodeURIComponent(item.sourceSimulationId)}`);
+      const interestId = proposalInterestResumeId(item);
+      if (interestId) {
+        params.push('proposalView=review');
+        params.push(`interestId=${encodeURIComponent(interestId)}`);
+      }
       return `simulador.html?${params.join('&')}#proposta`;
     }
     const id = item && item.id ? `?handoffId=${encodeURIComponent(item.id)}` : '';

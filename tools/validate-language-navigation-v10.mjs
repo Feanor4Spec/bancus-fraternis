@@ -1187,9 +1187,10 @@ const finalPrintLabels = [...simulatorHtml.matchAll(/<button\b[^>]*\bid=["']btn-
   .filter(Boolean);
 addCheck(
   'proposal-public.single-honest-print-action',
-  'A proposta publica oferece uma unica acao, com rotulo honesto para impressao ou PDF.',
-  publicActionLabels.length === 1
+  'A proposta publica oferece PDF e pedido de contato com rotulos honestos, sem controles de edicao.',
+  publicActionLabels.length === 2
     && publicActionLabels[0] === 'Imprimir ou salvar em PDF'
+    && publicActionLabels[1] === 'Quero falar com um consultor'
     && !/public-proposal-pdf/.test(publicHtml + proposalPublicJs),
   { publicActionLabels, legacyPdfControlPresent: /public-proposal-pdf/.test(publicHtml + proposalPublicJs) }
 );
@@ -1358,9 +1359,10 @@ if (browser.available) {
   const publicContract = browser.proposalEvidence.publicContract || {};
   addCheck(
     'proposal-public.runtime-contract',
-    'A proposta publica valida renderizacao, conteudo do cliente e impressao em navegador.',
-    (publicContract.actionLabels || []).length === 1
+    'A proposta publica valida renderizacao, conteudo, impressao e pedido de contato em navegador.',
+    (publicContract.actionLabels || []).length === 2
       && publicContract.actionLabels[0] === 'Imprimir ou salvar em PDF'
+      && publicContract.actionLabels[1] === 'Quero falar com um consultor'
       && (publicContract.documentActions || []).length === 0
       && Number(publicContract.decisionBlocks || 0) === 1
       && Number(publicContract.acceptanceBlocks || 0) === 0

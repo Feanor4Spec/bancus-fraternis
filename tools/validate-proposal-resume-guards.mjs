@@ -27,6 +27,49 @@ check('guard.team-keeps-editing', guard.isClientReadOnly({
   proposalView: 'client',
   hash: '#proposta'
 }) === false, 'Consultor foi bloqueado pelo marcador de apresentação.');
+check('guard.consultant-interest-review-readonly', guard.isClientReadOnly({
+  role: 'consultor',
+  proposalId: 'PROP-2026-0100',
+  proposalVersionId: 'PV-2026-0100-2',
+  proposalView: 'review',
+  interestId: 'LEAD-PI-A1B2C3D4',
+  backendReadOnly: true,
+  hash: '#proposta'
+}) === true, 'Consultor não ficou em modo de leitura na retomada autorizada do atendimento.');
+check('guard.admin-interest-review-readonly', guard.isClientReadOnly({
+  role: 'admin',
+  proposalId: 'PROP-2026-0100',
+  proposalView: 'review',
+  interestId: 'LEAD-PI-ABC123',
+  backendReadOnly: true,
+  hash: '#proposta'
+}) === true, 'Administrador não ficou em modo de leitura na retomada autorizada do atendimento.');
+check('guard.stripped-review-marker-stays-readonly', guard.isClientReadOnly({
+  role: 'consultor',
+  proposalId: 'PROP-2026-0100',
+  proposalView: '',
+  interestId: 'LEAD-PI-A1B2C3D4',
+  backendReadOnly: true,
+  hash: '#proposta'
+}) === true, 'Remover proposalView desativou o modo de leitura autorizado pelo backend.');
+check('guard.unverified-interest-keeps-team-editing', guard.isClientReadOnly({
+  role: 'consultor',
+  proposalId: 'PROP-2026-0100',
+  proposalView: 'review',
+  interestId: 'LEAD-PI-INVALIDO',
+  backendReadOnly: false,
+  hash: '#proposta'
+}) === false, 'Identificador de atendimento inválido ativou acesso de revisão.');
+check('guard.consultant-review-never-recalculates', guard.shouldRecalculateProject({
+  clientReadOnly: guard.isClientReadOnly({
+    role: 'consultor',
+    proposalId: 'PROP-2026-0100',
+    proposalView: 'review',
+    interestId: 'LEAD-PI-A1B2C3D4',
+    backendReadOnly: true
+  }),
+  reconciled: false
+}) === false, 'Retomada do consultor tentou recalcular o snapshot congelado.');
 check('guard.anonymous-fails-closed', guard.isClientReadOnly({
   role: '',
   proposalView: 'client',
@@ -340,6 +383,8 @@ check('storage.clear-includes-history', StorageService.clearAll() === true
 { simulations: memory.get('consorciopro_simulations'), snapshots: memory.get(proposalSnapshotStorageKey) });
 
 const appSource = await fs.readFile(path.join(root, 'js/app.js'), 'utf8');
+const proposalExperienceSource = await fs.readFile(path.join(root, 'js/proposal-experience.js'), 'utf8');
+const backendHydrationGate = appSource.match(/async function hydrateRequestedSimulationFromBackend\(\) \{([\s\S]*?)\r?\n  \}\r?\n\r?\n  function resumeRequiresBackendAuthorization/);
 const documentGate = appSource.match(/function proposalDocumentIssues\(\) \{([\s\S]*?)\r?\n  \}\r?\n\r?\n  function proposalAcceptanceHasCurrentValidity/);
 const releaseGate = appSource.match(/function proposalReleaseIssues\(\) \{([\s\S]*?)\r?\n  \}\r?\n\r?\n  async function exportarPDF/);
 const exportGate = appSource.match(/async function exportarPDF\(\) \{([\s\S]*?)\r?\n  \}\r?\n\r?\n  function imprimirProposta/);
@@ -362,10 +407,59 @@ check('pdf.uses-document-gate', !!exportGate
   && exportGate[1].includes('proposalDocumentIssues()')
   && !exportGate[1].includes('proposalReleaseIssues()'), exportGate?.[1]);
 const ensureGate = appSource.match(/function ensureCurrentProjectResult\(\) \{([\s\S]*?)\r?\n  \}\r?\n\r?\n  function calcular/);
+const calculationGate = appSource.match(/function calcular\(\) \{([\s\S]*?)\r?\n  \}\r?\n\r?\n  \/\/ .*Renderiza/);
 check('readonly.ensure-guard-before-calculation', !!ensureGate
   && ensureGate[1].includes('clientProposalReadOnly')
   && ensureGate[1].includes('shouldRecalculateProject')
   && ensureGate[1].indexOf('shouldRecalculateProject') < ensureGate[1].indexOf('calcular()'), ensureGate?.[1]);
+check('readonly.direct-calculation-blocked', !!calculationGate
+  && calculationGate[1].includes('if (clientProposalReadOnly)')
+  && calculationGate[1].includes("document.body.dataset.proposalSnapshotIntegrity = 'preserved'")
+  && calculationGate[1].indexOf('if (clientProposalReadOnly)') < calculationGate[1].indexOf('const params = getParams()'),
+  calculationGate?.[1]);
+check('readonly.interest-context-forwarded', appSource.includes("interestId: search.get('interestId') || ''"),
+  'O identificador do atendimento não chega ao guard de retomada.');
+check('readonly.backend-authorization-context-forwarded', appSource.includes('backendReadOnly: backendReadOnlyResumeSimulationIds.has(')
+  && appSource.includes('if (response.readOnly === true)'),
+  'O modo de leitura ainda depende apenas de parâmetros controlados pela URL.');
+check('readonly.backend-signal-forces-proposal-step', appSource.includes('const backendReadOnly = backendReadOnlyResumeSimulationIds.has(id);')
+  && appSource.includes('const proposalTarget = backendReadOnly')
+  && appSource.includes('targetStep: proposalTarget ? 10 : null'),
+  'Retomada read-only autorizada ainda pode cair em uma etapa editável.');
+check('readonly.interest-always-reauthorizes', !!backendHydrationGate
+  && backendHydrationGate[1].includes('if (!requiresBackendAuthorization && Storage.loadSimulation(simulationId)) return true;')
+  && backendHydrationGate[1].includes('backendResumeSimulationIds.delete(simulationId);')
+  && backendHydrationGate[1].includes('backendResumeSimulations.delete(simulationId);')
+  && backendHydrationGate[1].includes('api.getSimulation(simulationId, { interestId })')
+  && backendHydrationGate[1].includes('Storage.deleteSimulation(simulationId)')
+  && backendHydrationGate[1].includes('Storage.deleteProposalVersionSnapshot(simulationId)')
+  && backendHydrationGate[1].includes('backendResumeSimulations.set(simulationId, { simulation: hydrated, actorEmail })')
+  && !backendHydrationGate[1].includes('Storage.saveProposalVersionSnapshot('),
+  'Retomada por atendimento ainda pode confiar apenas no cache local.');
+check('readonly.team-links-always-reauthorize', appSource.includes('function resumeRequiresBackendAuthorization(params)')
+  && appSource.includes("role === 'consultor' || role === 'admin'")
+  && appSource.includes("params?.get?.('simulationId')")
+  && appSource.includes("params?.get?.('proposalVersionId')")
+  && appSource.includes("|| params.get('simulationId')")
+  && appSource.includes('resumeRequiresBackendAuthorization(params) && !hydrated'),
+  'Equipe interna ainda pode abrir proposta cacheada sem autorização atual do backend.');
+check('readonly.backend-cache-account-scoped', appSource.includes('function authorizedBackendResume(simulationId)')
+  && appSource.includes('entry.actorEmail === actorEmail ? entry.simulation : null')
+  && appSource.includes('authorizedBackendResume(id) || Storage.loadSimulation(id)'),
+  'Snapshot autorizado em memória não está vinculado ao usuário atual.');
+check('readonly.interest-failure-stops-resume', appSource.includes('resumeRequiresBackendAuthorization(params) && !hydrated')
+  && !/hydrateRequestedSimulationFromBackend\(\)[\s\S]{0,160}finally\(\(\) => carregarSimulacaoDaUrl\(\)\)/.test(appSource),
+  'Falha de autorização ainda prossegue para a simulação local.');
+check('readonly.experience-interest-context-forwarded', proposalExperienceSource.includes("interestId: params.get('interestId') || ''"),
+  'A apresentação da proposta não recebe o contexto do atendimento.');
+check('surface.interest-cta-client-only', proposalExperienceSource.includes("document.body.classList.contains('proposal-client-mode') && currentUserIsClient()")
+  && proposalExperienceSource.includes("if (!document.body.classList.contains('proposal-client-mode') || !currentUserIsClient()) return;")
+  && proposalExperienceSource.includes('if (!currentUserIsClient()) return;'),
+  'O pedido de contato ainda pode aparecer ou ser acionado pela equipe interna.');
+check('surface.readonly-return-by-role', proposalExperienceSource.includes("role === 'consultor' || role === 'admin'")
+  && proposalExperienceSource.includes("? 'handoff-consultivo.html'")
+  && proposalExperienceSource.includes(": 'dashboard-cliente.html'"),
+  'O retorno da proposta não respeita o painel de cada papel.');
 check('version.app-uses-immutable-snapshot', appSource.includes('createProposalVersionSimulationId')
   && appSource.includes('Storage.saveProposalVersionSnapshot')
   && appSource.includes('disposableSnapshotId'), 'App nao isola o snapshot antes de registrar a versao.');

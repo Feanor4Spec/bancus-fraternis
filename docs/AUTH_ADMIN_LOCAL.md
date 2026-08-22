@@ -61,6 +61,8 @@ Senhas são derivadas com `scrypt`, salt individual, marcador de política versi
 - `cliente`: acessa simulações, propostas e demais registros próprios, mas não opera leads nem publica/revoga compartilhamentos consultivos;
 - tentativas cross-owner são recusadas pelo servidor, independentemente do estado visual do navegador.
 
+Pedidos de contato originados em propostas usam o autor consultor validado ou a fila definida no servidor por `BANCUS_PROPOSAL_INTEREST_QUEUE_EMAIL`. Campos de consultor enviados pelo navegador não controlam o destinatário. A retomada da simulação em outro dispositivo é liberada somente ao consultor responsável pelo pedido e em modo de leitura.
+
 Novas diferenças de produto entre consultor e cliente devem ampliar esta matriz sem reduzir o isolamento de proprietário já aplicado.
 
 ## Bootstrap do primeiro administrador

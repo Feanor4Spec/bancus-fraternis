@@ -1523,7 +1523,7 @@ class BancusDatabase {
     return row ? publicMaterializedJourneyRow(row, kind) : null;
   }
 
-  upsertDirectJourneyRow(kind, input = {}) {
+  upsertDirectJourneyRow(kind, input = {}, options = {}) {
     const normalizedKind = normalizeText(kind);
     const table = this.materializedTableFor(normalizedKind);
     if (!table) {
@@ -1533,7 +1533,8 @@ class BancusDatabase {
     const defaults = this.materializedDefaultsFor(normalizedKind);
     const timestamp = nowIso();
     const id = normalizeText(input.id) || makeId(defaults.prefix);
-    const existing = this.findMaterializedJourneyRow(normalizedKind, id);
+    const createOnly = options && options.createOnly === true;
+    const existing = createOnly ? null : this.findMaterializedJourneyRow(normalizedKind, id);
     const requestedOwnerEmail = normalizeEmail(input.ownerEmail || input.owner_email);
     if (existing && normalizeEmail(existing.ownerEmail) !== requestedOwnerEmail) {
       return ownerConflictResponse();
@@ -1609,7 +1610,15 @@ class BancusDatabase {
     });
     this.db.exec('SAVEPOINT bancus_direct_owner_guard');
     try {
-      const entityWriteResult = this.db.prepare(`
+      const createSql = `
+        INSERT INTO journey_entities (
+          id, kind, source_snapshot_id, snapshot_type, owner_email, actor_email,
+          title, status, stage, priority, source, related_id, amount, payload_json, created_at, updated_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(kind, id) DO NOTHING
+      `;
+      const upsertSql = `
         INSERT INTO journey_entities (
           id, kind, source_snapshot_id, snapshot_type, owner_email, actor_email,
           title, status, stage, priority, source, related_id, amount, payload_json, created_at, updated_at
@@ -1629,7 +1638,8 @@ class BancusDatabase {
           payload_json = excluded.payload_json,
           updated_at = excluded.updated_at
         WHERE LOWER(TRIM(journey_entities.owner_email)) = LOWER(TRIM(excluded.owner_email))
-      `).run(
+      `;
+      const entityWriteResult = this.db.prepare(createOnly ? createSql : upsertSql).run(
         entity.id,
         entity.kind,
         entity.sourceSnapshotId,
@@ -1648,6 +1658,20 @@ class BancusDatabase {
         entity.updatedAt
       );
       if (Number(entityWriteResult && entityWriteResult.changes || 0) === 0) {
+        if (createOnly) {
+          const record = this.findMaterializedJourneyRow(normalizedKind, entity.id);
+          if (record && normalizeEmail(record.ownerEmail) === requestedOwnerEmail) {
+            const responseKey = this.materializedResponseKey(normalizedKind);
+            this.db.exec('RELEASE bancus_direct_owner_guard');
+            return {
+              ok: true,
+              created: false,
+              kind: normalizedKind,
+              record,
+              [responseKey]: record
+            };
+          }
+        }
         this.db.exec('ROLLBACK TO bancus_direct_owner_guard');
         this.db.exec('RELEASE bancus_direct_owner_guard');
         return ownerConflictResponse();
@@ -1667,7 +1691,7 @@ class BancusDatabase {
       this.db.exec('RELEASE bancus_direct_owner_guard');
       return {
         ok: true,
-        created: !existing,
+        created: createOnly ? true : !existing,
         kind: normalizedKind,
         record,
         [responseKey]: record

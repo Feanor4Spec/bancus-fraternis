@@ -261,7 +261,7 @@ function createProposalShareService(options = {}) {
     });
   }
 
-  function resolve(token) {
+  function resolveContext(token) {
     const opaqueToken = assertOpaqueToken(token);
     const record = repository.findShareByTokenHash(tokenHash(opaqueToken));
     return mapMaybe(record, (resolvedRecord) => {
@@ -289,15 +289,27 @@ function createProposalShareService(options = {}) {
           throw new ProposalShareError('published-snapshot-not-found', 'Proposta compartilhada indisponivel.', 410);
         }
 
-        return Object.freeze({
+        const publicView = Object.freeze({
           schema: SCHEMA,
           readOnly: true,
           robots: 'noindex, nofollow, noarchive',
           expiresAt: resolvedRecord.expiresAt,
           snapshot: ProposalSnapshot.toPublicSnapshot(snapshotRecord.snapshot)
         });
+        return Object.freeze({
+          shareId: resolvedRecord.id,
+          ownerId: resolvedRecord.ownerId,
+          snapshotId: resolvedRecord.snapshotId,
+          expiresAt: resolvedRecord.expiresAt,
+          snapshot: snapshotRecord.snapshot,
+          publicView
+        });
       });
     });
+  }
+
+  function resolve(token) {
+    return mapMaybe(resolveContext(token), (context) => context.publicView);
   }
 
   function revoke(shareId, context = {}) {
@@ -327,6 +339,7 @@ function createProposalShareService(options = {}) {
     transitionSnapshot,
     publish,
     resolve,
+    resolveContext,
     revoke
   });
 }

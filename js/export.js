@@ -31,6 +31,15 @@ const ExportManager = (() => {
       .slice(0, 80) || 'proposta_estruturada';
   }
 
+  function escapeHTML(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   function getProposalFilename(source) {
     const id = source?.querySelector?.('.ps-eyebrow')?.textContent || 'proposta_estruturada';
     const date = new Date().toISOString().split('T')[0];
@@ -310,12 +319,12 @@ const ExportManager = (() => {
     for (let i = 0; i < mesesExibir; i++) {
       const m = r.cronograma[i];
       tabelaRows += `<tr>
-        <td style="text-align:center;padding:6px 8px;border-bottom:1px solid #e5e7eb;">${m.mes}</td>
-        <td style="text-align:right;padding:6px 8px;border-bottom:1px solid #e5e7eb;">${formatMoney(m.parcelaTotal)}</td>
-        <td style="text-align:right;padding:6px 8px;border-bottom:1px solid #e5e7eb;">${formatMoney(m.saldoFinal)}</td>
+        <td style="text-align:center;padding:6px 8px;border-bottom:1px solid #e5e7eb;">${escapeHTML(m.mes)}</td>
+        <td style="text-align:right;padding:6px 8px;border-bottom:1px solid #e5e7eb;">${escapeHTML(formatMoney(m.parcelaTotal))}</td>
+        <td style="text-align:right;padding:6px 8px;border-bottom:1px solid #e5e7eb;">${escapeHTML(formatMoney(m.saldoFinal))}</td>
         <td style="text-align:center;padding:6px 8px;border-bottom:1px solid #e5e7eb;">
           <span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;
-            background:${getEventColor(m.evento).bg};color:${getEventColor(m.evento).text};">${m.evento}</span>
+            background:${getEventColor(m.evento).bg};color:${getEventColor(m.evento).text};">${escapeHTML(m.evento)}</span>
         </td>
       </tr>`;
     }
@@ -406,7 +415,7 @@ const ExportManager = (() => {
             <h3 style="font-size:16px;font-weight:700;color:#1a4480;border-bottom:2px solid #dbeafe;padding-bottom:8px;margin-bottom:12px;">
               Observações
             </h3>
-            <p style="font-size:13px;color:#4b5563;line-height:1.6;">${params.observacoes}</p>
+            <p style="font-size:13px;color:#4b5563;line-height:1.6;">${escapeHTML(params.observacoes)}</p>
           </div>` : ''}
 
           <!-- Disclaimer -->
@@ -424,12 +433,12 @@ const ExportManager = (() => {
         <div style="background:#f3f4f6;padding:24px 32px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:flex-end;border-radius:0 0 12px 12px;">
           <div style="text-align:center;">
             <div style="width:180px;height:1px;background:#9ca3af;margin-bottom:8px;"></div>
-            <div style="font-size:13px;font-weight:600;color:#374151;">${params.nomeCliente || 'Cliente'}</div>
+            <div style="font-size:13px;font-weight:600;color:#374151;">${escapeHTML(params.nomeCliente || 'Cliente')}</div>
             <div style="font-size:11px;color:#6b7280;">Cliente</div>
           </div>
           <div style="text-align:center;">
             <div style="width:180px;height:1px;background:#9ca3af;margin-bottom:8px;"></div>
-            <div style="font-size:13px;font-weight:600;color:#374151;">${params.consultor || 'Consultor'}</div>
+            <div style="font-size:13px;font-weight:600;color:#374151;">${escapeHTML(params.consultor || 'Consultor')}</div>
             <div style="font-size:11px;color:#6b7280;">Consultor Responsável</div>
           </div>
         </div>
@@ -440,16 +449,17 @@ const ExportManager = (() => {
   /** Helper: item de informação */
   function infoItem(label, value) {
     return `<div style="padding:8px 12px;background:#f9fafb;border-radius:6px;">
-      <div style="font-size:10px;font-weight:600;text-transform:uppercase;color:#6b7280;letter-spacing:0.5px;">${label}</div>
-      <div style="font-size:14px;font-weight:600;color:#1f2937;margin-top:2px;">${value}</div>
+      <div style="font-size:10px;font-weight:600;text-transform:uppercase;color:#6b7280;letter-spacing:0.5px;">${escapeHTML(label)}</div>
+      <div style="font-size:14px;font-weight:600;color:#1f2937;margin-top:2px;">${escapeHTML(value)}</div>
     </div>`;
   }
 
   /** Helper: KPI item */
   function kpiItem(label, value, color) {
-    return `<div style="padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid ${color};">
-      <div style="font-size:10px;font-weight:600;text-transform:uppercase;color:#6b7280;letter-spacing:0.5px;">${label}</div>
-      <div style="font-size:16px;font-weight:700;color:#1f2937;margin-top:4px;">${value}</div>
+    const safeColor = /^#[0-9a-f]{3,8}$/i.test(String(color || '')) ? color : '#374151';
+    return `<div style="padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid ${safeColor};">
+      <div style="font-size:10px;font-weight:600;text-transform:uppercase;color:#6b7280;letter-spacing:0.5px;">${escapeHTML(label)}</div>
+      <div style="font-size:16px;font-weight:700;color:#1f2937;margin-top:4px;">${escapeHTML(value)}</div>
     </div>`;
   }
 
@@ -485,7 +495,7 @@ const ExportManager = (() => {
       <html lang="pt-BR">
       <head>
         <meta charset="UTF-8">
-        <title>Proposta - ${params.nomeCliente || 'ConsórcioPro'}</title>
+        <title>Proposta - ${escapeHTML(params.nomeCliente || 'Bancus Fraternis')}</title>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
         <style>
           body { margin: 0; padding: 20px; background: #f0f4f8; font-family: 'Inter', sans-serif; }

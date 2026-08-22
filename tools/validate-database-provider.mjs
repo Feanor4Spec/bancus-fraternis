@@ -771,6 +771,9 @@ class MemoryPostgresqlPool extends SchemaPool {
     if (plain.startsWith('insert into journey_entities')) {
       const row = journeyRowFromParams(params);
       const existing = this.journeyEntities.get(`${row.kind}:${row.id}`);
+      if (existing && plain.includes('on conflict(kind, id) do nothing')) {
+        return { rows: [], rowCount: 0 };
+      }
       if (existing && String(existing.owner_email).trim().toLowerCase() !== String(row.owner_email).trim().toLowerCase()) {
         return { rows: [], rowCount: 0 };
       }
@@ -1246,6 +1249,9 @@ const EXPECTED_BACKEND_API_KEYS = [
   'transitionProposalSnapshot',
   'publishProposalSnapshot',
   'revokeProposalShare',
+  'requestPublicProposalInterest',
+  'getProposalInterest',
+  'requestProposalInterest',
   'getPublicProposal'
 ].sort();
 
@@ -1288,6 +1294,9 @@ const EXPECTED_API_CALLS = [
   ['POST', '/api/proposal-snapshots/snapshot-1/transitions'],
   ['POST', '/api/proposal-snapshots/snapshot-1/publish'],
   ['POST', '/api/proposal-shares/share-1/revoke'],
+  ['POST', '/api/public/proposals/interest'],
+  ['POST', '/api/proposal-interests/resolve'],
+  ['POST', '/api/proposal-interests'],
   ['POST', '/api/public/proposals/resolve']
 ];
 
@@ -1329,6 +1338,9 @@ async function exerciseBackendApi(api) {
   await api.transitionProposalSnapshot('snapshot-1', 'reviewed');
   await api.publishProposalSnapshot('snapshot-1', 30);
   await api.revokeProposalShare('share-1');
+  await api.requestPublicProposalInterest('public-token');
+  await api.getProposalInterest({ proposalId: 'PROP-GATE', proposalVersionId: 'PV-GATE-1' });
+  await api.requestProposalInterest({ proposalId: 'PROP-GATE', proposalVersionId: 'PV-GATE-1' });
   await api.getPublicProposal('public-token');
 }
 
@@ -1798,8 +1810,10 @@ const REQUIRED_DATABASE_METHODS = [
 function serverApiSurfaceEvidence() {
   const source = fs.readFileSync(SERVER_PATH, 'utf8');
   const groups = [
-    { name: '/api/health', start: "if (pathname === '/api/health'", end: "if (pathname === '/api/public/proposals/resolve')", methods: ['GET'] },
+    { name: '/api/health', start: "if (pathname === '/api/health'", end: "if (pathname === '/api/public/proposals/interest')", methods: ['GET'] },
+    { name: '/api/public/proposals/interest', start: "if (pathname === '/api/public/proposals/interest')", end: "if (pathname === '/api/public/proposals/resolve')", methods: ['POST'] },
     { name: '/api/public/proposals/resolve', start: "if (pathname === '/api/public/proposals/resolve')", end: 'const database = await getDatabase()', methods: ['POST'] },
+    { name: '/api/proposal-interests[/resolve]', start: "if (pathname === '/api/proposal-interests/resolve'", end: "if (pathname === '/api/proposal-snapshots')", methods: ['POST'] },
     { name: '/api/proposal-snapshots', start: "if (pathname === '/api/proposal-snapshots')", end: 'const proposalSnapshotMatch', methods: ['POST'] },
     { name: '/api/proposal-snapshots/:id', start: 'const proposalSnapshotMatch', end: 'const proposalTransitionMatch', methods: ['GET'] },
     { name: '/api/proposal-snapshots/:id/transitions', start: 'const proposalTransitionMatch', end: 'const proposalPublishMatch', methods: ['POST'] },
@@ -2041,6 +2055,55 @@ async function run() {
       assert(event && event.id === 'EVT-PROVIDER-EXPLICIT', 'SQLite explicito nao persistiu evento.');
       assert(status && status.ok && status.provider === 'sqlite', 'SQLite explicito nao retornou status valido.');
       return { provider: database.provider, quickCheck: status.sqlite && status.sqlite.quickCheck, persistedEvent: event.id };
+    } finally {
+      await Promise.resolve(database.close());
+    }
+  });
+
+  await check('sqlite.direct-create-only', 'SQLite preserva a primeira gravacao no contrato createOnly', async () => {
+    const dbPath = path.join(temporaryDirectory, 'sqlite-direct-create-only.sqlite');
+    const database = await Promise.resolve(dbModule.createDatabase({ provider: 'sqlite', dbPath }));
+    try {
+      const originalTimestamp = '2026-08-22T15:30:00.000Z';
+      const original = await Promise.resolve(database.upsertDirectJourneyRow('lead', {
+        id: 'LEAD-SQLITE-CREATE-ONLY',
+        ownerEmail: 'sqlite-create-only@example.com',
+        title: 'Registro original',
+        amount: 85000,
+        payload: {
+          interestRequestedAt: originalTimestamp,
+          timeline: [{ id: 'TL-SQLITE-CREATE-ONLY', createdAt: originalTimestamp }]
+        },
+        createdAt: originalTimestamp,
+        updatedAt: originalTimestamp
+      }, { createOnly: true }));
+      const repeated = await Promise.resolve(database.upsertDirectJourneyRow('lead', {
+        id: 'LEAD-SQLITE-CREATE-ONLY',
+        ownerEmail: 'sqlite-create-only@example.com',
+        title: 'Tentativa de sobrescrita',
+        amount: 999999,
+        payload: {
+          interestRequestedAt: '2026-08-22T15:31:00.000Z',
+          timeline: [{ id: 'TL-DUPLICATE' }, { id: 'TL-DUPLICATE-2' }]
+        }
+      }, { createOnly: true }));
+      const takeover = await Promise.resolve(database.upsertDirectJourneyRow('lead', {
+        id: 'LEAD-SQLITE-CREATE-ONLY',
+        ownerEmail: 'sqlite-create-only-takeover@example.com',
+        payload: { unsafe: true }
+      }, { createOnly: true }));
+      assert(original.ok && original.created === true, 'SQLite nao marcou a criacao atomica original.');
+      assert(repeated.ok && repeated.created === false, 'SQLite nao reconheceu a repeticao createOnly.');
+      assert(repeated.lead.title === 'Registro original' && repeated.lead.amount === 85000, 'SQLite sobrescreveu campos do registro original.');
+      assert(repeated.lead.payload.interestRequestedAt === originalTimestamp, 'SQLite alterou requestedAt original.');
+      assert(repeated.lead.payload.timeline.length === 1, 'SQLite duplicou o evento original.');
+      assert(takeover.ok === false && takeover.status === 409, 'SQLite createOnly nao bloqueou takeover de owner.');
+      return {
+        createdFlags: [original.created, repeated.created],
+        requestedAt: repeated.lead.payload.interestRequestedAt,
+        timelineEvents: repeated.lead.payload.timeline.length,
+        takeover: 'blocked-409'
+      };
     } finally {
       await Promise.resolve(database.close());
     }
@@ -3303,6 +3366,57 @@ async function run() {
     const missing = REQUIRED_DATABASE_METHODS.filter((name) => typeof mockDatabase[name] !== 'function');
     assert(!missing.length, `Provider PostgreSQL nao implementa metodos da API: ${missing.join(', ')}.`);
     return { requiredMethods: REQUIRED_DATABASE_METHODS, missing: [] };
+  });
+
+  await check('postgresql.mock.direct-create-only', 'PostgreSQL preserva a primeira gravacao no contrato createOnly', async () => {
+    assert(mockDatabase, 'Fixture PostgreSQL nao esta disponivel.');
+    const originalTimestamp = '2026-08-22T15:30:00.000Z';
+    const original = await mockDatabase.upsertDirectJourneyRow('lead', {
+      id: 'LEAD-PG-CREATE-ONLY',
+      ownerEmail: 'pg-create-only@example.com',
+      actorEmail: 'pg-create-only@example.com',
+      title: 'Registro original',
+      amount: 85000,
+      payload: {
+        interestRequestedAt: originalTimestamp,
+        timeline: [{ id: 'TL-PG-CREATE-ONLY', createdAt: originalTimestamp }]
+      },
+      createdAt: originalTimestamp,
+      updatedAt: originalTimestamp
+    }, { createOnly: true });
+    const repeated = await mockDatabase.upsertDirectJourneyRow('lead', {
+      id: 'LEAD-PG-CREATE-ONLY',
+      ownerEmail: 'pg-create-only@example.com',
+      actorEmail: 'pg-create-only@example.com',
+      title: 'Tentativa de sobrescrita',
+      amount: 999999,
+      payload: {
+        interestRequestedAt: '2026-08-22T15:31:00.000Z',
+        timeline: [{ id: 'TL-DUPLICATE' }, { id: 'TL-DUPLICATE-2' }]
+      }
+    }, { createOnly: true });
+    const takeover = await mockDatabase.upsertDirectJourneyRow('lead', {
+      id: 'LEAD-PG-CREATE-ONLY',
+      ownerEmail: 'pg-create-only-takeover@example.com',
+      actorEmail: 'pg-create-only-takeover@example.com',
+      payload: { unsafe: true }
+    }, { createOnly: true });
+    assert(original.ok && original.created === true, 'PostgreSQL nao marcou a criacao atomica original.');
+    assert(repeated.ok && repeated.created === false, 'PostgreSQL nao reconheceu a repeticao createOnly.');
+    assert(repeated.lead.title === 'Registro original' && repeated.lead.amount === 85000, 'PostgreSQL sobrescreveu campos do registro original.');
+    assert(repeated.lead.payload.interestRequestedAt === originalTimestamp, 'PostgreSQL alterou requestedAt original.');
+    assert(repeated.lead.payload.timeline.length === 1, 'PostgreSQL duplicou o evento original.');
+    assert(takeover.ok === false && takeover.status === 409, 'PostgreSQL createOnly nao bloqueou takeover de owner.');
+    const createOnlyQueries = mockPool.queries.filter((item) => item.sql.includes('on conflict(kind, id) do nothing'));
+    assert(createOnlyQueries.length === 3, 'PostgreSQL nao usou INSERT ... DO NOTHING em todas as tentativas createOnly.');
+    return {
+      createdFlags: [original.created, repeated.created],
+      requestedAt: repeated.lead.payload.interestRequestedAt,
+      timelineEvents: repeated.lead.payload.timeline.length,
+      createOnlyQueries: createOnlyQueries.length,
+      takeover: 'blocked-409',
+      networkUsed: false
+    };
   });
 
   await check('postgresql.mock.crud', 'CRUD minimo funciona no provider PostgreSQL injetado', async () => {

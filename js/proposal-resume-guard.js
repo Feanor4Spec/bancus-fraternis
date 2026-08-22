@@ -12,15 +12,19 @@
   function isClientReadOnly(input = {}) {
     const role = text(input.role).toLowerCase();
     const proposalView = text(input.proposalView).toLowerCase();
+    const backendReadOnly = input.backendReadOnly === true;
     const hash = text(input.hash).toLowerCase();
     const proposalIntent = Boolean(text(input.proposalId))
       || Boolean(text(input.proposalVersionId))
       || proposalView === 'client'
+      || proposalView === 'review'
+      || backendReadOnly
       || hash === '#proposta'
       || hash === '#step-10';
 
     if (!proposalIntent) return false;
     if (role === 'cliente') return true;
+    if ((role === 'consultor' || role === 'admin') && backendReadOnly) return true;
     return !role && proposalView === 'client';
   }
 

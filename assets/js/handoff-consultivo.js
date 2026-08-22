@@ -913,11 +913,26 @@
     `;
   }
 
+  function proposalInterestResumeId(item) {
+    if (!item || item.interestSchema !== 'bancus.proposal-interest.v1') return '';
+    const id = String(item.id || '').trim();
+    return /^LEAD-PI-[A-F0-9]+$/i.test(id) ? id : '';
+  }
+
+  function isProtectedProposalInterest(item) {
+    return Boolean(proposalInterestResumeId(item));
+  }
+
   function proposalItemHref(item) {
     const params = ['from=handoff'];
     if (item && item.sourceProposalId) params.push(`proposalId=${encodeURIComponent(item.sourceProposalId)}`);
     if (item && item.sourceProposalVersionId) params.push(`proposalVersionId=${encodeURIComponent(item.sourceProposalVersionId)}`);
     if (item && item.sourceSimulationId) params.push(`simulationId=${encodeURIComponent(item.sourceSimulationId)}`);
+    const interestId = proposalInterestResumeId(item);
+    if (interestId) {
+      params.push('proposalView=review');
+      params.push(`interestId=${encodeURIComponent(interestId)}`);
+    }
     return `simulador.html?${params.join('&')}#proposta`;
   }
 
@@ -1067,6 +1082,7 @@
     const op = item.operational || {};
     const plan = actionPlan(item);
     const stage = commercialStage(item);
+    const protectedProposalInterest = isProtectedProposalInterest(item);
     target.innerHTML = `
       <div class="bf-admin-panel-heading">
         <div>
@@ -1083,7 +1099,10 @@
           <select data-handoff-status="${escapeHtml(item.id)}">${statusOptions(item.status)}</select>
         </label>
         <label>Responsável
-          <input data-handoff-assignee="${escapeHtml(item.id)}" value="${escapeHtml(item.assignedTo || '')}" placeholder="consultor@empresa.com">
+          ${protectedProposalInterest
+            ? `<input value="${escapeHtml(item.assignedTo || '')}" placeholder="Fila de propostas" readonly aria-readonly="true">
+               <small>Definido pela fila da proposta.</small>`
+            : `<input data-handoff-assignee="${escapeHtml(item.id)}" value="${escapeHtml(item.assignedTo || '')}" placeholder="consultor@example.com">`}
         </label>
       </div>
 
