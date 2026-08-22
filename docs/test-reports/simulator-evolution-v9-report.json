@@ -1,0 +1,482 @@
+{
+  "schema": "bancus.validation.simulator-evolution-v9.v1",
+  "validator": "tools/validate-simulator-evolution-v9.mjs",
+  "validatorVersion": "9.0.0",
+  "status": "PASS",
+  "summary": {
+    "total": 32,
+    "passed": 32,
+    "failed": 0
+  },
+  "checks": [
+    {
+      "id": "journey.sections",
+      "title": "A jornada declara exatamente as 10 secoes funcionais.",
+      "ok": true,
+      "evidence": {
+        "foundInSourceOrder": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "expected": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ]
+      }
+    },
+    {
+      "id": "journey.source-order",
+      "title": "As secoes da jornada aparecem em ordem semantica de 1 a 10 no HTML.",
+      "ok": true,
+      "evidence": {
+        "found": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "expected": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ]
+      }
+    },
+    {
+      "id": "journey.evolution-rail",
+      "title": "O trilho executivo cobre as 10 etapas uma unica vez e na ordem correta.",
+      "ok": true,
+      "evidence": {
+        "found": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "expected": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ]
+      }
+    },
+    {
+      "id": "journey.headings",
+      "title": "Cada etapa apresenta a numeracao explicita n de 10.",
+      "ok": true,
+      "evidence": {
+        "found": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "expected": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ]
+      }
+    },
+    {
+      "id": "capacity.fields",
+      "title": "Campos de capacidade, horizonte, risco e consentimento possuem controle e rotulo associado.",
+      "ok": true,
+      "evidence": {
+        "required": [
+          "valorObjetivo",
+          "parcelaConfortavel",
+          "reservaAtual",
+          "caixaLance",
+          "prazoDesejado",
+          "urgencia",
+          "toleranciaRisco",
+          "clienteConsentimento"
+        ],
+        "missingOrUnlabelled": []
+      }
+    },
+    {
+      "id": "capacity.wiring",
+      "title": "Os campos de capacidade e consentimento entram no contrato da simulacao.",
+      "ok": true,
+      "evidence": {
+        "unwired": []
+      }
+    },
+    {
+      "id": "capacity.validation",
+      "title": "Consentimento e limites essenciais participam do gate de validacao.",
+      "ok": true,
+      "evidence": {
+        "consentChecked": true,
+        "positiveCapacityFields": true
+      }
+    },
+    {
+      "id": "engine.script-order",
+      "title": "simulation-contracts.js e carregado antes do motor financeiro.",
+      "ok": true,
+      "evidence": {
+        "contractsIndex": 4,
+        "engineIndex": 5
+      }
+    },
+    {
+      "id": "engine.contract-binding",
+      "title": "O motor usa explicitamente o contrato canonico quando ele esta disponivel.",
+      "ok": true,
+      "evidence": {
+        "schema": "bancus.simulation.v2",
+        "version": "2.0.0"
+      }
+    },
+    {
+      "id": "multigroup.source-contract",
+      "title": "A aplicacao modela um projeto com colecao de grupos/cotas e chama o simulador estruturado.",
+      "ok": true,
+      "evidence": {
+        "collection": true,
+        "structuredSimulation": true
+      }
+    },
+    {
+      "id": "multigroup.example-advance-state",
+      "title": "O exemplo multigrupo sincroniza a sacola renderizada com o botao de avancar.",
+      "ok": true,
+      "evidence": {
+        "createsMultipleItems": true,
+        "rendersSelection": true,
+        "synchronizesAdvance": true,
+        "synchronizesComparator": true
+      }
+    },
+    {
+      "id": "multigroup.runtime",
+      "title": "O motor executa dois grupos distintos e consolida tres cotas sem colapsar os itens.",
+      "ok": true,
+      "evidence": {
+        "totalGroups": 2,
+        "validGroups": 2,
+        "totalQuotas": 3,
+        "totalCredit": 400000,
+        "resultKeys": [
+          "203001|11111111|GRUPO-A|1",
+          "203001|22222222|GRUPO-B|1"
+        ]
+      }
+    },
+    {
+      "id": "multigroup.reconciliation",
+      "title": "Cada grupo do projeto multigrupo fecha invariantes e reconciliacao financeira.",
+      "ok": true,
+      "evidence": {
+        "groups": [
+          {
+            "groupKey": "203001|11111111|GRUPO-A|1",
+            "invariant": true,
+            "reconciliation": true
+          },
+          {
+            "groupKey": "203001|22222222|GRUPO-B|1",
+            "invariant": true,
+            "reconciliation": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "multigroup.future-events",
+      "title": "Adiantamento, inadimplencia e regularizacao atravessam o contrato e aparecem no cronograma consolidado.",
+      "ok": true,
+      "evidence": {
+        "advanceValue": 6000,
+        "advanceEvent": "adiantamento",
+        "defaultEvents": [
+          "inadimplência",
+          "inadimplência"
+        ],
+        "regularizationEvent": "regularização",
+        "regularizationCharges": {
+          "multa": 553.6,
+          "juros": 691.99
+        }
+      }
+    },
+    {
+      "id": "engine.runtime-contract",
+      "title": "Motor e contrato carregados no navegador compartilham schema e versao.",
+      "ok": true,
+      "evidence": {
+        "engineVersion": "2.0.0",
+        "contractVersion": "2.0.0",
+        "engineSchema": "bancus.simulation.v2",
+        "contractSchema": "bancus.simulation.v2"
+      }
+    },
+    {
+      "id": "publication.backend-api",
+      "title": "BFBackendApi expoe criacao, transicao, publicacao, revogacao e leitura publica.",
+      "ok": true,
+      "evidence": {
+        "required": [
+          "createProposalSnapshot",
+          "transitionProposalSnapshot",
+          "publishProposalSnapshot",
+          "revokeProposalShare",
+          "getPublicProposal"
+        ],
+        "missing": []
+      }
+    },
+    {
+      "id": "publication.server-routes",
+      "title": "O servidor implementa os endpoints privados e publico do ciclo da proposta.",
+      "ok": true,
+      "evidence": {
+        "missing": []
+      }
+    },
+    {
+      "id": "publication.client-sequence",
+      "title": "A interface publica pelo BFBackendApi na ordem rascunho, validada, revisada e publicada.",
+      "ok": true,
+      "evidence": {
+        "sequence": [
+          "await api.createProposalSnapshot(prepared.payload)",
+          "await api.transitionProposalSnapshot(created.snapshot.id, 'validada'",
+          "await api.transitionProposalSnapshot(validated.snapshot.id, 'revisada'",
+          "await api.publishProposalSnapshot(reviewed.snapshot.id"
+        ],
+        "indexes": [
+          1085,
+          1289,
+          1601,
+          1939
+        ]
+      }
+    },
+    {
+      "id": "publication.app-bridge",
+      "title": "A API publica do simulador fica disponivel ao modulo de publicacao carregado separadamente.",
+      "ok": true,
+      "evidence": {
+        "exposesApp": true,
+        "publicationConsumesBridge": true
+      }
+    },
+    {
+      "id": "publication.release-gates",
+      "title": "Publicacao exige gate de liberacao, sessao autenticada e revisao humana.",
+      "ok": true,
+      "evidence": {
+        "releaseGate": true,
+        "authenticatedSession": true,
+        "humanReview": true
+      }
+    },
+    {
+      "id": "publication.domain-lifecycle",
+      "title": "A maquina de estados aceita somente o ciclo completo ate publicada.",
+      "ok": true,
+      "evidence": {
+        "states": [
+          "rascunho",
+          "validada",
+          "revisada",
+          "publicada"
+        ],
+        "finalVersion": 4
+      }
+    },
+    {
+      "id": "publication.public-pii-redaction",
+      "title": "A projecao publica remove identificadores pessoais do snapshot.",
+      "ok": true,
+      "evidence": {
+        "personalNameRemoved": true,
+        "internalProposalIdRemoved": true,
+        "businessGroupPreserved": true
+      }
+    },
+    {
+      "id": "public-page.noindex",
+      "title": "A pagina publica bloqueia indexacao, seguimento e cache de snippet.",
+      "ok": true,
+      "evidence": {
+        "robotsMeta": "<meta name=\"robots\" content=\"noindex, nofollow, noarchive, nosnippet\">"
+      }
+    },
+    {
+      "id": "public-page.fragment-token",
+      "title": "A pagina le o token opaco exclusivamente do fragmento da URL.",
+      "ok": true,
+      "evidence": {
+        "usesHash": true,
+        "usesQueryInTokenReader": false
+      }
+    },
+    {
+      "id": "public-page.read-only",
+      "title": "A pagina publica oferece apenas leitura, impressao e PDF, sem controles de edicao.",
+      "ok": true,
+      "evidence": {
+        "editControls": [],
+        "readOperation": true
+      }
+    },
+    {
+      "id": "public-page.redacted-fallback",
+      "title": "A proposta publica substitui identificadores removidos por rotulos neutros, sem campos visivelmente vazios.",
+      "ok": true,
+      "evidence": {
+        "clientFallback": true,
+        "consultantFallback": true
+      }
+    },
+    {
+      "id": "public-page.opaque-link",
+      "title": "O link compartilhado contem somente origem, rota fixa e token no fragmento, sem PII.",
+      "ok": true,
+      "evidence": {
+        "normalizedFunctionBody": "return `${window.location.origin}/pages/proposta.html#${encodeURIComponent(token)}`;"
+      }
+    },
+    {
+      "id": "public-page.token-entropy",
+      "title": "O token e URL-safe, possui pelo menos 256 bits de entropia e e separado do hash persistivel.",
+      "ok": true,
+      "evidence": {
+        "tokenBytes": 32,
+        "tokenLength": 43,
+        "hashLength": 64
+      }
+    },
+    {
+      "id": "pdf.native-route",
+      "title": "A proposta usa a superficie HTML clonada e a impressao nativa para gerar PDF pesquisavel.",
+      "ok": true,
+      "evidence": {
+        "proposalDelegatesToNative": true,
+        "clonesHtml": true,
+        "invokesNativePrint": true
+      }
+    },
+    {
+      "id": "pdf.no-raster-active-path",
+      "title": "html2canvas e jsPDF nao participam do caminho ativo da proposta.",
+      "ok": true,
+      "evidence": {
+        "activeFunctionHasRasterLibrary": false,
+        "simulatorLoadsRasterLibrary": false,
+        "publicPageLoadsRasterLibrary": false
+      }
+    },
+    {
+      "id": "proposal.logical-pages",
+      "title": "A proposta padrao renderiza entre 12 e 16 paginas logicas.",
+      "ok": true,
+      "evidence": {
+        "pageCount": 16,
+        "htmlLength": 212078,
+        "hasRoot": true
+      }
+    },
+    {
+      "id": "visual.no-visible-emoji",
+      "title": "Nao ha emojis em textos visiveis da jornada e da proposta.",
+      "ok": true,
+      "evidence": {
+        "scannedFiles": [
+          "assets/js/services/backend-api.service.js",
+          "assets/js/services/decision-context.service.js",
+          "assets/js/services/handoff-consultivo.service.js",
+          "js/app.js",
+          "js/charts.js",
+          "js/comparator.js",
+          "js/data.js",
+          "js/database-progress.js",
+          "js/engine.js",
+          "js/export.js",
+          "js/heuristic-engine.js",
+          "js/proposal-acceptance.js",
+          "js/proposal-builder.js",
+          "js/proposal-experience.js",
+          "js/proposal-governance.js",
+          "js/proposal-public.js",
+          "js/proposal-summary.js",
+          "js/proposal-versioning.js",
+          "js/settings.js",
+          "js/shelf-data.js",
+          "js/shelf-engine.js",
+          "js/simulation-contracts.js",
+          "js/simulator-cart.js",
+          "js/simulator-journey.js",
+          "js/simulator-result.js",
+          "js/simulator-shelf.js",
+          "js/simulator-state.js",
+          "js/storage.js",
+          "pages/proposta.html",
+          "pages/simulador.html"
+        ],
+        "occurrences": []
+      }
+    }
+  ],
+  "failures": []
+}

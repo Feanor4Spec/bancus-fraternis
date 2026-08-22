@@ -15,5 +15,10 @@
   "savedCartItems": 1,
   "restoredCartItems": 1,
   "resultRows": 1,
+  "privacy": {
+    "formSnapshotExcludesName": true,
+    "paramsExcludeName": true,
+    "localPIIStored": false
+  },
   "failures": []
 }

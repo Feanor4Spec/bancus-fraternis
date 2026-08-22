@@ -1000,6 +1000,7 @@ Validacoes a rodar antes de qualquer troca de provider:
 - `node tools/validate-backend-production-plan.mjs`
 - `node tools/validate-next-phases-plan.mjs`
 - `node tools/validate-database-migrations.mjs`
+- `node tools/validate-database-provider.mjs`
 - `node tools/validate-live-data-ux.mjs`
 - `node tools/validate-local-database.mjs`
 - `node tools/validate-public-contracts.mjs`
@@ -1011,12 +1012,14 @@ Contratos a proteger:
 - `localStorage` continua fallback publico para GitHub Pages, `file://` e demos offline.
 - `BFBackendApi` segue como fachada de compatibilidade para API local e futura API hospedada.
 - UX com dados vivos deve manter `data-client-live-data-panel`, `data-handoff-live-data-panel`, leitura de `/api/leads` e fallback para `localStorage`.
-- `BANCUS_DB_PROVIDER` deve manter `sqlite` como padrao enquanto nao houver adapter produtivo validado.
+- `BANCUS_DB_PROVIDER` mantem `sqlite` como padrao; `postgresql` e piloto e so fica pronto com URL, SSL, migrations e schema validados, sem fallback silencioso.
 - `js/backend/migrations/schema-manifest.json` e `001_bancus_fraternis_local_db.sql` devem ficar em paridade com `js/backend/db.js`.
 - `docs/PROXIMAS_FASES_BANK_FRATERN.md` deve manter a ordem: migrations e schema antes de adapter produtivo, adapter antes de autenticacao produtiva, autenticacao antes de migracao assistida, migracao antes de corte controlado.
 - Endpoints `/api/auth/*`, `/api/users`, `/api/events`, `/api/snapshots`, `/api/journey-entities`, `/api/leads`, `/api/simulations` e `/api/proposals` nao devem mudar de semantica sem migracao.
 - Escopo por `owner_email`: admin ve tudo; consultor e cliente veem apenas registros permitidos.
 - Payloads produtivos devem remover senha, token, hash, CPF, telefone, WhatsApp e e-mail sensivel.
+- O token da proposta publica deve ser resolvido por POST no corpo JSON, nunca na URL da API.
+- O relatorio do gate deve manter a pendencia externa enquanto `realPostgresqlConnectionUsed` for `false`.
 
 Proximas fases aceitas:
 

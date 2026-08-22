@@ -1,0 +1,56 @@
+{
+  "ok": true,
+  "expectedMultigroupCredit": 61748.2,
+  "multigroup": {
+    "groups": 2,
+    "credit": 61748.2,
+    "installment": 833.32,
+    "term": 84,
+    "scheduleRows": 84,
+    "effectiveCostPercent": 11.362582229117612
+  },
+  "singleGroup": {
+    "groups": 1,
+    "credit": 23512.95,
+    "installment": 308.74,
+    "term": 80,
+    "scheduleRows": 80,
+    "effectiveCostPercent": 5.044113988249029
+  },
+  "partialResultRejected": true,
+  "staleResultRejected": true,
+  "zeroInstallmentEventPreserved": true,
+  "financialGolden": {
+    "defaultNoBid": {
+      "modality": "sem_lance",
+      "embeddedPercent": 0,
+      "annualAdjustmentPercent": 0,
+      "contemplationMonth": 18,
+      "appliedBid": 0,
+      "embeddedBid": 0,
+      "availableCredit": 61748.2,
+      "month12Adjustment": 0,
+      "month18Bid": 0,
+      "month24Adjustment": 0
+    },
+    "embeddedBid": {
+      "modality": "embutido",
+      "embeddedPercent": 30,
+      "annualAdjustmentPercent": 0,
+      "contemplationMonth": 18,
+      "group187": 7053.89,
+      "group1771": 11470.58,
+      "appliedBid": 18524.47,
+      "embeddedBid": 18524.47,
+      "availableCredit": 43223.73,
+      "month12Adjustment": 0,
+      "month18Bid": 18524.47,
+      "month24Adjustment": 0,
+      "proposalEmbeddedBid": 18524.47,
+      "proposalAvailableCredit": 43223.73
+    },
+    "legacyOwnModeNormalized": true,
+    "exampleSetsBidModeAndPercent": true
+  },
+  "failures": []
+}

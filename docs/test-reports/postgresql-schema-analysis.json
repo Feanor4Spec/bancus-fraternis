@@ -1,0 +1,246 @@
+{
+  "schema_overview": {
+    "total_tables": 11,
+    "total_columns": 110,
+    "tables_with_primary_keys": 10,
+    "total_foreign_keys": 0,
+    "total_indexes": 0
+  },
+  "normalization_analysis": {
+    "total_issues": 1,
+    "by_severity": {
+      "high": 0,
+      "medium": 1,
+      "low": 0,
+      "warning": 0
+    },
+    "issues": [
+      {
+        "table": "events",
+        "issue_type": "3NF_VIOLATION",
+        "severity": "MEDIUM",
+        "description": "Columns ['entity_type', 'entity_id'] may have transitive dependency through 'entity_id'",
+        "suggestion": "Consider creating separate 'entity' table with these columns",
+        "columns_affected": [
+          "entity_type",
+          "entity_id",
+          "entity_id"
+        ]
+      }
+    ]
+  },
+  "data_type_analysis": {
+    "total_issues": 0,
+    "issues": []
+  },
+  "constraint_analysis": {
+    "total_issues": 19,
+    "by_severity": {
+      "high": 1,
+      "medium": 3,
+      "low": 15
+    },
+    "issues": [
+      {
+        "table": "users",
+        "issue_type": "MISSING_CHECK_CONSTRAINT",
+        "severity": "LOW",
+        "description": "Email column lacks format validation",
+        "suggestion": "Add CHECK constraint for email format validation",
+        "columns_affected": [
+          "email"
+        ]
+      },
+      {
+        "table": "sessions",
+        "issue_type": "MISSING_FOREIGN_KEY",
+        "severity": "MEDIUM",
+        "description": "Column 'user_id' appears to be a foreign key but has no constraint",
+        "suggestion": "Add foreign key constraint referencing user table",
+        "columns_affected": [
+          "user_id"
+        ]
+      },
+      {
+        "table": "events",
+        "issue_type": "MISSING_FOREIGN_KEY",
+        "severity": "MEDIUM",
+        "description": "Column 'session_id' appears to be a foreign key but has no constraint",
+        "suggestion": "Add foreign key constraint referencing session table",
+        "columns_affected": [
+          "session_id"
+        ]
+      },
+      {
+        "table": "snapshots",
+        "issue_type": "MISSING_NOT_NULL",
+        "severity": "LOW",
+        "description": "Column 'title' allows NULL but typically should not",
+        "suggestion": "Consider adding NOT NULL constraint to 'title'",
+        "columns_affected": [
+          "title"
+        ]
+      },
+      {
+        "table": "snapshots",
+        "issue_type": "MISSING_NOT_NULL",
+        "severity": "LOW",
+        "description": "Column 'status' allows NULL but typically should not",
+        "suggestion": "Consider adding NOT NULL constraint to 'status'",
+        "columns_affected": [
+          "status"
+        ]
+      },
+      {
+        "table": "journey_entities",
+        "issue_type": "MISSING_PRIMARY_KEY",
+        "severity": "HIGH",
+        "description": "Table has no primary key defined",
+        "suggestion": "Add a primary key column (e.g., 'id' with auto-increment)",
+        "columns_affected": []
+      },
+      {
+        "table": "journey_entities",
+        "issue_type": "MISSING_NOT_NULL",
+        "severity": "LOW",
+        "description": "Column 'title' allows NULL but typically should not",
+        "suggestion": "Consider adding NOT NULL constraint to 'title'",
+        "columns_affected": [
+          "title"
+        ]
+      },
+      {
+        "table": "journey_entities",
+        "issue_type": "MISSING_NOT_NULL",
+        "severity": "LOW",
+        "description": "Column 'status' allows NULL but typically should not",
+        "suggestion": "Consider adding NOT NULL constraint to 'status'",
+        "columns_affected": [
+          "status"
+        ]
+      },
+      {
+        "table": "journey_entities",
+        "issue_type": "MISSING_CHECK_CONSTRAINT",
+        "severity": "LOW",
+        "description": "Column 'amount' should validate positive values",
+        "suggestion": "Add CHECK constraint: amount > 0",
+        "columns_affected": [
+          "amount"
+        ]
+      },
+      {
+        "table": "journey_leads",
+        "issue_type": "MISSING_NOT_NULL",
+        "severity": "LOW",
+        "description": "Column 'title' allows NULL but typically should not",
+        "suggestion": "Consider adding NOT NULL constraint to 'title'",
+        "columns_affected": [
+          "title"
+        ]
+      },
+      {
+        "table": "journey_leads",
+        "issue_type": "MISSING_NOT_NULL",
+        "severity": "LOW",
+        "description": "Column 'status' allows NULL but typically should not",
+        "suggestion": "Consider adding NOT NULL constraint to 'status'",
+        "columns_affected": [
+          "status"
+        ]
+      },
+      {
+        "table": "journey_leads",
+        "issue_type": "MISSING_CHECK_CONSTRAINT",
+        "severity": "LOW",
+        "description": "Column 'amount' should validate positive values",
+        "suggestion": "Add CHECK constraint: amount > 0",
+        "columns_affected": [
+          "amount"
+        ]
+      },
+      {
+        "table": "journey_simulations",
+        "issue_type": "MISSING_NOT_NULL",
+        "severity": "LOW",
+        "description": "Column 'title' allows NULL but typically should not",
+        "suggestion": "Consider adding NOT NULL constraint to 'title'",
+        "columns_affected": [
+          "title"
+        ]
+      },
+      {
+        "table": "journey_simulations",
+        "issue_type": "MISSING_NOT_NULL",
+        "severity": "LOW",
+        "description": "Column 'status' allows NULL but typically should not",
+        "suggestion": "Consider adding NOT NULL constraint to 'status'",
+        "columns_affected": [
+          "status"
+        ]
+      },
+      {
+        "table": "journey_simulations",
+        "issue_type": "MISSING_CHECK_CONSTRAINT",
+        "severity": "LOW",
+        "description": "Column 'amount' should validate positive values",
+        "suggestion": "Add CHECK constraint: amount > 0",
+        "columns_affected": [
+          "amount"
+        ]
+      },
+      {
+        "table": "journey_proposals",
+        "issue_type": "MISSING_NOT_NULL",
+        "severity": "LOW",
+        "description": "Column 'title' allows NULL but typically should not",
+        "suggestion": "Consider adding NOT NULL constraint to 'title'",
+        "columns_affected": [
+          "title"
+        ]
+      },
+      {
+        "table": "journey_proposals",
+        "issue_type": "MISSING_NOT_NULL",
+        "severity": "LOW",
+        "description": "Column 'status' allows NULL but typically should not",
+        "suggestion": "Consider adding NOT NULL constraint to 'status'",
+        "columns_affected": [
+          "status"
+        ]
+      },
+      {
+        "table": "journey_proposals",
+        "issue_type": "MISSING_CHECK_CONSTRAINT",
+        "severity": "LOW",
+        "description": "Column 'amount' should validate positive values",
+        "suggestion": "Add CHECK constraint: amount > 0",
+        "columns_affected": [
+          "amount"
+        ]
+      },
+      {
+        "table": "proposal_shares",
+        "issue_type": "MISSING_FOREIGN_KEY",
+        "severity": "MEDIUM",
+        "description": "Column 'snapshot_id' appears to be a foreign key but has no constraint",
+        "suggestion": "Add foreign key constraint referencing snapshot table",
+        "columns_affected": [
+          "snapshot_id"
+        ]
+      }
+    ]
+  },
+  "naming_analysis": {
+    "total_issues": 0,
+    "issues": []
+  },
+  "missing_indexes": [],
+  "recommendations": [
+    "Address 1 high-severity issues immediately",
+    "Add primary keys to tables: journey_entities",
+    "Consider adding 3 foreign key constraints for referential integrity",
+    "Review 1 normalization issues for schema optimization"
+  ],
+  "mermaid_erd": "erDiagram\n    BANCUS_SCHEMA_MIGRATIONS {\n        TEXT migration_name \"PK\"\n        TEXT schema_version \"NOT NULL\"\n        TEXT applied_at \"NOT NULL\"\n    }\n    USERS {\n        TEXT id \"PK\"\n        TEXT name \"NOT NULL\"\n        TEXT email \"NOT NULL UNIQUE\"\n        TEXT role \"NOT NULL\"\n        TEXT status \"NOT NULL\"\n        TEXT department\n        TEXT phone\n        TEXT password_hash \"NOT NULL\"\n        TEXT password_salt \"NOT NULL\"\n        TEXT password_algorithm \"NOT NULL\"\n        TEXT password_updated_at \"NOT NULL\"\n        TEXT created_at \"NOT NULL\"\n        TEXT updated_at \"NOT NULL\"\n        TEXT last_login_at\n    }\n    SESSIONS {\n        TEXT id \"PK\"\n        TEXT user_id \"NOT NULL\"\n    }\n    EVENTS {\n        TEXT id \"PK\"\n        TEXT type \"NOT NULL\"\n        TEXT source \"NOT NULL\"\n        TEXT owner_email\n        TEXT actor_email\n        TEXT session_id\n        TEXT entity_type\n        TEXT entity_id\n        TEXT payload_json \"NOT NULL\"\n        TEXT created_at \"NOT NULL\"\n    }\n    SNAPSHOTS {\n        TEXT id \"PK\"\n        TEXT type \"NOT NULL\"\n        TEXT source \"NOT NULL\"\n        TEXT owner_email\n        TEXT actor_email\n        TEXT entity_id\n        TEXT title\n        TEXT status\n        TEXT storage_key\n        TEXT payload_json \"NOT NULL\"\n        TEXT created_at \"NOT NULL\"\n        TEXT updated_at \"NOT NULL\"\n    }\n    JOURNEY_ENTITIES {\n        TEXT id \"NOT NULL\"\n        TEXT kind \"NOT NULL\"\n        TEXT source_snapshot_id\n        TEXT snapshot_type\n        TEXT owner_email\n        TEXT actor_email\n        TEXT title\n        TEXT status\n        TEXT stage\n        TEXT priority\n        TEXT source\n        TEXT related_id\n        DOUBLE amount\n        TEXT payload_json \"NOT NULL\"\n        TEXT created_at \"NOT NULL\"\n        TEXT updated_at \"NOT NULL\"\n    }\n    JOURNEY_LEADS {\n        TEXT id \"PK\"\n        TEXT kind \"NOT NULL\"\n        TEXT source_snapshot_id\n        TEXT snapshot_type\n        TEXT owner_email\n        TEXT actor_email\n        TEXT title\n        TEXT status\n        TEXT stage\n        TEXT priority\n        TEXT source\n        TEXT related_id\n        DOUBLE amount\n        TEXT payload_json \"NOT NULL\"\n        TEXT created_at \"NOT NULL\"\n        TEXT updated_at \"NOT NULL\"\n    }\n    JOURNEY_SIMULATIONS {\n        TEXT id \"PK\"\n        TEXT kind \"NOT NULL\"\n        TEXT source_snapshot_id\n        TEXT snapshot_type\n        TEXT owner_email\n        TEXT actor_email\n        TEXT title\n        TEXT status\n        TEXT stage\n        TEXT priority\n        TEXT source\n        TEXT related_id\n        DOUBLE amount\n        TEXT payload_json \"NOT NULL\"\n        TEXT created_at \"NOT NULL\"\n        TEXT updated_at \"NOT NULL\"\n    }\n    JOURNEY_PROPOSALS {\n        TEXT id \"PK\"\n        TEXT kind \"NOT NULL\"\n        TEXT source_snapshot_id\n        TEXT snapshot_type\n        TEXT owner_email\n        TEXT actor_email\n        TEXT title\n        TEXT status\n        TEXT stage\n        TEXT priority\n        TEXT source\n        TEXT related_id\n        DOUBLE amount\n        TEXT payload_json \"NOT NULL\"\n        TEXT created_at \"NOT NULL\"\n        TEXT updated_at \"NOT NULL\"\n    }\n    PROPOSAL_SNAPSHOTS {\n        TEXT id \"PK\"\n        TEXT proposal_id \"NOT NULL\"\n        INTEGER version \"NOT NULL\"\n    }\n    PROPOSAL_SHARES {\n        TEXT id \"PK\"\n        TEXT snapshot_id \"NOT NULL\"\n    }"
+}

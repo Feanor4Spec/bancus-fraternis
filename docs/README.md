@@ -1,6 +1,6 @@
 # Bancus Fraternis - Plataforma de decisao financeira
 
-Atualizado em 2026-06-12.
+Atualizado em 2026-08-22.
 
 O Bancus Fraternis e uma plataforma estatica/progressiva para apoiar decisao financeira, simulacao de consorcio, comparacao de produtos, proposta consultiva e handoff comercial. O antigo ConsorcioPro permanece como nome legado do simulador de consorcio e de algumas chaves locais, mas a linguagem de produto atual e Bancus Fraternis.
 
@@ -16,7 +16,7 @@ O Bancus Fraternis e uma plataforma estatica/progressiva para apoiar decisao fin
 - Dashboard Cliente, Handoff Consultivo e Dashboard Admin com cockpit de retomada, impacto de calculadoras, continuidade, origem, aging, prioridade, propostas versionadas/vencidas, etapa comercial, proximos passos, fila guiada executavel, produtividade, carteira por consultor, filtros comerciais, funil comercial movel por etapa, cadencia comercial e exportacoes sanitizadas de carteira e funil.
 - UX com dados vivos iniciada: Dashboard Cliente mostra fonte ativa e contadores server-side; Handoff Consultivo le `/api/leads`, mescla com a fila local e sincroniza status, responsavel, checklist e notas quando a API local esta ativa.
 - Publicacao em GitHub Pages com selo de ambiente demo/local, fallback estatico e validador de seguranca publica.
-- Backend local Node/SQLite preparado como ponte progressiva para backend produtivo futuro, com `BANCUS_DB_PROVIDER=sqlite`, plano de migracao preservando `localStorage`, `BFBackendApi`, contratos `/api/*`, escopo por `owner_email` e proximas fases produtivas detalhadas.
+- Backend com SQLite local por padrao e adapter PostgreSQL piloto por ambiente, preservando `localStorage`, `BFBackendApi`, contratos `/api/*`, escopo por usuario e proposta segura no mesmo provider.
 - Schema local versionado em `js/backend/migrations`, com baseline SQLite, rollback, `schema-manifest.json` e validador de paridade antes do adapter produtivo.
 
 ## Entrada Recomendada
@@ -45,6 +45,8 @@ Para explicitar o provider local atual:
 ```bash
 BANCUS_DB_PROVIDER=sqlite node server.js
 ```
+
+Para preparar a homologacao PostgreSQL, siga `docs/POSTGRESQL_PILOT.md`. A URL fica exclusivamente no gerenciador de segredos e o servidor falha de forma explicita quando conexao ou migrations nao estiverem corretas.
 
 Depois acesse:
 

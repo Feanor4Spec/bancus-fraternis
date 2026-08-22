@@ -1,17 +1,12 @@
 {
   "ok": true,
-  "scannedFiles": 352,
+  "scannedFiles": 383,
   "checks": {
     "staticFallback": true,
     "githubWorkflow": true,
     "demoDisclosure": true,
     "gitignoreProtections": true
   },
-  "warnings": [
-    "server-8080.err existe localmente, mas esta protegido pelo .gitignore.",
-    "server-8080.err.log existe localmente, mas esta protegido pelo .gitignore.",
-    "server-8080.out existe localmente, mas esta protegido pelo .gitignore.",
-    "server-8080.out.log existe localmente, mas esta protegido pelo .gitignore."
-  ],
+  "warnings": [],
   "failures": []
 }

@@ -1,6 +1,6 @@
 # Plano Backend Produtivo - Bancus Fraternis
 
-Atualizado em 2026-05-22.
+Atualizado em 2026-08-22.
 
 ## Objetivo
 
@@ -15,10 +15,10 @@ Regra central: localStorage continua sendo fallback publico para GitHub Pages, `
 | Browser estatico | Ativo | HTML, services `window.BF*`, `localStorage`, datasets JSON e validadores. |
 | API local | Ativo em `node server.js` | `/api/auth/*`, `/api/users`, `/api/events`, `/api/snapshots`, `/api/journey-entities`, `/api/leads`, `/api/simulations`, `/api/proposals`. |
 | Banco local | Ativo | SQLite em `.runtime/bancus-fraternis.sqlite`, fora do Git. |
-| Provider configuravel | Ativo parcial | `BANCUS_DB_PROVIDER=sqlite` e o contrato inicial; providers futuros ficam bloqueados ate adapter validado. |
+| Provider configuravel | Piloto implementado | SQLite segue como padrao; PostgreSQL e ativado por ambiente, valida schema no boot e nao faz fallback silencioso. |
 | Schema versionado | Ativo parcial | `js/backend/migrations/schema-manifest.json`, baseline SQL, rollback e `tools/validate-database-migrations.mjs`. |
 | Proximas fases | Em andamento | `docs/PROXIMAS_FASES_BANK_FRATERN.md` detalha migrations, adapter produtivo, auth, migracao, observabilidade e corte controlado. |
-| Backend hospedado | Futuro | Deve nascer dos contratos existentes, nao de um modelo paralelo. |
+| Backend hospedado | Pendente de homologacao externa | Codigo, migrations e gate injetado estao prontos; falta URL/instancia externa para o smoke real. |
 
 ## Principios De Migracao
 

@@ -1,0 +1,1314 @@
+=== PROPOSTA PUBLICA ===
+
+DOCUMENTO SOMENTE LEITURA
+Publicada · somente leitura
+Imprimir
+Salvar PDF
+PROPOSTA ESTRUTURADA DE CONSÓRCIO
+Clareza para compreender cada escolha.
+
+Crédito, parcelas, lance, cenários e premissas reunidos em uma única narrativa auditável.
+
+MOTOR
+ConsórcioPro 2.0.0
+BASE
+DEMO-2026-08
+VERSÃO
+v4
+VALIDADE
+29 de agosto de 2026 às 19:47
+PROPOSTA PROP-2026-0100 | VALIDADA
+Resumo da Proposta Estruturada
+
+Operacao desenhada para contemplacao planejada, uso eficiente do credito e leitura clara dos compromissos.
+
+CLIENTE
+Cliente da proposta
+GRUPO / COTA
+2 grupos estruturados | 2 cota(s)
+Exportar PDF
+MAPA
+Blocos que conversam entre si
+
+A leitura do PDF e da tela foi organizada para cada grafico responder a uma decisao comercial concreta.
+
+DECISAO
+O que esta sendo contratado
+R$ 100.000,00
+
+A carta de credito conversa com a composicao do projeto, os grupos escolhidos e a finalidade declarada pelo cliente.
+
+Conecta blocos 01, 03 e 05
+CAIXA
+Como o compromisso aparece
+R$ 1.231,50
+
+A parcela atual conversa com a curva de parcelas e com a capacidade de manter o plano ate a contemplacao.
+
+Conecta blocos 01, 06 e 08
+LANCE
+Qual alavanca move a contemplacao
+R$ 50.000,00
+
+O lance combina recurso proprio e embutido, impactando credito liquido, saldo e estrategia de assembleia.
+
+Conecta blocos 02, 07 e 09
+RISCO
+Onde a conversa precisa continuar
+100 parcelas
+
+O cronograma mostra se a operacao permanece coerente com prazo, saldo, eventos e proximos passos.
+
+Conecta blocos 08, 09 e 10
+DEC
+Resultado como decisao
+
+Traduz a simulacao em recomendacao, riscos, premissas e proximo passo comercial.
+
+REVISAR
+Revisar premissas antes da proposta
+
+A proposta ainda precisa de ajuste ou confirmacao objetiva para nao levar uma decisao fragil ao cliente.
+
+Credito contratado de R$ 100.000,00 com caixa liquida de R$ 70.000,00.
+Parcela atual projetada em R$ 1.231,50.
+2 grupos sustentam a composicao da proposta.
+Lance total de R$ 50.000,00 foi considerado no cronograma.
+Revisar premissas
+PREMISSAS QUE SUSTENTAM
+Carta e credito liquido: R$ 100.000,00 contratados, R$ 70.000,00 estimados para uso apos lance embutido.
+Parcela de referencia: R$ 1.231,50 com prazo de 100 meses.
+Lance total: R$ 50.000,00 combinando recursos proprios, embutidos, FGTS ou fixo conforme configuracao.
+Taxa media informada: 9,9% com fundo de reserva e seguro conforme regras do grupo.
+RISCOS PARA EXPLICAR
+Perfil financeiro com prontidao 0/100. Reforce renda, reserva e capacidade antes do aceite.
+CREDITO LIQUIDO
+R$ 70.000,00
+Referencia: R$ 100.000,00
+
+70,0% da carta permanece disponivel para uso.
+
+01
+Numeros estrategicos
+
+Os indicadores abaixo priorizam decisao, caixa e compromisso.
+
+CREDITO TOTAL
+R$ 100.000,00
+Valor de referencia da operacao.
+CAIXA LIQUIDA
+R$ 70.000,00
+Credito estimado apos lance embutido.
+PARCELA ATUAL
+R$ 1.231,50
+Compromisso mensal projetado.
+PRAZO RESTANTE
+94 meses
+Horizonte apos contemplacao.
+TOTAL DO PLANO
+R$ 111.900,00
+Carta, taxas e componentes.
+TOTAL PAGO
+R$ 130.364,24
+Projecao ate encerramento.
+SALDO DEVEDOR
+R$ 0,00
+Saldo ao final da projecao.
+PERCORRIDO
+0,0%
+Avanco estimado da jornada.
+02
+Jornada do cliente
+
+A proposta mostra o caminho entre adesao, lance, contemplacao e uso do credito.
+
+1
+Adesao
+R$ 100.000,00
+
+Entrada no grupo e formalizacao da estrategia.
+
+2
+Formacao / grupo
+2 grupos estruturados
+
+ConsórcioPro Admin | Imóveis
+
+3
+Contribuicoes
+0/100
+
+Parcelas pagas e saldo de parcelas futuras.
+
+4
+Assembleias
+R$ 1.231,50
+
+Acompanhamento mensal da assembleia e da parcela.
+
+5
+Lance
+R$ 50.000,00
+
+Estrategia de lance proprio, embutido ou combinado.
+
+6
+Contemplacao simulada
+Mes 6
+
+Marco de cenario, sem garantia de contemplacao.
+
+7
+Uso do credito
+R$ 70.000,00
+
+Analise de credito, documentos e faturamento.
+
+8
+Encerramento
+100 restantes
+
+Quitacao das obrigacoes do plano.
+
+Leitura executiva
+
+A operacao esta estruturada para manter previsibilidade de parcela, reservar estrategia de lance e preparar o cliente para os marcos de documentacao e faturamento.
+
+03
+Composicao do projeto estruturado
+
+Detalha quais grupos, cotas e premissas formam a proposta apresentada.
+
+GRUPOS
+2
+fontes de credito combinadas
+COTAS
+2
+quantidade total no projeto
+CARTA CONSOLIDADA
+R$ 100.000,00
+soma das cartas selecionadas
+PRAZO MEDIO
+92 meses
+ponderado pela carta
+GRUPO	ADMINISTRADORA	SEGMENTO	COTAS	CARTA UNIT.	CARTA TOTAL	PRAZO	TAXA ADM.	LANCE	PAPEL
+G-2026-001-A	ConsórcioPro Admin	Imóveis	1	R$ 60.000,00	R$ 60.000,00	100 meses	9,5%	50,0%	-
+G-2026-001-B	ConsórcioPro Admin	Imóveis	1	R$ 40.000,00	R$ 40.000,00	80 meses	10,5%	50,0%	-
+Rastreabilidade comercial
+
+Cada linha mostra a origem da carta, o peso financeiro e a funcao estrategica do grupo. Isso ajuda o cliente a entender que a proposta nao e um numero solto, mas uma composicao de grupos, cotas, prazos, taxas e lances.
+
+04
+Fases do produto e pontos de controle
+
+Traduz a operacao de consorcio em marcos claros para o cliente acompanhar.
+
+1
+Adesao ao grupo
+21/08/2026
+
+Formalizacao da participacao, definicao da carta e aceite das regras do grupo.
+
+2
+Contribuicoes mensais
+21/08/2026
+
+Pagamento das parcelas, taxa de administracao, fundo e componentes contratados.
+
+3
+Assembleias e lance
+ATE O MES 6
+
+Acompanhamento das assembleias e execucao da estrategia de lance planejada.
+
+4
+Contemplacao estimada
+21/01/2027
+
+Marco projetado para acesso ao credito, condicionado as regras e a competitividade do grupo.
+
+5
+Credito, analise e documentos
+APOS CONTEMPLACAO
+
+Validacao cadastral, analise de credito, garantias e documentacao do bem ou servico.
+
+6
+Uso do credito e encerramento
+100 PARCELAS RESTANTES
+
+Faturamento, acompanhamento do saldo devedor e quitacao final da operacao.
+
+Como ler esta jornada
+
+O consorcio combina disciplina de pagamento, assembleias, possibilidade de lance, contemplacao e uso do credito. A proposta organiza esses marcos para reduzir incerteza e orientar as proximas decisoes.
+
+05
+Estrutura financeira
+
+Composicao do plano e leitura do que compoe o custo total.
+
+R$ 100.000,00
+89,4% do plano
+R$ 9.900,00
+8,8% do plano
+R$ 2.000,00
+1,8% do plano
+R$ 0,00
+0,0% do plano
+O que isso significa
+
+A carta representa o poder de compra. Taxa, fundo e seguro explicam o custo de manter a operacao dentro das regras do grupo.
+
+06
+Contribuicoes e parcelas
+
+Mostra o estagio atual de pagamento e a evolucao projetada da parcela.
+
+0
+pagas
+100
+restantes
+100
+total
+Proxima parcela
+R$ 1.231,50
+Vencimento estimado em 21/08/2026
+07
+Lance e estrategia de contemplacao
+
+Explica quanto e antecipado, quanto sai do bolso e o impacto no credito liquido.
+
+LANCE PROPRIO
+R$ 20.000,00
+Recurso que sai do caixa do cliente.
+LANCE EMBUTIDO
+R$ 30.000,00
+Valor que reduz o credito liquido.
+LANCE TOTAL
+R$ 50.000,00
+Forca total da oferta de contemplacao.
+CREDITO LIQUIDO
+R$ 70.000,00
+Credito disponivel apos embutido.
+Estrategia sugerida
+
+A proposta combina credito liquido, lance e prazo para buscar contemplacao planejada sem perder rastreabilidade dos custos.
+
+Antecipacao total: R$ 50.000,00
+Impacto no credito liquido: R$ 30.000,00
+Saldo apos lance: R$ 50.000,00
+08
+Projecoes da operacao
+
+Leitura futura do saldo devedor, parcelas e comportamento ate encerramento.
+
+Interpretacao
+
+A curva de saldo mostra o ritmo de amortizacao. A curva de parcelas indica o compromisso mensal projetado e ajuda a revisar capacidade de pagamento.
+
+09
+Cronograma mensal de parcelas
+
+Detalhamento mes a mes das parcelas, eventos da jornada, encargos, lances e saldo projetado.
+
+MESES PROJETADOS
+100
+Visao completa para PDF
+TOTAL DE PARCELAS
+R$ 125.364,24
+Soma do fluxo mensal
+MAIOR PARCELA
+R$ 3.924,93
+Ponto de maior compromisso
+EVENTOS RELEVANTES
+13
+Lances, reajustes ou marcos
+MES	DATA	EVENTO	PARCELA BASE	TAXA ADM.	FUNDO	SEGURO	PARCELA TOTAL	LANCE/ADIANT.	MULTA/JUROS	SALDO FINAL	PRAZO
+1	21/08/2026	adesão	R$ 1.100,00	R$ 109,50	R$ 22,00	R$ 0,00	R$ 1.231,50	-	-	R$ 98.900,00	100
+2	21/09/2026	normal	R$ 1.100,00	R$ 109,50	R$ 22,00	R$ 0,00	R$ 1.231,50	-	-	R$ 97.800,00	99
+3	21/10/2026	normal	R$ 1.100,00	R$ 109,50	R$ 22,00	R$ 0,00	R$ 1.231,50	-	-	R$ 96.700,00	98
+4	21/11/2026	normal	R$ 1.100,00	R$ 109,50	R$ 22,00	R$ 0,00	R$ 1.231,50	-	-	R$ 95.600,00	97
+5	21/12/2026	normal	R$ 1.100,00	R$ 109,50	R$ 22,00	R$ 0,00	R$ 1.231,50	-	-	R$ 94.500,00	96
+6	21/01/2027	contemplação	R$ 1.100,00	R$ 109,50	R$ 22,00	R$ 0,00	R$ 1.231,50	-	-	R$ 93.400,00	95
+7	21/02/2027	normal	R$ 1.100,00	R$ 109,50	R$ 22,00	R$ 0,00	R$ 1.231,50	-	-	R$ 92.300,00	94
+8	21/03/2027	normal	R$ 1.100,00	R$ 109,50	R$ 22,00	R$ 0,00	R$ 1.231,50	-	-	R$ 91.200,00	93
+9	21/04/2027	normal	R$ 1.100,00	R$ 109,50	R$ 22,00	R$ 0,00	R$ 1.231,50	-	-	R$ 90.100,00	92
+10	21/05/2027	normal	R$ 1.100,00	R$ 109,50	R$ 22,00	R$ 0,00	R$ 1.231,50	-	-	R$ 89.000,00	91
+11	21/06/2027	normal	R$ 1.100,00	R$ 109,50	R$ 22,00	R$ 0,00	R$ 1.231,50	-	-	R$ 87.900,00	90
+12	21/07/2027	aniversário	R$ 1.155,00	R$ 109,50	R$ 22,00	R$ 0,00	R$ 1.286,50	-	-	R$ 91.140,00	89
+13	21/08/2027	normal	R$ 1.155,00	R$ 109,50	R$ 22,00	R$ 0,00	R$ 1.286,50	-	-	R$ 89.985,00	88
+14	21/09/2027	normal	R$ 1.155,00	R$ 109,50	R$ 22,00	R$ 0,00	R$ 1.286,50	-	-	R$ 88.830,00	87
+15	21/10/2027	normal	R$ 1.155,00	R$ 109,50	R$ 22,00	R$ 0,00	R$ 1.286,50	-	-	R$ 87.675,00	86
+16	21/11/2027	normal	R$ 1.155,00	R$ 109,50	R$ 22,00	R$ 0,00	R$ 1.286,50	-	-	R$ 86.520,00	85
+17	21/12/2027	normal	R$ 1.155,00	R$ 109,50	R$ 22,00	R$ 0,00	R$ 1.286,50	-	-	R$ 85.365,00	84
+18	21/01/2028	normal	R$ 1.155,00	R$ 109,50	R$ 22,00	R$ 0,00	R$ 1.286,50	-	-	R$ 84.210,00	83
+19	21/02/2028	normal	R$ 1.155,00	R$ 109,50	R$ 22,00	R$ 0,00	R$ 1.286,50	-	-	R$ 83.055,00	82
+20	21/03/2028	normal	R$ 1.155,00	R$ 109,50	R$ 22,00	R$ 0,00	R$ 1.286,50	-	-	R$ 81.900,00	81
+21	21/04/2028	normal	R$ 1.155,00	R$ 109,50	R$ 22,00	R$ 0,00	R$ 1.286,50	-	-	R$ 80.745,00	80
+22	21/05/2028	normal	R$ 1.155,00	R$ 109,50	R$ 22,00	R$ 0,00	R$ 1.286,50	-	-	R$ 79.590,00	79
+23	21/06/2028	normal	R$ 1.155,00	R$ 109,50	R$ 22,00	R$ 0,00	R$ 1.286,50	-	-	R$ 78.435,00	78
+24	21/07/2028	aniversário + adiantamento	R$ 1.145,96	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.270,21	R$ 5.000,00	-	R$ 76.697,83	77
+25	21/08/2028	normal	R$ 1.145,96	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.270,21	-	-	R$ 75.551,87	76
+26	21/09/2028	normal	R$ 1.145,96	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.270,21	-	-	R$ 74.405,91	75
+27	21/10/2028	normal	R$ 1.145,96	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.270,21	-	-	R$ 73.259,95	74
+28	21/11/2028	normal	R$ 1.145,96	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.270,21	-	-	R$ 72.113,99	73
+29	21/12/2028	normal	R$ 1.145,96	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.270,21	-	-	R$ 70.968,03	72
+30	21/01/2029	inadimplência	R$ 1.145,95	R$ 103,46	R$ 20,79	R$ 0,00	R$ 0,00	-	R$ 38,11	R$ 70.968,03	71
+31	21/02/2029	inadimplência	R$ 1.145,96	R$ 103,46	R$ 20,79	R$ 0,00	R$ 0,00	-	R$ 38,11	R$ 70.968,03	70
+32	21/03/2029	normal	R$ 1.145,95	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.270,20	-	-	R$ 69.822,08	69
+33	21/04/2029	regularização	R$ 1.145,96	R$ 103,46	R$ 20,79	R$ 0,00	R$ 3.924,93	-	R$ 114,31	R$ 66.384,21	68
+34	21/05/2029	normal	R$ 1.145,95	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.270,20	-	-	R$ 65.238,26	67
+35	21/06/2029	normal	R$ 1.145,96	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.270,21	-	-	R$ 64.092,30	66
+36	21/07/2029	aniversário	R$ 1.203,25	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.327,50	-	-	R$ 66.093,66	65
+37	21/08/2029	normal	R$ 1.203,25	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.327,50	-	-	R$ 64.890,41	64
+38	21/09/2029	normal	R$ 1.203,25	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.327,50	-	-	R$ 63.687,16	63
+39	21/10/2029	normal	R$ 1.203,25	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.327,50	-	-	R$ 62.483,91	62
+40	21/11/2029	normal	R$ 1.203,25	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.327,50	-	-	R$ 61.280,66	61
+41	21/12/2029	normal	R$ 1.203,25	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.327,50	-	-	R$ 60.077,41	60
+42	21/01/2030	normal	R$ 1.203,25	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.327,50	-	-	R$ 58.874,16	59
+43	21/02/2030	normal	R$ 1.203,25	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.327,50	-	-	R$ 57.670,91	58
+44	21/03/2030	normal	R$ 1.203,25	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.327,50	-	-	R$ 56.467,66	57
+45	21/04/2030	normal	R$ 1.203,25	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.327,50	-	-	R$ 55.264,41	56
+46	21/05/2030	normal	R$ 1.203,25	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.327,50	-	-	R$ 54.061,16	55
+47	21/06/2030	normal	R$ 1.203,25	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.327,50	-	-	R$ 52.857,91	54
+48	21/07/2030	aniversário	R$ 1.263,42	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.387,67	-	-	R$ 54.237,38	53
+49	21/08/2030	normal	R$ 1.263,42	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.387,67	-	-	R$ 52.973,96	52
+50	21/09/2030	normal	R$ 1.263,42	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.387,67	-	-	R$ 51.710,54	51
+51	21/10/2030	normal	R$ 1.263,42	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.387,67	-	-	R$ 50.447,12	50
+52	21/11/2030	normal	R$ 1.263,42	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.387,67	-	-	R$ 49.183,70	49
+53	21/12/2030	normal	R$ 1.263,42	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.387,67	-	-	R$ 47.920,28	48
+54	21/01/2031	normal	R$ 1.263,42	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.387,67	-	-	R$ 46.656,86	47
+55	21/02/2031	normal	R$ 1.263,42	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.387,67	-	-	R$ 45.393,44	46
+56	21/03/2031	normal	R$ 1.263,42	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.387,67	-	-	R$ 44.130,02	45
+57	21/04/2031	normal	R$ 1.263,42	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.387,67	-	-	R$ 42.866,60	44
+58	21/05/2031	normal	R$ 1.263,42	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.387,67	-	-	R$ 41.603,18	43
+59	21/06/2031	normal	R$ 1.263,42	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.387,67	-	-	R$ 40.339,76	42
+60	21/07/2031	aniversário	R$ 1.326,59	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.450,84	-	-	R$ 41.030,16	41
+61	21/08/2031	normal	R$ 1.326,59	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.450,84	-	-	R$ 39.703,57	40
+62	21/09/2031	normal	R$ 1.326,59	R$ 103,46	R$ 20,78	R$ 0,00	R$ 1.450,83	-	-	R$ 38.376,98	39
+63	21/10/2031	normal	R$ 1.326,59	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.450,84	-	-	R$ 37.050,39	38
+64	21/11/2031	normal	R$ 1.326,58	R$ 103,46	R$ 20,78	R$ 0,00	R$ 1.450,82	-	-	R$ 35.723,81	37
+65	21/12/2031	normal	R$ 1.326,59	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.450,84	-	-	R$ 34.397,22	36
+66	21/01/2032	normal	R$ 1.326,58	R$ 103,45	R$ 20,78	R$ 0,00	R$ 1.450,81	-	-	R$ 33.070,64	35
+67	21/02/2032	normal	R$ 1.326,59	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.450,84	-	-	R$ 31.744,05	34
+68	21/03/2032	normal	R$ 1.326,58	R$ 103,45	R$ 20,78	R$ 0,00	R$ 1.450,81	-	-	R$ 30.417,47	33
+69	21/04/2032	normal	R$ 1.326,59	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.450,84	-	-	R$ 29.090,88	32
+70	21/05/2032	normal	R$ 1.326,58	R$ 103,45	R$ 20,78	R$ 0,00	R$ 1.450,81	-	-	R$ 27.764,30	31
+71	21/06/2032	normal	R$ 1.326,59	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.450,84	-	-	R$ 26.437,71	30
+72	21/07/2032	aniversário	R$ 1.392,91	R$ 103,45	R$ 20,78	R$ 0,00	R$ 1.517,14	-	-	R$ 26.366,68	29
+73	21/08/2032	normal	R$ 1.392,91	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.517,16	-	-	R$ 24.973,77	28
+74	21/09/2032	normal	R$ 1.392,91	R$ 103,45	R$ 20,78	R$ 0,00	R$ 1.517,14	-	-	R$ 23.580,86	27
+75	21/10/2032	normal	R$ 1.392,91	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.517,16	-	-	R$ 22.187,95	26
+76	21/11/2032	normal	R$ 1.392,90	R$ 103,45	R$ 20,78	R$ 0,00	R$ 1.517,13	-	-	R$ 20.795,05	25
+77	21/12/2032	normal	R$ 1.392,91	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.517,16	-	-	R$ 19.402,14	24
+78	21/01/2033	normal	R$ 1.392,90	R$ 103,45	R$ 20,78	R$ 0,00	R$ 1.517,13	-	-	R$ 18.009,24	23
+79	21/02/2033	normal	R$ 1.392,91	R$ 103,46	R$ 20,79	R$ 0,00	R$ 1.517,16	-	-	R$ 16.616,33	22
+80	21/03/2033	normal	R$ 1.392,90	R$ 103,45	R$ 20,78	R$ 0,00	R$ 1.517,13	-	-	R$ 15.223,43	21
+81	21/04/2033	normal	R$ 761,17	R$ 53,96	R$ 11,36	R$ 0,00	R$ 826,49	-	-	R$ 14.462,26	20
+82	21/05/2033	normal	R$ 761,17	R$ 53,96	R$ 11,36	R$ 0,00	R$ 826,49	-	-	R$ 13.701,09	19
+83	21/06/2033	normal	R$ 761,17	R$ 53,96	R$ 11,36	R$ 0,00	R$ 826,49	-	-	R$ 12.939,92	18
+84	21/07/2033	aniversário	R$ 799,23	R$ 53,96	R$ 11,36	R$ 0,00	R$ 864,55	-	-	R$ 12.787,69	17
+85	21/08/2033	normal	R$ 799,23	R$ 53,96	R$ 11,36	R$ 0,00	R$ 864,55	-	-	R$ 11.988,46	16
+86	21/09/2033	normal	R$ 799,23	R$ 53,96	R$ 11,36	R$ 0,00	R$ 864,55	-	-	R$ 11.189,23	15
+87	21/10/2033	normal	R$ 799,23	R$ 53,96	R$ 11,36	R$ 0,00	R$ 864,55	-	-	R$ 10.390,00	14
+88	21/11/2033	normal	R$ 799,23	R$ 53,96	R$ 11,36	R$ 0,00	R$ 864,55	-	-	R$ 9.590,77	13
+89	21/12/2033	normal	R$ 799,23	R$ 53,96	R$ 11,36	R$ 0,00	R$ 864,55	-	-	R$ 8.791,54	12
+90	21/01/2034	normal	R$ 799,23	R$ 53,96	R$ 11,36	R$ 0,00	R$ 864,55	-	-	R$ 7.992,31	11
+91	21/02/2034	normal	R$ 799,23	R$ 53,96	R$ 11,36	R$ 0,00	R$ 864,55	-	-	R$ 7.193,08	10
+92	21/03/2034	normal	R$ 799,23	R$ 53,96	R$ 11,36	R$ 0,00	R$ 864,55	-	-	R$ 6.393,85	9
+93	21/04/2034	normal	R$ 799,23	R$ 53,96	R$ 11,36	R$ 0,00	R$ 864,55	-	-	R$ 5.594,62	8
+94	21/05/2034	normal	R$ 799,23	R$ 53,96	R$ 11,36	R$ 0,00	R$ 864,55	-	-	R$ 4.795,39	7
+95	21/06/2034	normal	R$ 799,23	R$ 53,96	R$ 11,36	R$ 0,00	R$ 864,55	-	-	R$ 3.996,16	6
+96	21/07/2034	aniversário	R$ 839,19	R$ 53,96	R$ 11,36	R$ 0,00	R$ 904,51	-	-	R$ 3.356,78	5
+97	21/08/2034	normal	R$ 839,20	R$ 53,96	R$ 11,36	R$ 0,00	R$ 904,52	-	-	R$ 2.517,58	4
+98	21/09/2034	normal	R$ 839,19	R$ 53,96	R$ 11,36	R$ 0,00	R$ 904,51	-	-	R$ 1.678,39	3
+99	21/10/2034	normal	R$ 839,20	R$ 53,96	R$ 11,36	R$ 0,00	R$ 904,52	-	-	R$ 839,19	2
+100	21/11/2034	normal	R$ 839,19	R$ 53,95	R$ 11,36	R$ 0,00	R$ 904,50	-	-	R$ 0,00	1
+
+Na tela, a tabela fica rolavel para preservar leitura. No PDF, o cronograma completo e expandido e paginado automaticamente.
+
+EDU
+Conceitos para explicar ao cliente
+
+Blocos educativos selecionados pelo consultor para dar contexto antes da decisao final.
+
+Consorcio
+
+Modelo de compra planejada em grupo, no qual os participantes contribuem mensalmente para formar credito e disputar contemplacao.
+
+Carta de credito
+
+Valor contratado para aquisicao do bem ou composicao do projeto. E a referencia de poder de compra da proposta.
+
+Grupo e cota
+
+O grupo organiza as regras coletivas. A cota identifica a participacao do cliente dentro desse grupo.
+
+Assembleia
+
+Evento periodico em que ocorrem contemplatorios por sorteio, lance ou outras regras previstas pela administradora.
+
+Lance proprio
+
+Recurso adicional do cliente usado para aumentar a forca de contemplacao sem reduzir diretamente a carta contratada.
+
+Lance embutido
+
+Parte da propria carta usada como lance. Aumenta a oferta, mas reduz o credito liquido disponivel apos contemplacao.
+
+Contemplacao
+
+Momento em que o cliente passa a poder usar o credito, desde que cumpra regras cadastrais, contratuais e documentais.
+
+Fundo de reserva
+
+Componente financeiro previsto para proteger o grupo contra necessidades de caixa e eventos operacionais.
+
+Taxa de administracao
+
+Remuneracao da administradora pela operacao do grupo, distribuida ao longo do prazo conforme regra do plano.
+
+Saldo devedor
+
+Valor ainda pendente na operacao, considerando pagamentos, lances, eventos e amortizacao projetada.
+
+Reajuste
+
+Atualizacao periodica da carta, parcelas ou saldo conforme indice e regra contratual do grupo.
+
+Seguro
+
+Componente opcional ou contratual que pode proteger a operacao conforme produto, administradora e perfil.
+
+CALC
+Memoria de calculo explicada
+
+Formulas e leituras comerciais escolhidas para sustentar a proposta final.
+
+PARCELA BASE + TAXA ADM. + FUNDO + SEGURO + EVENTOS
+Parcela total
+Parcela atual estimada: R$ 1.231,50
+
+Mostra o compromisso mensal consolidado que o cliente precisa sustentar durante a jornada.
+
+CARTA DE CREDITO / PRAZO TOTAL DO GRUPO
+Parcela base
+R$ 100.000,00 dividido pelo prazo contratado
+
+E a referencia inicial de amortizacao antes de encargos, reajustes e eventos.
+
+CARTA DE CREDITO X TAXA ADM. TOTAL
+Taxa de administracao
+Taxa projetada: R$ 0,00
+
+Explica o custo de administracao do plano e ajuda a comparar alternativas de grupo.
+
+CARTA DE CREDITO X PERCENTUAL DE FUNDO
+Fundo de reserva
+Fundo projetado: R$ 2.000,00
+
+Ajuda o cliente a entender uma parcela do custo que nao e carta, mas faz parte da estrutura coletiva.
+
+LANCE PROPRIO + LANCE EMBUTIDO
+Lance total
+R$ 20.000,00 + R$ 30.000,00 = R$ 50.000,00
+
+Traduz a forca da oferta de contemplacao e separa o que sai do caixa do que reduz a carta.
+
+CARTA DE CREDITO - LANCE EMBUTIDO
+Carta liquida
+R$ 100.000,00 - R$ 30.000,00 = R$ 70.000,00
+
+Mostra o credito estimado disponivel apos usar parte da carta como lance.
+
+SALDO ANTERIOR - AMORTIZACOES - LANCES + REAJUSTES/EVENTOS
+Saldo devedor projetado
+Saldo final estimado: R$ 0,00
+
+Serve para explicar como a operacao evolui depois da adesao e da estrategia de lance.
+
+PARCELAS PAGAS / PARCELAS TOTAIS
+Percentual percorrido
+0 de 100 parcelas = 0,0%
+
+Ajuda a localizar o cliente na jornada e mostra quanto do plano ja foi percorrido.
+
+10
+Decisao e proximos passos
+
+Transforma a proposta em uma sequencia operacional para consultor e cliente.
+
+Validar premissas da proposta
+
+Confirmar carta, prazo, taxa, fundo de reserva e politica de lance antes de formalizar.
+
+21/08/2026
+Preparar recurso para lance
+
+Definir origem do lance proprio e confirmar o limite de lance embutido permitido.
+
+Acompanhar assembleia
+
+Monitorar a proxima assembleia e atualizar a estrategia conforme o comportamento do grupo.
+
+21/08/2026
+Organizar documentacao
+
+Antecipar analise cadastral, comprovantes e documentos necessarios para uso do credito.
+
+Estrutura selecionada na lousa
+BLOCOS
+17 de 17
+GRAFICOS
+5 de 5
+CONCEITOS
+12 de 12
+FORMULAS
+8 de 8
+1
+Capa da proposta
+2
+Resumo executivo
+3
+Decisao final
+4
+Jornada da operacao
+5
+Composicao do projeto
+6
+Fases do produto
+7
+Estrutura financeira
+8
+Estrategia de contemplacao
+9
+Projecoes
+10
+Cronograma mensal
+11
+Conceitos educativos
+12
+Memoria de calculo
+13
+Proximos passos
+14
+Premissas finais
+REV
+Governanca e aceite local da proposta
+
+Registra a revisao operacional antes do envio, impressao ou handoff consultivo.
+
+STATUS
+Revisada localmente
+VERSAO 1
+RESPONSAVEL
+Bancus Fraternis
+CONSULTOR RESPONSAVEL
+VALIDADE
+28/08/2026
+REGISTRO ATUALIZADO EM AGUARDANDO REGISTRO
+PROPOSTA
+PROP-2026-0100
+MESMO IDENTIFICADOR DO PREVIEW E DO PDF
+OK
+Premissas financeiras
+
+Carta, prazo, taxa, fundo, lance e cronograma foram conferidos.
+
+PENDENTE
+Contexto do cliente
+
+Objetivo, capacidade de pagamento e narrativa comercial foram revisados.
+
+OK
+Documentacao e handoff
+
+Proximos documentos e encaminhamento consultivo estao mapeados.
+
+Observacao da revisao
+
+Aguardando validacao das premissas antes do encaminhamento.
+
+Premissas e observacoes
+Valores estimados com base nos parametros informados e sujeitos a regras da administradora.
+Parcelas, saldo devedor e custo efetivo podem variar por reajuste, assembleia, lance e eventos contratuais.
+Esta proposta e uma simulacao executiva e nao substitui a validacao formal do grupo, contrato e credito.
+Gerado em 21/08/2026
+Versao da simulacao: Bancus Fraternis ConsorcioPro v7
+Responsavel: Bancus Fraternis
+Simulação educacional e comercial. Contemplação não garantida.
+Link opaco, revogável e protegido contra indexação.
+
+=== SIMULADOR INICIO ===
+
+FASE 1 - BASE REAL
+
+OK - 17.396 grupos carregados.
+
+Base real conectada para filtros, prateleira e simulacao.
+
+100%
+Conexao segura com JSON local
+Conexao
+Download
+Validacao
+Filtros
+Prateleira
+ConsórcioPro
+Projeto em preparação
+Simulação local
+Status
+Em preparação
+Versão
+v1.0
+Exemplo
+Salvar
+Carregar
+Resetar
+Consultor
+Cliente
+Decisão
+Composição
+Lance
+Eventos
+Resultados
+Cronograma
+Comparação
+Proposta
+Decisão operacional
+Simulador em modo próximo passo.
+
+O painel traduz base real, prateleira, sacola, cálculo e histórico salvo em uma leitura única para o consultor.
+
+CONTEXTO
+0/100 prontidao
+
+Complete renda mensal antes de comparar cenarios.
+
+PERFIL FINANCEIRO
+BASE
+Base real carregada
+
+17.396 grupos disponiveis para filtros, indice operacional e comparacao.
+
+CONFERIR STATUS DA CONEXÃO
+PRATELEIRA
+17.396 grupos filtrados
+
+Escolha os grupos que devem entrar na sacola antes de avançar para parâmetros.
+
+IR PARA A PRATELEIRA
+RESULTADO
+Aguardando carrinho
+
+O resumo financeiro depende de pelo menos um grupo selecionado.
+
+GERAR RESUMO FINANCEIRO
+CONTINUIDADE
+0 simulações salvas
+
+Nenhum cenário salvo ainda. Finalize um cálculo para criar continuidade comercial.
+
+ABRIR SIMULAÇÕES SALVAS
+Completar diagnostico
+Ver calculadoras
+Prontidao para simular
+Diagnostico recomendado antes da prateleira
+Completar diagnostico
+PRONTIDAO
+0/100
+ORIGEM
+Perfil financeiro
+PENDENCIAS
+Renda mensal, Custos fixos, Reserva atual, Capacidade segura
+VALOR ALVO
+-
+
+Complete renda mensal antes de comparar cenarios.
+
+custos-fixos
+reserva-emergencia
+capacidade-credito
+compra-vista-parcelado
+1
+Consultor
+2
+Cliente
+3
+Filtros
+4
+Prateleira
+5
+Parâmetros
+6
+Eventos
+7
+Resultados
+8
+Tabela
+9
+Comparação
+10
+Proposta final
+Voltar ao portal
+ONLINE
+Base real conectada
+
+Base real conectada para filtros, prateleira e simulacao.
+
+Progresso da base
+100%
+REGISTROS
+17.396 grupos
+FONTE
+Base compacta JSON
+CAMINHO
+../data_base/Tab_Grupos_Consorcio.compact.json
+Configuracoes globais aplicadas
+
+Esta jornada esta usando as preferencias salvas em Configuracoes.
+
+FASE 4
+Todos os segmentos
+Todas as administradoras
+20 grupos/pagina
+Indice operacional automatico
+Lance ate 30%
+Reajuste 5%
+MOB 18
+ETAPA 1 DE 10
+Dados do Consultor
+
+Identifique o vendedor/consultor responsável por esta simulação.
+
+CO
+Identificação Profissional
+Nome Completo
+E-mail Profissional
+Telefone / WhatsApp
+Empresa / Escritório
+Código do Consultor
+Data da Simulação
+Próximo: Dados do Cliente
+ATALHOS DA JORNADA
+Ocultar ou exibir painel
+SIMULADOR V8
+Base real, prateleira, resultado e retomada conectados.
+BASE
+Status da conexao
+ESCOLHA
+Prateleira de grupos
+DECISAO
+Proximo passo
+RESULTADO
+Resumo financeiro
+CONTINUIDADE
+Retomar na Carteira
+Guia de Conceitos - Entenda o Consórcio
+
+Clique em cada card para aprender sobre os conceitos fundamentais do consórcio.
+
+CC
+Carta de Crédito
+É o valor que o consorciado terá direito a receber quando for contemplado. Funciona como o "poder de compra" do consórcio para adquirir o bem desejado.
+Carta de Crédito = Valor do bem desejado
+Exemplo: Se você deseja comprar um imóvel de R$ 100.000,00, sua carta de crédito será de R$ 100.000,00.
+
+A carta pode ser utilizada para comprar imóveis, veículos, ou contratar serviços, dependendo do tipo de consórcio.
+
+TA
+Saldo Devedor Inicial
+É o montante que o consorciado deve pagar ao longo do plano. Pode ser igual à carta de crédito ou incluir os custos totais, dependendo da política da administradora.
+Política A: Saldo = Carta
+Política B: Saldo = Carta + Taxa Adm + Fundo Reserva + Seguro
+Exemplo: Carta R$ 100.000 | Política A: Saldo = R$ 100.000 | Política B: Saldo = R$ 100.000 + R$ 16.000 + R$ 2.000 = R$ 118.000
+
+A política escolhida impacta diretamente o valor das parcelas.
+
+PZ
+Prazo Total
+É a quantidade total de meses (N) do grupo de consórcio. Define por quanto tempo as parcelas serão pagas.
+N = número total de meses do grupo
+Exemplo: Um grupo de 100 meses terá 100 parcelas mensais.
+
+Prazos comuns: 60, 80, 100, 120, 180 ou 200 meses.
+
+AS
+Prazo Restante
+Quantidade de parcelas que ainda faltam para encerrar o plano. Diminui a cada mês.
+Prazo_Restante = Prazo_Anterior − 1
+Exemplo: No mês 18 de um plano de 100 meses: Prazo Restante = 100 − 17 = 83 meses.
+
+O prazo restante é usado como divisor para recalcular a parcela a cada mês.
+
+FR
+Parcela Base
+Valor que corresponde à fração do saldo devedor pelo prazo restante. É o componente principal da parcela.
+Parcela Base = Saldo Devedor ÷ Prazo Restante
+Exemplo: Saldo R$ 100.000, Prazo 100 meses → Parcela Base = R$ 1.000,00
+
+A parcela base muda quando há reajuste (aniversário), lance (contemplação) ou adiantamento.
+
+SG
+Parcela Total
+É a soma da parcela base com os componentes de taxa de administração, fundo de reserva e seguro (diluídos mensalmente).
+Parcela Total = Parcela Base + (Taxa Adm ÷ N) + (Fundo Reserva ÷ N) + Seguro mensal
+Exemplo: Parcela Base R$ 1.000 + Taxa Adm R$ 160 + FR R$ 20 = Parcela Total R$ 1.180
+
+A parcela total é o valor efetivamente cobrado do consorciado a cada mês.
+
+AD
+Taxa de Administração
+Remuneração da administradora pela gestão do grupo. É um percentual sobre a carta de crédito, diluído ao longo do prazo.
+Taxa Adm Total = Carta × %Taxa
+Taxa Adm Mensal = Taxa Adm Total ÷ N
+Exemplo: Carta R$ 100.000, Taxa 16% → Total: R$ 16.000 → Mensal: R$ 160,00 (em 100 meses)
+
+Taxas típicas variam de 10% a 20%, dependendo do tipo de bem e da administradora.
+
+GR
+Fundo de Reserva
+Valor destinado a proteger o grupo contra inadimplência e riscos. Pode ser devolvido ao final do grupo se não utilizado.
+FR Total = Carta × %FR
+FR Mensal = FR Total ÷ N
+Exemplo: Carta R$ 100.000, FR 2% → Total: R$ 2.000 → Mensal: R$ 20,00
+
+Geralmente varia de 1% a 5% do valor da carta.
+
+CT
+Seguro Opcional
+Proteção adicional que pode cobrir morte, invalidez ou outros riscos. Pode ser percentual ou valor fixo mensal.
+Seguro Total = Carta × %Seguro (ou Valor Fixo × N)
+Exemplo: Carta R$ 100.000, Seguro 0% → Sem custo adicional de seguro.
+
+O seguro é opcional em muitas administradoras.
+
+RJ
+Índice de Reajuste
+Índice econômico usado para corrigir o saldo devedor anualmente. Mantém o poder de compra da carta de crédito.
+Saldo Ajustado = Saldo × (1 + Índice)
+Exemplo: Saldo R$ 80.000, IPCA 5% → Saldo Ajustado = R$ 80.000 × 1,05 = R$ 84.000
+
+Índices comuns: IPCA (geral), INCC (imóveis), FIPE (veículos).
+
+AN
+Mês Aniversário do Grupo
+Data anual em que o saldo devedor é reajustado pelo índice escolhido. Impacta diretamente no valor das parcelas futuras.
+No mês aniversário:
+Saldo = Saldo_Anterior × (1 + Índice)
+Parcela = Saldo ÷ Prazo_Restante
+Exemplo: Mês 12: Saldo R$ 83.000 × 1,05 = R$ 87.150 → Nova parcela = R$ 87.150 ÷ 88 = R$ 990,34
+
+O reajuste é aplicado uma vez por ano, no mês-aniversário definido pelo grupo.
+
+CO
+Contemplação
+Momento em que o consorciado recebe a carta de crédito, por sorteio ou lance. A partir deste ponto pode adquirir o bem.
+Se houver lance:
+Novo_Saldo = Saldo − Lance_Total
+Parcela = Novo_Saldo ÷ Prazo_Restante
+Exemplo: Contemplação no mês 18: Saldo R$ 82.000, Lance R$ 50.000 → Novo Saldo = R$ 32.000
+
+Após a contemplação, o consorciado continua pagando as parcelas restantes.
+
+LN
+Lance Livre
+Oferta feita com recursos próprios do consorciado para antecipar a contemplação. O valor é abatido do saldo devedor.
+Lance Livre = Carta × %Lance_Próprio
+Exemplo: Carta R$ 100.000, Lance 20% → Lance = R$ 20.000
+
+Quanto maior o lance, maior a chance de contemplação e menor o saldo restante.
+
+LE
+Lance Fixo
+Lance com valor pré-definido pela administradora. Todos os participantes oferecem o mesmo percentual.
+Lance Fixo = Carta × %Lance_Fixo
+Exemplo: Carta R$ 100.000, Lance Fixo 25% → Lance = R$ 25.000
+
+No lance fixo, a contemplação ocorre por sorteio entre os que ofertaram.
+
+LP
+Lance Embutido
+Parte da própria carta de crédito é usada como lance. Reduz o valor líquido recebido, mas não exige desembolso extra.
+Lance Embutido = Carta × %Lance_Embutido
+Carta Líquida = Carta − Lance Embutido
+Exemplo: Carta R$ 100.000, Embutido 30% → Lance = R$ 30.000, Carta Líquida = R$ 70.000
+
+O lance embutido facilita a contemplação mas reduz o poder de compra.
+
+FG
+Lance com FGTS
+Para consórcios de imóveis, o FGTS pode ser utilizado como lance ou para amortizar parcelas.
+Lance FGTS = Saldo do FGTS disponível
+Exemplo: FGTS disponível: R$ 15.000 → Usado como lance para antecipar contemplação.
+
+O uso do FGTS é restrito a consórcios imobiliários e segue regras do governo.
+
+AP
+Adiantamento de Parcelas
+Pagamento antecipado de parcelas futuras. Pode ser usado para reduzir o saldo devedor ou encurtar o prazo.
+Estratégia 1 (Redução de saldo):
+Novo_Saldo = Saldo − Valor_Adiantado
+Parcela = Novo_Saldo ÷ Prazo_Restante
+
+Estratégia 2 (Redução de prazo):
+Prazo_Restante = Prazo − Parcelas_Abatidas
+Exemplo: Saldo R$ 50.000, Adiantamento R$ 10.000 → Novo Saldo = R$ 40.000
+
+A escolha da estratégia impacta de formas diferentes o fluxo futuro.
+
+IN
+Inadimplência
+Quando o consorciado deixa de pagar parcelas no prazo. Gera multa e juros sobre os valores em aberto.
+Multa = Parcela × %Multa
+Juros = Parcela × %Juros × Meses_Atraso
+Total em Aberto = Parcela + Multa + Juros
+Exemplo: Parcela R$ 1.180, Multa 2%, Juros 1% a.m., 3 meses → Multa: R$ 23,60, Juros: R$ 35,40
+
+A inadimplência pode levar à exclusão do grupo. Regularize o quanto antes.
+
+ML
+Carta Líquida
+É o valor efetivo que o consorciado recebe após descontar o lance embutido. Representa o poder de compra real.
+Carta Líquida = Carta − Lance Embutido
+Exemplo: Carta R$ 100.000, Lance Embutido R$ 30.000 → Carta Líquida = R$ 70.000
+
+Se não houver lance embutido, a carta líquida é igual à carta de crédito.
+
+SD
+Valor Total do Plano
+Soma de todos os custos do consórcio: carta de crédito + taxa de administração + fundo de reserva + seguro.
+Valor Total = Carta + Taxa Adm Total + FR Total + Seguro Total
+Exemplo: Carta R$ 100.000 + Taxa R$ 16.000 + FR R$ 2.000 + Seguro R$ 0 = R$ 118.000
+
+Este valor representa o custo total teórico do consórcio sem considerar reajustes.
+
+CL
+Evento Mensal
+Cada mês do consórcio tem um "evento" que identifica o tipo de cálculo aplicado naquele período.
+Eventos possíveis:
+• Adesão (mês 1)
+• Normal
+• Aniversário (reajuste)
+• Contemplação
+• Adiantamento
+• Inadimplência
+• Regularização
+Exemplo: Mês 1 = Adesão | Mês 12 = Aniversário | Mês 18 = Contemplação
+
+O evento determina qual regra de cálculo é aplicada em cada mês.
+
+ConsórcioPro Simulador de Consórcio Profissional
+
+Simulação educacional. Não constitui oferta vinculante.
+
+=== RESULTADOS ===
+
+ETAPA 7 DE 10
+Resumo da Proposta Estruturada de Consórcio
+
+Visão executiva da operação, jornada do cliente, estratégia financeira e próximos passos.
+
+PROPOSTA PROP-2026-0100 | VALIDADA
+Resumo da Proposta Estruturada
+
+Operacao desenhada para contemplacao planejada, uso eficiente do credito e leitura clara dos compromissos.
+
+CLIENTE
+Cliente Demonstracao
+GRUPO / COTA
+2 grupos estruturados | 2 cota(s)
+Exportar PDF
+MAPA
+Blocos que conversam entre si
+
+A leitura do PDF e da tela foi organizada para cada grafico responder a uma decisao comercial concreta.
+
+DECISAO
+O que esta sendo contratado
+R$ 100.000,00
+
+A carta de credito conversa com a composicao do projeto, os grupos escolhidos e a finalidade declarada pelo cliente.
+
+Conecta blocos 01, 03 e 05
+CAIXA
+Como o compromisso aparece
+R$ 1.231,50
+
+A parcela atual conversa com a curva de parcelas e com a capacidade de manter o plano ate a contemplacao.
+
+Conecta blocos 01, 06 e 08
+LANCE
+Qual alavanca move a contemplacao
+R$ 50.000,00
+
+O lance combina recurso proprio e embutido, impactando credito liquido, saldo e estrategia de assembleia.
+
+Conecta blocos 02, 07 e 09
+RISCO
+Onde a conversa precisa continuar
+100 parcelas
+
+O cronograma mostra se a operacao permanece coerente com prazo, saldo, eventos e proximos passos.
+
+Conecta blocos 08, 09 e 10
+DEC
+Resultado como decisao
+
+Traduz a simulacao em recomendacao, riscos, premissas e proximo passo comercial.
+
+REVISAR
+Revisar premissas antes da proposta
+
+A proposta ainda precisa de ajuste ou confirmacao objetiva para nao levar uma decisao fragil ao cliente.
+
+Credito contratado de R$ 100.000,00 com caixa liquida de R$ 70.000,00.
+Parcela atual projetada em R$ 1.231,50.
+2 grupos sustentam a composicao da proposta.
+Lance total de R$ 50.000,00 foi considerado no cronograma.
+Revisar premissas
+PREMISSAS QUE SUSTENTAM
+Carta e credito liquido: R$ 100.000,00 contratados, R$ 70.000,00 estimados para uso apos lance embutido.
+Parcela de referencia: R$ 1.231,50 com prazo de 100 meses.
+Lance total: R$ 50.000,00 combinando recursos proprios, embutidos, FGTS ou fixo conforme configuracao.
+Taxa media informada: 9,9% com fundo de reserva e seguro conforme regras do grupo.
+RISCOS PARA EXPLICAR
+Perfil financeiro com prontidao 0/100. Reforce renda, reserva e capacidade antes do aceite.
+CREDITO LIQUIDO
+R$ 70.000,00
+Referencia: R$ 100.000,00
+
+70,0% da carta permanece disponivel para uso.
+
+01
+Numeros estrategicos
+
+Os indicadores abaixo priorizam decisao, caixa e compromisso.
+
+CREDITO TOTAL
+R$ 100.000,00
+Valor de referencia da operacao.
+CAIXA LIQUIDA
+R$ 70.000,00
+Credito estimado apos lance embutido.
+PARCELA ATUAL
+R$ 1.231,50
+Compromisso mensal projetado.
+PRAZO RESTANTE
+94 meses
+Horizonte apos contemplacao.
+TOTAL DO PLANO
+R$ 111.900,00
+Carta, taxas e componentes.
+TOTAL PAGO
+R$ 130.827,87
+Projecao ate encerramento.
+SALDO DEVEDOR
+R$ 0,00
+Saldo ao final da projecao.
+PERCORRIDO
+0,0%
+Avanco estimado da jornada.
+02
+Jornada do cliente
+
+A proposta mostra o caminho entre adesao, lance, contemplacao e uso
+
+=== PROPOSTA INTERNA ===
+
+
+
+
+            Etapa 10 de 10 · Proposta final
+            Uma proposta para compreender antes de decidir.
+            Todos os cálculos, premissas e escolhas reunidos em uma leitura segura para o cliente.
+
+
+
+
+              Motor
+              ConsórcioPro 2.0.0
+
+
+
+              Base de cálculo
+              Base de grupos conectada
+
+
+
+              Gerado em
+              21/08/2026
+
+
+
+              Proposta
+              PROP-2026-0100
+
+
+
+
+
+
+
+            Status da publicação
+            Em revisão
+
+
+
+               Visualizar como cliente
+
+
+               Imprimir
+
+
+               Baixar PDF
+
+
+               Publicar proposta
+
+
+
+
+        Compare ao menos dois grupos ou cenários do projeto antes de preparar a proposta.
+
+
+
+            Link seguro da proposta
+            Publicação ativa
+            Validade pendente
+
+          Link público somente leitura
+
+
+            Copiar link
+            Abrir como cliente
+            Revogar acesso
+
+
+
+
+
+
+              Estrutura da proposta
+              14 seções
+
+
+              01Síntese executivaRevisado
+              02Perfil e objetivoRevisado
+              03Projeto multigrupoRevisado
+              04Grupos selecionadosRevisado
+              05Valores contratadosRevisado
+              06Estratégia de lanceRevisado
+              07Evolução das parcelasRevisado
+              08EventosRevisado
+              09ComparaçãoRevisado
+              10RiscosRevisado
+              11CronogramaRevisado
+              12Memória de cálculoRevisado
+              13Fontes e premissasRevisado
+              14Aceite e próximos passosRevisado
+
+
+               Recolher menu
+
+
+
+
+
+
+
+
+                  Proposta comercial
+                  PROP-2026-0100
+
+
+
+
+                  Seu plano. Seu tempo.Nossa estrutura.
+                  Uma leitura conectada de crédito, grupos, lance, prazo e condições para decidir com clareza.
+                  Simulação; não garante contemplação.
+
+
+
+
+                Crédito contratadoR$ 100.000,00
+                Crédito líquidoR$ 70.000,00
+                Parcela inicialR$ 1.231,50
+                Lance configuradoR$ 50.000,00
+
+
+
+
+
+
+
+
+
+
+            Proposta PROP-2026-0100 | Validada
+            Resumo da Proposta Estruturada
+            Operacao desenhada para contemplacao planejada, uso eficiente do credito e leitura clara dos compromissos.
+
+
+
+
+            ClienteCliente Demonstracao
+            Grupo / Cota2 grupos estruturados | 2 cota(s)
+
+          Exportar PDF
+
+
+
+
+
+          MAPA
+          Blocos que conversam entre siA leitura do PDF e da tela foi organizada para cada grafico responder a uma decisao comercial concreta.
+
+
+
+
+              Decisao
+              O que esta sendo contratado
+              R$ 100.000,00
+              A carta de credito conversa com a composicao do projeto, os grupos escolhidos e a finalidade declarada pelo cliente.
+              Conecta blocos 01, 03 e 05
+
+
+
+              Caixa
+              Como o compromisso aparece
+              R$ 1.231,50
+              A parcela atual conversa com a curva de parcelas e com a capacidade de manter o plano ate a contemplacao.
+              Conecta blocos 01, 06 e 08
+
+
+
+              Lance
+              Qual alavanca move a contemplacao
+              R$ 50.000,00
+              O lance combina recurso proprio e embutido, impactando credito liquido, saldo e estrategia de assembleia.
+              Conecta blocos 02, 07 e 09
+
+
+
+              Risco
+              Onde a conversa precisa continuar
+              100 parcelas
+              O cronograma mostra se a operacao permanece coerente com prazo, saldo, eventos e proximos passos.
+              Conecta blocos 08, 09 e 10
+
+
+
+
+
+
+
+          DEC
+          Resultado como decisaoTraduz a simulacao em recomendacao, riscos, premissas e proximo passo comercial.
+
+
+
+            revisar
+            Revisar premissas antes da proposta
+            A proposta ainda precis

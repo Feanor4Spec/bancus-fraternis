@@ -15,7 +15,10 @@
     "repeatUnchanged": true,
     "secondVersion": 2,
     "changedMetrics": 2,
-    "changedBuilder": 1
+    "changedBuilder": 1,
+    "liveDetailsPreserved": true,
+    "localStoragePIIFree": true,
+    "legacyPIIPurged": true
   },
   "failures": []
 }

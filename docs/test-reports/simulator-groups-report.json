@@ -17,7 +17,10 @@
       5,
       6
     ],
-    "admins": 120
+    "admins": 120,
+    "uniqueGroupKeys": 17396,
+    "maturityAboveOne": 641,
+    "maturityMax": 6
   },
   "loader": {
     "returned": 17396,
@@ -35,7 +38,7 @@
         "bytes": 0,
         "generatedAt": "2026-05-08T22:52:58.885Z",
         "sourceSha256": "b5172f44493f25d37280743fd621b4f6e807cf1702d88669dab1206795b4b767",
-        "loadedAt": "2026-05-11T23:57:43.283Z"
+        "loadedAt": "2026-08-22T04:57:54.439Z"
       }
     }
   },
@@ -57,7 +60,12 @@
       4,
       5,
       6
-    ]
+    ],
+    "uniqueGroupKeys": 17396,
+    "maturityAboveOne": 641,
+    "maturityMax": 6,
+    "provenanceReady": 17396,
+    "baseDefaultsFlagged": 17396
   },
   "uiContract": {
     "simulatorUsesRealJson": true,

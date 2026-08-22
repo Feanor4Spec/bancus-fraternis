@@ -1,0 +1,910 @@
+{
+  "schema": "bancus.database-provider-gate.v1",
+  "phase": "8AO / P3.3B",
+  "generatedAt": "2026-08-22T05:21:59.736Z",
+  "status": "PASS",
+  "runtime": {
+    "node": "v24.19.0",
+    "platform": "win32",
+    "realPostgresqlConnectionUsed": false,
+    "reportPath": "docs/test-reports/database-provider-report.json"
+  },
+  "summary": {
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "gaps": 1
+  },
+  "checks": [
+    {
+      "id": "provider.contract",
+      "title": "Contrato configuravel de providers",
+      "status": "PASS",
+      "durationMs": 1,
+      "evidence": {
+        "defaultProvider": "sqlite",
+        "supportedProviders": [
+          "sqlite",
+          "postgresql"
+        ],
+        "errorCodes": [
+          "BANCUS_DATABASE_URL_REQUIRED",
+          "BANCUS_POSTGRESQL_DRIVER_MISSING",
+          "BANCUS_POSTGRESQL_CONNECTION_FAILED",
+          "BANCUS_POSTGRESQL_SSL_REQUIRED",
+          "BANCUS_POSTGRESQL_SCHEMA_MISMATCH",
+          "BANCUS_POSTGRESQL_MIGRATION_MANIFEST_INVALID",
+          "BANCUS_OWNER_CONFLICT",
+          "BANCUS_USER_EMAIL_CONFLICT",
+          "BANCUS_USER_HAS_RELATED_RECORDS"
+        ]
+      }
+    },
+    {
+      "id": "postgresql.migration-contract",
+      "title": "Migration PostgreSQL corresponde ao manifest versionado",
+      "status": "PASS",
+      "durationMs": 3,
+      "evidence": {
+        "migration": "postgresql/001_bancus_fraternis.sql",
+        "checksum": "sha256:6f1564fe5da28e4df03db11f14299a64ae8b681f1b012e6a371d053e1f856a42",
+        "schemaVersion": "bancus-fraternis.local-db.v1",
+        "tables": 8,
+        "columns": 107,
+        "indexes": 19,
+        "transactional": true
+      }
+    },
+    {
+      "id": "postgresql.proposal-migration-contract",
+      "title": "Migration PostgreSQL de proposta e append-only",
+      "status": "PASS",
+      "durationMs": 2,
+      "evidence": {
+        "migration": "postgresql/002_proposal_secure_share.sql",
+        "checksum": "sha256:bcf2c62eb88ba89ae14028a612695a0e8818b47528209b483a16922d25fea710",
+        "tables": [
+          "proposal_snapshots",
+          "proposal_shares"
+        ],
+        "appendOnlyTriggers": [
+          "UPDATE",
+          "DELETE"
+        ],
+        "plaintextTokenColumn": false,
+        "healthProviderContract": true
+      }
+    },
+    {
+      "id": "sqlite.default",
+      "title": "SQLite padrao permanece funcional",
+      "status": "PASS",
+      "durationMs": 122,
+      "evidence": {
+        "provider": "sqlite",
+        "quickCheck": "ok",
+        "persistedEvent": "EVT-PROVIDER-DEFAULT"
+      }
+    },
+    {
+      "id": "sqlite.explicit",
+      "title": "SQLite explicito permanece funcional",
+      "status": "PASS",
+      "durationMs": 118,
+      "evidence": {
+        "provider": "sqlite",
+        "quickCheck": "ok",
+        "persistedEvent": "EVT-PROVIDER-EXPLICIT"
+      }
+    },
+    {
+      "id": "sqlite.owner-and-identity-guards",
+      "title": "SQLite bloqueia takeover e migra identidade vinculada",
+      "status": "PASS",
+      "durationMs": 177,
+      "evidence": {
+        "leadTakeover": "blocked-409",
+        "snapshotTakeover": "blocked-409",
+        "emailMigration": "committed-atomically",
+        "duplicateEmail": "blocked-409",
+        "oldEmailInheritedRecords": 0,
+        "linkedDelete": "blocked-409",
+        "ownerAndPayloadPreserved": true
+      }
+    },
+    {
+      "id": "sqlite.user-status-rollback",
+      "title": "SQLite reverte inativacao se a revogacao de sessoes falhar",
+      "status": "PASS",
+      "durationMs": 337,
+      "evidence": {
+        "injectedFailure": "session-revocation",
+        "userStatusAfterRollback": "active",
+        "priorSessionStillValid": true,
+        "transaction": "SAVEPOINT/ROLLBACK TO"
+      }
+    },
+    {
+      "id": "sqlite.large-json-envelope",
+      "title": "SQLite trunca payload grande em JSON parseavel",
+      "status": "PASS",
+      "durationMs": 133,
+      "evidence": {
+        "truncated": true,
+        "originalLength": 89321,
+        "maxLength": 50000,
+        "parseable": true
+      }
+    },
+    {
+      "id": "sqlite.snapshot-payload-boundary",
+      "title": "SQLite preserva snapshot grande e rejeita somente acima de 4 MiB",
+      "status": "PASS",
+      "durationMs": 159,
+      "evidence": {
+        "eventLimitChars": 50000,
+        "persistedLimitChars": 4194304,
+        "preservedPayloadChars": 89321,
+        "preservedExactly": true,
+        "rejectedPayloadChars": 4238769,
+        "rejection": {
+          "code": "BANCUS_PAYLOAD_TOO_LARGE",
+          "status": 413
+        },
+        "partialRowsAfterRejection": 0
+      }
+    },
+    {
+      "id": "sqlite.direct-records-survive-reopen",
+      "title": "Rebuild SQLite preserva registros diretos apos reabertura",
+      "status": "PASS",
+      "durationMs": 130,
+      "evidence": {
+        "reopened": true,
+        "preserved": [
+          "lead",
+          "simulation",
+          "proposal"
+        ],
+        "destructiveRebuildDeletes": 0
+      }
+    },
+    {
+      "id": "provider.unknown",
+      "title": "Provider desconhecido falha sem fallback",
+      "status": "PASS",
+      "durationMs": 0,
+      "evidence": {
+        "fallbackCreated": false,
+        "error": {
+          "code": "",
+          "message": "BANCUS_DB_PROVIDER=unknown-provider-gate nao possui adapter implementado. Providers suportados nesta versao: sqlite, postgresql."
+        }
+      }
+    },
+    {
+      "id": "postgresql.url-required",
+      "title": "PostgreSQL sem URL falha explicitamente",
+      "status": "PASS",
+      "durationMs": 1,
+      "evidence": {
+        "code": "BANCUS_DATABASE_URL_REQUIRED",
+        "message": "BANCUS_DATABASE_URL e obrigatoria quando BANCUS_DB_PROVIDER=postgresql."
+      }
+    },
+    {
+      "id": "postgresql.driver-missing",
+      "title": "PostgreSQL sem driver falha explicitamente e sem segredo",
+      "status": "PASS",
+      "durationMs": 1,
+      "evidence": {
+        "code": "BANCUS_POSTGRESQL_DRIVER_MISSING",
+        "message": "Driver PostgreSQL opcional indisponivel. Injete options.pool/options.Pool ou instale o modulo pg."
+      }
+    },
+    {
+      "id": "postgresql.connection-failed",
+      "title": "PostgreSQL sem conexao falha explicitamente e sem segredo",
+      "status": "PASS",
+      "durationMs": 0,
+      "evidence": {
+        "code": "BANCUS_POSTGRESQL_CONNECTION_FAILED",
+        "message": "Nao foi possivel conectar e inicializar o provider postgresql.",
+        "networkUsed": false,
+        "mockQueries": 1
+      }
+    },
+    {
+      "id": "postgresql.schema-mismatch",
+      "title": "PostgreSQL sem schema falha explicitamente e sem segredo",
+      "status": "PASS",
+      "durationMs": 1,
+      "evidence": {
+        "code": "BANCUS_POSTGRESQL_SCHEMA_MISMATCH",
+        "message": "Schema PostgreSQL incompleto. Tabelas ausentes: users, sessions, events, snapshots, journey_entities, journey_leads, journey_simulations, journey_proposals, proposal_snapshots, proposal_shares.",
+        "networkUsed": false,
+        "schemaInspection": true
+      }
+    },
+    {
+      "id": "postgresql.migration-mismatch",
+      "title": "PostgreSQL com migration divergente falha explicitamente",
+      "status": "PASS",
+      "durationMs": 1,
+      "evidence": {
+        "code": "BANCUS_POSTGRESQL_SCHEMA_MISMATCH",
+        "message": "Migration PostgreSQL obrigatoria nao confirmada: postgresql/001_bancus_fraternis.sql.",
+        "networkUsed": false,
+        "migrationInspection": true
+      }
+    },
+    {
+      "id": "postgresql.manifest-invalid",
+      "title": "Manifest invalido falha antes de usar o banco",
+      "status": "PASS",
+      "durationMs": 0,
+      "evidence": {
+        "code": "BANCUS_POSTGRESQL_MIGRATION_MANIFEST_INVALID",
+        "message": "Manifest de migrations incompativel com o schema esperado pelo provider postgresql.",
+        "queriesBeforeFailure": 0
+      }
+    },
+    {
+      "id": "postgresql.migration-checksum",
+      "title": "Checksum adulterado bloqueia boot antes de queries",
+      "status": "PASS",
+      "durationMs": 1,
+      "evidence": {
+        "code": "BANCUS_POSTGRESQL_MIGRATION_MANIFEST_INVALID",
+        "message": "Checksum da migration PostgreSQL nao confere: postgresql/001_bancus_fraternis.sql.",
+        "tamperedMigration": "postgresql/001_bancus_fraternis.sql",
+        "queriesBeforeFailure": 0
+      }
+    },
+    {
+      "id": "postgresql.ssl-required",
+      "title": "Pool PostgreSQL remoto recusa SSL ausente ou inseguro",
+      "status": "PASS",
+      "durationMs": 0,
+      "evidence": {
+        "code": "BANCUS_POSTGRESQL_SSL_REQUIRED",
+        "message": "O provider PostgreSQL gerenciado exige TLS com verificacao de certificado."
+      }
+    },
+    {
+      "id": "postgresql.pool-configuration",
+      "title": "Pool proprio prioriza opcoes seguras sobre query params da URL",
+      "status": "PASS",
+      "durationMs": 160,
+      "evidence": {
+        "sslRejectUnauthorized": true,
+        "max": 7,
+        "connectionTimeoutMillis": 4321,
+        "idleTimeoutMillis": 23456,
+        "queryTimeoutMillis": 8765,
+        "hostileUrlParametersIgnored": [
+          "sslmode",
+          "ssl",
+          "query_timeout",
+          "statement_timeout"
+        ],
+        "connectionUsesExplicitFields": true,
+        "verifiedWithPgConnectionParameters": true,
+        "errorListener": true,
+        "forwardedErrorRedacted": true,
+        "networkUsed": false
+      }
+    },
+    {
+      "id": "postgresql.seed-opt-in",
+      "title": "PostgreSQL nao cria usuarios seed por padrao",
+      "status": "PASS",
+      "durationMs": 74,
+      "evidence": {
+        "defaultSeedCount": 0,
+        "explicitSeedCount": 3,
+        "networkUsed": false
+      }
+    },
+    {
+      "id": "postgresql.proposal-lifecycle",
+      "title": "Repositorio PostgreSQL preserva ciclo completo da proposta",
+      "status": "PASS",
+      "durationMs": 6,
+      "evidence": {
+        "provider": "postgresql",
+        "proposalShareProvider": "postgresql",
+        "providerCoherent": true,
+        "statuses": [
+          "rascunho",
+          "validada",
+          "revisada",
+          "publicada",
+          "revogada"
+        ],
+        "publicResolvedBeforeRevoke": true,
+        "resolveAfterRevoke": "share-revoked",
+        "snapshots": 5,
+        "shares": 1,
+        "activeShares": 0,
+        "networkUsed": false
+      }
+    },
+    {
+      "id": "postgresql.snapshot-rollback",
+      "title": "Falha materializada reverte snapshot e indices PostgreSQL",
+      "status": "PASS",
+      "durationMs": 2,
+      "evidence": {
+        "injectedFailure": "materialized-write",
+        "snapshotRowsAfterRollback": 0,
+        "entityRowsAfterRollback": 0,
+        "materializedRowsAfterRollback": 0,
+        "begin": true,
+        "rollback": true,
+        "nestedSavepoints": true,
+        "networkUsed": false
+      }
+    },
+    {
+      "id": "postgresql.user-status-rollback",
+      "title": "PostgreSQL reverte inativacao se a revogacao de sessoes falhar",
+      "status": "PASS",
+      "durationMs": 48,
+      "evidence": {
+        "injectedFailure": "session-revocation",
+        "userStatusAfterRollback": "active",
+        "priorSessionStillValid": true,
+        "begin": true,
+        "rollback": true,
+        "networkUsed": false
+      }
+    },
+    {
+      "id": "postgresql.mock.initialize",
+      "title": "Fixture PostgreSQL segura inicializa sem rede real",
+      "status": "PASS",
+      "durationMs": 1,
+      "evidence": {
+        "provider": "postgresql",
+        "networkUsed": false,
+        "initializationQueries": 7
+      }
+    },
+    {
+      "id": "postgresql.api-methods",
+      "title": "Provider PostgreSQL preserva metodos consumidos por /api",
+      "status": "PASS",
+      "durationMs": 0,
+      "evidence": {
+        "requiredMethods": [
+          "authenticateToken",
+          "close",
+          "createUser",
+          "databaseStatus",
+          "deleteUser",
+          "findMaterializedJourneyRow",
+          "findPublicUser",
+          "importLocalSnapshot",
+          "journeyEntitySummary",
+          "listEvents",
+          "listJourneyEntities",
+          "listLeads",
+          "listProposals",
+          "listSimulations",
+          "listSnapshots",
+          "listUsers",
+          "login",
+          "recordEvent",
+          "revokeToken",
+          "setPassword",
+          "setUserStatus",
+          "stats",
+          "updateUser",
+          "upsertDirectJourneyRow",
+          "upsertSnapshot"
+        ],
+        "missing": []
+      }
+    },
+    {
+      "id": "postgresql.mock.crud",
+      "title": "CRUD minimo funciona no provider PostgreSQL injetado",
+      "status": "PASS",
+      "durationMs": 24,
+      "evidence": {
+        "create": true,
+        "read": true,
+        "update": true,
+        "delete": true,
+        "networkUsed": false
+      }
+    },
+    {
+      "id": "postgresql.mock.snapshot-payload-boundary",
+      "title": "PostgreSQL preserva snapshot grande e rejeita somente acima de 4 MiB",
+      "status": "PASS",
+      "durationMs": 31,
+      "evidence": {
+        "eventLimitChars": 50000,
+        "persistedLimitChars": 4194304,
+        "preservedPayloadChars": 89321,
+        "preservedExactly": true,
+        "rejectedPayloadChars": 4238769,
+        "rejection": {
+          "code": "BANCUS_PAYLOAD_TOO_LARGE",
+          "status": 413
+        },
+        "partialRowsAfterRejection": 0,
+        "networkUsed": false
+      }
+    },
+    {
+      "id": "postgresql.mock.identity-guards",
+      "title": "PostgreSQL migra identidade e preserva usuario vinculado",
+      "status": "PASS",
+      "durationMs": 60,
+      "evidence": {
+        "emailMigration": "committed-atomically",
+        "migratedTables": [
+          "events",
+          "snapshots",
+          "journey_entities",
+          "journey_leads",
+          "journey_simulations",
+          "journey_proposals"
+        ],
+        "duplicateEmail": "blocked-409",
+        "oldEmailInheritedRecords": 0,
+        "linkedDelete": "blocked-409"
+      }
+    },
+    {
+      "id": "postgresql.mock.password-session-revocation",
+      "title": "Reset de senha PostgreSQL invalida sessoes anteriores",
+      "status": "PASS",
+      "durationMs": 49,
+      "evidence": {
+        "tokenValidBeforeReset": true,
+        "tokenValidAfterReset": false,
+        "revokedAtomically": true
+      }
+    },
+    {
+      "id": "postgresql.mock.owner-scope",
+      "title": "Owner scope impede vazamento entre carteiras",
+      "status": "PASS",
+      "durationMs": 1,
+      "evidence": {
+        "ownerAIds": [
+          "LEAD-PG-A"
+        ],
+        "ownerBIds": [
+          "LEAD-PG-B"
+        ],
+        "leadTakeover": "blocked-409",
+        "snapshotTakeover": "blocked-409",
+        "ownerAndPayloadPreserved": true,
+        "crossOwnerLeaks": 0
+      }
+    },
+    {
+      "id": "postgresql.mock.sanitization",
+      "title": "Payloads PostgreSQL removem dados sensiveis",
+      "status": "PASS",
+      "durationMs": 0,
+      "evidence": {
+        "eventId": "EVT-PG-SANITIZE",
+        "preservedSafeFields": [
+          "safeAmount",
+          "nested.safe"
+        ],
+        "sensitiveFindings": [],
+        "largeJsonEnvelope": {
+          "truncated": true,
+          "originalLength": 89321,
+          "maxLength": 50000,
+          "parseable": true
+        }
+      }
+    },
+    {
+      "id": "api.bfbackendapi-contract",
+      "title": "BFBackendApi preserva fachada, verbos e caminhos",
+      "status": "PASS",
+      "durationMs": 2,
+      "evidence": {
+        "publicKeys": 40,
+        "exercisedCalls": 35,
+        "calls": [
+          [
+            "GET",
+            "/api/health"
+          ],
+          [
+            "POST",
+            "/api/auth/login"
+          ],
+          [
+            "POST",
+            "/api/auth/logout"
+          ],
+          [
+            "GET",
+            "/api/auth/me"
+          ],
+          [
+            "GET",
+            "/api/database/status"
+          ],
+          [
+            "POST",
+            "/api/database/import-local"
+          ],
+          [
+            "GET",
+            "/api/users"
+          ],
+          [
+            "POST",
+            "/api/users"
+          ],
+          [
+            "PATCH",
+            "/api/users/user-1"
+          ],
+          [
+            "DELETE",
+            "/api/users/user-1"
+          ],
+          [
+            "POST",
+            "/api/users/user-1/password"
+          ],
+          [
+            "POST",
+            "/api/users/user-1/status"
+          ],
+          [
+            "POST",
+            "/api/events"
+          ],
+          [
+            "POST",
+            "/api/snapshots"
+          ],
+          [
+            "GET",
+            "/api/events?limit=7"
+          ],
+          [
+            "GET",
+            "/api/snapshots?limit=7&type=simulation"
+          ],
+          [
+            "GET",
+            "/api/journey-entities?limit=7&kind=lead"
+          ],
+          [
+            "GET",
+            "/api/leads?limit=7"
+          ],
+          [
+            "GET",
+            "/api/simulations?limit=7"
+          ],
+          [
+            "GET",
+            "/api/proposals?limit=7"
+          ],
+          [
+            "POST",
+            "/api/leads"
+          ],
+          [
+            "GET",
+            "/api/leads/lead-1"
+          ],
+          [
+            "PATCH",
+            "/api/leads/lead-1"
+          ],
+          [
+            "POST",
+            "/api/simulations"
+          ],
+          [
+            "GET",
+            "/api/simulations/simulation-1"
+          ],
+          [
+            "PATCH",
+            "/api/simulations/simulation-1"
+          ],
+          [
+            "POST",
+            "/api/proposals"
+          ],
+          [
+            "GET",
+            "/api/proposals/proposal-1"
+          ],
+          [
+            "PATCH",
+            "/api/proposals/proposal-1"
+          ],
+          [
+            "POST",
+            "/api/proposal-snapshots"
+          ],
+          [
+            "GET",
+            "/api/proposal-snapshots/snapshot-1"
+          ],
+          [
+            "POST",
+            "/api/proposal-snapshots/snapshot-1/transitions"
+          ],
+          [
+            "POST",
+            "/api/proposal-snapshots/snapshot-1/publish"
+          ],
+          [
+            "POST",
+            "/api/proposal-shares/share-1/revoke"
+          ],
+          [
+            "POST",
+            "/api/public/proposals/resolve"
+          ]
+        ],
+        "publicProposalTokenTransport": "POST JSON body"
+      }
+    },
+    {
+      "id": "api.http-owner-isolation",
+      "title": "HTTP real bloqueia takeover A/B sem alterar owner ou payload",
+      "status": "PASS",
+      "durationMs": 514,
+      "evidence": {
+        "transport": "real-local-http",
+        "provider": "sqlite",
+        "proposalShareProvider": "sqlite",
+        "providerCoherent": true,
+        "leadTakeoverStatus": 409,
+        "snapshotTakeoverStatus": 409,
+        "ownerPreserved": true,
+        "payloadPreserved": true,
+        "crossOwnerReads": 0,
+        "eventsRequireAuthentication": true,
+        "forgedEventIdentityIgnored": true,
+        "oldTokenValidAfterPasswordReset": false
+      }
+    },
+    {
+      "id": "api.http-static-boundary",
+      "title": "HTTP publica assets da aplicacao sem expor runtime ou codigo interno",
+      "status": "PASS",
+      "durationMs": 341,
+      "evidence": {
+        "transport": "real-local-http",
+        "denied": {
+          "/.runtime/bancus-fraternis.sqlite": 403,
+          "/.git/config": 403,
+          "/.env": 403,
+          "/server.js": 403,
+          "/js/backend/db.js": 403,
+          "/package.json": 403,
+          "/js/backend%2e/db.js": 403,
+          "/js/backend./db.js": 403,
+          "/js/backend%20/db.js": 403,
+          "/js/backend~1/db.js": 403,
+          "/js/backend/db.js%3a%3a$DATA": 403,
+          "/js/con.js": 403
+        },
+        "windowsVariantsDeniedWith403": [
+          "/js/backend%2e/db.js",
+          "/js/backend./db.js",
+          "/js/backend%20/db.js",
+          "/js/backend~1/db.js",
+          "/js/backend/db.js%3a%3a$DATA",
+          "/js/con.js"
+        ],
+        "allowed": {
+          "/js/app.js": 200,
+          "/js/proposal-public.js": 200
+        },
+        "internalContentLeaks": 0
+      }
+    },
+    {
+      "id": "api.http-utf8-payload-boundary",
+      "title": "HTTP mede bytes UTF-8, responde 413 JSON e nao grava parcialmente",
+      "status": "PASS",
+      "durationMs": 208,
+      "evidence": {
+        "transport": "real-local-http",
+        "utf8Characters": 2100000,
+        "requestBytes": 4200145,
+        "configuredLimitBytes": 4194304,
+        "status": 413,
+        "code": "BANCUS_HTTP_PAYLOAD_TOO_LARGE",
+        "jsonParseable": true,
+        "serverUsableAfterRejection": true,
+        "persistedSnapshots": 0
+      }
+    },
+    {
+      "id": "api.audit-best-effort",
+      "title": "Falha de auditoria nao desfaz nem mascara a operacao principal",
+      "status": "PASS",
+      "durationMs": 233,
+      "evidence": {
+        "injectedDatabase": true,
+        "result": null,
+        "propagated": false,
+        "safeWarning": true
+      }
+    },
+    {
+      "id": "api.server-contract",
+      "title": "Rotas /api preservam semantica publica",
+      "status": "PASS",
+      "durationMs": 1,
+      "evidence": {
+        "routeGroups": [
+          {
+            "route": "/api/health",
+            "methods": [
+              "GET"
+            ]
+          },
+          {
+            "route": "/api/public/proposals/resolve",
+            "methods": [
+              "POST"
+            ]
+          },
+          {
+            "route": "/api/proposal-snapshots",
+            "methods": [
+              "POST"
+            ]
+          },
+          {
+            "route": "/api/proposal-snapshots/:id",
+            "methods": [
+              "GET"
+            ]
+          },
+          {
+            "route": "/api/proposal-snapshots/:id/transitions",
+            "methods": [
+              "POST"
+            ]
+          },
+          {
+            "route": "/api/proposal-snapshots/:id/publish",
+            "methods": [
+              "POST"
+            ]
+          },
+          {
+            "route": "/api/proposal-shares/:id/revoke",
+            "methods": [
+              "POST"
+            ]
+          },
+          {
+            "route": "/api/auth/login",
+            "methods": [
+              "POST"
+            ]
+          },
+          {
+            "route": "/api/auth/logout",
+            "methods": [
+              "POST"
+            ]
+          },
+          {
+            "route": "/api/auth/me",
+            "methods": [
+              "GET"
+            ]
+          },
+          {
+            "route": "/api/database/status",
+            "methods": [
+              "GET"
+            ]
+          },
+          {
+            "route": "/api/database/import-local",
+            "methods": [
+              "POST"
+            ]
+          },
+          {
+            "route": "/api/snapshots",
+            "methods": [
+              "GET",
+              "POST"
+            ]
+          },
+          {
+            "route": "/api/journey-entities",
+            "methods": [
+              "GET"
+            ]
+          },
+          {
+            "route": "/api/{leads,simulations,proposals}",
+            "methods": [
+              "GET",
+              "POST"
+            ]
+          },
+          {
+            "route": "/api/{leads,simulations,proposals}/:id",
+            "methods": [
+              "GET",
+              "PATCH"
+            ]
+          },
+          {
+            "route": "/api/users",
+            "methods": [
+              "GET",
+              "POST"
+            ]
+          },
+          {
+            "route": "/api/users/:id[/action]",
+            "methods": [
+              "PATCH",
+              "DELETE",
+              "POST"
+            ]
+          },
+          {
+            "route": "/api/events",
+            "methods": [
+              "GET",
+              "POST"
+            ]
+          }
+        ],
+        "semanticSignatures": 26
+      }
+    },
+    {
+      "id": "security.no-provider-credentials",
+      "title": "Codigo do provider nao contem credenciais nem loga URL",
+      "status": "PASS",
+      "durationMs": 2,
+      "evidence": {
+        "scannedFiles": [
+          "js/backend/providers/postgresql.js",
+          "js/backend/providers/sqlite.js",
+          "js/backend/proposal-share-postgresql-repository.js",
+          "js/backend/migrations/postgresql/001_bancus_fraternis.sql",
+          "js/backend/migrations/postgresql/002_proposal_secure_share.sql",
+          "server.js",
+          "js/backend/db.js",
+          "package.json",
+          ".env.example"
+        ],
+        "credentialFindings": []
+      }
+    }
+  ],
+  "gaps": [
+    {
+      "id": "postgresql.external-integration",
+      "status": "PENDING",
+      "blocking": false,
+      "message": "Gate executado com pools injetados e HTTP local; conexao, migration e CRUD contra uma instancia PostgreSQL externa nao foram executados neste ambiente."
+    }
+  ]
+}

@@ -17,11 +17,10 @@
   },
   "provider": "sqlite",
   "supportedProviders": [
-    "sqlite"
-  ],
-  "futureProviders": [
+    "sqlite",
     "postgresql"
   ],
+  "futureProviders": [],
   "tables": 8,
   "importedUsers": 1,
   "importedEvents": 1,

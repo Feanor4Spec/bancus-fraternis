@@ -1,6 +1,6 @@
 # Banco De Dados Local - Bancus Fraternis
 
-Atualizado em 2026-05-22.
+Atualizado em 2026-08-22.
 
 ## Objetivo
 
@@ -10,7 +10,10 @@ Esta entrega cria a primeira camada server-side do Bancus Fraternis sem quebrar 
 
 | Arquivo | Papel |
 | --- | --- |
-| `js/backend/db.js` | Camada SQLite, schema, seeds, hash de senha, sessoes, eventos, snapshots, entidades relacionais e tabelas dedicadas. |
+| `js/backend/db.js` | Fabrica de providers e contrato compartilhado de usuarios, sessoes, eventos, snapshots e jornada. |
+| `js/backend/providers/sqlite.js` | Adapter local sincrono, preservado como padrao de desenvolvimento. |
+| `js/backend/providers/postgresql.js` | Adapter PostgreSQL async, ativado somente por ambiente e sem fallback silencioso. |
+| `js/backend/proposal-share-postgresql-repository.js` | Persistencia PostgreSQL do ciclo imutavel da proposta e dos links revogaveis. |
 | `js/backend/migrations/schema-manifest.json` | Manifest versionado do schema: versao, provider, tabelas, colunas, indices, campos sensiveis e rollback. |
 | `js/backend/migrations/001_bancus_fraternis_local_db.sql` | Migration baseline idempotente do SQLite local. |
 | `js/backend/migrations/001_bancus_fraternis_local_db.rollback.sql` | Rollback destrutivo para bancos vazios, validadores ou rebuild local com backup explicito. |
@@ -24,6 +27,7 @@ Esta entrega cria a primeira camada server-side do Bancus Fraternis sem quebrar 
 | `tools/inspect-local-sql-environment.mjs` | Diagnostico de CLIs, portas padrao e servicos SQL locais para proxima troca de provider. |
 | `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md` | Plano de migracao do SQLite local para backend hospedado preservando `localStorage`, `BFBackendApi` e contratos `/api/*`. |
 | `docs/PROXIMAS_FASES_BANK_FRATERN.md` | Roadmap de schema, migrations, adapter produtivo, autenticacao, migracao, observabilidade e corte controlado. |
+| `docs/POSTGRESQL_PILOT.md` | Runbook de ativacao, validacao e retorno explicito do piloto PostgreSQL. |
 
 ## Banco
 
@@ -45,7 +49,7 @@ Provider local:
 BANCUS_DB_PROVIDER=sqlite node server.js
 ```
 
-`sqlite` e o provider padrao e unico provider implementado nesta etapa. Aliases locais como `local`, `dev`, `development` e `node:sqlite` tambem normalizam para `sqlite`. Providers futuros, como `postgresql`, ficam bloqueados ate existir adapter produtivo validado.
+`sqlite` continua sendo o provider padrao. `postgresql` esta implementado para homologacao e so inicializa com `BANCUS_DATABASE_URL`, SSL seguro e migrations confirmadas. Falhas nunca acionam uma troca silenciosa para SQLite. O procedimento completo esta em `docs/POSTGRESQL_PILOT.md`.
 
 ## Schema Versionado
 
@@ -127,6 +131,11 @@ As senhas seed continuam documentadas em `docs/AUTH_ADMIN_LOCAL.md` para demonst
 | `POST /api/proposals` | Cria ou atualiza proposta direta na tabela dedicada e em `journey_entities`. |
 | `GET /api/proposals/:id` | Le proposta pontual respeitando escopo por sessao. |
 | `PATCH /api/proposals/:id` | Atualiza proposta pontual mantendo payload sanitizado e dono protegido por sessao. |
+| `POST /api/proposal-snapshots` | Cria o snapshot imutavel inicial da proposta para o usuario autenticado. |
+| `POST /api/proposal-snapshots/:id/transitions` | Valida ou revisa uma versao sem alterar snapshots anteriores. |
+| `POST /api/proposal-snapshots/:id/publish` | Publica uma versao revisada e devolve o token opaco uma unica vez. |
+| `POST /api/public/proposals/resolve` | Resolve o token enviado no corpo e devolve somente a visao publica, sem gravar o segredo na URL da API. |
+| `POST /api/proposal-shares/:id/revoke` | Revoga o link pelo proprietario autenticado. |
 
 ## Regras De Compatibilidade
 

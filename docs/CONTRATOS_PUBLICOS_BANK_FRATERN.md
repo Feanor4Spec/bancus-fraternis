@@ -116,8 +116,10 @@ Regras publicas para a troca de provider:
 - `localStorage` continua fallback publico para GitHub Pages, `file://` e demos offline.
 - `BFBackendApi` segue como fachada de compatibilidade; paginas nao devem chamar provider produtivo diretamente.
 - SQLite local continua valido para desenvolvimento e deve passar em `tools/validate-local-database.mjs`.
-- `BANCUS_DB_PROVIDER` aceita `sqlite` como provider padrao nesta etapa; providers sem adapter implementado devem falhar de forma explicita.
-- A Fase 8AN / P3.3A deve criar schema e migrations versionadas antes de qualquer `BANCUS_DB_PROVIDER=postgresql`.
+- `BANCUS_DB_PROVIDER` aceita `sqlite` como padrao e `postgresql` como piloto; provider, URL, conexao ou migration invalidos devem falhar de forma explicita, sem fallback silencioso.
+- `BANCUS_DB_PROVIDER=postgresql` exige `BANCUS_DATABASE_URL`, SSL seguro, baseline `001` e proposta segura `002` confirmadas.
+- API principal e proposta publicada precisam usar o mesmo provider; `/api/health` informa ambos e so fica verde quando os dois estao prontos.
+- O navegador recebe o token no fragmento de `pages/proposta.html` e o resolve por `POST /api/public/proposals/resolve`; o token nao deve aparecer na URL da API, em logs ou em persistencia sem hash.
 - Baseline criada em `js/backend/migrations/001_bancus_fraternis_local_db.sql`, com rollback `001_bancus_fraternis_local_db.rollback.sql` e manifest `schema-manifest.json`.
 - Backend hospedado futuro deve preservar semantica de `/api/auth/*`, `/api/users`, `/api/events`, `/api/snapshots`, `/api/journey-entities`, `/api/leads`, `/api/simulations` e `/api/proposals`.
 - Admin pode ver tudo; consultor e cliente ficam escopados por `owner_email`.

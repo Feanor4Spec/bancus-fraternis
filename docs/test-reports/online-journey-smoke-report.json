@@ -4,7 +4,7 @@
   "lousa": {
     "url": "https://feanor4spec.github.io/bancus-fraternis/pages/lousa-navegacao.html#roteiro-navegavel",
     "status": 200,
-    "bytes": 19520,
+    "bytes": 22618,
     "steps": 10
   },
   "checked": [
@@ -13,7 +13,7 @@
       "label": "Login demo",
       "url": "https://feanor4spec.github.io/bancus-fraternis/pages/login.html?redirect=handoff-consultivo.html",
       "status": 200,
-      "bytes": 3565,
+      "bytes": 3667,
       "foundMarkers": 4,
       "expectedMarkers": 4,
       "anchor": ""
@@ -23,7 +23,7 @@
       "label": "Home cockpit",
       "url": "https://feanor4spec.github.io/bancus-fraternis/pages/index.html?from=lousa#home-cockpit",
       "status": 200,
-      "bytes": 23935,
+      "bytes": 24006,
       "foundMarkers": 3,
       "expectedMarkers": 3,
       "anchor": "home-cockpit"
@@ -33,7 +33,7 @@
       "label": "Produtos",
       "url": "https://feanor4spec.github.io/bancus-fraternis/pages/produtos.html?from=lousa#produtos-selecao",
       "status": 200,
-      "bytes": 8779,
+      "bytes": 8847,
       "foundMarkers": 3,
       "expectedMarkers": 3,
       "anchor": "produtos-selecao"
@@ -43,7 +43,7 @@
       "label": "Calculadora capacidade",
       "url": "https://feanor4spec.github.io/bancus-fraternis/pages/calculadora-capacidade-credito.html?from=lousa&calculatorSlug=capacidade-credito&preset=comprar_bem",
       "status": 200,
-      "bytes": 4726,
+      "bytes": 4794,
       "foundMarkers": 3,
       "expectedMarkers": 3,
       "anchor": ""
@@ -53,7 +53,7 @@
       "label": "Trilha assistida",
       "url": "https://feanor4spec.github.io/bancus-fraternis/pages/trilha-decisao.html?from=lousa&sourceFrom=calculator&calculatorSlug=capacidade-credito&preset=comprar_bem#trilha-acoes",
       "status": 200,
-      "bytes": 7078,
+      "bytes": 7146,
       "foundMarkers": 3,
       "expectedMarkers": 3,
       "anchor": "trilha-acoes"
@@ -63,7 +63,7 @@
       "label": "Comparador",
       "url": "https://feanor4spec.github.io/bancus-fraternis/pages/comparador.html?from=lousa&preset=comprar_bem#comparador-entrada",
       "status": 200,
-      "bytes": 11247,
+      "bytes": 11315,
       "foundMarkers": 3,
       "expectedMarkers": 3,
       "anchor": "comparador-entrada"
@@ -73,7 +73,7 @@
       "label": "Simulador base real",
       "url": "https://feanor4spec.github.io/bancus-fraternis/pages/simulador.html?from=lousa#database-status-panel",
       "status": 200,
-      "bytes": 62484,
+      "bytes": 62715,
       "foundMarkers": 3,
       "expectedMarkers": 3,
       "anchor": "database-status-panel"
@@ -83,7 +83,7 @@
       "label": "Lousa proposta/PDF",
       "url": "https://feanor4spec.github.io/bancus-fraternis/pages/simulador.html?from=lousa#proposal-builder-board",
       "status": 200,
-      "bytes": 62484,
+      "bytes": 62715,
       "foundMarkers": 3,
       "expectedMarkers": 3,
       "anchor": "proposal-builder-board"
@@ -93,7 +93,7 @@
       "label": "Handoff consultivo",
       "url": "https://feanor4spec.github.io/bancus-fraternis/pages/handoff-consultivo.html?from=lousa#painel-consultor",
       "status": 200,
-      "bytes": 6958,
+      "bytes": 7210,
       "foundMarkers": 3,
       "expectedMarkers": 3,
       "anchor": "painel-consultor"
@@ -103,7 +103,7 @@
       "label": "Dashboard admin",
       "url": "https://feanor4spec.github.io/bancus-fraternis/pages/dashboard-admin.html?from=lousa#admin-proximos-passos",
       "status": 200,
-      "bytes": 11352,
+      "bytes": 11737,
       "foundMarkers": 4,
       "expectedMarkers": 4,
       "anchor": "admin-proximos-passos"

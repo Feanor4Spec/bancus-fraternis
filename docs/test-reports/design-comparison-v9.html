@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Comparação visual V9</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      padding: 24px;
+      background: #eef3f8;
+      color: #10263e;
+      font: 14px/1.4 Arial, sans-serif;
+    }
+    header { display: flex; align-items: baseline; justify-content: space-between; gap: 24px; margin-bottom: 18px; }
+    h1 { margin: 0; font: 500 28px/1.1 Georgia, serif; }
+    p { margin: 0; color: #607388; }
+    main { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+    figure { margin: 0; overflow: hidden; border: 1px solid #d8e1eb; border-radius: 14px; background: #fff; box-shadow: 0 16px 45px rgba(17, 47, 78, .08); }
+    figcaption { display: flex; justify-content: space-between; gap: 12px; padding: 12px 14px; border-bottom: 1px solid #e6edf4; font-weight: 700; }
+    figcaption span { color: #7b8b9b; font-size: 12px; font-weight: 500; }
+    .frame { display: grid; place-items: start center; aspect-ratio: 1487 / 1058; background: #f7f9fc; }
+    img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: top center; }
+    @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Referência e implementação</h1>
+    <p>Mesmo estado de leitura e mesma proporção de viewport.</p>
+  </header>
+  <main>
+    <figure>
+      <figcaption>Referência visual <span>1487 × 1058</span></figcaption>
+      <div class="frame"><img src="screenshots/v9-visual-reference.png" alt="Referência visual da proposta"></div>
+    </figure>
+    <figure>
+      <figcaption>Implementação validada <span>1480 × 1058</span></figcaption>
+      <div class="frame"><img src="screenshots/v9-public-proposal-reference-viewport.jpg" alt="Proposta pública implementada"></div>
+    </figure>
+  </main>
+</body>
+</html>

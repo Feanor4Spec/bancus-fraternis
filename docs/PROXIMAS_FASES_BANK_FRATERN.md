@@ -1,6 +1,6 @@
 # Proximas Fases - Bancus Fraternis
 
-Atualizado em 2026-05-22.
+Atualizado em 2026-08-22.
 
 ## Objetivo
 
@@ -14,9 +14,9 @@ Regra de continuidade: nenhuma fase abaixo remove o fallback estatico. A API pro
 | --- | --- | --- |
 | Produto e jornada | Fluxo principal navegavel, lousa de QA, simulador com base real, proposta seletiva, handoff e dashboards operacionais. | `docs/PLANO_ACAO_EVOLUCAO_BANK_FRATERN.md` |
 | Backend local | SQLite local com usuarios, sessoes, eventos, snapshots, entidades, leads, simulacoes e propostas. | `docs/BANCO_DADOS_LOCAL_BANK_FRATERN.md` |
-| Provider | `BANCUS_DB_PROVIDER=sqlite` ativo; providers futuros falham explicitamente. | `js/backend/db.js` |
+| Provider | SQLite ativo por padrao; adapter PostgreSQL implementado e aguardando smoke em homologacao externa. | `js/backend/db.js`, `docs/POSTGRESQL_PILOT.md` |
 | Contratos publicos | `localStorage`, `data-*`, deep links, `BFBackendApi` e validadores documentados. | `docs/CONTRATOS_PUBLICOS_BANK_FRATERN.md` |
-| Backend produtivo | Plano governado existe, mas adapter hospedado ainda nao foi implementado. | `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md` |
+| Backend produtivo | Adapter e migrations implementados; ativacao externa continua bloqueada sem URL, migrations e smoke reais. | `docs/PLANO_BACKEND_PRODUTIVO_BANK_FRATERN.md` |
 
 ## Ordem Das Proximas Fases
 
@@ -241,4 +241,4 @@ node tools/validate-design-system.mjs
 
 ## Decisao Para O Proximo Ciclo
 
-O proximo ciclo tecnico implementavel passa a ser a Fase 8AO / P3.3B: adapter produtivo piloto. A baseline de schema ja existe; antes de ativar `BANCUS_DB_PROVIDER=postgresql`, o adapter deve consumir o manifest, exigir `BANCUS_DATABASE_URL`, validar migrations e manter rollback para SQLite/localStorage.
+A Fase 8AO / P3.3B esta concluida no codigo e no gate local `38/38`. A ativacao do ambiente continua condicionada ao smoke contra uma instancia PostgreSQL externa, sem substituir essa evidencia por mocks. O proximo ciclo de produto implementavel e a Fase 8AP / P3.4, autenticacao produtiva; ela deve avancar sem declarar o provider hospedado como aprovado ate migrations, health, CRUD e proposta entre instancias passarem na homologacao real.

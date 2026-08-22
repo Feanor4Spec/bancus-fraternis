@@ -1,0 +1,870 @@
+{
+  "schema": "bancus.validation.language-navigation-v10.v1",
+  "validator": "tools/validate-language-navigation-v10.mjs",
+  "validatorVersion": "10.2.0",
+  "generatedAt": "2026-08-22T05:22:53.340Z",
+  "status": "PASS",
+  "scope": {
+    "productFilesValidated": [
+      "pages/simulador.html",
+      "pages/proposta.html",
+      "js/proposal-summary.js",
+      "js/proposal-public.js",
+      "js/export.js",
+      "docs/test-reports/simulator-evolution-v9-report.json"
+    ],
+    "filesWritten": [
+      "tools/validate-language-navigation-v10.mjs",
+      "docs/test-reports/language-navigation-v10-report.json"
+    ],
+    "baseUrl": "http://127.0.0.1:8080"
+  },
+  "execution": {
+    "browserAvailable": true,
+    "browserReason": "",
+    "gaps": []
+  },
+  "summary": {
+    "total": 37,
+    "passed": 37,
+    "failed": 0
+  },
+  "checks": [
+    {
+      "id": "v9.functional-sections",
+      "title": "As 10 secoes funcionais V9 permanecem uma vez e na ordem correta.",
+      "ok": true,
+      "evidence": {
+        "found": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "expected": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ]
+      }
+    },
+    {
+      "id": "v9.primary-rail-contract",
+      "title": "O trilho primario preserva as 10 etapas V9 uma vez e na ordem correta.",
+      "ok": true,
+      "evidence": {
+        "found": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "expected": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ]
+      }
+    },
+    {
+      "id": "v9.step-heading-contract",
+      "title": "A numeracao de etapa cobre 1 a 10.",
+      "ok": true,
+      "evidence": {
+        "found": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "expected": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ]
+      }
+    },
+    {
+      "id": "v9.last-complete-report",
+      "title": "O ultimo relatorio completo V9 permanece aprovado.",
+      "ok": true,
+      "evidence": {
+        "status": "PASS",
+        "summary": {
+          "total": 32,
+          "passed": 32,
+          "failed": 0
+        },
+        "note": "Relatorio existente lido sem reescreve-lo."
+      }
+    },
+    {
+      "id": "source.public-route-present",
+      "title": "A pagina publica e a pagina do simulador estao disponiveis no codigo-fonte.",
+      "ok": true,
+      "evidence": {
+        "simulatorBytes": 80914,
+        "publicBytes": 3535
+      }
+    },
+    {
+      "id": "proposal-public.single-honest-print-action",
+      "title": "A proposta publica oferece uma unica acao, com rotulo honesto para impressao ou PDF.",
+      "ok": true,
+      "evidence": {
+        "publicActionLabels": [
+          "Imprimir ou salvar em PDF"
+        ],
+        "legacyPdfControlPresent": false
+      }
+    },
+    {
+      "id": "proposal-public.no-internal-review-binding",
+      "title": "A pagina publica nao entrega o registro interno de revisao ao renderizador do cliente.",
+      "ok": true,
+      "evidence": {
+        "internalReviewBindingPresent": false
+      }
+    },
+    {
+      "id": "proposal.pdf-final-only-source",
+      "title": "A acao de PDF pertence a etapa final e nao e duplicada dentro do documento.",
+      "ok": true,
+      "evidence": {
+        "finalPrintLabels": [
+          "Imprimir ou salvar em PDF"
+        ],
+        "legacyDownloadLabels": 0
+      }
+    },
+    {
+      "id": "proposal.print-flow-honest",
+      "title": "O fluxo rotulado como impressao usa a janela nativa para imprimir ou salvar em PDF.",
+      "ok": true,
+      "evidence": {
+        "nativePrint": true
+      }
+    },
+    {
+      "id": "browser.execution",
+      "title": "O gate dinamico foi executado em navegador real.",
+      "ok": true,
+      "evidence": {
+        "baseUrl": "http://127.0.0.1:8080",
+        "playwrightSource": "bundled-runtime/playwright",
+        "reason": "",
+        "gaps": []
+      }
+    },
+    {
+      "id": "navigation.single-progressive-navigation",
+      "title": "Cada estado possui uma navegacao primaria, uma secao visivel e um aria-current.",
+      "ok": true,
+      "evidence": {
+        "statesChecked": 12,
+        "failures": []
+      }
+    },
+    {
+      "id": "navigation.contextual-actions",
+      "title": "Calculo, PDF, impressao e publicacao aparecem somente no momento adequado.",
+      "ok": true,
+      "evidence": {
+        "failures": []
+      }
+    },
+    {
+      "id": "a11y.one-visible-h1",
+      "title": "Simulador e proposta publica exibem exatamente um H1.",
+      "ok": true,
+      "evidence": {
+        "simulatorFailures": [],
+        "publicH1": [
+          "Sua proposta de consórcio"
+        ]
+      }
+    },
+    {
+      "id": "a11y.accessible-names",
+      "title": "Controles visiveis possuem nome acessivel.",
+      "ok": true,
+      "evidence": {
+        "failures": [],
+        "total": 0
+      }
+    },
+    {
+      "id": "a11y.minimum-target-size",
+      "title": "Controles moveis respeitam o minimo WCAG de 24 por 24 pixels.",
+      "ok": true,
+      "evidence": {
+        "failures": [],
+        "total": 0
+      }
+    },
+    {
+      "id": "responsive.no-horizontal-overflow",
+      "title": "Simulador e proposta publica nao criam rolagem horizontal nos viewports testados.",
+      "ok": true,
+      "evidence": {
+        "failures": []
+      }
+    },
+    {
+      "id": "language.no-ai",
+      "title": "Nao ha linguagem de IA nas superficies destinadas ao usuario.",
+      "ok": true,
+      "evidence": {
+        "findings": [],
+        "total": 0
+      }
+    },
+    {
+      "id": "language.no-internal",
+      "title": "Nao ha termos de implementacao nas superficies destinadas ao usuario.",
+      "ok": true,
+      "evidence": {
+        "findings": [],
+        "total": 0
+      }
+    },
+    {
+      "id": "language.no-filler",
+      "title": "Nao ha narracao abstrata ou instrucoes desnecessarias na interface.",
+      "ok": true,
+      "evidence": {
+        "findings": [],
+        "total": 0
+      }
+    },
+    {
+      "id": "language.portuguese-diacritics",
+      "title": "O português visível preserva a acentuação de termos comuns da jornada.",
+      "ok": true,
+      "evidence": {
+        "findings": [],
+        "total": 0
+      }
+    },
+    {
+      "id": "quality.no-render-artifacts",
+      "title": "Nao ha undefined, null, NaN, Infinity, objetos serializados ou texto corrompido no DOM de usuario.",
+      "ok": true,
+      "evidence": {
+        "findings": [],
+        "total": 0
+      }
+    },
+    {
+      "id": "proposal-public.no-internal-metadata",
+      "title": "A proposta publica nao apresenta Motor, Base, Versao, schema ou snapshot como metadados do cliente.",
+      "ok": true,
+      "evidence": {
+        "labels": [
+          "Proposta",
+          "Crédito total",
+          "Parcela estimada",
+          "Validade"
+        ],
+        "forbidden": []
+      }
+    },
+    {
+      "id": "proposal-public.required-caveat",
+      "title": "A proposta publica preserva o aviso de que a contemplacao nao e garantida.",
+      "ok": true,
+      "evidence": {
+        "publicTextExcerpt": "CONSULTA SOMENTE LEITURA Disponível para consulta Imprimir ou salvar em PDF BANCUS FRATERNIS Sua proposta de consórcio Confira crédito, parcelas, lances, prazos, custos e riscos antes de decidir. PROPOSTA PROP-2026-3651 CRÉDITO TOTAL R$ 3.651.261,12 PARCELA ESTIMADA R$ 23.177,31 VALIDADE 31 de dezembro de 2030 às 20:59 PROPOSTA PROP-2026-3651 Proposta de consórcio Valores, prazos, parcelas, lances, custos e riscos calculados com os dados informados. CLIENTE Andre Dias GRUPO / COTA Automóveis Pre"
+      }
+    },
+    {
+      "id": "proposal-public.runtime-contract",
+      "title": "A proposta publica valida renderizacao, conteudo do cliente e impressao em navegador.",
+      "ok": true,
+      "evidence": {
+        "actionLabels": [
+          "Imprimir ou salvar em PDF"
+        ],
+        "documentActions": [],
+        "decisionBlocks": 1,
+        "acceptanceBlocks": 0,
+        "decisionHeading": "Pontos de atenção da proposta",
+        "remainingValues": [
+          "84 parcelas"
+        ],
+        "printCalls": 1
+      }
+    },
+    {
+      "id": "proposal.generated-content",
+      "title": "A proposta continua renderizavel com paginas logicas.",
+      "ok": true,
+      "evidence": {
+        "rendered": true,
+        "logicalPages": 16
+      }
+    },
+    {
+      "id": "proposal.client-no-internal-review",
+      "title": "Documento final e proposta publica nao exibem a revisao interna do consultor.",
+      "ok": true,
+      "evidence": {
+        "failures": [],
+        "surfaces": {
+          "summary": {
+            "decisionBlocks": 1,
+            "acceptanceBlocks": 1,
+            "decisionHeading": "Antes de enviar",
+            "documentActions": [
+              "Revisar simulação"
+            ]
+          },
+          "proposal": {
+            "decisionBlocks": 1,
+            "acceptanceBlocks": 0,
+            "decisionHeading": "Pontos de atenção da proposta",
+            "documentActions": []
+          },
+          "public": {
+            "decisionBlocks": 1,
+            "acceptanceBlocks": 0,
+            "decisionHeading": "Pontos de atenção da proposta",
+            "documentActions": []
+          }
+        }
+      }
+    },
+    {
+      "id": "proposal.remaining-installments-consistent",
+      "title": "A proposta usa o prazo geral restante de forma consistente em todas as superficies.",
+      "ok": true,
+      "evidence": {
+        "failures": [],
+        "values": {
+          "summary": [
+            "84 parcelas"
+          ],
+          "proposal": [
+            "84 parcelas"
+          ],
+          "public": [
+            "84 parcelas"
+          ]
+        }
+      }
+    },
+    {
+      "id": "proposal.document-no-duplicate-export-action",
+      "title": "O documento nao repete a acao de impressao disponibilizada pela pagina.",
+      "ok": true,
+      "evidence": {
+        "failures": [],
+        "actions": {
+          "proposal": [],
+          "public": []
+        }
+      }
+    },
+    {
+      "id": "adversarial.browser-publication-executed",
+      "title": "O cenário multigrupo completo chegou à proposta pública em navegador real e foi revogado ao final.",
+      "ok": true,
+      "evidence": {
+        "executed": true,
+        "error": "",
+        "visibleErrors": [],
+        "publication": {
+          "attempted": true,
+          "revoked": true,
+          "ok": true,
+          "stage": "published",
+          "error": "",
+          "login": true,
+          "createdStatus": "rascunho",
+          "validatedStatus": "validada",
+          "reviewedStatus": "revisada",
+          "publishedStatus": "ativa",
+          "tokenLength": 43,
+          "expiresAtPresent": true,
+          "revokedStatus": "revogada"
+        },
+        "public": {
+          "loaded": true,
+          "errorVisible": false,
+          "logicalPages": 16,
+          "snapshotOk": true,
+          "readOnly": true
+        }
+      }
+    },
+    {
+      "id": "reconciliation.controls-to-project",
+      "title": "Cada controle por grupo chega sem perda ao projeto usado na publicação.",
+      "ok": true,
+      "evidence": {
+        "controls": [
+          {
+            "key": "A",
+            "itemId": "PROJ-001",
+            "quantidadeCotas": 1,
+            "valorCartaUnitario": 60000,
+            "prazoMeses": 72,
+            "mesContemplacaoAlvo": 12,
+            "lanceProprioPct": 10,
+            "lanceEmbutidoPct": 0,
+            "indiceCorrecaoNome": "ipca",
+            "indiceReajuste": 4.25,
+            "mesAniversario": 12,
+            "modalidadeLance": "livre",
+            "modalidadeLabel": "Próprio"
+          },
+          {
+            "key": "B",
+            "itemId": "PROJ-002",
+            "quantidadeCotas": 1,
+            "valorCartaUnitario": 40000,
+            "prazoMeses": 80,
+            "mesContemplacaoAlvo": 18,
+            "lanceProprioPct": 7.5,
+            "lanceEmbutidoPct": 15,
+            "indiceCorrecaoNome": "incc",
+            "indiceReajuste": 6.5,
+            "mesAniversario": 12,
+            "modalidadeLance": "combinado",
+            "modalidadeLabel": "Combinado"
+          }
+        ],
+        "projectItems": [
+          {
+            "itemId": "PROJ-001",
+            "codigoGrupo": "G-2026-001-A",
+            "quantidadeCotas": 1,
+            "valorCartaUnitario": 60000,
+            "valorCartaTotal": 60000,
+            "prazoMeses": 72,
+            "mesContemplacaoAlvo": 12,
+            "lanceProprioPct": 10,
+            "lanceEmbutidoPct": 0,
+            "indiceCorrecaoNome": "ipca",
+            "indiceReajuste": 4.25,
+            "mesAniversario": 12,
+            "modalidadeLance": "livre"
+          },
+          {
+            "itemId": "PROJ-002",
+            "codigoGrupo": "G-2026-001-B",
+            "quantidadeCotas": 1,
+            "valorCartaUnitario": 40000,
+            "valorCartaTotal": 40000,
+            "prazoMeses": 80,
+            "mesContemplacaoAlvo": 18,
+            "lanceProprioPct": 7.5,
+            "lanceEmbutidoPct": 15,
+            "indiceCorrecaoNome": "incc",
+            "indiceReajuste": 6.5,
+            "mesAniversario": 12,
+            "modalidadeLance": "combinado"
+          }
+        ],
+        "failures": []
+      }
+    },
+    {
+      "id": "reconciliation.project-to-engine",
+      "title": "Modalidade, lances, reajustes, prazos e antecipação reconciliam por grupo no motor.",
+      "ok": true,
+      "evidence": {
+        "engineItems": [
+          {
+            "itemId": "PROJ-001",
+            "codigoGrupo": "G-2026-001-A",
+            "scheduleLength": 72,
+            "last": {
+              "mes": 72,
+              "prazoRestante": 1,
+              "prazoRestanteApos": 0,
+              "saldoTotalFinal": 0
+            },
+            "summary": {
+              "valorCarta": 60000,
+              "prazoTotal": 72,
+              "mesContemplacao": 12,
+              "lanceProprio": 6000,
+              "lanceEmbutido": 0,
+              "lanceProprioSelecionado": 6000,
+              "lanceEmbutidoSelecionado": 0,
+              "lanceTotal": 6000,
+              "lanceAplicado": 6000,
+              "lanceCaixa": 6000,
+              "totalAdiantado": 3000
+            },
+            "rows": {
+              "12": {
+                "mes": 12,
+                "indiceAplicado": 0.0425,
+                "reajusteValor": 2160.42,
+                "valorLance": 6000,
+                "valorLanceCaixa": 6000,
+                "valorAdiantado": 0,
+                "prazoRestante": 61,
+                "prazoRestanteApos": 60,
+                "evento": "aniversário + contemplação",
+                "eventos": [
+                  "aniversário",
+                  "contemplação"
+                ],
+                "observacao": "Reajuste de 4.25%: R$ 2.160,42. | Contemplação com lance aplicado de R$ 6.000,00."
+              },
+              "18": {
+                "mes": 18,
+                "indiceAplicado": 0,
+                "reajusteValor": 0,
+                "valorLance": 0,
+                "valorLanceCaixa": 0,
+                "valorAdiantado": 0,
+                "prazoRestante": 55,
+                "prazoRestanteApos": 54,
+                "evento": "normal",
+                "eventos": [],
+                "observacao": ""
+              },
+              "24": {
+                "mes": 24,
+                "indiceAplicado": 0.0425,
+                "reajusteValor": 1604.34,
+                "valorLance": 0,
+                "valorLanceCaixa": 0,
+                "valorAdiantado": 3000,
+                "prazoRestante": 49,
+                "prazoRestanteApos": 48,
+                "evento": "aniversário + adiantamento",
+                "eventos": [
+                  "aniversário",
+                  "adiantamento"
+                ],
+                "observacao": "Reajuste de 4.25%: R$ 1.604,34. | Antecipação aplicada: R$ 3.000,00."
+              }
+            }
+          },
+          {
+            "itemId": "PROJ-002",
+            "codigoGrupo": "G-2026-001-B",
+            "scheduleLength": 80,
+            "last": {
+              "mes": 80,
+              "prazoRestante": 1,
+              "prazoRestanteApos": 0,
+              "saldoTotalFinal": 0
+            },
+            "summary": {
+              "valorCarta": 40000,
+              "prazoTotal": 80,
+              "mesContemplacao": 18,
+              "lanceProprio": 3000,
+              "lanceEmbutido": 6000,
+              "lanceProprioSelecionado": 3000,
+              "lanceEmbutidoSelecionado": 6000,
+              "lanceTotal": 9000,
+              "lanceAplicado": 9000,
+              "lanceCaixa": 3000,
+              "totalAdiantado": 2000
+            },
+            "rows": {
+              "12": {
+                "mes": 12,
+                "indiceAplicado": 0.065,
+                "reajusteValor": 2242.5,
+                "valorLance": 0,
+                "valorLanceCaixa": 0,
+                "valorAdiantado": 0,
+                "prazoRestante": 69,
+                "prazoRestanteApos": 68,
+                "evento": "aniversário",
+                "eventos": [
+                  "aniversário"
+                ],
+                "observacao": "Reajuste de 6.50%: R$ 2.242,50."
+              },
+              "18": {
+                "mes": 18,
+                "indiceAplicado": 0,
+                "reajusteValor": 0,
+                "valorLance": 9000,
+                "valorLanceCaixa": 3000,
+                "valorAdiantado": 0,
+                "prazoRestante": 63,
+                "prazoRestanteApos": 62,
+                "evento": "contemplação",
+                "eventos": [
+                  "contemplação"
+                ],
+                "observacao": "Contemplação com lance aplicado de R$ 9.000,00."
+              },
+              "24": {
+                "mes": 24,
+                "indiceAplicado": 0.065,
+                "reajusteValor": 1443.63,
+                "valorLance": 0,
+                "valorLanceCaixa": 0,
+                "valorAdiantado": 2000,
+                "prazoRestante": 57,
+                "prazoRestanteApos": 56,
+                "evento": "aniversário + adiantamento",
+                "eventos": [
+                  "aniversário",
+                  "adiantamento"
+                ],
+                "observacao": "Reajuste de 6.50%: R$ 1.443,63. | Antecipação aplicada: R$ 2.000,00."
+              }
+            }
+          }
+        ],
+        "failures": []
+      }
+    },
+    {
+      "id": "reconciliation.timeline-12-18-24",
+      "title": "O cronograma consolidado preserva os eventos dos meses 12, 18 e 24 sem duplicar caixa ou contradizer o prazo.",
+      "ok": true,
+      "evidence": {
+        "expected": {
+          "maxTerm": 80,
+          "expectedOwnTotal": 9000,
+          "expectedEmbeddedTotal": 6000,
+          "month12Bid": 6000,
+          "month18Bid": 9000,
+          "month24Advance": 5000
+        },
+        "aggregate": {
+          "scheduleLength": 80,
+          "prazoTotal": 80,
+          "lanceProprio": 9000,
+          "lanceEmbutido": 6000,
+          "lanceTotal": 15000,
+          "cartaLiquida": 94000,
+          "rows": {
+            "12": {
+              "mes": 12,
+              "indiceAplicado": 0.065,
+              "valorLance": 6000,
+              "valorAdiantado": 0,
+              "prazoRestante": 69,
+              "evento": "aniversário + contemplação + aniversário",
+              "observacao": "G-2026-001-A: Reajuste de 4.25%: R$ 2.160,42. | Contemplação com lance aplicado de R$ 6.000,00. | G-2026-001-B: Reajuste de 6.50%: R$ 2.242,50."
+            },
+            "18": {
+              "mes": 18,
+              "indiceAplicado": 0,
+              "valorLance": 9000,
+              "valorAdiantado": 0,
+              "prazoRestante": 63,
+              "evento": "contemplação",
+              "observacao": "G-2026-001-B: Contemplação com lance aplicado de R$ 9.000,00."
+            },
+            "24": {
+              "mes": 24,
+              "indiceAplicado": 0.065,
+              "valorLance": 0,
+              "valorAdiantado": 5000,
+              "prazoRestante": 57,
+              "evento": "aniversário + adiantamento",
+              "observacao": "G-2026-001-A: Reajuste de 4.25%: R$ 1.604,34. | Antecipação aplicada: R$ 3.000,00. | G-2026-001-B: Reajuste de 6.50%: R$ 1.443,63. | Antecipação aplicada: R$ 2.000,00."
+            }
+          }
+        },
+        "failures": []
+      }
+    },
+    {
+      "id": "reconciliation.engine-to-proposal-data",
+      "title": "A proposta publicada preserva, por grupo, os parâmetros que produziram o cálculo.",
+      "ok": true,
+      "evidence": {
+        "proposalItems": [
+          {
+            "itemId": "PROJ-001",
+            "codigoGrupo": "G-2026-001-A",
+            "quantidadeCotas": 1,
+            "valorCartaUnitario": 60000,
+            "valorCartaTotal": 60000,
+            "prazoMeses": 72,
+            "mesContemplacaoAlvo": 12,
+            "lanceProprioPct": 10,
+            "lanceEmbutidoPct": 0,
+            "indiceCorrecaoNome": "ipca",
+            "indiceReajuste": 4.25,
+            "mesAniversario": 12,
+            "modalidadeLance": "livre"
+          },
+          {
+            "itemId": "PROJ-002",
+            "codigoGrupo": "G-2026-001-B",
+            "quantidadeCotas": 1,
+            "valorCartaUnitario": 40000,
+            "valorCartaTotal": 40000,
+            "prazoMeses": 80,
+            "mesContemplacaoAlvo": 18,
+            "lanceProprioPct": 7.5,
+            "lanceEmbutidoPct": 15,
+            "indiceCorrecaoNome": "incc",
+            "indiceReajuste": 6.5,
+            "mesAniversario": 12,
+            "modalidadeLance": "combinado"
+          }
+        ],
+        "publicProjectItems": [
+          {
+            "itemId": "PROJ-001",
+            "codigoGrupo": "G-2026-001-A",
+            "quantidadeCotas": 1,
+            "valorCartaUnitario": 60000,
+            "valorCartaTotal": 60000,
+            "prazoMeses": 72,
+            "mesContemplacaoAlvo": 12,
+            "lanceProprioPct": 10,
+            "lanceEmbutidoPct": 0,
+            "indiceCorrecaoNome": "ipca",
+            "indiceReajuste": 4.25,
+            "mesAniversario": 12,
+            "modalidadeLance": "livre"
+          },
+          {
+            "itemId": "PROJ-002",
+            "codigoGrupo": "G-2026-001-B",
+            "quantidadeCotas": 1,
+            "valorCartaUnitario": 40000,
+            "valorCartaTotal": 40000,
+            "prazoMeses": 80,
+            "mesContemplacaoAlvo": 18,
+            "lanceProprioPct": 7.5,
+            "lanceEmbutidoPct": 15,
+            "indiceCorrecaoNome": "incc",
+            "indiceReajuste": 6.5,
+            "mesAniversario": 12,
+            "modalidadeLance": "combinado"
+          }
+        ],
+        "publicProposalItems": [
+          {
+            "itemId": "PROJ-001",
+            "codigoGrupo": "G-2026-001-A",
+            "quantidadeCotas": 1,
+            "valorCartaUnitario": 60000,
+            "valorCartaTotal": 60000,
+            "prazoMeses": 72,
+            "mesContemplacaoAlvo": 12,
+            "lanceProprioPct": 10,
+            "lanceEmbutidoPct": 0,
+            "indiceCorrecaoNome": "ipca",
+            "indiceReajuste": 4.25,
+            "mesAniversario": 12,
+            "modalidadeLance": "livre"
+          },
+          {
+            "itemId": "PROJ-002",
+            "codigoGrupo": "G-2026-001-B",
+            "quantidadeCotas": 1,
+            "valorCartaUnitario": 40000,
+            "valorCartaTotal": 40000,
+            "prazoMeses": 80,
+            "mesContemplacaoAlvo": 18,
+            "lanceProprioPct": 7.5,
+            "lanceEmbutidoPct": 15,
+            "indiceCorrecaoNome": "incc",
+            "indiceReajuste": 6.5,
+            "mesAniversario": 12,
+            "modalidadeLance": "combinado"
+          }
+        ],
+        "publicScheduleLength": 80,
+        "failures": []
+      }
+    },
+    {
+      "id": "proposal-public.group-contract-disclosure",
+      "title": "Cada grupo da proposta pública explica prazo, contemplação, modalidade, lance e reajuste contratados.",
+      "ok": true,
+      "evidence": {
+        "rows": [
+          "G-2026-001-A Administradora Exemplo Imóveis 1 cota Carta unitária R$ 60.000,00 • total R$ 60.000,00 72 meses Contemplação no cenário: mês 12 Taxa de administração 9,5% Fundo de reserva 2% • IPCA • Reajuste de 4,25% • mês de aniversário 12 Próprio Lance 10%",
+          "G-2026-001-B Administradora Exemplo Imóveis 1 cota Carta unitária R$ 40.000,00 • total R$ 40.000,00 80 meses Contemplação no cenário: mês 18 Taxa de administração 10,5% Fundo de reserva 2% • INCC • Reajuste de 6,5% • mês de aniversário 12 Combinado Lance 22,5%"
+        ],
+        "failures": []
+      }
+    },
+    {
+      "id": "proposal.pdf-action-once-at-release",
+      "title": "A ação de PDF aparece uma única vez no fechamento e uma única vez na página pública, sem duplicação.",
+      "ok": true,
+      "evidence": {
+        "localPdfActions": [
+          "Imprimir ou salvar em PDF"
+        ],
+        "publicPdfActions": [
+          "Imprimir ou salvar em PDF"
+        ],
+        "duplicates": []
+      }
+    },
+    {
+      "id": "proposal-public.no-internal-customer-content",
+      "title": "A proposta pública ativa não mostra termos de implementação, diagnóstico ou ambiente interno ao cliente.",
+      "ok": true,
+      "evidence": {
+        "findings": [],
+        "total": 0
+      }
+    },
+    {
+      "id": "quality.console-clean",
+      "title": "Navegador sem erros, avisos, excecoes ou respostas 404.",
+      "ok": true,
+      "evidence": {
+        "consoleErrors": [],
+        "consoleWarnings": [],
+        "pageErrors": [],
+        "notFound": []
+      }
+    }
+  ],
+  "failures": []
+}

@@ -13,7 +13,10 @@
     "draftStatus": "pending",
     "partialStatus": "partial",
     "reviewedStatus": "reviewed",
-    "reviewedVersion": 2
+    "reviewedVersion": 2,
+    "liveDetailsPreserved": true,
+    "localStoragePIIFree": true,
+    "legacyPIIPurged": true
   },
   "failures": []
 }

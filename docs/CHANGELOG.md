@@ -4,6 +4,34 @@
 
 ---
 
+## [v9.1.0] - 2026-08-22
+
+### Adapter PostgreSQL piloto e proposta persistida no mesmo provider
+
+#### Adicionado
+- Provider PostgreSQL async, migrations `001` e `002`, lockfile de dependencias e runbook de homologacao.
+- Repositorio PostgreSQL para snapshots imutaveis e links revogaveis da proposta.
+- Gate de provider com 38 contratos: CRUD, escopo entre usuarios, sanitizacao, SSL/pool efetivos, fronteira estatica, rollback de sessao, payloads grandes e ciclo completo da proposta em pool injetado.
+
+#### Modificado
+- SQLite permanece padrao local; configuracao PostgreSQL invalida retorna falha explicita e nunca troca silenciosamente de provider.
+- `/api/health` confirma banco e compartilhamento de proposta no mesmo provider.
+- Escritas protegidas impedem transferencia de dono por identificador e eventos de auditoria exigem sessao.
+- Servidor estatico restringe a entrega aos arquivos publicos; runtime, configuracao, dependencias e backend nao sao servidos.
+- Eventos acima de 50 mil caracteres usam envelope controlado; snapshots sao preservados ate 4 MiB e rejeitados explicitamente acima desse limite.
+- Inativacao de usuario e revogacao de sessoes formam uma unica transacao; falha de auditoria nao mascara uma operacao principal ja confirmada.
+
+#### Validacao
+- `node tools/validate-database-provider.mjs`
+- `node tools/validate-local-database.mjs`
+- `node tools/validate-proposal-secure-share.mjs`
+- `node tools/validate-language-navigation-v10.mjs`
+
+#### Pendencia externa
+- O smoke contra PostgreSQL real requer URL e instancia de homologacao; mocks nao removem essa pendencia.
+
+---
+
 ## [v8.106.0] - 2026-06-12
 
 ### Mapa GitHub online na lousa

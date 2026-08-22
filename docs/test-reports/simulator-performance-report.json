@@ -2,7 +2,7 @@
   "ok": true,
   "source": {
     "path": "data_base/Tab_Grupos_Consorcio.json",
-    "bytes": 18364884,
+    "bytes": 18974515,
     "rawRecords": 17418,
     "validRecords": 17396
   },
@@ -14,12 +14,12 @@
     "rows": 17396,
     "rawRecords": 17418,
     "validRecords": 17396,
-    "ratio": 0.2214
+    "ratio": 0.2143
   },
   "gzip": {
-    "sourceBytes": 982046,
+    "sourceBytes": 986713,
     "compactBytes": 695525,
-    "ratio": 0.7082
+    "ratio": 0.7049
   },
   "failures": []
 }

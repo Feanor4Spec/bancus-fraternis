@@ -1,8 +1,8 @@
 {
   "ok": true,
   "decision": {
-    "status": "pronto",
-    "tone": "stable",
+    "status": "revisar",
+    "tone": "critical",
     "risks": 1,
     "premises": 4,
     "comparisons": 3
