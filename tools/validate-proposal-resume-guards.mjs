@@ -445,7 +445,11 @@ check('readonly.team-links-always-reauthorize', appSource.includes('function res
   'Equipe interna ainda pode abrir proposta cacheada sem autorização atual do backend.');
 check('readonly.backend-cache-account-scoped', appSource.includes('function authorizedBackendResume(simulationId)')
   && appSource.includes('entry.actorEmail === actorEmail ? entry.simulation : null')
-  && appSource.includes('authorizedBackendResume(id) || Storage.loadSimulation(id)'),
+  && appSource.includes('function authorizedLocalResume(simulationId)')
+  && appSource.includes("['consultor', 'admin'].includes(role)")
+  && appSource.includes('savedBy === actorEmail ? simulation : null')
+  && appSource.includes('authorizedBackendResume(id) || authorizedLocalResume(id)')
+  && appSource.includes("const requiresBackendAuthorization = hasInterestResume || teamResume || role === 'cliente';"),
   'Snapshot autorizado em memória não está vinculado ao usuário atual.');
 check('readonly.interest-failure-stops-resume', appSource.includes('resumeRequiresBackendAuthorization(params) && !hydrated')
   && !/hydrateRequestedSimulationFromBackend\(\)[\s\S]{0,160}finally\(\(\) => carregarSimulacaoDaUrl\(\)\)/.test(appSource),

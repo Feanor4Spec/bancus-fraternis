@@ -11,7 +11,7 @@
     { label: 'Perfil e objetivo', keywords: ['jornada do cliente', 'perfil e objetivo'] },
     { label: 'Projeto multigrupo', keywords: ['composicao do projeto estruturado', 'projeto multigrupo'] },
     { label: 'Grupos selecionados', keywords: ['grupos selecionados', 'composicao do projeto'] },
-    { label: 'Valores contratados', keywords: ['estrutura financeira', 'numeros estrategicos'] },
+    { label: 'Valores simulados', keywords: ['estrutura financeira', 'numeros estrategicos'] },
     { label: 'Estratégia de lance', keywords: ['lance e estrategia', 'lance e contemplacao'] },
     { label: 'Evolução das parcelas', keywords: ['contribuicoes e parcelas', 'projecoes da operacao'] },
     { label: 'Eventos', keywords: ['eventos relevantes', 'cronograma mensal'] },
@@ -24,7 +24,7 @@
   ];
 
   const METRIC_LABELS = {
-    credit: ['credito total', 'credito contratado'],
+    credit: ['credito total', 'credito simulado', 'credito contratado'],
     'net-credit': ['caixa liquida', 'credito liquido'],
     installment: ['parcela atual', 'parcela inicial', 'proxima parcela'],
     bid: ['lance total', 'lance sugerido']
@@ -108,6 +108,12 @@
     }
 
     const client = valueOf('nomeCliente');
+    if (document.body.classList.contains('simulator-client-flow')) {
+      return {
+        title: 'Nova simulação',
+        detail: 'Defina seu objetivo e compare as opções'
+      };
+    }
     return {
       title: client ? `Proposta de ${client}` : 'Nova simulação',
       detail: client ? 'Cliente identificado' : 'Informe o cliente e o objetivo'
@@ -159,8 +165,10 @@
       document.querySelector('.selected-group-row') ||
       document.querySelector('#proposta-container .ps-project-table tbody tr')
     );
+    const clientJourney = currentUserIsClient() || document.body.classList.contains('simulator-client-flow');
+    const consultantReady = clientJourney || Boolean(valueOf('consultor'));
     const requiredData = Boolean(
-      valueOf('consultor') &&
+      consultantReady &&
       valueOf('nomeCliente') &&
       valueOf('clienteEmail') &&
       valueOf('clienteTelefone') &&
@@ -184,6 +192,7 @@
       premises,
       pdfStructure,
       validity,
+      clientJourney,
       releaseIssues,
       clientReady: calculated && premises && pdfStructure && validity,
       ready: calculated && requiredData && premises && pdfStructure && validity && releaseIssues.length === 0
@@ -234,6 +243,13 @@
   }
 
   function syncValidationPanel(state) {
+    const requiredDataCopy = document.querySelector('[data-proposal-check="required-data"] span');
+    setText(
+      requiredDataCopy,
+      state.clientJourney
+        ? 'Seus dados e o plano estão completos.'
+        : 'Consultor, cliente e plano conferidos.'
+    );
     syncValidationItem('calculation', state.calculated, 'Concluído');
     syncValidationItem('required-data', state.requiredData, 'Conferido');
     syncValidationItem('premises', state.premises, 'Revisado');
@@ -341,8 +357,14 @@
       else button.removeAttribute('aria-current');
     });
 
-    if (step === 10 && isDashboardProposalContext()) {
-      setClientMode(true, { locked: true });
+    if (step === 10 && (
+      currentUserIsClient()
+      || document.body.classList.contains('simulator-client-flow')
+      || isDashboardProposalContext()
+    )) {
+      if (!document.body.classList.contains('proposal-client-mode') || !clientModeLocked) {
+        setClientMode(true, { locked: true });
+      }
     } else if (step !== 10 && document.body.classList.contains('proposal-client-mode')) {
       setClientMode(false);
     }
@@ -500,9 +522,15 @@
       setText(title, 'Quer conversar sobre esta proposta?');
       setText(copy, 'Peça um contato para tirar dúvidas sobre valores, lances, parcelas e condições.');
     }
-    setText(feedback, errorMessage || (proposalInterestBusy ? 'Registrando seu pedido...' : ''));
+    const identity = currentProposalInterestIdentity();
+    setText(
+      feedback,
+      errorMessage
+        || (proposalInterestBusy ? 'Registrando seu pedido...' : '')
+        || (!identity ? 'Não foi possível preparar o atendimento desta proposta. Tente novamente.' : '')
+    );
     buttons.forEach((button) => {
-      button.disabled = proposalInterestBusy || complete || !currentProposalInterestIdentity();
+      button.disabled = proposalInterestBusy || complete || !identity;
       button.setAttribute('aria-disabled', String(button.disabled));
       button.textContent = complete ? 'Pedido registrado' : (proposalInterestBusy ? 'Registrando...' : 'Quero falar com um consultor');
     });

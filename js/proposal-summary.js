@@ -366,7 +366,7 @@ const ProposalSummary = (() => {
     const lanceEmbutidoPct = creditoTotal > 0 ? (lanceEmbutido / creditoTotal) * 100 : 0;
     const riscos = [];
     const premissas = [
-      `Crédito contratado: ${money(creditoTotal)}. Crédito líquido estimado após o lance embutido: ${money(caixaLiquida)}.`,
+      `Crédito simulado: ${money(creditoTotal)}. Crédito líquido estimado após o lance embutido: ${money(caixaLiquida)}.`,
       `Parcela inicial estimada: ${money(parcelaAtual)}. Prazo considerado: ${number(prazoTotal)} meses.`,
       `Lance total: ${money(lanceTotal)}, conforme os valores informados para lance próprio, embutido, FGTS ou lance fixo.`,
       `Taxa média informada: ${percent(taxaMedia)}. Fundo de reserva e seguro seguem as condições de cada grupo.`
@@ -428,7 +428,7 @@ const ProposalSummary = (() => {
         ? 'Explique os pontos de atenção ao cliente antes de solicitar o aceite.'
         : 'Ajuste os itens marcados para evitar uma proposta incompleta ou inconsistente.';
     const reasons = [
-      creditoTotal > 0 ? `Crédito contratado: ${money(creditoTotal)}. Crédito líquido: ${money(caixaLiquida)}.` : '',
+      creditoTotal > 0 ? `Crédito simulado: ${money(creditoTotal)}. Crédito líquido: ${money(caixaLiquida)}.` : '',
       parcelaAtual > 0 ? `Parcela inicial estimada: ${money(parcelaAtual)}.` : '',
       projectItems.length ? `${number(projectItems.length)} grupo${projectItems.length !== 1 ? 's' : ''} selecionado${projectItems.length !== 1 ? 's' : ''}.` : '',
       lanceTotal > 0 ? `Lance total considerado no cronograma: ${money(lanceTotal)}.` : ''
@@ -626,7 +626,7 @@ const ProposalSummary = (() => {
         title: 'Parcelas mensais',
         status: 'current',
         date: formatDate(proximaParcelaData),
-        description: 'Pagamento da parcela, taxa de administração, fundo de reserva, seguro e demais valores contratados.'
+        description: 'Pagamento da parcela, taxa de administração, fundo de reserva, seguro e demais valores previstos no plano.'
       },
       {
         title: 'Assembleias e lances',
@@ -882,7 +882,7 @@ const ProposalSummary = (() => {
     const cards = [
       {
         tag: 'Crédito',
-        title: 'Crédito contratado',
+        title: 'Valor total das cartas',
         metric: money(data.metrics.creditoTotal),
         body: 'Soma das cartas dos grupos selecionados.',
         detail: `Grupos: ${number(data.projectSummary?.totalGrupos || data.projectItems?.length || 0)}. Cotas: ${number(data.projectSummary?.totalCotas || 0)}.`
@@ -1218,7 +1218,7 @@ const ProposalSummary = (() => {
           `).join('')}
           <aside class="ps-insight">
             <strong>Resumo</strong>
-            <p>A carta corresponde ao crédito contratado. Taxa, fundo e seguro são valores adicionais previstos nas condições do grupo.</p>
+            <p>A carta corresponde ao crédito simulado. Taxa, fundo e seguro são valores adicionais previstos nas condições do grupo.</p>
           </aside>
         </div>
       </section>

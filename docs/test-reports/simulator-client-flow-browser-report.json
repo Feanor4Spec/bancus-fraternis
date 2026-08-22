@@ -1,0 +1,142 @@
+{
+  "schema": "bancus.validation.simulator-client-flow.browser.v1",
+  "generatedAt": "2026-08-22T21:09:55.3107556Z",
+  "status": "PASS",
+  "browser": "Codex in-app browser",
+  "baseUrl": "http://127.0.0.1:8080",
+  "viewport": {
+    "innerWidth": 676,
+    "documentWidth": 668,
+    "horizontalOverflow": false
+  },
+  "checks": [
+    {
+      "id": "client.new-simulation-entry",
+      "ok": true,
+      "evidence": {
+        "activeInternalStep": 2,
+        "visibleProgress": "Etapa 1 de 9",
+        "title": "Seu objetivo",
+        "visibleSteps": 9,
+        "consultantStepVisible": false,
+        "exampleActionVisible": false,
+        "knownFieldsPrefilled": ["nome", "e-mail", "telefone"]
+      }
+    },
+    {
+      "id": "client.no-internal-prefill-copy",
+      "ok": true,
+      "evidence": {
+        "headerTitle": "Nova simulação",
+        "headerDetail": "Defina seu objetivo e compare as opções",
+        "notesValue": ""
+      }
+    },
+    {
+      "id": "client.navigation-is-commercial-and-reduced",
+      "ok": true,
+      "evidence": {
+        "saveActionVisible": false,
+        "savedSimulationListVisible": false,
+        "exampleActionVisible": false,
+        "overflowMenuVisible": false,
+        "consultantFormVisible": false,
+        "audiencePendingStateRemoved": true
+      }
+    },
+    {
+      "id": "security.role-query-does-not-change-profile",
+      "ok": true,
+      "evidence": {
+        "testedQuery": "role=consultor&proposalView=client",
+        "authenticatedAudience": "cliente",
+        "activeInternalStep": 2,
+        "consultantStepVisible": false
+      }
+    },
+    {
+      "id": "consultant.regression",
+      "ok": true,
+      "evidence": {
+        "activeInternalStep": 1,
+        "visibleProgress": "Etapa 1 de 10",
+        "title": "Consultor",
+        "consultantStepVisible": true
+      }
+    },
+    {
+      "id": "proposal.valid-resume",
+      "ok": true,
+      "evidence": {
+        "proposalId": "PROP-2026-0100-0XQE3A",
+        "simulationId": "SIM-PV-MT4NKH4M-VEWP2J",
+        "proposalVersionId": "PV-MT4NKH75-2",
+        "activeInternalStep": 10,
+        "visibleProgress": "Etapa 9 de 9",
+        "readOnly": true,
+        "visibleEditControls": 0
+      }
+    },
+    {
+      "id": "proposal.uses-simulation-language",
+      "ok": true,
+      "evidence": {
+        "prematureContractClaims": 0,
+        "creditLabel": "Valor total das cartas",
+        "proposalHeading": "Confira sua proposta.",
+        "nonGuaranteeVisible": true
+      }
+    },
+    {
+      "id": "proposal.invalid-resume-fallback",
+      "ok": true,
+      "evidence": {
+        "activeInternalStep": 2,
+        "visibleSections": 1,
+        "message": "Não foi possível abrir essa proposta. Você pode iniciar uma nova simulação."
+      }
+    },
+    {
+      "id": "proposal.malformed-identifier-starts-fresh",
+      "ok": true,
+      "evidence": {
+        "testedQuery": "proposalId=x",
+        "activeInternalStep": 2,
+        "visibleProgress": "Etapa 1 de 9",
+        "visibleSections": 1,
+        "technicalToastVisible": false
+      }
+    },
+    {
+      "id": "client.back-to-dashboard",
+      "ok": true,
+      "evidence": {
+        "action": "Meu painel",
+        "destination": "/pages/dashboard-cliente.html"
+      }
+    },
+    {
+      "id": "accessibility.single-active-surface",
+      "ok": true,
+      "evidence": {
+        "visibleSections": 1,
+        "visibleH1": 1,
+        "warningAndErrorLogs": 0
+      }
+    },
+    {
+      "id": "visual.before-after-reviewed",
+      "ok": true,
+      "evidence": {
+        "sameViewport": true,
+        "before": "docs/test-prints/commercial-ux-v13-audit/03-cliente-inicio-simulacao.jpg",
+        "after": "docs/test-prints/commercial-ux-v13-audit/04-cliente-inicio-simulacao-after.jpg"
+      }
+    }
+  ],
+  "summary": {
+    "total": 12,
+    "passed": 12,
+    "failed": 0
+  }
+}

@@ -28,6 +28,11 @@ body[data-simulator-evolution="proposal-shell"] [hidden] {
   display: none !important;
 }
 
+body[data-simulator-evolution="proposal-shell"].simulator-audience-pending .sim-evolution-rail,
+body[data-simulator-evolution="proposal-shell"].simulator-audience-pending .sim-layout {
+  visibility: hidden;
+}
+
 body[data-simulator-evolution="proposal-shell"] :focus-visible {
   outline: 3px solid rgba(213, 170, 67, 0.68);
   outline-offset: 3px;

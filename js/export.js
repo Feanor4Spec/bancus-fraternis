@@ -368,7 +368,7 @@ const ExportManager = (() => {
               ${kpiItem('Saldo Devedor Inicial', formatMoney(r.saldoInicial), '#374151')}
               ${kpiItem('Parcela Inicial', formatMoney(r.parcelaTotalAtual), '#2563eb')}
               ${kpiItem('Prazo Total', `${r.prazoTotal} meses`, '#374151')}
-              ${kpiItem('Mês de Contemplação', `Mês ${r.mesContemplacao}`, '#10b981')}
+              ${kpiItem('Mês considerado no cenário', `Mês ${r.mesContemplacao}`, '#10b981')}
             </div>
           </div>
 

@@ -27,7 +27,7 @@
   <link rel="stylesheet" href="../css/simulator-evolution.css">
 </head>
 
-<body class="sim-body bf-v8-body proposal-outline-collapsed" data-bf-page="simulador" data-bf-archetype="calculator"
+<body class="sim-body bf-v8-body proposal-outline-collapsed simulator-audience-pending" data-bf-page="simulador" data-bf-archetype="calculator"
   data-bf-visual-version="9" data-simulator-evolution="proposal-shell">
 
   <!-- """""""""" TOASTS """""""""" -->
@@ -91,17 +91,18 @@
 
       <div class="sim-header__actions" aria-label="Ações do simulador">
         <span class="bf-demo-chip sim-header__demo" hidden>Demo local</span>
-        <button class="btn btn--accent btn--sm" type="button" onclick="App.carregarExemplo()" id="btn-exemplo">
+        <button class="btn btn--accent btn--sm" type="button" onclick="App.carregarExemplo()" id="btn-exemplo"
+          data-client-hidden>
           <img src="../assets/icons/ui/ui-document.svg" alt=""> Usar exemplo
         </button>
         <button class="btn btn--ghost btn--sm" type="button" onclick="App.salvarSimulacao()" id="btn-salvar"
-          title="Salvar para continuar depois">
+          title="Salvar para continuar depois" data-client-hidden>
           <img src="../assets/icons/ui/ui-vault.svg" alt=""> Salvar
         </button>
-        <details class="sim-header-menu">
+        <details class="sim-header-menu" data-client-hidden>
           <summary class="btn btn--ghost btn--sm">Mais</summary>
           <div class="sim-header-menu__panel">
-            <button type="button" onclick="App.abrirCarregamento()" id="btn-carregar">
+            <button type="button" onclick="App.abrirCarregamento()" id="btn-carregar" data-client-hidden>
               <img src="../assets/icons/ui/ui-document.svg" alt=""> Abrir simulação
             </button>
             <button type="button" onclick="App.resetar()" id="btn-resetar">
@@ -122,7 +123,7 @@
     <details class="sim-evolution-rail__menu">
       <summary>Ver etapas</summary>
       <div class="sim-evolution-rail__steps">
-        <button type="button" data-evolution-step="1" onclick="App.goToStep(1)">
+        <button type="button" data-evolution-step="1" data-consultant-only onclick="App.goToStep(1)">
           <img src="../assets/icons/journey/01-visao-geral.svg" alt=""><span>Consultor</span>
         </button>
         <button type="button" data-evolution-step="2" onclick="App.goToStep(2)">
@@ -169,7 +170,8 @@
     <!-- Sidebar Vertical Stepper -->
     <aside class="sim-sidebar" id="sim-sidebar" hidden aria-hidden="true">
       <nav class="sim-stepper" aria-label="Etapas da simulação">
-        <button type="button" class="sim-stepper__step sim-stepper__step--active" data-step="1" onclick="App.goToStep(1)">
+        <button type="button" class="sim-stepper__step sim-stepper__step--active" data-step="1"
+          data-consultant-only onclick="App.goToStep(1)">
           <div class="sim-stepper__mark">
             <img src="../assets/icons/journey/01-visao-geral.svg" alt="" class="sim-stepper__icon">
             <span class="sim-stepper__number">1</span>
@@ -282,7 +284,8 @@
       </section>
 
       <!--  ETAPA 1: Dados do Consultor (V3)  -->
-      <section id="step-1" class="step-section step-section--active" aria-label="Dados do Consultor">
+      <section id="step-1" class="step-section step-section--active" aria-label="Dados do Consultor"
+        data-consultant-only>
         <div class="section-header">
           <div class="section-header__eyebrow">Etapa 1 de 10</div>
           <h2 class="section-header__title">Consultor</h2>
@@ -343,7 +346,7 @@
           <div class="card__header">
             <div class="card__title">
               <div class="card__title-icon card__title-icon--gold" aria-hidden="true"><img src="../assets/icons/ui/ui-users.svg" alt=""></div>
-              Dados do cliente
+              <span data-client-card-title>Dados do cliente</span>
             </div>
           </div>
           <div class="form-grid">
@@ -387,7 +390,7 @@
               <label class="form-label" for="parcelaConfortavel">Parcela mensal confortável</label>
               <input type="text" id="parcelaConfortavel" class="form-input" data-money="true" inputmode="decimal"
                 placeholder="R$ 3.500,00" autocomplete="off" required>
-              <small class="form-help">Limite mensal informado pelo cliente, não uma aprovação de crédito.</small>
+              <small class="form-help" data-client-installment-help>Limite mensal informado pelo cliente, não uma aprovação de crédito.</small>
             </div>
             <div class="form-group">
               <label class="form-label" for="reservaAtual">Reserva preservada</label>
@@ -437,7 +440,7 @@
             <div class="form-group form-group--full consent-field">
               <label class="form-check" for="clienteConsentimento">
                 <input type="checkbox" id="clienteConsentimento" required>
-                <span>Confirmo que o cliente autorizou o uso destes dados para elaborar e compartilhar esta proposta.</span>
+                <span data-client-consent-copy>Confirmo que o cliente autorizou o uso destes dados para elaborar e compartilhar esta proposta.</span>
               </label>
               <small class="form-help">Os dados pessoais são usados apenas para preparar e compartilhar esta proposta.</small>
             </div>
@@ -445,7 +448,7 @@
         </div>
 
         <div class="step-nav">
-          <button class="btn btn--ghost" onclick="App.prevStep()">&larr; Voltar</button>
+          <button class="btn btn--ghost" data-client-first-back onclick="App.prevStep()">&larr; Voltar</button>
           <button class="btn btn--primary" type="button" onclick="App.nextStep()">Definir busca</button>
         </div>
       </section>
@@ -990,8 +993,9 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
                 placeholder="5">
             </div>
             <div class="form-group">
-              <label class="form-label" for="compMesContemplacao">Mês de Contemplação</label>
+              <label class="form-label" for="compMesContemplacao">Mês considerado no cenário</label>
               <input type="number" id="compMesContemplacao" class="form-input" min="1" value="18" placeholder="18" onchange="App.onCompGrupoChange()">
+              <span class="form-help">Este mês é uma referência da simulação e não garante contemplação.</span>
             </div>
             <div class="form-group">
               <label class="form-label" for="compLanceProprio">Lance Próprio (%)</label>
@@ -1057,7 +1061,7 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
             </div>
           </div>
           <div class="chart-card chart-card--full">
-            <div class="chart-card__title">Desembolso até Contemplação</div>
+            <div class="chart-card__title">Desembolso até o mês simulado</div>
             <div class="chart-container" style="height:280px;">
               <canvas id="compChartContemplacao"></canvas>
             </div>
@@ -1178,7 +1182,7 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
               <li><button type="button" data-outline-index="1"><span>02</span><strong>Perfil e objetivo</strong><small>Aguardando</small></button></li>
               <li><button type="button" data-outline-index="2"><span>03</span><strong>Grupos e cotas</strong><small>Aguardando</small></button></li>
               <li><button type="button" data-outline-index="3"><span>04</span><strong>Grupos selecionados</strong><small>Aguardando</small></button></li>
-              <li><button type="button" data-outline-index="4"><span>05</span><strong>Valores contratados</strong><small>Aguardando</small></button></li>
+              <li><button type="button" data-outline-index="4"><span>05</span><strong>Valores simulados</strong><small>Aguardando</small></button></li>
               <li><button type="button" data-outline-index="5"><span>06</span><strong>Lances</strong><small>Aguardando</small></button></li>
               <li><button type="button" data-outline-index="6"><span>07</span><strong>Evolução das parcelas</strong><small>Aguardando</small></button></li>
               <li><button type="button" data-outline-index="7"><span>08</span><strong>Eventos</strong><small>Aguardando</small></button></li>
@@ -1213,7 +1217,7 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
                 <img src="../assets/logos/logo-bank-fratern-compass.svg" alt="" class="proposal-cover-preview__watermark">
               </div>
               <div class="proposal-cover-preview__metrics" aria-label="Resumo executivo">
-                <article><img src="../assets/icons/ui/ui-coin.svg" alt=""><span>Crédito contratado</span><strong data-proposal-metric="credit">Aguardando cálculo</strong></article>
+                <article><img src="../assets/icons/ui/ui-coin.svg" alt=""><span>Valor total das cartas</span><strong data-proposal-metric="credit">Aguardando cálculo</strong></article>
                 <article><img src="../assets/icons/ui/ui-vault.svg" alt=""><span>Crédito líquido</span><strong data-proposal-metric="net-credit">Aguardando cálculo</strong></article>
                 <article><img src="../assets/icons/ui/ui-calculator.svg" alt=""><span>Parcela inicial</span><strong data-proposal-metric="installment">Aguardando cálculo</strong></article>
                 <article><img src="../assets/icons/ui/ui-scale.svg" alt=""><span>Lance configurado</span><strong data-proposal-metric="bid">Aguardando cálculo</strong></article>
@@ -1243,7 +1247,7 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
               </li>
               <li data-proposal-check="required-data">
                 <img src="../assets/icons/ui/ui-users.svg" alt="">
-                <div><strong>Dados essenciais</strong><span>Consultor, cliente e projeto conferidos.</span></div>
+                <div><strong>Dados essenciais</strong><span>Consultor, cliente e plano conferidos.</span></div>
                 <small>Aguardando</small>
               </li>
               <li data-proposal-check="premises">

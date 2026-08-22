@@ -13,6 +13,7 @@ const App = (() => {
   // ─── Estado da Aplicação ───
   let currentStep = 1;
   const TOTAL_STEPS = 10;
+  const CLIENT_TOTAL_STEPS = 9;
   let resultado = null;
   let cenarios = null;
   let currentParams = null;
@@ -21,6 +22,7 @@ const App = (() => {
   let projectSimulation = null;
   let clientProposalReadOnly = false;
   let resumedProposalAcceptance = null;
+  let clientSimulationFlow = false;
   const visitedSteps = new Set([1]);
   const backendResumeSimulationIds = new Set();
   const backendResumeSimulations = new Map();
@@ -37,6 +39,17 @@ const App = (() => {
     'Comparação',
     'Proposta'
   ]);
+  const CLIENT_STEP_LABELS = Object.freeze({
+    2: 'Objetivo',
+    3: 'Preferências',
+    4: 'Opções',
+    5: 'Plano',
+    6: 'Eventos',
+    7: 'Resumo',
+    8: 'Parcelas',
+    9: 'Comparar',
+    10: 'Proposta'
+  });
   // V3: Estado da Prateleira
   let shelfGroups = []; // grupos filtrados
   let selectedShelfGroup = null; // compatibilidade legada - não usado no v5
@@ -80,6 +93,7 @@ const App = (() => {
 
   // ─── Navegação entre Etapas ───
   function goToStep(step, options = {}) {
+    if (clientSimulationFlow && step === 1) step = 2;
     if (step < 1 || step > TOTAL_STEPS) return;
     if (step === 9 && compResult && !clientProposalReadOnly && !proposalComparisonIsCurrent()) {
       invalidateComparison();
@@ -125,13 +139,38 @@ const App = (() => {
     visitedSteps.add(step);
     renderSteps();
     renderActiveSection();
+    if (currentStep === 10 && clientSimulationFlow && !clientProposalReadOnly) {
+      const proposalVersion = salvarVersaoProposta({ silent: true });
+      if (!proposalVersion) {
+        showToast('Não foi possível preparar o atendimento desta proposta. Tente novamente.', 'warning');
+      }
+    }
     renderSimulatorDecision();
     closeNavigationMenus();
     if (!options.skipFocus) focusStepContent(currentStep);
   }
 
   function nextStep() { goToStep(currentStep + 1); }
-  function prevStep() { goToStep(currentStep - 1); }
+  function prevStep() {
+    if (clientSimulationFlow && currentStep === 2) {
+      window.location.assign('dashboard-cliente.html');
+      return;
+    }
+    goToStep(currentStep - 1);
+  }
+
+  function visibleStepNumber(step) {
+    return clientSimulationFlow ? Math.max(1, step - 1) : step;
+  }
+
+  function visibleStepCount() {
+    return clientSimulationFlow ? CLIENT_TOTAL_STEPS : TOTAL_STEPS;
+  }
+
+  function visibleStepLabel(step) {
+    if (clientSimulationFlow && CLIENT_STEP_LABELS[step]) return CLIENT_STEP_LABELS[step];
+    return STEP_LABELS[step - 1] || `Etapa ${step}`;
+  }
 
   /** Atualiza visual do stepper (sidebar vertical) */
   function renderSteps() {
@@ -139,6 +178,10 @@ const App = (() => {
     const steps = document.querySelectorAll('.sim-stepper__step, .stepper__step');
     steps.forEach((el) => {
       const stepNum = parseInt(el.getAttribute('data-step'));
+      const number = el.querySelector('.sim-stepper__number, .stepper__number');
+      const labelNode = el.querySelector('.sim-stepper__label, .stepper__label');
+      if (number) number.textContent = String(visibleStepNumber(stepNum));
+      if (labelNode) labelNode.textContent = visibleStepLabel(stepNum);
       // Remove all state classes (both naming conventions)
       el.classList.remove(
         'stepper__step--active', 'stepper__step--completed',
@@ -156,12 +199,16 @@ const App = (() => {
       const stepNum = Number(button.dataset.evolutionStep || 0);
       const valid = stepNum >= 1 && stepNum <= TOTAL_STEPS && isStepComplete(stepNum);
       const complete = stepNum !== currentStep && visitedSteps.has(stepNum) && valid;
-      const label = STEP_LABELS[stepNum - 1] || button.textContent.trim() || `Etapa ${stepNum}`;
+      const label = visibleStepLabel(stepNum) || button.textContent.trim() || `Etapa ${stepNum}`;
+      const displayStep = visibleStepNumber(stepNum);
+      const totalSteps = visibleStepCount();
+      const text = button.querySelector('span');
+      if (text) text.textContent = label;
 
       button.classList.toggle('is-active', stepNum === currentStep);
       button.classList.toggle('is-complete', complete);
       button.dataset.stepValid = valid ? 'true' : 'false';
-      button.setAttribute('aria-label', `Etapa ${stepNum} de ${TOTAL_STEPS}: ${label}`);
+      button.setAttribute('aria-label', `Etapa ${displayStep} de ${totalSteps}: ${label}`);
       button.removeAttribute('aria-current');
     });
 
@@ -174,9 +221,11 @@ const App = (() => {
     const currentStepLabel = document.querySelector('[data-evolution-current-step]');
     const currentLabel = document.querySelector('[data-evolution-current-label]');
     const progress = document.querySelector('[data-evolution-progress]');
-    if (currentStepLabel) currentStepLabel.textContent = `Etapa ${currentStep} de ${TOTAL_STEPS}`;
-    if (currentLabel) currentLabel.textContent = STEP_LABELS[currentStep - 1] || `Etapa ${currentStep}`;
-    if (progress) progress.style.width = `${Math.round((currentStep / TOTAL_STEPS) * 100)}%`;
+    const displayStep = visibleStepNumber(currentStep);
+    const totalSteps = visibleStepCount();
+    if (currentStepLabel) currentStepLabel.textContent = `Etapa ${displayStep} de ${totalSteps}`;
+    if (currentLabel) currentLabel.textContent = visibleStepLabel(currentStep);
+    if (progress) progress.style.width = `${Math.round((displayStep / totalSteps) * 100)}%`;
 
     // Old horizontal connectors (backwards compat)
     document.querySelectorAll('.stepper__connector').forEach((el, i) => {
@@ -687,7 +736,9 @@ const App = (() => {
     if (!target) return;
     const guide = buildSimulatorObjectiveGuidance();
     if (!guide) {
-      target.innerHTML = '<div class="sim-objective-guide__empty">Defina o objetivo do cliente para preencher os filtros.</div>';
+      target.innerHTML = `<div class="sim-objective-guide__empty">${clientSimulationFlow
+        ? 'Defina seu objetivo para preencher os filtros.'
+        : 'Defina o objetivo do cliente para preencher os filtros.'}</div>`;
       return;
     }
     document.body.dataset.simulatorObjective = guide.objective || 'aquisicao';
@@ -731,7 +782,10 @@ const App = (() => {
     renderSimulatorObjectiveGuide();
     buscarGrupos();
     goToStep(4, { skipValidation: true, skipAutoSearch: true });
-    showToast(`${applied} filtros aplicados para ${guide.label || 'objetivo do cliente'}.`, 'success');
+    showToast(
+      `${applied} filtros aplicados para ${guide.label || (clientSimulationFlow ? 'seu objetivo' : 'objetivo do cliente')}.`,
+      'success'
+    );
   }
 
   function applyDecisionContextPrefill() {
@@ -981,6 +1035,7 @@ const App = (() => {
 
   function collectStepErrors(step) {
     const errors = [];
+    if (step === 1 && clientSimulationFlow) return errors;
     if (step === 1) {
       if (fieldText('consultor').length < 3) errors.push('Informe o nome do consultor.');
       if (!isValidEmail(fieldText('consultorEmail'))) errors.push('Informe um e-mail válido do consultor.');
@@ -1117,7 +1172,7 @@ const App = (() => {
         projectSimulation,
         shelfEngine: typeof ShelfEngine !== 'undefined' ? ShelfEngine : null
       })
-      : { ok: false, mensagens: ['Modulo de resultado indisponivel.'] };
+      : { ok: false, mensagens: ['Não foi possível preparar o resultado. Tente calcular novamente.'] };
 
     if (!calculation.ok) {
       showToast((calculation.mensagens || ['Nao foi possivel calcular a simulacao.']).join('\n'), 'error');
@@ -1162,7 +1217,7 @@ const App = (() => {
     container.innerHTML = `
       <div class="card text-center" style="padding:48px 24px;">
         <h3>Resumo indisponível</h3>
-        <p class="text-muted">O módulo de proposta estruturada não foi carregado.</p>
+        <p class="text-muted">Não foi possível preparar a proposta. Recalcule a simulação e tente novamente.</p>
       </div>
     `;
   }
@@ -1745,6 +1800,146 @@ const App = (() => {
     }
   }
 
+  function currentUserEmail() {
+    try {
+      return String(window.BFAuth?.getCurrentUser?.()?.email || '').trim().toLowerCase();
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function hasSimulationResumeIntent() {
+    try {
+      const params = new URLSearchParams(window.location.search || '');
+      const simulationId = params.get('simulationId') || params.get('simulacaoId') || '';
+      const proposalId = params.get('proposalId') || '';
+      return /^SIM-[A-Za-z0-9._:-]+$/i.test(simulationId)
+        || /^PROP-[A-Za-z0-9._:-]+$/i.test(proposalId);
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function setClientFieldLabel(fieldId, text) {
+    const label = document.querySelector(`label[for="${fieldId}"]`);
+    if (!label) return;
+    const tooltip = label.querySelector('.tooltip-trigger');
+    if (!tooltip) {
+      label.textContent = text;
+      return;
+    }
+    Array.from(label.childNodes)
+      .filter((node) => node.nodeType === Node.TEXT_NODE)
+      .forEach((node) => node.remove());
+    label.insertBefore(document.createTextNode(`${text} `), tooltip);
+  }
+
+  function applyClientSimulationPresentation(user) {
+    document.body.classList.add('simulator-client-flow');
+    document.body.dataset.simulatorAudience = 'cliente';
+
+    document.querySelectorAll('[data-consultant-only], [data-client-hidden]').forEach((element) => {
+      element.hidden = true;
+      element.setAttribute('aria-hidden', 'true');
+    });
+
+    const detail = document.getElementById('sim-evolution-project-detail');
+    if (detail) detail.textContent = 'Defina seu objetivo e compare as opções';
+
+    const clientSection = document.getElementById('step-2');
+    if (clientSection) {
+      clientSection.setAttribute('aria-label', 'Seu objetivo');
+      const title = clientSection.querySelector('.section-header__title');
+      const description = clientSection.querySelector('.section-header__desc');
+      const cardTitle = clientSection.querySelector('[data-client-card-title]');
+      const backButton = clientSection.querySelector('[data-client-first-back]');
+      if (title) title.textContent = 'Seu objetivo';
+      if (description) {
+        description.textContent = 'Conte o que você quer planejar e quais valores fazem sentido para você.';
+      }
+      if (cardTitle) cardTitle.textContent = 'Seus dados e seu plano';
+      if (backButton) backButton.textContent = '← Meu painel';
+    }
+
+    for (let step = 2; step <= TOTAL_STEPS; step += 1) {
+      const eyebrow = document.querySelector(`#step-${step} .section-header__eyebrow`);
+      if (eyebrow) eyebrow.textContent = `Etapa ${step - 1} de ${CLIENT_TOTAL_STEPS}`;
+    }
+
+    setClientFieldLabel('nomeCliente', 'Seu nome completo');
+    setClientFieldLabel('clienteCpf', 'Seu CPF');
+    setClientFieldLabel('clienteEmail', 'Seu e-mail');
+    setClientFieldLabel('clienteTelefone', 'Seu telefone');
+    setClientFieldLabel('clienteObjetivo', 'Seu objetivo');
+    setClientFieldLabel('observacoes', 'Quer acrescentar algo?');
+
+    const objectiveTooltip = document.querySelector('label[for="clienteObjetivo"] .tooltip-trigger');
+    if (objectiveTooltip) objectiveTooltip.dataset.tip = 'O que você deseja alcançar com o consórcio.';
+    const installmentHelp = document.querySelector('[data-client-installment-help]');
+    if (installmentHelp) {
+      installmentHelp.textContent = 'Use um valor que caiba no seu planejamento mensal. Isso não é uma aprovação de crédito.';
+    }
+    const consentCopy = document.querySelector('[data-client-consent-copy]');
+    if (consentCopy) {
+      consentCopy.textContent = 'Autorizo o uso destes dados para elaborar e compartilhar minha proposta.';
+    }
+    const objectiveGuideEmpty = document.querySelector('[data-simulator-objective-guide] .sim-objective-guide__empty');
+    if (objectiveGuideEmpty) objectiveGuideEmpty.textContent = 'Defina seu objetivo para preencher os filtros de busca.';
+    const notes = document.getElementById('observacoes');
+    if (notes) {
+      notes.placeholder = 'Conte algo que devemos considerar na sua simulação.';
+      const automaticContextNote = /^Origem:\s*(?:perfil financeiro local|calculadora [^.]+|jornada [^.]+)\.\s*Prontid(?:a|ã)o financeira:\s*\d+\/100\.\s*$/i;
+      if (!hasSimulationResumeIntent() && automaticContextNote.test(String(notes.value || '').trim())) notes.value = '';
+    }
+
+    const prefill = {
+      nomeCliente: user?.name || '',
+      clienteEmail: user?.email || '',
+      clienteTelefone: user?.phone || ''
+    };
+    Object.entries(prefill).forEach(([id, value]) => {
+      const input = document.getElementById(id);
+      if (input && !String(input.value || '').trim() && String(value || '').trim()) input.value = value;
+    });
+
+    renderSteps();
+  }
+
+  function initializeRoleAwareJourney() {
+    const ready = window.BFAuth?.ready ? Promise.resolve(window.BFAuth.ready) : Promise.resolve();
+    ready
+      .then(() => {
+        const user = window.BFAuth?.getCurrentUser?.() || null;
+        clientSimulationFlow = String(user?.role || '').toLowerCase() === 'cliente';
+        document.body.classList.remove('simulator-audience-pending');
+        if (!clientSimulationFlow) return;
+        applyClientSimulationPresentation(user);
+        if (!hasSimulationResumeIntent()) {
+          goToStep(2, {
+            skipValidation: true,
+            skipAutoCalculate: true,
+            skipAutoSearch: true,
+            skipFocus: true
+          });
+        }
+      })
+      .catch(() => {
+        clientSimulationFlow = false;
+        document.body.classList.remove('simulator-audience-pending');
+      });
+  }
+
+  function recoverClientSimulationEntry(message = 'Não foi possível abrir essa proposta. Você pode iniciar uma nova simulação.') {
+    if (!clientSimulationFlow || currentStep !== 1) return false;
+    goToStep(2, {
+      skipValidation: true,
+      skipAutoCalculate: true,
+      skipAutoSearch: true
+    });
+    showToast(message, 'warning');
+    return true;
+  }
+
   function isClientProposalResume(params = null, targetStep = 0) {
     try {
       const search = params || new URLSearchParams(window.location.search || '');
@@ -1789,7 +1984,22 @@ const App = (() => {
   function storedSimulationsWithDetails() {
     if (typeof Storage === 'undefined' || !Storage.loadSimulations) return [];
     const items = Storage.loadSimulations({ includeDetails: true });
-    return Array.isArray(items) ? items : [];
+    const role = String(currentUserRole() || '').toLowerCase();
+    const actorEmail = currentUserEmail();
+    if (!Array.isArray(items) || !actorEmail || !['consultor', 'admin'].includes(role)) return [];
+    return items.filter((item) => (
+      String(item?.actorEmail || item?.consultorEmail || '').trim().toLowerCase() === actorEmail
+    ));
+  }
+
+  function authorizedLocalResume(simulationId) {
+    if (typeof Storage === 'undefined' || !Storage.loadSimulation) return null;
+    const role = String(currentUserRole() || '').toLowerCase();
+    const actorEmail = currentUserEmail();
+    if (!simulationId || !actorEmail || !['consultor', 'admin'].includes(role)) return null;
+    const simulation = Storage.loadSimulation(simulationId);
+    const savedBy = String(simulation?.actorEmail || simulation?.consultorEmail || '').trim().toLowerCase();
+    return simulation && savedBy === actorEmail ? simulation : null;
   }
 
   function simulationMatchesProposal(simulation, proposalId) {
@@ -1820,7 +2030,7 @@ const App = (() => {
         ? BFProposalVersions.history(proposalId, 120).find((item) => item.id === proposalVersionId)
         : BFProposalVersions.latest(proposalId);
       if (version?.simulationId && typeof Storage !== 'undefined' && Storage.loadSimulation) {
-        const linked = Storage.loadSimulation(version.simulationId);
+        const linked = authorizedLocalResume(version.simulationId);
         if (linked) return linked;
       }
       if (proposalVersionId) {
@@ -2645,6 +2855,7 @@ const App = (() => {
       populateShelfFilters();
     }
 
+    initializeRoleAwareJourney();
     carregarSimulacaoDaUrlAposAutenticacao();
   }
 
@@ -3407,7 +3618,7 @@ const App = (() => {
       const fmt = (v) => (v * 100).toFixed(1) + '%';
       heuristicHtml = `
           <div class="shelf-detail-section" style="grid-column:1/-1;border:2px solid ${c.classificacaoFinal.cor};border-radius:12px;padding:20px;background:rgba(0,0,0,0.02);">
-            <h4>Análise Heurística V7</h4>
+            <h4>Análise do grupo</h4>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;">
               <span class="heur-badge" style="background:${c.classificacaoFinal.cor};color:#fff;padding:4px 12px;border-radius:6px;font-weight:700;">${c.classificacaoFinal.icon} ${c.classificacaoFinal.classe}</span>
               <span class="heur-badge" style="background:${analise.papel.cor};color:#fff;padding:4px 12px;border-radius:6px;font-weight:700;">${analise.papel.tag} ${analise.papel.papel}</span>
@@ -3422,7 +3633,7 @@ const App = (() => {
               <tr><td>${c.pressaoExclusao.icon} Pressão Exclusão</td><td><strong>${c.pressaoExclusao.classe}</strong> (${fmt(m.intensidadeExclusao)})</td></tr>
             </table>
             <div style="margin-top:14px;padding:12px;background:rgba(0,0,0,0.03);border-radius:8px;font-size:13px;line-height:1.7;">
-              <strong>Sinopse:</strong><br>
+              <strong>Visão geral:</strong><br>
               ${analise.sinopse.map(b => `• ${b}`).join('<br>')}
             </div>
           </div>`;
@@ -4154,7 +4365,12 @@ const App = (() => {
   }
 
   function salvarSimulacao() {
-    if (typeof Storage === 'undefined') { showToast('Módulo de persistência não disponível.', 'error'); return; }
+    if (typeof Storage === 'undefined') { showToast('Não foi possível salvar a simulação agora.', 'error'); return; }
+    const role = String(currentUserRole() || '').toLowerCase();
+    if (!currentUserEmail() || !['consultor', 'admin'].includes(role)) {
+      showToast('Conclua a simulação para manter a proposta disponível no seu painel.', 'info');
+      return;
+    }
 
     const nome = prompt('Nome da simulação:', `Simulação ${new Date().toLocaleDateString('pt-BR')}`);
     if (!nome) return;
@@ -4174,9 +4390,14 @@ const App = (() => {
   }
 
   function abrirCarregamento() {
-    if (typeof Storage === 'undefined') { showToast('Módulo de persistência não disponível.', 'error'); return; }
+    if (typeof Storage === 'undefined') { showToast('Não foi possível abrir suas simulações agora.', 'error'); return; }
 
-    const list = Storage.loadSimulations();
+    const role = String(currentUserRole() || '').toLowerCase();
+    if (!currentUserEmail() || !['consultor', 'admin'].includes(role)) {
+      showToast('Abra suas propostas pelo painel.', 'warning');
+      return;
+    }
+    const list = storedSimulationsWithDetails();
     if (list.length === 0) {
       showToast('Nenhuma simulação salva encontrada.', 'info');
       return;
@@ -4222,8 +4443,11 @@ const App = (() => {
   }
 
   function _carregarSimulacao(id, options = {}) {
-    const sim = authorizedBackendResume(id) || Storage.loadSimulation(id);
-    if (!sim) { showToast('Simulação não encontrada.', 'error'); return; }
+    const sim = authorizedBackendResume(id) || authorizedLocalResume(id);
+    if (!sim) {
+      if (!recoverClientSimulationEntry()) showToast('Simulação não encontrada.', 'error');
+      return false;
+    }
 
     const requestedProposalId = getRequestedProposalId();
     const requestedProposalVersionId = getRequestedProposalVersionId();
@@ -4241,8 +4465,10 @@ const App = (() => {
         ? resolution.simulationId === sim.id
         : simulationMatchesProposal(sim, requestedProposalId);
       if (!resolution.ok || resolution.simulationId !== sim.id || !identityMatches) {
-        showToast('Este link de proposta não corresponde a uma simulação salva.', 'warning');
-        return;
+        if (!recoverClientSimulationEntry()) {
+          showToast('Este link de proposta não corresponde a uma simulação salva.', 'warning');
+        }
+        return false;
       }
     }
 
@@ -4326,6 +4552,7 @@ const App = (() => {
         'success'
       );
     }
+    return true;
   }
 
   async function hydrateRequestedSimulationFromBackend() {
@@ -4349,7 +4576,7 @@ const App = (() => {
     const interestId = /^LEAD-PI-[A-F0-9]+$/i.test(requestedInterestId) ? requestedInterestId : '';
     const role = String(window.BFAuth?.getCurrentUser?.()?.role || '').toLowerCase();
     const teamResume = role === 'consultor' || role === 'admin';
-    const requiresBackendAuthorization = hasInterestResume || teamResume;
+    const requiresBackendAuthorization = hasInterestResume || teamResume || role === 'cliente';
     if (!/^SIM-[A-Za-z0-9._:-]+$/i.test(simulationId)) return false;
     if (requestedProposalId && !proposalId) return false;
     if (hasInterestResume && !interestId) return false;
@@ -4388,12 +4615,13 @@ const App = (() => {
     const interestId = params?.get?.('interestId') || '';
     if (interestId) return true;
     const role = String(window.BFAuth?.getCurrentUser?.()?.role || '').toLowerCase();
-    const hasResumeLink = Boolean(
-      (params?.get?.('simulationId') || params?.get?.('simulacaoId') || '')
-      || (params?.get?.('proposalId') || '')
-      || (params?.get?.('proposalVersionId') || '')
-    );
-    return hasResumeLink && (role === 'consultor' || role === 'admin');
+    const simulationId = params?.get?.('simulationId') || params?.get?.('simulacaoId') || '';
+    const proposalId = params?.get?.('proposalId') || '';
+    const proposalVersionId = params?.get?.('proposalVersionId') || '';
+    const hasResumeLink = /^SIM-[A-Za-z0-9._:-]+$/i.test(simulationId)
+      || /^PROP-[A-Za-z0-9._:-]+$/i.test(proposalId)
+      || /^PV-[A-Za-z0-9._:-]+$/i.test(proposalVersionId);
+    return hasResumeLink && (role === 'cliente' || role === 'consultor' || role === 'admin');
   }
 
   function carregarSimulacaoDaUrl() {
@@ -4410,15 +4638,23 @@ const App = (() => {
       linkedSimulationId: linked?.id || ''
     });
     if ((proposalId || proposalVersionId) && !resolution.ok) {
-      window.setTimeout(() => showToast('Este link de proposta não corresponde a uma simulação salva.', 'warning'), 300);
-      return;
+      window.setTimeout(() => {
+        if (!recoverClientSimulationEntry()) {
+          showToast('Este link de proposta não corresponde a uma simulação salva.', 'warning');
+        }
+      }, 300);
+      return false;
     }
     const id = resolution.ok ? resolution.simulationId : explicitId;
     if (!id) {
       if (proposalId) {
-        window.setTimeout(() => showToast('Não foi possível retomar esta proposta. Abra uma simulação salva ou crie uma nova proposta.', 'warning'), 300);
+        window.setTimeout(() => {
+          if (!recoverClientSimulationEntry()) {
+            showToast('Não foi possível retomar esta proposta. Abra uma simulação salva ou crie uma nova proposta.', 'warning');
+          }
+        }, 300);
       }
-      return;
+      return false;
     }
     const backendReadOnly = backendReadOnlyResumeSimulationIds.has(id);
     const proposalTarget = backendReadOnly
@@ -4429,6 +4665,7 @@ const App = (() => {
       targetStep: proposalTarget ? 10 : null,
       clientReadOnly
     }), 300);
+    return true;
   }
 
   function carregarSimulacaoDaUrlAposAutenticacao() {
@@ -4452,14 +4689,22 @@ const App = (() => {
     const resumeAfterHydration = () => Promise.resolve(hydrateRequestedSimulationFromBackend())
       .then((hydrated) => {
         if (resumeRequiresBackendAuthorization(params) && !hydrated) {
-          window.setTimeout(() => showToast('Não foi possível autorizar o acesso a esta proposta.', 'warning'), 300);
+          window.setTimeout(() => {
+            if (!recoverClientSimulationEntry()) {
+              showToast('Não foi possível abrir esta proposta. Você pode iniciar uma nova simulação.', 'warning');
+            }
+          }, 300);
           return;
         }
         carregarSimulacaoDaUrl();
       })
       .catch(() => {
         if (resumeRequiresBackendAuthorization(params)) {
-          window.setTimeout(() => showToast('Não foi possível autorizar o acesso a esta proposta.', 'warning'), 300);
+          window.setTimeout(() => {
+            if (!recoverClientSimulationEntry()) {
+              showToast('Não foi possível abrir esta proposta. Você pode iniciar uma nova simulação.', 'warning');
+            }
+          }, 300);
           return;
         }
         carregarSimulacaoDaUrl();
@@ -4469,7 +4714,11 @@ const App = (() => {
         .then(() => resumeAfterHydration())
         .catch(() => {
           if (resumeRequiresBackendAuthorization(params)) {
-            window.setTimeout(() => showToast('Não foi possível autorizar o acesso a esta proposta.', 'warning'), 300);
+            window.setTimeout(() => {
+              if (!recoverClientSimulationEntry()) {
+                showToast('Não foi possível abrir esta proposta. Você pode iniciar uma nova simulação.', 'warning');
+              }
+            }, 300);
             return;
           }
           carregarSimulacaoDaUrl();
@@ -4480,11 +4729,18 @@ const App = (() => {
   }
 
   function _excluirSimulacao(id) {
+    const role = String(currentUserRole() || '').toLowerCase();
+    const simulation = authorizedLocalResume(id);
+    if (!simulation || !currentUserEmail() || !['consultor', 'admin'].includes(role)) {
+      showToast('Esta simulação não está disponível para exclusão.', 'warning');
+      return false;
+    }
     if (!confirm('Tem certeza que deseja excluir esta simulação?')) return;
     Storage.deleteSimulation(id);
     renderSimulatorDecision();
     showToast('Simulação excluída.', 'warning');
     abrirCarregamento(); // Reabrir lista atualizada
+    return true;
   }
 
   // ─── API Pública ───

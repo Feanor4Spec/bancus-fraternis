@@ -1,0 +1,175 @@
+{
+  "schema": "bancus.validation.simulator-client-flow.v1",
+  "generatedAt": "2026-08-22T21:12:46.425Z",
+  "status": "PASS",
+  "summary": {
+    "total": 19,
+    "passed": 19,
+    "failed": 0
+  },
+  "checks": [
+    {
+      "id": "auth.role-is-trusted",
+      "ok": true,
+      "evidence": {
+        "authenticatedUser": true,
+        "queryRole": false
+      }
+    },
+    {
+      "id": "auth.client-resume-requires-backend-owner-check",
+      "ok": true,
+      "evidence": {
+        "clientLocalResumeAllowed": false,
+        "guestLocalResumeAllowed": false,
+        "localResumeActorScoped": true,
+        "backendOwnerAuthorizationRequired": true
+      }
+    },
+    {
+      "id": "auth.invalid-identifiers-do-not-block-client-entry",
+      "ok": true,
+      "evidence": {
+        "invalidSimulationIdStartsFresh": true,
+        "invalidProposalIdStartsFresh": true
+      }
+    },
+    {
+      "id": "entry.client-starts-at-objective",
+      "ok": true,
+      "evidence": {
+        "waitsForResumeGuard": true,
+        "startsAtStep": 2,
+        "avoidsLoadFocusRing": true
+      }
+    },
+    {
+      "id": "entry.resume-is-preserved",
+      "ok": true,
+      "evidence": {
+        "resumeIdentifiersCovered": true,
+        "presentationParametersCannotCreateBlankResume": true
+      }
+    },
+    {
+      "id": "entry.invalid-resume-has-usable-fallback",
+      "ok": true,
+      "evidence": {
+        "fallbackStep": 2,
+        "feedback": "warning",
+        "guardedCallSites": 7
+      }
+    },
+    {
+      "id": "navigation.consultant-step-is-inaccessible-to-client",
+      "ok": true,
+      "evidence": {
+        "navigationGuard": true,
+        "validationGuard": true
+      }
+    },
+    {
+      "id": "navigation.back-returns-to-client-dashboard",
+      "ok": true,
+      "evidence": {
+        "destination": "dashboard-cliente.html"
+      }
+    },
+    {
+      "id": "navigation.client-has-nine-visible-steps",
+      "ok": true,
+      "evidence": {
+        "total": 9,
+        "consultantMarkers": 3
+      }
+    },
+    {
+      "id": "copy.client-is-first-person",
+      "ok": true,
+      "evidence": {
+        "commercialCopy": true
+      }
+    },
+    {
+      "id": "copy.client-hides-internal-prefill-language",
+      "ok": true,
+      "evidence": {
+        "internalObservationRemovedForNewSimulation": true,
+        "commercialHeader": true
+      }
+    },
+    {
+      "id": "entry.known-client-data-is-prefilled",
+      "ok": true,
+      "evidence": {
+        "fields": [
+          "name",
+          "email",
+          "phone"
+        ],
+        "overwriteExistingValues": false
+      }
+    },
+    {
+      "id": "proposal.client-readiness-does-not-require-consultant-form",
+      "ok": true,
+      "evidence": {
+        "clientFlowAccepted": true,
+        "consultantClaimRemoved": true
+      }
+    },
+    {
+      "id": "proposal.client-step-is-always-read-only",
+      "ok": true,
+      "evidence": {
+        "directJourneyProtected": true,
+        "deepLinkProtected": true
+      }
+    },
+    {
+      "id": "proposal.client-step-creates-contactable-version",
+      "ok": true,
+      "evidence": {
+        "versionCreatedBeforeProposalRefresh": true,
+        "simulationPublishedForAuthenticatedOwner": true
+      }
+    },
+    {
+      "id": "ui.client-hides-demo-and-consultant-controls",
+      "ok": true,
+      "evidence": {
+        "hidesExampleAction": true,
+        "hidesUnconfirmedLocalSave": true,
+        "hidesOverflowMenu": true,
+        "hidesSavedSimulationList": true,
+        "consultantOnlyMarkers": 3
+      }
+    },
+    {
+      "id": "auth.local-list-and-delete-are-role-and-actor-scoped",
+      "ok": true,
+      "evidence": {
+        "clientCannotEnumerate": true,
+        "guestCannotEnumerate": true,
+        "deletionRequiresOwnership": true
+      }
+    },
+    {
+      "id": "auth.local-save-is-internal-role-only",
+      "ok": true,
+      "evidence": {
+        "clientCannotReceiveFalseLocalSaveConfirmation": true,
+        "guestCannotCreateOrphanLocalSave": true
+      }
+    },
+    {
+      "id": "copy.proposal-uses-simulation-language",
+      "ok": true,
+      "evidence": {
+        "avoidsPrematureContractClaim": true,
+        "scenarioIsNonDeterministic": true
+      }
+    }
+  ],
+  "failures": []
+}

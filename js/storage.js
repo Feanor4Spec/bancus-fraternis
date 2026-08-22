@@ -178,6 +178,8 @@ const Storage = (() => {
       origem: entry.origem || 'simulador-consorcio',
       currentStep: entry.currentStep || 1,
       proposalId: entry.proposalId || '',
+      ownerEmail: entry.ownerEmail || '',
+      actorEmail: entry.actorEmail || '',
       privacy: entry.privacy || null,
       consultor: entry.consultor || '',
       consultorEmail: entry.consultorEmail || '',
@@ -224,6 +226,8 @@ const Storage = (() => {
       origem: data.origem || 'simulador-consorcio',
       currentStep: data.currentStep || data.step || 1,
       proposalId: data.proposalId || (data.proposalAcceptance && data.proposalAcceptance.proposalId) || '',
+      ownerEmail: data.ownerEmail || data.clienteEmail || '',
+      actorEmail: data.actorEmail || _currentActorEmail() || data.consultorEmail || '',
       privacy: data.privacy || null,
       consultor: data.consultor || '',
       consultorEmail: data.consultorEmail || '',
@@ -365,7 +369,10 @@ const Storage = (() => {
     if (list.length > MAX_PROPOSAL_VERSION_SNAPSHOTS) {
       list.splice(MAX_PROPOSAL_VERSION_SNAPSHOTS);
     }
-    return _saveProposalVersionSnapshots(list) ? entry : null;
+    if (!_saveProposalVersionSnapshots(list)) return null;
+    _publishSimulationSnapshot(entry);
+    _publishDirectSimulation(entry);
+    return entry;
   }
 
   function loadSimulations(options = {}) {
