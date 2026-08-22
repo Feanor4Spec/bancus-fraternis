@@ -2,9 +2,9 @@
   "ok": true,
   "schema": "bancus.proposal-interest.v1",
   "source": "proposal-interest",
-  "generatedAt": "2026-08-22T21:12:48.088Z",
-  "checks": 110,
-  "passed": 110,
+  "generatedAt": "2026-08-22T22:14:58.756Z",
+  "checks": 117,
+  "passed": 117,
   "results": [
     {
       "name": "service.idempotent-write",
@@ -20,6 +20,14 @@
     },
     {
       "name": "service.persistent-status",
+      "ok": true
+    },
+    {
+      "name": "service.fixed-contact-commitment",
+      "ok": true
+    },
+    {
+      "name": "service.idempotent-contact-commitment",
       "ok": true
     },
     {
@@ -60,6 +68,10 @@
     },
     {
       "name": "surface.client-persistent-state",
+      "ok": true
+    },
+    {
+      "name": "surface.dashboard-contact-deadline",
       "ok": true
     },
     {
@@ -135,6 +147,10 @@
       "ok": true
     },
     {
+      "name": "service.handoff-prefers-persisted-deadline",
+      "ok": true
+    },
+    {
       "name": "http.consultant-login",
       "ok": true
     },
@@ -176,6 +192,10 @@
     },
     {
       "name": "http.public-interest-created",
+      "ok": true
+    },
+    {
+      "name": "http.public-interest-fixed-response-window",
       "ok": true
     },
     {
@@ -247,6 +267,10 @@
       "ok": true
     },
     {
+      "name": "http.consultant-contact-commitment-private",
+      "ok": true
+    },
+    {
       "name": "http.public-interest-same-owner-resume",
       "ok": true
     },
@@ -280,6 +304,10 @@
     },
     {
       "name": "http.consultant-progress-saved",
+      "ok": true
+    },
+    {
+      "name": "http.contact-commitment-deadline-protected",
       "ok": true
     },
     {

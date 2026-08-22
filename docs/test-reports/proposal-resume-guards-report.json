@@ -47,7 +47,8 @@
       "checklist": {
         "premissas": true,
         "cliente": true,
-        "documentacao": true
+        "documentacao": true,
+        "disponibilidade": true
       }
     },
     "historicalSnapshotIds": [

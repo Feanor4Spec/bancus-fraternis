@@ -515,11 +515,11 @@
       <div>
         <span class="bf-badge bf-badge--gold">Carteira viva</span>
         <h2>Pipeline comercial conectado ao simulador.</h2>
-        <p>A carteira agora combina a base demonstrativa de clientes com as simulações salvas neste navegador e usa a base real de grupos como referência de mercado.</p>
+        <p>A carteira combina a base demonstrativa de clientes com as simulações salvas neste navegador e usa a base histórica de grupos como referência de mercado.</p>
         <div class="bf-live-note">Fonte atual: ${integer.format(saved)} simulação${saved === 1 ? '' : 'ões'} salva${saved === 1 ? '' : 's'} + ${integer.format(demo)} registros demonstrativos</div>
       </div>
       <div class="bf-source-grid">
-        <div class="bf-mini-stat"><span>Base real</span><strong>${totalCatalog}</strong><small>grupos no catálogo</small></div>
+        <div class="bf-mini-stat"><span>Base de referência</span><strong>${totalCatalog}</strong><small>grupos no catálogo histórico</small></div>
         <div class="bf-mini-stat"><span>Ativos</span><strong>${activeCatalog}</strong><small>status comercial ativo</small></div>
         <div class="bf-mini-stat"><span>Carteira</span><strong>${integer.format(liveClients.length)}</strong><small>registros renderizados</small></div>
         <div class="bf-mini-stat"><span>Simulador</span><strong>${integer.format(saved)}</strong><small>prospecções salvas</small></div>
@@ -540,7 +540,7 @@
       };
     } catch (error) {
       catalogSummary = { total: 0, active: 0 };
-      console.warn('Carteira: base real indisponível para resumo', error);
+      console.warn('Carteira: base de referência indisponível para resumo', error);
     }
   }
 

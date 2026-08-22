@@ -29,6 +29,7 @@
 
 <body class="sim-body bf-v8-body proposal-outline-collapsed simulator-audience-pending" data-bf-page="simulador" data-bf-archetype="calculator"
   data-bf-visual-version="9" data-simulator-evolution="proposal-shell">
+  <a class="sim-skip-link skip-main-content" href="#main">Ir para a simulação</a>
 
   <!-- """""""""" TOASTS """""""""" -->
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
@@ -38,7 +39,7 @@
     <div class="loading-overlay__content">
       <div class="loading-spinner"></div>
       <span class="loading-overlay__eyebrow">Preparando a simulação</span>
-      <p id="loading-message" class="loading-overlay__title">Carregando grupos disponíveis...</p>
+      <p id="loading-message" class="loading-overlay__title">Carregando referências de grupos...</p>
       <p id="loading-detail" class="loading-overlay__detail">Isso leva apenas alguns segundos.</p>
       <div class="loading-progress" aria-label="Progresso de carregamento da base">
         <span id="loading-progress-bar"></span>
@@ -249,12 +250,12 @@
     </aside>
 
     <!-- Conteúdo Principal -->
-    <main class="sim-main">
+    <main class="sim-main" id="main">
       <section class="database-status-panel" id="database-status-panel" data-state="pending" aria-live="polite" hidden>
         <div class="database-status-panel__main">
           <span class="database-status-panel__badge" id="database-status-badge">Fase 1</span>
           <div>
-            <h2 id="database-status-title">Conexao com base real</h2>
+            <h2 id="database-status-title">Conexão com a base de referência</h2>
             <p id="database-status-text">Aguardando carregamento da base local de grupos.</p>
           </div>
         </div>
@@ -352,21 +353,23 @@
           <div class="form-grid">
             <div class="form-group">
               <label class="form-label" for="nomeCliente">Nome Completo do Cliente</label>
-              <input type="text" id="nomeCliente" class="form-input" placeholder="Ex.: João da Silva" minlength="3" required>
+              <input type="text" id="nomeCliente" class="form-input" placeholder="Ex.: João da Silva" minlength="3"
+                autocomplete="name" required>
             </div>
-            <div class="form-group">
+            <div class="form-group" data-client-cpf-field>
               <label class="form-label" for="clienteCpf">CPF</label>
               <input type="text" id="clienteCpf" class="form-input" placeholder="000.000.000-00"
                 inputmode="numeric" pattern="[0-9.-]{11,14}" required>
             </div>
             <div class="form-group">
               <label class="form-label" for="clienteEmail">E-mail do Cliente</label>
-              <input type="email" id="clienteEmail" class="form-input" placeholder="cliente@example.com" required>
+              <input type="email" id="clienteEmail" class="form-input" placeholder="cliente@example.com"
+                autocomplete="email" required>
             </div>
             <div class="form-group">
               <label class="form-label" for="clienteTelefone">Telefone do Cliente</label>
               <input type="tel" id="clienteTelefone" class="form-input" placeholder="(11) 90000-0000"
-                inputmode="tel" pattern="[0-9() +.-]{10,20}" required>
+                inputmode="tel" autocomplete="tel" pattern="[0-9() +.-]{10,20}" required>
             </div>
             <div class="form-group">
               <label class="form-label" for="clienteObjetivo">Objetivo do Cliente
@@ -437,13 +440,14 @@
               <textarea id="observacoes" class="form-textarea"
                 placeholder="Notas sobre perfil, necessidades e expectativas do cliente..."></textarea>
             </div>
-            <div class="form-group form-group--full consent-field">
+            <fieldset class="form-group form-group--full consent-field">
+              <legend class="sr-only">Autorização para preparar a proposta</legend>
               <label class="form-check" for="clienteConsentimento">
                 <input type="checkbox" id="clienteConsentimento" required>
                 <span data-client-consent-copy>Confirmo que o cliente autorizou o uso destes dados para elaborar e compartilhar esta proposta.</span>
               </label>
               <small class="form-help">Os dados pessoais são usados apenas para preparar e compartilhar esta proposta.</small>
-            </div>
+            </fieldset>
           </div>
         </div>
 
@@ -593,9 +597,14 @@
       <section id="step-4" class="step-section" aria-label="Prateleira de Grupos">
         <div class="section-header">
           <div class="section-header__eyebrow">Etapa 4 de 10</div>
-          <h2 class="section-header__title">Grupos disponíveis</h2>
+          <h2 class="section-header__title">Grupos para simular</h2>
           <p class="section-header__desc">Escolha um ou mais grupos para comparar valores e montar a simulação.</p>
         </div>
+
+        <aside class="simulation-source-note" role="note" aria-label="Origem das referências">
+          <strong>Referências históricas — competência <span data-catalog-competency>dezembro de 2025</span></strong>
+          <span>Taxas, vagas e regras precisam ser confirmadas com a administradora antes da contratação.</span>
+        </aside>
 
         <!-- Ordenação + Contagem -->
         <div class="journey-progress-panel" id="journey-progress-panel" data-state="pending" aria-live="polite" hidden>
@@ -649,14 +658,14 @@
                 </div>
               </details>
             </div>
-            <div id="shelf-count" class="text-muted fw-bold" style="font-size:14px;">0 grupos encontrados</div>
+            <div id="shelf-count" class="text-muted fw-bold" style="font-size:14px;">0 referências encontradas</div>
           </div>
         </div>
 
         <!-- Tabela da Prateleira -->
         <div class="card">
           <div class="table-wrapper">
-            <table class="data-table" id="shelf-table">
+            <table class="data-table" id="shelf-table" aria-label="Grupos de referência para a simulação">
               <thead>
                 <tr>
                   <th data-shelf-col="score">Compatibilidade</th>
@@ -677,7 +686,7 @@
               <tbody id="shelf-table-body">
                 <tr>
                   <td colspan="13" class="text-center text-muted" style="padding:40px;">Use os filtros acima para buscar
-                    grupos disponíveis.</td>
+                    referências de grupos.</td>
                 </tr>
               </tbody>
             </table>
@@ -697,15 +706,18 @@
         </div>
 
         <!-- Modal/Detalhes Expandido (hidden por padrão) -->
-        <div id="shelf-detail-modal" class="shelf-detail-overlay" style="display:none;">
-          <div class="shelf-detail-card">
+        <div id="shelf-detail-modal" class="shelf-detail-overlay" role="dialog" aria-modal="true"
+          aria-labelledby="shelf-detail-title" aria-hidden="true" tabindex="-1" style="display:none;">
+          <div class="shelf-detail-card" role="document">
             <div class="shelf-detail-header">
               <h3 id="shelf-detail-title">Detalhes do Grupo</h3>
-              <button class="btn btn--sm btn--ghost" type="button" onclick="App.fecharDetalheGrupo()">Fechar</button>
+              <button id="shelf-detail-close" class="btn btn--sm btn--ghost" type="button"
+                data-shelf-detail-close onclick="App.fecharDetalheGrupo()">Fechar</button>
             </div>
             <div id="shelf-detail-content"></div>
             <div style="margin-top:20px;text-align:right;">
-              <button class="btn btn--primary" onclick="App.selecionarGrupoDoDetalhe()">+ Adicionar ao Projeto</button>
+              <button id="shelf-detail-add" class="btn btn--primary" type="button"
+                onclick="App.selecionarGrupoDoDetalhe()">+ Adicionar ao Projeto</button>
             </div>
           </div>
         </div>
@@ -903,7 +915,7 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
           </div>
 
           <div class="table-wrapper">
-            <table class="data-table" id="tabela-analitica">
+            <table class="data-table" id="tabela-analitica" aria-label="Parcelas e eventos da simulação">
               <thead>
                 <tr id="tabela-header-row">
                   <th class="text-center">Mês</th>
@@ -1204,7 +1216,7 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
               <div class="proposal-cover-preview__brand">
                 <img src="../assets/logos/logo-bank-fratern-09.svg" alt="Bancus Fraternis">
                 <div>
-                  <span>Proposta comercial</span>
+                  <span>Simulação explicada</span>
                   <strong id="proposal-cover-id">ID pendente</strong>
                 </div>
               </div>
@@ -1350,7 +1362,7 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
       </button>
       <button class="bf-v8-stagebar__item" type="button" data-step="2" onclick="App.goToStep(4)">
         <span>Grupos</span>
-        <strong>Opções disponíveis</strong>
+        <strong>Referências para comparar</strong>
       </button>
       <button class="bf-v8-stagebar__item" type="button" data-step="3" onclick="App.goToStep(5)">
         <span>Projeto</span>
@@ -1371,11 +1383,11 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
   <section class="concepts-section" aria-label="Conceitos de Consórcio">
     <div class="container">
       <div class="collapsible" style="border:none;background:transparent;">
-        <button class="collapsible__trigger"
+        <button class="collapsible__trigger" aria-expanded="false" aria-controls="consortium-concepts-content"
           style="background:transparent;padding:0 0 24px 0;font-size:1.5rem;font-weight:800;color:var(--gray-900);">
           Entenda os termos do consórcio
         </button>
-        <div class="collapsible__content" style="padding:0;">
+        <div class="collapsible__content" id="consortium-concepts-content" style="padding:0;">
           <p class="text-muted mb-6">Consulte definições e exemplos quando precisar.</p>
           <div id="conceitos-container" class="concepts-grid"></div>
         </div>
@@ -1440,13 +1452,13 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
         const dbPrefix = location.pathname.includes('/pages/') ? '../' : '';
         const dbPath = `${dbPrefix}data_base/Tab_Grupos_Consorcio.compact.json`;
         const fallbackDbPath = `${dbPrefix}data_base/Tab_Grupos_Consorcio.json`;
-        if (progress) progress.start('Buscando grupos disponíveis.', 'Preparando as opções para consulta.');
+        if (progress) progress.start('Buscando referências de grupos.', 'Preparando as opções para consulta.');
       try {
-        if (msg) msg.textContent = 'Carregando grupos disponíveis...';
+        if (msg) msg.textContent = 'Carregando referências de grupos...';
         if (typeof loadRealDatabase !== 'function') {
           throw new Error('loadRealDatabase indisponivel');
         }
-        if (progress) progress.stage('download', 28, 'Carregando grupos disponíveis...', 'Recebendo as opções para consulta.');
+        if (progress) progress.stage('download', 28, 'Carregando referências de grupos...', 'Recebendo as opções para consulta.');
         const count = await loadRealDatabase([dbPath, fallbackDbPath]);
         if (progress) progress.stage('parse', 68, 'Conferindo os grupos.', 'Organizando cartas, prazos e taxas.');
         const catalog = (typeof ShelfCatalog !== 'undefined' && Array.isArray(ShelfCatalog)) ? ShelfCatalog : [];

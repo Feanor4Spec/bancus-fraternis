@@ -157,14 +157,22 @@ try {
   assert(!JSON.stringify(browserStorage).includes('"token"'), 'Estado do navegador contem token serializado.');
 
   const freshTab = await context.newPage();
-  await freshTab.goto(`${baseUrl}/pages/dashboard-cliente.html`, { waitUntil: 'domcontentloaded' });
+  await freshTab.goto(`${baseUrl}/pages/dashboard-admin.html`, { waitUntil: 'domcontentloaded' });
+  await freshTab.waitForURL((url) => url.pathname.endsWith('/pages/handoff-consultivo.html') && !url.searchParams.has('auth'));
   const freshAuth = await freshTab.evaluate(async () => {
     const ready = window.BFAuth && window.BFAuth.ready ? await window.BFAuth.ready : false;
     const user = window.BFAuth && window.BFAuth.getCurrentUser ? window.BFAuth.getCurrentUser() : null;
     return { ready, user };
   });
   assert(Boolean(freshAuth.ready && freshAuth.user && freshAuth.user.email === 'bruna@example.com'), 'Nova aba nao hidratou a identidade pelo cookie HttpOnly.');
-  await freshTab.getByRole('heading', { name: 'Suas simulações e propostas.' }).waitFor();
+  await freshTab.getByRole('heading', { name: 'Priorize oportunidades e conduza cada próximo passo.' }).waitFor();
+  const forbiddenFeedback = freshTab.locator('[data-auth-feedback] [role="status"]');
+  await forbiddenFeedback.waitFor();
+  assert(
+    (await forbiddenFeedback.innerText()).includes('Esta área não está disponível para o seu acesso.'),
+    'Retorno por acesso negado nao exibiu uma mensagem humana.'
+  );
+  assert(new URL(freshTab.url()).searchParams.has('auth') === false, 'Retorno por acesso negado manteve parametro tecnico na URL.');
   assert(!freshTab.url().includes('/pages/login.html'), 'Nova aba com cookie valido nao recuperou a sessao produtiva.');
   await freshTab.close();
 
@@ -211,6 +219,7 @@ const report = {
     mobileReflow: !failures.some((item) => item.includes('320px') || item.includes('tela estreita')),
     mandatoryPasswordChange: !failures.some((item) => item.includes('temporaria')),
     freshTabSession: !failures.some((item) => item.includes('Nova aba')),
+    roleAwareForbiddenReturn: !failures.some((item) => item.includes('acesso negado')),
     staleDescriptorRejected: !failures.some((item) => item.includes('Descriptor local')),
     safeResume: !failures.some((item) => item.includes('redirecion')),
     noBrowserToken: !failures.some((item) => item.includes('token') || item.includes('bearer'))

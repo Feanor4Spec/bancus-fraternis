@@ -54,6 +54,8 @@ const App = (() => {
   let shelfGroups = []; // grupos filtrados
   let selectedShelfGroup = null; // compatibilidade legada - não usado no v5
   let _viewingGroup = null; // grupo aberto no modal de detalhes
+  let _shelfDetailReturnFocus = null;
+  let _shelfDetailReturnFocusKey = '';
   // V5: Projeto Estruturado Multi-Seleção
   let projetoEstruturado = { itens: [] }; // carrinho de grupos selecionados
 
@@ -878,9 +880,9 @@ const App = (() => {
       {
         tone: dataStatus.error ? 'warning' : dataStatus.loaded ? 'stable' : 'info',
         eyebrow: 'Base',
-        title: dataStatus.loaded ? 'Base real carregada' : dataStatus.error ? 'Base em fallback' : 'Base aguardando',
+        title: dataStatus.loaded ? 'Base de referência carregada' : dataStatus.error ? 'Base em fallback' : 'Base aguardando',
         body: dataStatus.loaded
-          ? `${Format.number(dataStatus.count || 0, 0)} grupos disponiveis para filtros, indice operacional e comparacao.`
+          ? `${Format.number(dataStatus.count || 0, 0)} referências históricas para filtros, índice operacional e comparação.`
           : dataStatus.error
             ? 'A jornada permanece segura, mas a prateleira deve ser revisada antes da proposta.'
             : 'A conexão local ainda está preparando a prateleira de grupos.',
@@ -953,7 +955,7 @@ const App = (() => {
         <span class="bf-badge bf-badge--gold">Decisão operacional</span>
         <div>
           <h2>Simulador em modo próximo passo.</h2>
-          <p>O painel traduz base real, prateleira, sacola, cálculo e histórico salvo em uma leitura única para o consultor.</p>
+          <p>O painel reúne referências históricas, seleção, cálculo e histórico salvo em uma leitura única para o consultor.</p>
         </div>
       </div>
       <div class="bf-v8-decision-strip__grid">
@@ -1042,13 +1044,15 @@ const App = (() => {
       if (!isValidPhone(fieldText('consultorTelefone'))) errors.push('Informe um telefone válido do consultor com DDD.');
     }
     if (step === 2) {
-      if (fieldText('nomeCliente').length < 3) errors.push('Informe o nome do cliente.');
-      if (!isValidCPF(fieldText('clienteCpf'))) errors.push('Informe um CPF válido.');
-      if (!isValidEmail(fieldText('clienteEmail'))) errors.push('Informe um e-mail válido do cliente.');
-      if (!isValidPhone(fieldText('clienteTelefone'))) errors.push('Informe um telefone válido do cliente com DDD.');
-      if (!fieldText('clienteObjetivo')) errors.push('Defina o objetivo do cliente.');
+      if (fieldText('nomeCliente').length < 3) errors.push(clientSimulationFlow ? 'Informe seu nome completo.' : 'Informe o nome do cliente.');
+      if (!clientSimulationFlow && !isValidCPF(fieldText('clienteCpf'))) errors.push('Informe um CPF válido.');
+      if (!isValidEmail(fieldText('clienteEmail'))) errors.push(clientSimulationFlow ? 'Informe um e-mail válido.' : 'Informe um e-mail válido do cliente.');
+      if (!isValidPhone(fieldText('clienteTelefone'))) errors.push(clientSimulationFlow ? 'Informe um telefone válido com DDD.' : 'Informe um telefone válido do cliente com DDD.');
+      if (!fieldText('clienteObjetivo')) errors.push(clientSimulationFlow ? 'Escolha seu objetivo.' : 'Defina o objetivo do cliente.');
       const consent = document.getElementById('clienteConsentimento');
-      if (consent && !consent.checked) errors.push('Registre o consentimento para uso dos dados na proposta.');
+      if (consent && !consent.checked) errors.push(clientSimulationFlow
+        ? 'Autorize o uso dos dados para gerar sua proposta.'
+        : 'Registre o consentimento para uso dos dados na proposta.');
       ['valorObjetivo', 'parcelaConfortavel'].forEach((id) => {
         const input = document.getElementById(id);
         if (input && Format.parseMoney(input.value) <= 0) {
@@ -1114,14 +1118,49 @@ const App = (() => {
     return collectStepErrors(step).length === 0;
   }
 
+  function renderStepErrorSummary(step, errors) {
+    const section = document.getElementById(`step-${step}`);
+    if (!section) return null;
+    let summary = section.querySelector('[data-step-error-summary]');
+    if (!summary) {
+      summary = document.createElement('div');
+      summary.className = 'form-error-summary';
+      summary.dataset.stepErrorSummary = 'true';
+      summary.setAttribute('role', 'alert');
+      summary.tabIndex = -1;
+      const header = section.querySelector('.section-header');
+      if (header) header.insertAdjacentElement('afterend', summary);
+      else section.prepend(summary);
+    }
+    summary.replaceChildren();
+    if (!errors.length) {
+      summary.hidden = true;
+      return summary;
+    }
+    const title = document.createElement('strong');
+    title.textContent = errors.length === 1 ? 'Revise este ponto para continuar' : 'Revise estes pontos para continuar';
+    const list = document.createElement('ul');
+    errors.forEach((message) => {
+      const item = document.createElement('li');
+      item.textContent = message;
+      list.appendChild(item);
+    });
+    summary.append(title, list);
+    summary.hidden = false;
+    return summary;
+  }
+
   function validateCurrentStep() {
     const errors = collectStepErrors(currentStep);
     if (errors.length > 0) {
       showToast(errors.join('\n'), 'error');
       closeNavigationMenus();
+      const summary = renderStepErrorSummary(currentStep, errors);
       focusStepContent(currentStep, { invalid: true });
+      if (summary) summary.focus({ preventScroll: true });
       return false;
     }
+    renderStepErrorSummary(currentStep, []);
     return true;
   }
 
@@ -1582,6 +1621,24 @@ const App = (() => {
     return (Array.from(labels).join(', ') || fallback).slice(0, 80);
   }
 
+  function formatCatalogCompetency(value) {
+    const raw = String(value == null ? '' : value).trim();
+    const match = raw.match(/^(\d{4})[-/]?(\d{2})$/);
+    if (!match) return raw || 'não informada';
+    const monthIndex = Number(match[2]) - 1;
+    if (monthIndex < 0 || monthIndex > 11) return raw;
+    const month = new Intl.DateTimeFormat('pt-BR', { month: 'long' })
+      .format(new Date(Number(match[1]), monthIndex, 1));
+    return `${month} de ${match[1]}`;
+  }
+
+  function renderCatalogSourceNotice(catalog) {
+    const target = document.querySelector('[data-catalog-competency]');
+    if (!target) return;
+    const first = Array.isArray(catalog) ? catalog.find((group) => group && group.dataBase) : null;
+    target.textContent = formatCatalogCompetency(first && first.dataBase);
+  }
+
   function proposalCalculationMatchesCurrentForm() {
     if (!currentParams) return false;
     try {
@@ -1632,7 +1689,7 @@ const App = (() => {
       stale: true,
       status: 'pending',
       statusLabel: BFProposalAcceptance.statusLabel('pending'),
-      checklist: { premissas: false, cliente: false, documentacao: false }
+      checklist: { premissas: false, cliente: false, documentacao: false, disponibilidade: false }
     };
   }
 
@@ -1749,7 +1806,8 @@ const App = (() => {
           checklist: {
             premissas: fallback.checklist?.premissas === true,
             cliente: fallback.checklist?.cliente === true,
-            documentacao: fallback.checklist?.documentacao === true
+            documentacao: fallback.checklist?.documentacao === true,
+            disponibilidade: fallback.checklist?.disponibilidade === true
           }
         };
       })()
@@ -1882,6 +1940,16 @@ const App = (() => {
     const consentCopy = document.querySelector('[data-client-consent-copy]');
     if (consentCopy) {
       consentCopy.textContent = 'Autorizo o uso destes dados para elaborar e compartilhar minha proposta.';
+    }
+    const cpfField = document.querySelector('[data-client-cpf-field]');
+    const cpfInput = document.getElementById('clienteCpf');
+    if (cpfField) {
+      cpfField.hidden = true;
+      cpfField.setAttribute('aria-hidden', 'true');
+    }
+    if (cpfInput) {
+      cpfInput.required = false;
+      cpfInput.value = '';
     }
     const objectiveGuideEmpty = document.querySelector('[data-simulator-objective-guide] .sim-objective-guide__empty');
     if (objectiveGuideEmpty) objectiveGuideEmpty.textContent = 'Defina seu objetivo para preencher os filtros de busca.';
@@ -2286,7 +2354,8 @@ const App = (() => {
     const fieldMap = {
       proposalCheckPremissas: 'premissas',
       proposalCheckCliente: 'cliente',
-      proposalCheckDocumentacao: 'documentacao'
+      proposalCheckDocumentacao: 'documentacao',
+      proposalCheckDisponibilidade: 'disponibilidade'
     };
     return !!(form.checklist && form.checklist[fieldMap[id]]);
   }
@@ -2342,7 +2411,8 @@ const App = (() => {
         checklist: {
           premissas: proposalAcceptanceChecked('proposalCheckPremissas'),
           cliente: proposalAcceptanceChecked('proposalCheckCliente'),
-          documentacao: proposalAcceptanceChecked('proposalCheckDocumentacao')
+          documentacao: proposalAcceptanceChecked('proposalCheckDocumentacao'),
+          disponibilidade: proposalAcceptanceChecked('proposalCheckDisponibilidade')
         }
       };
     const record = BFProposalAcceptance.saveReview({
@@ -2698,7 +2768,8 @@ const App = (() => {
     document.querySelectorAll('.collapsible__trigger').forEach(trigger => {
       trigger.addEventListener('click', () => {
         const parent = trigger.closest('.collapsible');
-        parent.classList.toggle('collapsible--open');
+        const isOpen = parent.classList.toggle('collapsible--open');
+        trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
       });
     });
   }
@@ -2757,7 +2828,7 @@ const App = (() => {
           ? 'Atualize a validade da proposta antes de compartilhar.'
           : 'Conclua a conferência dos dados antes de compartilhar.'
       );
-    } else if (!['premissas', 'cliente', 'documentacao'].every((key) => acceptance.checklist?.[key] === true)) {
+    } else if (!['premissas', 'cliente', 'documentacao', 'disponibilidade'].every((key) => acceptance.checklist?.[key] === true)) {
       issues.push('Conclua todos os itens da conferência antes de compartilhar.');
     } else if (!proposalAcceptanceHasCurrentValidity(acceptance)) {
       issues.push('Defina uma validade vigente antes de compartilhar.');
@@ -3357,6 +3428,7 @@ const App = (() => {
         progress.setStage('connect', 'done');
       }
       const catalog = (typeof ShelfCatalog !== 'undefined' && Array.isArray(ShelfCatalog)) ? ShelfCatalog : [];
+      renderCatalogSourceNotice(catalog);
       if (typeof ShelfEngine === 'undefined') {
         console.warn('ShelfEngine indisponivel. Prateleira iniciada vazia.');
         shelfGroups = [];
@@ -3397,7 +3469,7 @@ const App = (() => {
       if (progress) {
         progress.setStage('filters', 'done');
         progress.setStage('shelf', 'done');
-        progress.journey(100, `${shelfGroups.length.toLocaleString('pt-BR')} grupos prontos para a prateleira.`, 'success');
+        progress.journey(100, `${shelfGroups.length.toLocaleString('pt-BR')} referências prontas para comparação.`, 'success');
       }
       renderSimulatorDecision();
     } catch (e) {
@@ -3536,10 +3608,10 @@ const App = (() => {
       return;
     }
     const total = pag ? pag.totalGroups : groups.length;
-    if (countEl) countEl.textContent = `${total.toLocaleString('pt-BR')} grupo${total !== 1 ? 's' : ''} encontrado${total !== 1 ? 's' : ''}`;
+    if (countEl) countEl.textContent = `${total.toLocaleString('pt-BR')} referência${total !== 1 ? 's' : ''} encontrada${total !== 1 ? 's' : ''}`;
 
     if (groups.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="13" class="text-center text-muted" style="padding:40px;">Nenhum grupo encontrado com os filtros selecionados.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="13" class="text-center text-muted" style="padding:40px;">Nenhuma referência encontrada com os filtros selecionados.</td></tr>';
       return;
     }
 
@@ -3572,12 +3644,90 @@ const App = (() => {
           <td data-shelf-col="ativas">${Format.number(g.qtdAtivasEmDia || 0, 0)}</td>
           <td data-shelf-col="saude">${_getSaudeBadge(g)}</td>
           <td data-shelf-col="acoes" class="shelf-actions-cell">
-            <button class="btn btn--sm btn--ghost" onclick="App.verDetalheGrupo(${globalIdx})" title="Ver detalhes">Ver</button>
+            <button class="btn btn--sm btn--ghost" type="button" data-shelf-detail-trigger="${globalIdx}" onclick="App.verDetalheGrupo(${globalIdx})" aria-label="Ver detalhes do grupo ${escapeSettingsText(g.codigoGrupo)}" title="Ver detalhes">Ver</button>
             ${addBtnHtml}
           </td>
         </tr>
       `;
     }).join('');
+  }
+
+  function getShelfDetailFocusable(modal) {
+    if (!modal) return [];
+    const selector = [
+      'a[href]',
+      'button:not([disabled])',
+      'input:not([disabled]):not([type="hidden"])',
+      'select:not([disabled])',
+      'textarea:not([disabled])',
+      'summary',
+      '[tabindex]:not([tabindex="-1"])'
+    ].join(',');
+    return [...modal.querySelectorAll(selector)].filter((element) => {
+      if (!(element instanceof HTMLElement)) return false;
+      if (element.hidden || element.getAttribute('aria-hidden') === 'true') return false;
+      const style = window.getComputedStyle(element);
+      return style.display !== 'none'
+        && style.visibility !== 'hidden'
+        && (element.offsetWidth > 0 || element.offsetHeight > 0 || element.getClientRects().length > 0);
+    });
+  }
+
+  function onShelfDetailKeydown(event) {
+    const modal = document.getElementById('shelf-detail-modal');
+    if (!modal || modal.getAttribute('aria-hidden') === 'true') return;
+
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      fecharDetalheGrupo();
+      return;
+    }
+
+    if (event.key !== 'Tab') return;
+    const focusable = getShelfDetailFocusable(modal);
+    if (focusable.length === 0) {
+      event.preventDefault();
+      modal.focus();
+      return;
+    }
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const active = document.activeElement;
+    if (!modal.contains(active)) {
+      event.preventDefault();
+      first.focus();
+    } else if (event.shiftKey && active === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && active === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
+  function abrirShelfDetailModal() {
+    const modal = document.getElementById('shelf-detail-modal');
+    if (!modal) return false;
+
+    const active = document.activeElement;
+    if (active instanceof HTMLElement && active !== document.body && !modal.contains(active)) {
+      _shelfDetailReturnFocus = active;
+      _shelfDetailReturnFocusKey = active.dataset.shelfDetailTrigger || '';
+    }
+
+    modal.style.display = 'flex';
+    modal.setAttribute('aria-hidden', 'false');
+    modal.removeEventListener('keydown', onShelfDetailKeydown);
+    modal.addEventListener('keydown', onShelfDetailKeydown);
+
+    window.requestAnimationFrame(() => {
+      const initialFocus = modal.querySelector('[data-shelf-detail-close]')
+        || getShelfDetailFocusable(modal)[0]
+        || modal;
+      initialFocus.focus();
+    });
+    return true;
   }
 
   function verDetalheGrupo(idx) {
@@ -3603,8 +3753,7 @@ const App = (() => {
       if (window.BFSimulatorShelf.setDetailAddVisible) {
         window.BFSimulatorShelf.setDetailAddVisible(document, true);
       }
-      const modal = document.getElementById('shelf-detail-modal');
-      if (modal) modal.style.display = 'flex';
+      abrirShelfDetailModal();
       return;
     }
     if (titleEl) titleEl.textContent = `${g.iconSegmento} ${g.nomeAdministradora || 'Admin'} — Grupo ${g.codigoGrupo}`;
@@ -3694,13 +3843,33 @@ const App = (() => {
       `;
     }
 
-    document.getElementById('shelf-detail-modal').style.display = 'flex';
+    abrirShelfDetailModal();
   }
 
-  function fecharDetalheGrupo() {
+  function fecharDetalheGrupo(options = {}) {
     const modal = document.getElementById('shelf-detail-modal');
-    if (modal) modal.style.display = 'none';
+    const returnFocus = _shelfDetailReturnFocus;
+    const returnFocusKey = _shelfDetailReturnFocusKey;
+    const shouldRestoreFocus = options.restoreFocus !== false;
+    if (modal) {
+      modal.removeEventListener('keydown', onShelfDetailKeydown);
+      modal.style.display = 'none';
+      modal.setAttribute('aria-hidden', 'true');
+    }
     _viewingGroup = null;
+    _shelfDetailReturnFocus = null;
+    _shelfDetailReturnFocusKey = '';
+    if (shouldRestoreFocus) {
+      window.requestAnimationFrame(() => {
+        const fallback = returnFocusKey
+          ? document.querySelector(`[data-shelf-detail-trigger="${returnFocusKey}"]`)
+          : null;
+        const focusTarget = returnFocus instanceof HTMLElement && returnFocus.isConnected
+          ? returnFocus
+          : fallback;
+        if (focusTarget instanceof HTMLElement) focusTarget.focus();
+      });
+    }
   }
 
   function selecionarGrupoDoDetalhe() {
@@ -4439,7 +4608,7 @@ const App = (() => {
       if (addBtn) addBtn.style.display = 'none';
     }
 
-    modal.style.display = 'flex';
+    abrirShelfDetailModal();
   }
 
   function _carregarSimulacao(id, options = {}) {
@@ -4477,8 +4646,7 @@ const App = (() => {
     clientProposalReadOnly = clientReadOnly;
     delete document.body.dataset.proposalSnapshotIntegrity;
     if (!clientReadOnly) showToast(`Carregando "${sim.nome}"...`, 'info');
-    const resumeModal = document.getElementById('shelf-detail-modal');
-    if (resumeModal) resumeModal.style.display = 'none';
+    fecharDetalheGrupo({ restoreFocus: false });
 
     currentProposalId = sim.proposalId || sim.proposalAcceptance?.proposalId || '';
     const privacyProtected = Boolean(

@@ -22,6 +22,16 @@
     return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'long', timeStyle: 'short' }).format(date);
   }
 
+  function contactCommitmentCopy(interest) {
+    const commitment = interest?.contactCommitment;
+    const date = new Date(commitment?.responseDueAt || '');
+    if (!Number.isFinite(date.getTime())) return '';
+    const deadline = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'long', timeStyle: 'short' }).format(date);
+    const responsible = String(commitment?.responsible || 'Equipe Bancus Fraternis').trim();
+    const channel = String(commitment?.channel || '').trim().toLocaleLowerCase('pt-BR');
+    return `${responsible} retornará até ${deadline}${channel ? ` pelos ${channel}` : ''}.`;
+  }
+
   function formatMoney(value) {
     const amount = Number(value);
     if (!Number.isFinite(amount)) return 'Não informado';
@@ -48,13 +58,14 @@
     const copy = byId('public-proposal-interest-copy');
     const feedback = byId('public-proposal-interest-status');
     const buttons = Array.from(document.querySelectorAll('[data-public-proposal-interest]'));
+    const commitmentCopy = contactCommitmentCopy(interest);
 
     if (status === 'requested') {
       title.textContent = 'Pedido recebido.';
-      copy.textContent = 'Um consultor acompanhará esta proposta e orientará os próximos passos.';
+      copy.textContent = commitmentCopy || 'Um consultor acompanhará esta proposta e orientará os próximos passos.';
     } else if (status === 'in_progress') {
       title.textContent = 'Seu atendimento está em andamento.';
-      copy.textContent = 'A equipe já está acompanhando esta proposta.';
+      copy.textContent = commitmentCopy || 'A equipe já está acompanhando esta proposta.';
     } else if (status === 'closed') {
       title.textContent = 'Atendimento concluído.';
       copy.textContent = 'Se precisar retomar, fale com seu consultor pelos canais já combinados.';

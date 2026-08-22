@@ -4,7 +4,17 @@
     "seeds": 3,
     "adminLogin": true,
     "anonymousRedirect": "login.html?redirect=handoff-consultivo.html%3Ffrom%3Dlousa%23fila-handoff",
-    "forbiddenRedirect": "dashboard-cliente.html?auth=forbidden"
+    "forbiddenRedirects": {
+      "cliente": "dashboard-cliente.html?auth=forbidden",
+      "consultor": "handoff-consultivo.html?auth=forbidden",
+      "admin": "dashboard-admin.html?auth=forbidden"
+    }
+  },
+  "privacy": {
+    "productionLocalPIIFree": true,
+    "legacyMigrated": true,
+    "completeBackendPublication": true,
+    "demoPreserved": true
   },
   "failures": []
 }

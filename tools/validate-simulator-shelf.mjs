@@ -200,7 +200,7 @@ const table = shelf.renderTable([sampleGroup], {
   formatNumber: (value) => String(Number(value))
 });
 const explanation = shelf.explainGroupRecommendation(sampleGroup, { filters });
-assert(table.countText === '1 grupo encontrado', 'renderTable gerou contador incorreto.');
+assert(table.countText === '1 referência encontrada', 'renderTable gerou contador incorreto.');
 assert(table.bodyHtml.includes('shelf-row--added'), 'renderTable deveria marcar grupo ja adicionado.');
 assert(table.bodyHtml.includes('App.selecionarGrupo(0)'), 'renderTable deveria manter acao publica App.selecionarGrupo.');
 assert(table.bodyHtml.includes('data-shelf-col="acoes"'), 'renderTable deveria preservar data-shelf-col.');

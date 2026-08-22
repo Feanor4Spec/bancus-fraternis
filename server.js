@@ -941,6 +941,11 @@ function preserveProposalInterestLeadIdentity(input = {}, existing = {}) {
   if (!isProposalInterestLead(existing)) return input;
   const original = proposalInterestObject(existing.payload);
   const requested = proposalInterestObject(input.payload);
+  const originalContactCommitment = proposalInterestObject(original.contactCommitment);
+  const requestedCommitmentStatus = proposalInterestText(
+    input.status || requested.status || originalContactCommitment.status,
+    40
+  );
   return {
     ...input,
     id: existing.id,
@@ -961,6 +966,10 @@ function preserveProposalInterestLeadIdentity(input = {}, existing = {}) {
       nextAction: original.nextAction,
       interestSchema: original.interestSchema,
       interestRequestedAt: original.interestRequestedAt,
+      contactCommitment: {
+        ...originalContactCommitment,
+        status: requestedCommitmentStatus || originalContactCommitment.status
+      },
       createdAt: original.createdAt
     }
   };

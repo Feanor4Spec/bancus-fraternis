@@ -212,7 +212,7 @@ StorageService.saveSimulation('Proposta teste', {
     version: 1,
     sourceHash: acceptedContentFingerprint,
     validUntil: '2026-12-31',
-    checklist: { premissas: true, cliente: true, documentacao: true }
+    checklist: { premissas: true, cliente: true, documentacao: true, disponibilidade: true }
   },
   params: { valorCarta: 100000 },
   resultado: { cronograma: [], resumo: { creditoTotal: 100000 } }
@@ -304,7 +304,7 @@ const historicalOne = StorageService.saveProposalVersionSnapshot('Snapshot PROP-
     validUntil: '2026-12-31',
     reviewer: 'Pessoa que nao pode persistir',
     notes: 'Nota privada',
-    checklist: { premissas: true, cliente: true, documentacao: true }
+    checklist: { premissas: true, cliente: true, documentacao: true, disponibilidade: true }
   }
 });
 const historicalTwo = StorageService.saveProposalVersionSnapshot('Snapshot PROP-HISTORY', {
@@ -401,7 +401,7 @@ check('send.strict-gate', !!releaseGate
   && releaseGate[1].includes('proposalDocumentIssues()')
   && releaseGate[1].includes('compResult')
   && releaseGate[1].includes('getCurrentProposalAcceptance')
-  && releaseGate[1].includes("['premissas', 'cliente', 'documentacao']")
+  && releaseGate[1].includes("['premissas', 'cliente', 'documentacao', 'disponibilidade']")
   && releaseGate[1].includes('proposalAcceptanceHasCurrentValidity'), releaseGate?.[1]);
 check('pdf.uses-document-gate', !!exportGate
   && exportGate[1].includes('proposalDocumentIssues()')
@@ -531,7 +531,7 @@ const report = {
       && documentGate[1].includes('proposalBuilderReadinessIssues(getProposalBuilderConfig())'),
     sendRequiresAcceptance: !!releaseGate
       && releaseGate[1].includes('getCurrentProposalAcceptance')
-      && releaseGate[1].includes("['premissas', 'cliente', 'documentacao']")
+      && releaseGate[1].includes("['premissas', 'cliente', 'documentacao', 'disponibilidade']")
       && releaseGate[1].includes('proposalAcceptanceHasCurrentValidity')
   },
   failures

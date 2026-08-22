@@ -274,14 +274,14 @@
     let profileChecks = 0;
 
     if (filters.taxaMax && taxa <= Number(filters.taxaMax)) addUnique(reasons, `Taxa dentro do teto de ${filters.taxaMax}%.`);
-    else if (taxa > 22) addUnique(risks, `Taxa de ${taxa.toFixed(2)}% merece comparacao de custo.`);
+    else if (taxa > 22) addUnique(risks, `Taxa de ${taxa.toFixed(2)}% merece comparação de custo.`);
 
     if (filters.prazoMax && prazo <= Number(filters.prazoMax)) addUnique(reasons, `Prazo dentro do limite de ${filters.prazoMax} meses.`);
-    if (filters.cartaMin && carta >= Number(filters.cartaMin)) addUnique(reasons, 'Carta acima do minimo definido.');
+    if (filters.cartaMin && carta >= Number(filters.cartaMin)) addUnique(reasons, 'Carta acima do mínimo definido.');
     if (filters.cartaMax && carta <= Number(filters.cartaMax)) addUnique(reasons, 'Carta dentro do teto definido.');
 
     if (filters.fgts && group && group.fgtsPermitido) addUnique(reasons, 'Permite uso de FGTS, sujeito às regras vigentes.');
-    if (filters.fgts && group && !group.fgtsPermitido) addUnique(risks, 'Filtro pede FGTS, mas o grupo nao sinaliza permissao.');
+    if (filters.fgts && group && !group.fgtsPermitido) addUnique(risks, 'Filtro pede FGTS, mas o grupo não sinaliza permissão.');
     if (group && group.parcelaReduzidaDisponivel) addUnique(reasons, 'Parcela reduzida disponível no início do plano.');
 
     const valorObjetivo = Number(profile.valorObjetivo || 0);
@@ -290,9 +290,9 @@
       const deviation = Math.abs(carta - valorObjetivo) / valorObjetivo;
       if (deviation <= 0.2) {
         profileSignals += 1;
-        addUnique(reasons, 'Carta de referencia dentro de 20% do valor objetivo informado.');
+        addUnique(reasons, 'Carta de referência dentro de 20% do valor objetivo informado.');
       } else {
-        addUnique(risks, 'Carta de referencia se distancia do valor objetivo informado.');
+        addUnique(risks, 'Carta de referência se distancia do valor objetivo informado.');
       }
     }
 
@@ -344,9 +344,9 @@
       mainAdvantage: reasons[0] || 'Compare carta, taxa e prazo antes de adicionar.',
       mainRisk: risks[0] || 'Nenhum ponto de atenção adicional com os dados disponíveis.',
       needsConfirmation: group && group._commercialVerification !== 'verified'
-        ? 'Condicoes comerciais e contratuais do grupo.'
+        ? 'Condições comerciais e contratuais do grupo.'
         : 'Nenhuma pendência comercial sinalizada.',
-      sourceDate: group && group.dataBase ? String(group.dataBase) : 'Data-base nao informada'
+      sourceDate: group && group.dataBase ? String(group.dataBase) : 'Data-base não informada'
     };
   }
 
@@ -365,7 +365,7 @@
     const insight = explainGroupRecommendation(group, options);
     const reasons = insight.reasons.length
       ? insight.reasons.map((item) => `<li data-shelf-recommendation-reason>${escapeText(item)}</li>`).join('')
-      : '<li data-shelf-recommendation-reason>Compare a composicao do grupo com outros cenarios.</li>';
+      : '<li data-shelf-recommendation-reason>Compare a composição do grupo com outros cenários.</li>';
     const risks = insight.risks.length
       ? `<ul>${insight.risks.map((item) => `<li data-shelf-risk-note>${escapeText(item)}</li>`).join('')}</ul>`
       : '<p>Nenhum alerta forte identificado pelos filtros atuais.</p>';
@@ -379,7 +379,7 @@
           <div><dt>Confirmar</dt><dd>${escapeText(insight.needsConfirmation)}</dd></div>
           <div><dt>Data-base</dt><dd>${escapeText(insight.sourceDate)}</dd></div>
         </dl>
-        <strong>Pontos de atencao</strong>
+        <strong>Pontos de atenção</strong>
         ${risks}
       </div>
     `;
@@ -388,12 +388,12 @@
   function renderTable(groups, pag, options = {}) {
     const list = Array.isArray(groups) ? groups : [];
     const total = pag ? pag.totalGroups : list.length;
-    const countText = `${Number(total || 0).toLocaleString('pt-BR')} grupo${total !== 1 ? 's' : ''} encontrado${total !== 1 ? 's' : ''}`;
+    const countText = `${Number(total || 0).toLocaleString('pt-BR')} referência${total !== 1 ? 's' : ''} encontrada${total !== 1 ? 's' : ''}`;
 
     if (list.length === 0) {
       return {
         countText,
-        bodyHtml: '<tr><td colspan="13" class="text-center text-muted" style="padding:40px;">Nenhum grupo encontrado com os filtros selecionados.</td></tr>'
+        bodyHtml: '<tr><td colspan="13" class="text-center text-muted" style="padding:40px;">Nenhuma referência encontrada com os filtros selecionados.</td></tr>'
       };
     }
 
@@ -426,7 +426,7 @@
           <td data-shelf-col="ativas">${number(group.qtdAtivasEmDia || 0, 0, options)}</td>
           <td data-shelf-col="saude">${saudeBadge(group)}</td>
           <td data-shelf-col="acoes" class="shelf-actions-cell">
-            <button class="btn btn--sm btn--ghost" onclick="App.verDetalheGrupo(${globalIdx})" title="Ver detalhes">Ver</button>
+            <button class="btn btn--sm btn--ghost" type="button" data-shelf-detail-trigger="${globalIdx}" onclick="App.verDetalheGrupo(${globalIdx})" aria-label="Ver detalhes do grupo ${escapeText(group.codigoGrupo)}" title="Ver detalhes">Ver</button>
             ${addBtnHtml}
           </td>
         </tr>
@@ -459,16 +459,16 @@
           <div class="shelf-detail-section">
             <h4>Dados do Grupo</h4>
             <table class="detail-mini-table">
-              <tr><td>Codigo do Grupo</td><td><strong>${escapeText(group.codigoGrupo)}</strong></td></tr>
+              <tr><td>Código do grupo</td><td><strong>${escapeText(group.codigoGrupo)}</strong></td></tr>
               <tr><td>Segmento</td><td>${escapeText(group.iconSegmento)} ${escapeText(group.nomeSegmento)}</td></tr>
-              <tr><td>Origem</td><td>${group.origem === 'imoveis' ? 'Imoveis' : 'Moveis'}</td></tr>
-              <tr><td>Data Base</td><td>${escapeText(group.dataBase)}</td></tr>
+              <tr><td>Origem</td><td>${group.origem === 'imoveis' ? 'Imóveis' : 'Móveis'}</td></tr>
+              <tr><td>Data-base</td><td>${escapeText(group.dataBase)}</td></tr>
             </table>
           </div>
           <div class="shelf-detail-section">
             <h4>Valores e Taxas</h4>
             <table class="detail-mini-table">
-              <tr><td>Carta de Referencia</td><td><strong>${money(group.valorCartaRef, options)}</strong></td></tr>
+              <tr><td>Carta de referência</td><td><strong>${money(group.valorCartaRef, options)}</strong></td></tr>
               <tr><td>Prazo</td><td><strong>${escapeText(group.prazoMeses)} meses</strong></td></tr>
               <tr><td>Taxa de administração</td><td>${(Number(group.taxaAdmPct || 0)).toFixed(2)}%</td></tr>
               <tr><td>Fundo de Reserva</td><td>${escapeText(group.fundoReservaPct)}%</td></tr>
@@ -477,11 +477,11 @@
             </table>
           </div>
           <div class="shelf-detail-section">
-            <h4>Cotas e Saude do Grupo</h4>
+            <h4>Cotas e saúde do grupo</h4>
             <table class="detail-mini-table">
               <tr><td>Cotas Ativas em Dia</td><td><strong>${number(group.qtdAtivasEmDia || 0, 0, options)}</strong></td></tr>
               <tr><td>Contempladas no mês</td><td>${escapeText(group.qtdContempladasNoMes)}</td></tr>
-              <tr><td>Cotas Excluidas</td><td>${escapeText(group.qtdExcluidas)}</td></tr>
+              <tr><td>Cotas excluídas</td><td>${escapeText(group.qtdExcluidas)}</td></tr>
               <tr><td>Cotas Quitadas</td><td>${escapeText(group.qtdQuitadas)}</td></tr>
               <tr><td>Crédito pendente</td><td>${escapeText(group.qtdCreditoPendente)}</td></tr>
             </table>
@@ -491,9 +491,9 @@
             <table class="detail-mini-table">
               <tr><td>Lance Embutido Max.</td><td>${escapeText(getLimit(group))}%</td></tr>
               <tr><td>Lance Fixo</td><td>${escapeText(group.lanceFixoPct || 0)}%</td></tr>
-              <tr><td>Parcela Reduzida</td><td>${group.parcelaReduzidaDisponivel ? 'Sim' : 'Nao'}</td></tr>
-              <tr><td>Reducao Max. Parcela</td><td>${escapeText(group.reducaoMaxParcelaPct || 0)}%</td></tr>
-              <tr><td>FGTS Permitido</td><td>${group.fgtsPermitido ? 'Sim' : 'Nao'}</td></tr>
+              <tr><td>Parcela reduzida</td><td>${group.parcelaReduzidaDisponivel ? 'Sim' : 'Não'}</td></tr>
+              <tr><td>Redução máxima da parcela</td><td>${escapeText(group.reducaoMaxParcelaPct || 0)}%</td></tr>
+              <tr><td>FGTS permitido</td><td>${group.fgtsPermitido ? 'Sim' : 'Não'}</td></tr>
               <tr><td>Status Comercial</td><td>${escapeText(group.statusComercial)}</td></tr>
             </table>
           </div>

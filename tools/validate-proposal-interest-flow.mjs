@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import vm from 'node:vm';
 import { once } from 'node:events';
 import { createRequire } from 'node:module';
 
@@ -21,9 +22,23 @@ async function read(relativePath) {
   return fs.readFile(path.join(root, relativePath), 'utf8');
 }
 
+function exactResponseWindow(commitment) {
+  if (!commitment || typeof commitment !== 'object') return false;
+  const requestedAt = Date.parse(commitment.requestedAt);
+  const responseDueAt = Date.parse(commitment.responseDueAt);
+  return Number.isFinite(requestedAt)
+    && Number.isFinite(responseDueAt)
+    && responseDueAt - requestedAt === ProposalInterest.CONTACT_RESPONSE_HOURS * 3600000;
+}
+
 function safeInterestShape(value) {
+  const commitment = value && value.contactCommitment;
   return value && typeof value === 'object'
-    && Object.keys(value).sort().join('|') === 'id|requestedAt|status';
+    && Object.keys(value).sort().join('|') === 'contactCommitment|id|requestedAt|status'
+    && commitment && typeof commitment === 'object'
+    && Object.keys(commitment).sort().join('|') === 'channel|requestedAt|responseDueAt|responsible|status'
+    && exactResponseWindow(commitment)
+    && !/@|PROP-|PV-|SIM-/i.test(JSON.stringify(commitment));
 }
 
 function createMemoryDatabase() {
@@ -77,6 +92,7 @@ const unitFirst = await unitService.request(unitIdentity, {
 });
 const unitSecond = await unitService.request(unitIdentity, { amount: 999999 });
 const unitResolved = await unitService.resolve(unitIdentity);
+const expectedUnitResponseDueAt = '2026-08-23T15:30:00.000Z';
 const expectedUnitHref = `simulador.html?from=handoff&proposalId=PROP-UNIT-INTEREST&proposalVersionId=PV-UNIT-INTEREST-1&simulationId=SIM-UNIT-INTEREST-1&proposalView=review&interestId=${unitFirst.interest.id}#proposta`;
 
 check('service.idempotent-write', unitFirst.created === true
@@ -85,7 +101,18 @@ check('service.idempotent-write', unitFirst.created === true
   && memoryDatabase.stats().inserts === 1);
 check('service.stable-id', unitFirst.interest.id === unitSecond.interest.id && unitResolved.id === unitFirst.interest.id);
 check('service.safe-summary', safeInterestShape(unitFirst.interest) && !/cliente privado|consultor@|PROP-|PV-|SIM-/i.test(JSON.stringify(unitFirst.interest)));
-check('service.persistent-status', unitResolved.status === 'requested' && unitResolved.requestedAt === fixedNow);
+check('service.persistent-status', unitResolved.status === 'requested'
+  && unitResolved.requestedAt === fixedNow
+  && unitResolved.contactCommitment.status === 'requested');
+check('service.fixed-contact-commitment', unitFirst.record.payload.contactCommitment.requestedAt === fixedNow
+  && unitFirst.record.payload.contactCommitment.responseDueAt === expectedUnitResponseDueAt
+  && unitFirst.record.payload.contactCommitment.status === 'requested'
+  && unitFirst.record.payload.contactCommitment.channel === 'canais_informados'
+  && unitFirst.record.payload.contactCommitment.responsible === unitIdentity.ownerEmail
+  && unitFirst.interest.contactCommitment.responseDueAt === expectedUnitResponseDueAt
+  && unitFirst.interest.contactCommitment.responsible === 'Equipe Bancus Fraternis');
+check('service.idempotent-contact-commitment', unitSecond.interest.contactCommitment.responseDueAt === expectedUnitResponseDueAt
+  && unitResolved.contactCommitment.responseDueAt === expectedUnitResponseDueAt);
 check('service.consultant-contract', unitFirst.record.status === 'novo'
   && unitFirst.record.stage === 'contato'
   && unitFirst.record.source === 'proposal-interest'
@@ -126,6 +153,8 @@ check('service.concurrent-single-insert', concurrentCreatedFlags.join('|') === '
   && concurrentMemoryDatabase.stats().rows === 1);
 check('service.concurrent-stable-original', concurrentUnitResults[0].interest.requestedAt === fixedNow
   && concurrentUnitResults[1].interest.requestedAt === fixedNow
+  && concurrentUnitResults[0].interest.contactCommitment.responseDueAt === expectedUnitResponseDueAt
+  && concurrentUnitResults[1].interest.contactCommitment.responseDueAt === expectedUnitResponseDueAt
   && concurrentUnitResults[0].record.amount === 85000
   && concurrentUnitResults[1].record.amount === 85000
   && concurrentUnitResults[0].record.payload.timeline.length === 1
@@ -147,7 +176,8 @@ const [
   simulatorResultJs,
   exportJs,
   handoffJs,
-  handoffServiceJs
+  handoffServiceJs,
+  clientDashboardJs
 ] = await Promise.all([
   read('pages/proposta.html'),
   read('js/proposal-public.js'),
@@ -164,14 +194,16 @@ const [
   read('js/simulator-result.js'),
   read('js/export.js'),
   read('assets/js/handoff-consultivo.js'),
-  read('assets/js/services/handoff-consultivo.service.js')
+  read('assets/js/services/handoff-consultivo.service.js'),
+  read('assets/js/client-dashboard.js')
 ]);
 
 check('surface.public-cta', publicPage.includes('data-public-proposal-interest')
   && publicPage.includes('Quero falar com um consultor')
   && publicPage.includes('public-proposal-interest-status'));
 check('surface.public-persistent-state', publicJs.includes('renderInterest(response.interest || null)')
-  && publicJs.includes('requestPublicProposalInterest(proposalToken)'));
+  && publicJs.includes('requestPublicProposalInterest(proposalToken)')
+  && publicJs.includes('commitment?.responseDueAt'));
 check('surface.public-print-safe', publicCss.includes('.proposal-public-interest')
   && publicCss.includes('display: none !important'));
 check('surface.client-cta', simulatorPage.includes('id="proposal-client-interest"')
@@ -182,7 +214,10 @@ check('surface.client-cta', simulatorPage.includes('id="proposal-client-interest
 check('surface.client-persistent-state', simulatorJs.includes('getProposalInterest(identity)')
   && simulatorJs.includes('requestProposalInterest(identity)')
   && simulatorJs.includes("querySelectorAll('[data-proposal-interest-action]')")
-  && simulatorJs.includes('proposalInterestLoadedKey'));
+  && simulatorJs.includes('proposalInterestLoadedKey')
+  && simulatorJs.includes('commitment?.responseDueAt'));
+check('surface.dashboard-contact-deadline', clientDashboardJs.includes('proposalInterestCommitmentDetail')
+  && clientDashboardJs.includes('commitment.responseDueAt'));
 check('surface.client-mode-only', simulatorCss.includes('body:not(.proposal-client-mode) .proposal-client-interest'));
 check('surface.client-top-cta-visible', simulatorCss.includes(':not(#btn-proposal-interest-top)'));
 check('security.assigned-resume-sanitized', serverJs.includes('proposalInterestSanitizeResumePayload(existing.payload)')
@@ -231,6 +266,47 @@ check('contract.atomic-create-only-sqlite', localDatabaseJs.includes('const exis
 check('contract.atomic-create-only-postgresql', postgresqlProviderJs.includes('const existing = createOnly ? null')
   && postgresqlProviderJs.includes('ON CONFLICT(kind, id) DO NOTHING')
   && postgresqlProviderJs.includes('RETURNING id'));
+
+const handoffSandbox = {
+  window: {},
+  localStorage: { getItem: () => null, setItem: () => {} },
+  Date,
+  Intl,
+  URLSearchParams
+};
+vm.runInNewContext(handoffServiceJs, handoffSandbox);
+const fixedCommitmentItem = {
+  id: 'LEAD-PI-FIXED-DEADLINE',
+  status: 'novo',
+  sourceType: 'proposal',
+  sourceProposalId: 'PROP-FIXED-DEADLINE',
+  sourceProposalStatus: 'reviewed',
+  sourceProposalVersionId: 'PV-FIXED-DEADLINE-1',
+  assignedTo: unitIdentity.ownerEmail,
+  priority: 'media',
+  createdAt: fixedNow,
+  updatedAt: fixedNow,
+  contactCommitment: {
+    requestedAt: fixedNow,
+    responseDueAt: expectedUnitResponseDueAt,
+    status: 'requested',
+    channel: 'canais_informados',
+    responsible: unitIdentity.ownerEmail
+  }
+};
+const fixedPlanAtRequest = handoffSandbox.window.BFHandoffConsultivoService.actionPlan(
+  fixedCommitmentItem,
+  new Date(fixedNow)
+);
+const fixedPlanSixHoursLater = handoffSandbox.window.BFHandoffConsultivoService.actionPlan(
+  fixedCommitmentItem,
+  new Date('2026-08-22T21:30:00.000Z')
+);
+check('service.handoff-prefers-persisted-deadline', fixedPlanAtRequest.dueAt === expectedUnitResponseDueAt
+  && fixedPlanSixHoursLater.dueAt === expectedUnitResponseDueAt
+  && fixedPlanAtRequest.deadlineHours === 24
+  && fixedPlanSixHoursLater.deadlineHours === 18
+  && fixedPlanAtRequest.deadlineLabel === fixedPlanSixHoursLater.deadlineLabel);
 
 const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'bancus-proposal-interest-'));
 const mainDbPath = path.join(tempDir, 'main.sqlite');
@@ -411,10 +487,13 @@ try {
   };
   const firstPublicInterest = await apiRequest(publicInterestEndpoint, publicInterestRequest);
   const firstPublicJson = JSON.stringify(firstPublicInterest.body);
-  check('http.public-interest-created', firstPublicInterest.response.status === 201
+check('http.public-interest-created', firstPublicInterest.response.status === 201
     && firstPublicInterest.body.ok === true
     && firstPublicInterest.body.readOnly === true
     && safeInterestShape(firstPublicInterest.body.interest));
+  check('http.public-interest-fixed-response-window', exactResponseWindow(firstPublicInterest.body.interest?.contactCommitment)
+    && firstPublicInterest.body.interest?.contactCommitment?.status === 'requested'
+    && firstPublicInterest.body.interest?.contactCommitment?.responsible === 'Equipe Bancus Fraternis');
   check('http.public-interest-no-token-url', firstPublicInterest.endpoint === publicInterestEndpoint
     && !firstPublicInterest.endpoint.includes(publicFlow.publication.body.token));
   check('http.public-interest-safe-response', !firstPublicJson.includes(publicFlow.publication.body.token)
@@ -425,7 +504,9 @@ try {
   const repeatedPublicInterest = await apiRequest(publicInterestEndpoint, publicInterestRequest);
   check('http.public-interest-idempotent', repeatedPublicInterest.response.status === 200
     && repeatedPublicInterest.body.interest?.id === firstPublicInterest.body.interest?.id
-    && repeatedPublicInterest.body.interest?.requestedAt === firstPublicInterest.body.interest?.requestedAt);
+    && repeatedPublicInterest.body.interest?.requestedAt === firstPublicInterest.body.interest?.requestedAt
+    && repeatedPublicInterest.body.interest?.contactCommitment?.responseDueAt
+      === firstPublicInterest.body.interest?.contactCommitment?.responseDueAt);
 
   const concurrentPublicFlow = await publishProposal(consultantHeaders, 'INTEREST-RACE');
   const concurrentPublicRequest = {
@@ -442,7 +523,9 @@ try {
   check('http.public-interest-concurrent-status', concurrentPublicStatuses.join('|') === '200|201');
   check('http.public-interest-concurrent-stable-original', concurrentPublicInterests.every((interest) => safeInterestShape(interest))
     && concurrentPublicInterests[0].id === concurrentPublicInterests[1].id
-    && concurrentPublicInterests[0].requestedAt === concurrentPublicInterests[1].requestedAt);
+    && concurrentPublicInterests[0].requestedAt === concurrentPublicInterests[1].requestedAt
+    && concurrentPublicInterests[0].contactCommitment.responseDueAt
+      === concurrentPublicInterests[1].contactCommitment.responseDueAt);
   const leadsAfterConcurrentPublic = await apiRequest('/api/leads?limit=80', { headers: consultantHeaders });
   const concurrentLeadMatches = (leadsAfterConcurrentPublic.body.leads || [])
     .filter((lead) => lead.id === concurrentPublicInterests[0].id);
@@ -479,6 +562,9 @@ try {
     && publicLead?.payload?.sourceProposalVersionId === publicFlow.proposalVersionId
     && publicLead?.payload?.sourceSimulationId === publicFlow.simulationId
     && publicLead?.payload?.nextAction?.href === expectedPublicHref, publicLead?.payload?.nextAction?.href || 'lead ausente');
+  check('http.consultant-contact-commitment-private', exactResponseWindow(publicLead?.payload?.contactCommitment)
+    && publicLead?.payload?.contactCommitment?.responsible === 'consultor@bankfratern.local'
+    && publicLead?.payload?.contactCommitment?.channel === 'canais_informados');
   const sameOwnerPublicResume = await apiRequest(
     `/api/simulations/${encodeURIComponent(publicFlow.simulationId)}?interestId=${encodeURIComponent(publicLead?.id || '')}`,
     { headers: consultantHeaders }
@@ -520,10 +606,28 @@ try {
       status: 'em_atendimento',
       stage: 'contato',
       source: 'proposal-interest',
-      payload: { ...publicLead.payload, status: 'em_atendimento' }
+      payload: {
+        ...publicLead.payload,
+        status: 'em_atendimento',
+        contactCommitment: {
+          requestedAt: '2099-01-01T00:00:00.000Z',
+          responseDueAt: '2099-01-02T00:00:00.000Z',
+          status: 'closed',
+          channel: 'whatsapp',
+          responsible: 'attacker@example.com'
+        }
+      }
     })
   });
-  check('http.consultant-progress-saved', progressed.response.status === 200 && progressed.body.lead?.status === 'em_atendimento');
+  check('http.consultant-progress-saved', progressed.response.status === 200
+    && progressed.body.lead?.status === 'em_atendimento'
+    && progressed.body.lead?.payload?.contactCommitment?.status === 'em_atendimento');
+  check('http.contact-commitment-deadline-protected', progressed.body.lead?.payload?.contactCommitment?.requestedAt
+      === publicLead?.payload?.contactCommitment?.requestedAt
+    && progressed.body.lead?.payload?.contactCommitment?.responseDueAt
+      === publicLead?.payload?.contactCommitment?.responseDueAt
+    && progressed.body.lead?.payload?.contactCommitment?.channel === 'canais_informados'
+    && progressed.body.lead?.payload?.contactCommitment?.responsible === 'consultor@bankfratern.local');
   const publicResolveProgressed = await apiRequest('/api/public/proposals/resolve', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

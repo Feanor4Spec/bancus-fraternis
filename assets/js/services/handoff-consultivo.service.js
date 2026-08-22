@@ -279,6 +279,7 @@
       { id: 'validar-premissas', label: 'Confirmar premissas financeiras, taxas, validade e memoria de calculo', done: checklist.premissas === true, required: true },
       { id: 'confirmar-cliente', label: 'Confirmar contexto do cliente, objetivo declarado e capacidade de pagamento', done: checklist.cliente === true, required: true },
       { id: 'documentar-handoff', label: 'Preparar documentacao e observacoes para atendimento consultivo', done: checklist.documentacao === true, required: true },
+      { id: 'confirmar-disponibilidade', label: 'Confirmar disponibilidade, taxas e regras vigentes com a administradora', done: checklist.disponibilidade === true, required: true },
       { id: 'definir-retorno', label: 'Definir responsavel local e proxima conversa com o cliente', done: false, required: true }
     ];
   }
@@ -403,6 +404,38 @@
     if (value <= 48) return 'Ate 48h';
     if (value <= 72) return 'Ate 72h';
     return 'Monitorar semanal';
+  }
+
+  function persistedContactDeadline(item) {
+    if (!item) return '';
+    const nestedPayload = item.payload && typeof item.payload === 'object' && !Array.isArray(item.payload)
+      ? item.payload
+      : {};
+    const commitment = item.contactCommitment && typeof item.contactCommitment === 'object' && !Array.isArray(item.contactCommitment)
+      ? item.contactCommitment
+      : nestedPayload.contactCommitment && typeof nestedPayload.contactCommitment === 'object' && !Array.isArray(nestedPayload.contactCommitment)
+        ? nestedPayload.contactCommitment
+        : null;
+    if (!commitment) return '';
+    const status = String(item.status || commitment.status || item.interestStatus || '').trim().toLowerCase();
+    if (status && !['requested', 'novo', 'pending', 'pendente'].includes(status)) return '';
+    const date = new Date(commitment.responseDueAt || '');
+    return Number.isFinite(date.getTime()) ? date.toISOString() : '';
+  }
+
+  function persistedDeadlineLabel(value, now) {
+    const date = new Date(value || '');
+    if (!Number.isFinite(date.getTime())) return '';
+    const reference = now instanceof Date ? now : new Date(now || Date.now());
+    const prefix = date < reference ? 'Venceu em' : 'Até';
+    const formatted = new Intl.DateTimeFormat('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
+    return `${prefix} ${formatted}`;
   }
 
   function actionTitle(type, item, state) {
@@ -649,8 +682,12 @@
     const reference = now instanceof Date ? now : new Date(now || Date.now());
     const state = item.operational || operationalState(item, reference);
     const type = actionTypeFor(item, state);
-    const deadlineHours = deadlineHoursFor(item, state, type);
-    const dueAt = new Date(reference.getTime() + (deadlineHours * 3600000)).toISOString();
+    const policyDeadlineHours = deadlineHoursFor(item, state, type);
+    const contactDueAt = persistedContactDeadline(item);
+    const dueAt = contactDueAt || new Date(reference.getTime() + (policyDeadlineHours * 3600000)).toISOString();
+    const deadlineHours = contactDueAt
+      ? Math.max(0, Math.ceil((Date.parse(contactDueAt) - reference.getTime()) / 3600000))
+      : policyDeadlineHours;
     const owner = type === 'assign'
       ? 'coordenacao local'
       : (item.assignedTo || state.suggestedAssignee || item.ownerEmail || 'definir na fila');
@@ -665,7 +702,7 @@
       reason: actionReason(type, item, state),
       owner,
       deadlineHours,
-      deadlineLabel: deadlineLabel(deadlineHours),
+      deadlineLabel: contactDueAt ? persistedDeadlineLabel(contactDueAt, reference) : deadlineLabel(deadlineHours),
       dueAt,
       ctaLabel: actionCtaLabel(type),
       href: actionHref(type, item),

@@ -113,6 +113,9 @@ const selectedHtml = cart.renderSelectedGroupsHtml([sampleItem], {
 assert(selectedHtml.includes('selected-group-row'), 'HTML de grupos selecionados sem linha publica.');
 assert(selectedHtml.includes('data-item-id="ITEM-1"'), 'HTML de grupos selecionados sem data-item-id.');
 assert(selectedHtml.includes('data-campo="valorCartaUnitario"'), 'HTML de grupos selecionados sem campo editavel de carta.');
+const selectedControls = [...selectedHtml.matchAll(/<(?:button|input|select|summary)\b[^>]*>/g)].map((match) => match[0]);
+assert(selectedControls.every((control) => /\bid="[^"]+"/.test(control)), 'Controles dos grupos selecionados precisam de IDs estáveis.');
+assert(selectedControls.every((control) => /\baria-label="[^"]+"/.test(control)), 'Controles dos grupos selecionados precisam de nomes acessíveis explícitos.');
 
 const cartHtml = cart.renderStep5CartHtml([sampleItem], {
   formatMoney: (value) => `R$ ${Number(value).toFixed(2)}`,
@@ -125,6 +128,19 @@ assert(cartHtml.includes('Crédito líquido'), 'HTML do passo 5 sem crédito lí
 assert(cartHtml.includes('value="embutido" selected'), 'HTML do passo 5 não preserva modalidade embutida.');
 assert(cartHtml.includes('data-campo="indiceReajuste" value="0.00"'), 'HTML do passo 5 não preserva reajuste 0%.');
 assert(cartHtml.includes('R$ 50000.00'), 'HTML do passo 5 não calcula o lance embutido da modalidade selecionada.');
+const cartControls = [...cartHtml.matchAll(/<(?:button|input|select|summary)\b[^>]*>/g)].map((match) => match[0]);
+const cartControlIds = cartControls.map((control) => control.match(/\bid="([^"]+)"/)?.[1] || '');
+assert(cartControlIds.every(Boolean), 'Todos os controles do passo 5 precisam de IDs estáveis.');
+assert(new Set(cartControlIds).size === cartControlIds.length, 'IDs dos controles do passo 5 precisam ser únicos.');
+assert(cartControls.every((control) => /\baria-label="[^"]+"/.test(control)), 'Todos os controles do passo 5 precisam de nomes acessíveis explícitos.');
+const cartHtmlRepeated = cart.renderStep5CartHtml([sampleItem], {
+  formatMoney: (value) => `R$ ${Number(value).toFixed(2)}`,
+  formatNumber: (value) => Number(value).toFixed(2),
+  getEffectiveLanceEmbutidoMax: () => 30
+});
+const repeatedIds = [...cartHtmlRepeated.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1]);
+const originalIds = [...cartHtml.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1]);
+assert(JSON.stringify(repeatedIds) === JSON.stringify(originalIds), 'IDs dos controles do passo 5 precisam permanecer estáveis entre renderizações.');
 
 const defaultItem = cart.createProjectItem({ lanceEmbutidoMaxPct: 30 }, {
   shelfEngine: {

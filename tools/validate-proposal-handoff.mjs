@@ -100,7 +100,8 @@ const acceptance = {
   checklist: {
     premissas: true,
     cliente: true,
-    documentacao: true
+    documentacao: true,
+    disponibilidade: true
   }
 };
 
@@ -113,8 +114,8 @@ assert(handoff.status === 'novo', `Handoff deveria iniciar como novo, recebeu ${
 assert(handoff.priority === 'alta', `Proposta de alto valor deveria gerar prioridade alta, recebeu ${handoff.priority}.`);
 assert(handoff.summary.valorCredito === 180000, 'Resumo do handoff nao preserva valor de credito.');
 assert(handoff.summary.capacidadePagamento === 1850, 'Resumo do handoff nao preserva parcela/capacidade.');
-assert(handoff.checklist.length === 5, 'Checklist da proposta deveria ter 5 itens.');
-assert(handoff.checklist.filter((item) => item.done).length >= 4, 'Checklist da proposta deveria herdar revisao concluida.');
+assert(handoff.checklist.length === 6, 'Checklist da proposta deveria ter 6 itens.');
+assert(handoff.checklist.filter((item) => item.done).length >= 5, 'Checklist da proposta deveria herdar revisao concluida.');
 assert(handoff.notes.length === 1, 'Observacao da proposta deveria virar nota local.');
 
 const found = service.findByProposal(proposal.id, 'consultor@bankfratern.local');

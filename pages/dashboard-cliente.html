@@ -9,8 +9,9 @@
   <link rel="stylesheet" href="../css/styles.css"><link rel="stylesheet" href="../css/bank-fratern-design-system.css"><link rel="stylesheet" href="../assets/css/platform.css">
 </head>
 <body class="bf-platform-body client-dashboard-page" data-bf-page="dashboard-cliente" data-auth-required="true" data-auth-roles="admin,consultor,cliente">
+  <a class="bf-skip-link skip-main-content" href="#main">Ir para o painel</a>
   <div data-shell-header></div>
-  <main class="bf-platform-shell">
+  <main class="bf-platform-shell" id="main">
     <section class="bf-platform-hero" data-client-dashboard-hero>
       <div class="bf-platform-hero__content">
         <span class="bf-badge bf-badge--ok" data-client-session>Minha conta</span>
@@ -75,12 +76,12 @@
       <section class="bf-platform-panel bf-platform-section">
       <h2>Recomendacao por perfil</h2>
       <form class="bf-platform-form" data-recommendation-form>
-        <label>Objetivo<select name="objetivo"><option value="comprar">Comprar bem</option><option value="liquidez">Liquidez</option></select></label>
-        <label>Urgencia<select name="urgencia"><option value="baixa">Baixa</option><option value="media">Media</option><option value="alta">Alta</option></select></label>
-        <label>Risco<select name="risco"><option value="conservador">Conservador</option><option value="moderado">Moderado</option><option value="arrojado">Arrojado</option></select></label>
-        <label>Renda<input name="renda" type="number" value="9000"></label>
-        <label>Entrada<input name="entrada" type="number" value="30000"></label>
-        <label>Garantia<select name="garantia"><option value="">Nao</option><option value="1">Sim</option></select></label>
+        <label for="client-recommendation-objective">Objetivo<select id="client-recommendation-objective" name="objetivo"><option value="comprar">Comprar bem</option><option value="liquidez">Liquidez</option></select></label>
+        <label for="client-recommendation-urgency">Urgência<select id="client-recommendation-urgency" name="urgencia"><option value="baixa">Baixa</option><option value="media">Média</option><option value="alta">Alta</option></select></label>
+        <label for="client-recommendation-risk">Risco<select id="client-recommendation-risk" name="risco"><option value="conservador">Conservador</option><option value="moderado">Moderado</option><option value="arrojado">Arrojado</option></select></label>
+        <label for="client-recommendation-income">Renda<input id="client-recommendation-income" name="renda" type="number" value="9000"></label>
+        <label for="client-recommendation-entry">Entrada<input id="client-recommendation-entry" name="entrada" type="number" value="30000"></label>
+        <label for="client-recommendation-guarantee">Garantia<select id="client-recommendation-guarantee" name="garantia"><option value="">Não</option><option value="1">Sim</option></select></label>
         <button class="btn btn--primary" type="submit">Atualizar ranking</button>
       </form>
       <div class="bf-platform-grid bf-platform-section" data-recommendation-result></div>

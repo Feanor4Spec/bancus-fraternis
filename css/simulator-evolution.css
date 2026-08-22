@@ -33,8 +33,24 @@ body[data-simulator-evolution="proposal-shell"].simulator-audience-pending .sim-
   visibility: hidden;
 }
 
-body[data-simulator-evolution="proposal-shell"] :focus-visible {
-  outline: 3px solid rgba(213, 170, 67, 0.68);
+.sim-skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 1000;
+  padding: 10px 14px;
+  color: #ffffff;
+  background: #1d568f;
+  border-radius: 6px;
+  transform: translateY(-160%);
+}
+
+.sim-skip-link:focus {
+  transform: translateY(0);
+}
+
+body[data-simulator-evolution="proposal-shell"] :focus-visible:not([tabindex="-1"]) {
+  outline: 3px solid #1d568f;
   outline-offset: 3px;
 }
 
@@ -1974,6 +1990,15 @@ body:not(.proposal-client-mode) .proposal-client-interest {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  body[data-simulator-evolution="proposal-shell"] *,
+  body[data-simulator-evolution="proposal-shell"] *::before,
+  body[data-simulator-evolution="proposal-shell"] *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+
   body[data-simulator-evolution="proposal-shell"] .step-section,
   body[data-simulator-evolution="proposal-shell"] .sim-evolution-rail__progress span,
   body[data-simulator-evolution="proposal-shell"] .sim-evolution-rail__steps button,

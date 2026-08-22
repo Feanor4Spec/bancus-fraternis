@@ -90,7 +90,7 @@ const acceptancePanel = api.renderAcceptancePanel({
     reviewerRole: 'Consultor',
     validUntil: '2026-05-20',
     notes: 'Premissas revisadas.',
-    checklist: { premissas: true, cliente: true, documentacao: true }
+    checklist: { premissas: true, cliente: true, documentacao: true, disponibilidade: true }
   },
   history: [{ statusLabel: 'Revisada localmente', version: 2, reviewer: 'Consultor Teste', updatedAt: '2026-05-11T12:00:00.000Z' }],
   handoff: { id: 'LEAD-001' }

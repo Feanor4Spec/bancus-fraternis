@@ -8,6 +8,7 @@ const Storage = (() => {
 
   const STORAGE_KEY = 'consorciopro_simulations';
   const PROPOSAL_VERSION_SNAPSHOT_STORAGE_KEY = 'consorciopro_proposal_version_snapshots';
+  const AUTH_CONFIG_KEY = 'bf_auth_mode_v1';
   const MAX_SIMULATIONS = 50;
   const MAX_PROPOSAL_VERSION_SNAPSHOTS = 120;
   const CURRENT_SCHEMA = 3;
@@ -17,9 +18,13 @@ const Storage = (() => {
     'consultant', 'consultantEmail', 'consultantPhone',
     'consultantCompany', 'companyConsultant', 'consultantCode', 'codeConsultant',
     'advisor', 'advisorEmail', 'advisorPhone', 'advisorCompany', 'advisorCode',
-    'cliente', 'nomeCliente', 'clienteCpf', 'clienteEmail', 'clienteTelefone',
-    'cpf', 'email', 'phone', 'telefone', 'reviewer', 'notes',
-    'ownerEmail', 'actorEmail', 'observacoes', 'proposalReviewer', 'proposalReviewNotes'
+    'cliente', 'client', 'customer', 'titular', 'proponente',
+    'nomeCliente', 'clientName', 'customerName', 'clienteCpf', 'clienteEmail', 'clienteTelefone',
+    'cpf', 'rg', 'cnpj', 'documento', 'document', 'email', 'phone', 'telefone',
+    'contato', 'contact', 'endereco', 'address', 'dataNascimento', 'birthDate',
+    'dadosPessoais', 'personalData', 'reviewer', 'notes',
+    'ownerEmail', 'actorEmail', 'ip', 'ipAddress', 'userAgent', 'deviceId',
+    'observacoes', 'proposalReviewer', 'proposalReviewNotes'
   ].map(_normalizeSnapshotFieldKey));
 
   function _normalizeSnapshotFieldKey(value) {
@@ -42,13 +47,36 @@ const Storage = (() => {
     }
   }
 
+  function _isProductionMode() {
+    try {
+      const root = typeof window !== 'undefined' ? window : globalThis;
+      const declaredMode = typeof document !== 'undefined' && document.body && document.body.dataset
+        ? document.body.dataset.authMode
+        : '';
+      if (declaredMode === 'production') return true;
+      if (root.BFAuth && typeof root.BFAuth.authMode === 'function') {
+        return root.BFAuth.authMode() === 'production';
+      }
+      const storage = _getLocalStorage();
+      const config = storage ? JSON.parse(storage.getItem(AUTH_CONFIG_KEY) || 'null') : null;
+      return !!(config && config.mode === 'production');
+    } catch (e) {
+      return false;
+    }
+  }
+
   function _loadAll() {
     try {
       const storage = _getLocalStorage();
       if (!storage) return [];
       const raw = storage.getItem(STORAGE_KEY);
       const parsed = raw ? JSON.parse(raw) : [];
-      return Array.isArray(parsed) ? parsed : [];
+      const list = Array.isArray(parsed) ? parsed : [];
+      if (!_isProductionMode()) return list;
+      const sanitized = list.map(_sanitizeProductionSimulationEntry);
+      const serialized = JSON.stringify(sanitized);
+      if (raw && serialized !== raw) storage.setItem(STORAGE_KEY, serialized);
+      return sanitized;
     } catch (e) {
       console.warn('Storage: erro ao carregar simulacoes', e);
       return [];
@@ -59,7 +87,11 @@ const Storage = (() => {
     try {
       const storage = _getLocalStorage();
       if (!storage) return false;
-      storage.setItem(STORAGE_KEY, JSON.stringify(Array.isArray(list) ? list : []));
+      const entries = Array.isArray(list) ? list : [];
+      const persistentEntries = _isProductionMode()
+        ? entries.map(_sanitizeProductionSimulationEntry)
+        : entries;
+      storage.setItem(STORAGE_KEY, JSON.stringify(persistentEntries));
       return true;
     } catch (e) {
       console.error('Storage: erro ao salvar simulacoes', e);
@@ -326,6 +358,35 @@ const Storage = (() => {
     };
   }
 
+  function _sanitizeProductionSimulationEntry(entry) {
+    const source = entry && typeof entry === 'object' ? entry : {};
+    const redacted = _redactPrivateSnapshotValue(source);
+    const safeName = source.proposalId
+      ? `Proposta ${source.proposalId}`
+      : `Simulação ${source.id || ''}`.trim();
+    return {
+      ...redacted,
+      nome: safeName || 'Simulação salva',
+      ownerEmail: '',
+      actorEmail: '',
+      privacy: {
+        ...(redacted.privacy && typeof redacted.privacy === 'object' ? redacted.privacy : {}),
+        localPIIStored: false,
+        notice: 'Dados identificadores não são persistidos neste navegador.'
+      },
+      consultor: '',
+      consultorEmail: '',
+      consultorTelefone: '',
+      cliente: 'Dados protegidos',
+      clienteCpf: '',
+      clienteEmail: '',
+      clienteTelefone: '',
+      params: _withoutPrivateFields(redacted.params),
+      formSnapshot: _withoutPrivateFields(redacted.formSnapshot),
+      proposalAcceptance: _sanitizeProposalAcceptance(source.proposalAcceptance)
+    };
+  }
+
   function saveSimulation(nome, data) {
     if (nome && typeof nome === 'object' && data === undefined) {
       data = nome;
@@ -345,7 +406,8 @@ const Storage = (() => {
       list.splice(MAX_SIMULATIONS);
     }
 
-    if (!_saveAll(list)) return null;
+    const persistedLocally = _saveAll(list);
+    if (!persistedLocally && !_isProductionMode()) return null;
     _publishSimulationSnapshot(entry);
     _publishDirectSimulation(entry);
     return entry;

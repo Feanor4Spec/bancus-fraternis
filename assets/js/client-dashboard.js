@@ -628,15 +628,25 @@
       : dashboardHref('handoff-consultivo.html#fila-handoff', snapshot, extra);
   }
 
+  function proposalInterestCommitmentDetail(interest) {
+    const commitment = interest && interest.contactCommitment;
+    const date = new Date(commitment && commitment.responseDueAt ? commitment.responseDueAt : '');
+    if (!Number.isFinite(date.getTime())) return '';
+    const responsible = compactText(commitment && commitment.responsible, 'Equipe Bancus Fraternis');
+    const channel = compactText(commitment && commitment.channel, '').toLocaleLowerCase('pt-BR');
+    return `${responsible} retornará até ${formatDate(date.toISOString())}${channel ? ` pelos ${channel}` : ''}.`;
+  }
+
   function proposalInterestView() {
     const interest = proposalInterestState.interest;
     const status = compactText(interest && interest.status, '');
+    const commitmentDetail = proposalInterestCommitmentDetail(interest);
     if (status === 'in_progress') {
       return {
         active: true,
         status,
         label: 'Atendimento em andamento',
-        detail: 'A equipe já está acompanhando esta proposta.'
+        detail: commitmentDetail || 'A equipe já está acompanhando esta proposta.'
       };
     }
     if (status === 'closed') {
@@ -652,7 +662,7 @@
         active: true,
         status,
         label: 'Solicitação recebida',
-        detail: 'Um consultor acompanhará esta proposta com você.'
+        detail: commitmentDetail || 'Um consultor acompanhará esta proposta com você.'
       };
     }
     return { active: false, status: '', label: '', detail: '' };

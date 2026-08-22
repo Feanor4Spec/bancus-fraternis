@@ -198,6 +198,33 @@
     return '<span class="bf-demo-chip" title="Ambiente de demonstração">Demonstração</span>';
   }
 
+  function renderAuthorizationFeedback() {
+    const params = new URLSearchParams(location.search || '');
+    if (params.get('auth') !== 'forbidden') return;
+
+    const target = document.querySelector('main') || document.body;
+    if (!target || typeof target.insertBefore !== 'function') return;
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'container';
+    wrapper.setAttribute('data-auth-feedback', '');
+
+    const notice = document.createElement('div');
+    notice.className = 'bf-auth-message bf-auth-message--info';
+    notice.setAttribute('role', 'status');
+    notice.setAttribute('aria-live', 'polite');
+    notice.textContent = 'Esta área não está disponível para o seu acesso. Você voltou à tela inicial da sua conta.';
+    wrapper.appendChild(notice);
+    target.insertBefore(wrapper, target.firstChild || null);
+
+    params.delete('auth');
+    const remainingQuery = params.toString();
+    const cleanUrl = `${location.pathname}${remainingQuery ? `?${remainingQuery}` : ''}${location.hash || ''}`;
+    if (window.history && typeof window.history.replaceState === 'function') {
+      window.history.replaceState(window.history.state, '', cleanUrl);
+    }
+  }
+
   function footerContent(user = activeUser()) {
     const role = roleKey(user);
     const homeHref = role === 'cliente'
@@ -277,6 +304,8 @@
 
   const footerSlot = document.querySelector('[data-shell-footer]');
   if (footerSlot) footerSlot.outerHTML = FOOTER_HTML;
+
+  renderAuthorizationFeedback();
 
   if (window.BFAuth && window.BFAuth.ready) {
     window.BFAuth.ready.then(() => {

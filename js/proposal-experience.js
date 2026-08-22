@@ -81,6 +81,19 @@
     }).format(new Date());
   }
 
+  function proposalInterestCommitmentCopy(interest) {
+    const commitment = interest?.contactCommitment;
+    const date = new Date(commitment?.responseDueAt || '');
+    if (!Number.isFinite(date.getTime())) return '';
+    const deadline = new Intl.DateTimeFormat('pt-BR', {
+      dateStyle: 'long',
+      timeStyle: 'short'
+    }).format(date);
+    const responsible = String(commitment?.responsible || 'Equipe Bancus Fraternis').trim();
+    const channel = String(commitment?.channel || '').trim().toLocaleLowerCase('pt-BR');
+    return `${responsible} retornará até ${deadline}${channel ? ` pelos ${channel}` : ''}.`;
+  }
+
   function preferredScrollBehavior() {
     return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
   }
@@ -508,13 +521,14 @@
     const copy = byId('proposal-client-interest-copy');
     const feedback = byId('proposal-client-interest-status');
     const buttons = Array.from(document.querySelectorAll('[data-proposal-interest-action]'));
+    const commitmentCopy = proposalInterestCommitmentCopy(proposalInterest);
 
     if (status === 'requested') {
       setText(title, 'Pedido recebido.');
-      setText(copy, 'Um consultor acompanhará esta proposta e orientará os próximos passos.');
+      setText(copy, commitmentCopy || 'Um consultor acompanhará esta proposta e orientará os próximos passos.');
     } else if (status === 'in_progress') {
       setText(title, 'Seu atendimento está em andamento.');
-      setText(copy, 'A equipe já está acompanhando esta proposta.');
+      setText(copy, commitmentCopy || 'A equipe já está acompanhando esta proposta.');
     } else if (status === 'closed') {
       setText(title, 'Atendimento concluído.');
       setText(copy, 'Se precisar retomar, fale com seu consultor pelos canais já combinados.');

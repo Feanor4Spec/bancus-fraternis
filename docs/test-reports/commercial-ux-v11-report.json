@@ -269,6 +269,16 @@
       "evidence": "Retomada preserva revisão e validade sem deslocamento de fuso."
     },
     {
+      "id": "simulator.historical-source-truth",
+      "ok": true,
+      "evidence": "Base histórica e necessidade de confirmação aparecem da prateleira à proposta."
+    },
+    {
+      "id": "simulator.client-cpf-deferred",
+      "ok": true,
+      "evidence": "CPF deixa de bloquear a descoberta e fica reservado à etapa contratual."
+    },
+    {
       "id": "simulator.pdf-send-gates",
       "ok": true,
       "evidence": "PDF depende de cálculo, cronograma e estrutura; envio acrescenta comparação, conferência e validade."

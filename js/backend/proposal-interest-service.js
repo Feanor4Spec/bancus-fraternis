@@ -4,6 +4,15 @@ const crypto = require('node:crypto');
 
 const SCHEMA = 'bancus.proposal-interest.v1';
 const SOURCE = 'proposal-interest';
+const CONTACT_RESPONSE_HOURS = 24;
+const DEFAULT_CONTACT_CHANNEL = 'canais_informados';
+const PUBLIC_CONTACT_RESPONSIBLE = 'Equipe Bancus Fraternis';
+const CONTACT_CHANNEL_LABELS = Object.freeze({
+  canais_informados: 'Canais informados',
+  email: 'E-mail',
+  telefone: 'Telefone',
+  whatsapp: 'WhatsApp'
+});
 
 function cleanText(value, maxLength = 240) {
   return String(value == null ? '' : value).replace(/\s+/g, ' ').trim().slice(0, maxLength);
@@ -23,6 +32,24 @@ function cleanSystemId(value, prefix) {
 function finiteNumber(value) {
   const number = Number(value);
   return Number.isFinite(number) ? number : 0;
+}
+
+function isoTimestamp(value) {
+  const date = new Date(value);
+  return Number.isFinite(date.getTime()) ? date.toISOString() : '';
+}
+
+function responseDueAt(requestedAt) {
+  const timestamp = Date.parse(requestedAt);
+  if (!Number.isFinite(timestamp)) return '';
+  return new Date(timestamp + (CONTACT_RESPONSE_HOURS * 3600000)).toISOString();
+}
+
+function contactChannel(value) {
+  const key = cleanText(value, 40).toLowerCase().replace(/[\s-]+/g, '_');
+  return Object.prototype.hasOwnProperty.call(CONTACT_CHANNEL_LABELS, key)
+    ? key
+    : DEFAULT_CONTACT_CHANNEL;
 }
 
 function normalizeIdentity(input = {}) {
@@ -65,10 +92,24 @@ function publicSummary(record) {
   const payload = record.payload && typeof record.payload === 'object' && !Array.isArray(record.payload)
     ? record.payload
     : {};
+  const storedCommitment = payload.contactCommitment && typeof payload.contactCommitment === 'object' && !Array.isArray(payload.contactCommitment)
+    ? payload.contactCommitment
+    : {};
+  const status = clientStatus(record.status || payload.status || storedCommitment.status);
+  const requestedAt = isoTimestamp(storedCommitment.requestedAt || payload.interestRequestedAt || record.createdAt);
+  const dueAt = isoTimestamp(storedCommitment.responseDueAt) || responseDueAt(requestedAt);
+  const channel = contactChannel(storedCommitment.channel);
   return Object.freeze({
     id: cleanSystemId(record.id || payload.id, 'LEAD'),
-    status: clientStatus(record.status || payload.status),
-    requestedAt: cleanText(payload.interestRequestedAt || record.createdAt, 40)
+    status,
+    requestedAt,
+    contactCommitment: Object.freeze({
+      requestedAt,
+      responseDueAt: dueAt,
+      status,
+      channel: CONTACT_CHANNEL_LABELS[channel],
+      responsible: PUBLIC_CONTACT_RESPONSIBLE
+    })
   });
 }
 
@@ -103,9 +144,11 @@ function buildLead(identityInput, details = {}, now) {
   const identity = normalizeIdentity(identityInput);
   const id = interestId(identity);
   const requestedAt = new Date(now).toISOString();
+  const contactResponseDueAt = responseDueAt(requestedAt);
   const amount = finiteNumber(details.amount);
   const ownerName = cleanText(details.ownerName || 'Cliente da proposta', 160);
   const consultantEmail = cleanEmail(details.consultantEmail) || identity.ownerEmail;
+  const channel = contactChannel(details.contactChannel);
   const proposalVersion = Math.max(0, Math.trunc(finiteNumber(details.proposalVersion)));
   const href = proposalHref(identity, id);
   const priority = cleanText(details.priority, 20) || priorityForAmount(amount);
@@ -135,6 +178,13 @@ function buildLead(identityInput, details = {}, now) {
     assignedTo: consultantEmail,
     interestStatus: 'requested',
     interestRequestedAt: requestedAt,
+    contactCommitment: {
+      requestedAt,
+      responseDueAt: contactResponseDueAt,
+      status: 'requested',
+      channel,
+      responsible: consultantEmail
+    },
     summary: {
       valorCredito: amount,
       productName,
@@ -220,6 +270,7 @@ function createProposalInterestService(options = {}) {
 module.exports = {
   SCHEMA,
   SOURCE,
+  CONTACT_RESPONSE_HOURS,
   normalizeIdentity,
   interestId,
   publicSummary,

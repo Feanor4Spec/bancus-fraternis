@@ -712,7 +712,7 @@ async function runAdversarialScenario({ context, attachDiagnostics }) {
       setValue('proposalReviewerRole', 'Consultoria');
       setValue('proposalValidUntil', validity);
       setValue('proposalReviewNotes', 'Valores conferidos no cenário multigrupo.');
-      ['proposalCheckPremissas', 'proposalCheckCliente', 'proposalCheckDocumentacao'].forEach((id) => {
+      ['proposalCheckPremissas', 'proposalCheckCliente', 'proposalCheckDocumentacao', 'proposalCheckDisponibilidade'].forEach((id) => {
         const field = document.getElementById(id);
         if (!field) throw new Error(`Checklist ${id} ausente na revisão.`);
         field.checked = true;
@@ -1276,22 +1276,52 @@ if (browser.available) {
     }
   );
 
-  const unnamed = browser.stateMetrics.flatMap((item) => item.unnamed.map((html) => ({ step: item.step, viewport: item.viewportLabel, html })));
+  const adversarialStep5Metrics = browser.adversarialEvidence?.step5Metrics || null;
+  const accessibleNameMetrics = [
+    ...browser.stateMetrics.map((item) => ({ ...item, surface: 'simulator' })),
+    ...(adversarialStep5Metrics
+      ? [{
+        ...adversarialStep5Metrics,
+        surface: 'simulator-adversarial',
+        step: 5,
+        viewportLabel: `${adversarialStep5Metrics.viewport?.width || 0}x${adversarialStep5Metrics.viewport?.height || 0}`
+      }]
+      : [])
+  ];
+  const unnamed = accessibleNameMetrics.flatMap((item) => (item.unnamed || []).map((html) => ({
+    surface: item.surface,
+    step: item.step,
+    viewport: item.viewportLabel,
+    html
+  })));
   addCheck(
     'a11y.accessible-names',
     'Controles visiveis possuem nome acessivel.',
     unnamed.length === 0,
-    { failures: unnamed.slice(0, 40), total: unnamed.length }
+    {
+      adversarialStep5Included: Boolean(adversarialStep5Metrics),
+      failures: unnamed.slice(0, 40),
+      total: unnamed.length
+    }
   );
 
-  const undersized = browser.stateMetrics
-    .filter((item) => item.viewportLabel === '390x844' || item.viewportLabel === '320x800')
-    .flatMap((item) => item.undersized.map((control) => ({ viewport: item.viewportLabel, ...control })));
+  const undersized = accessibleNameMetrics
+    .filter((item) => item.surface === 'simulator-adversarial' || item.viewportLabel === '390x844' || item.viewportLabel === '320x800')
+    .flatMap((item) => (item.undersized || []).map((control) => ({
+      surface: item.surface,
+      step: item.step,
+      viewport: item.viewportLabel,
+      ...control
+    })));
   addCheck(
     'a11y.minimum-target-size',
     'Controles moveis respeitam o minimo WCAG de 24 por 24 pixels.',
     undersized.length === 0,
-    { failures: undersized.slice(0, 40), total: undersized.length }
+    {
+      adversarialStep5Included: Boolean(adversarialStep5Metrics),
+      failures: undersized.slice(0, 40),
+      total: undersized.length
+    }
   );
 
   const overflowFailures = [

@@ -161,7 +161,8 @@
       checklist: {
         premissas: readChecked(root, 'proposalCheckPremissas'),
         cliente: readChecked(root, 'proposalCheckCliente'),
-        documentacao: readChecked(root, 'proposalCheckDocumentacao')
+        documentacao: readChecked(root, 'proposalCheckDocumentacao'),
+        disponibilidade: readChecked(root, 'proposalCheckDisponibilidade')
       }
     };
   }
@@ -218,6 +219,7 @@
         <label><input id="proposalCheckPremissas" type="checkbox" ${checked.premissas ? 'checked' : ''}> Premissas financeiras conferidas</label>
         <label><input id="proposalCheckCliente" type="checkbox" ${checked.cliente ? 'checked' : ''}> Dados do cliente revisados</label>
         <label><input id="proposalCheckDocumentacao" type="checkbox" ${checked.documentacao ? 'checked' : ''}> Documentação conferida</label>
+        <label><input id="proposalCheckDisponibilidade" type="checkbox" ${checked.disponibilidade ? 'checked' : ''}> Disponibilidade e condições atuais confirmadas</label>
       </div>
       <label class="proposal-acceptance-notes">
         <span>Observação da revisão</span>

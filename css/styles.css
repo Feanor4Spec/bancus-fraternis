@@ -699,8 +699,8 @@ h5 {
 }
 
 .form-label .tooltip-trigger {
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
   border-radius: var(--radius-full);
   background: var(--gray-200);
   color: var(--gray-500);
@@ -714,7 +714,8 @@ h5 {
   flex-shrink: 0;
 }
 
-.form-label .tooltip-trigger:hover::after {
+.form-label .tooltip-trigger:hover::after,
+.form-label .tooltip-trigger:focus-visible::after {
   content: attr(data-tip);
   position: absolute;
   bottom: calc(100% + 8px);
@@ -773,6 +774,26 @@ h5 {
   font-size: var(--text-xs);
   color: var(--danger-500);
   font-weight: 500;
+}
+
+.form-error-summary {
+  margin: calc(var(--space-8) * -0.5) 0 var(--space-6);
+  padding: 14px 18px;
+  color: var(--danger-800, #7f1d1d);
+  background: var(--danger-50, #fef2f2);
+  border: 1px solid var(--danger-200, #fecaca);
+  border-left: 4px solid var(--danger-600, #b91c1c);
+  border-radius: var(--radius-md);
+}
+
+.form-error-summary strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.form-error-summary ul {
+  margin: 0;
+  padding-left: 20px;
 }
 
 .form-select {
@@ -3266,6 +3287,30 @@ body.sim-body {
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+.simulation-source-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px 18px;
+  flex-wrap: wrap;
+  margin: calc(var(--space-8) * -0.5) 0 var(--space-6);
+  padding: 14px 18px;
+  color: var(--primary-900);
+  background: var(--primary-50);
+  border: 1px solid var(--primary-200);
+  border-left: 4px solid var(--primary-600);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.simulation-source-note strong {
+  flex: 0 0 auto;
+}
+
+.simulation-source-note > span {
+  color: var(--gray-700);
 }
 
 .shelf-columns-menu {

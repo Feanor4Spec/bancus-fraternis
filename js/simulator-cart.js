@@ -14,6 +14,28 @@
       .replace(/'/g, '&#039;');
   }
 
+  function stableIdToken(value) {
+    const raw = String(value ?? 'item');
+    const normalized = typeof raw.normalize === 'function'
+      ? raw.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      : raw;
+    const slug = normalized
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 40) || 'item';
+    let hash = 2166136261;
+    for (let index = 0; index < raw.length; index += 1) {
+      hash ^= raw.charCodeAt(index);
+      hash = Math.imul(hash, 16777619);
+    }
+    return `${slug}-${(hash >>> 0).toString(36)}`;
+  }
+
+  function controlId(context, itemId, field) {
+    return `sim-${context}-${stableIdToken(itemId)}-${field}`;
+  }
+
   function money(value, helpers = {}) {
     if (helpers.formatMoney) return helpers.formatMoney(value);
     const n = Number(value || 0);
@@ -119,7 +141,10 @@
     const list = Array.isArray(sourceItems) ? sourceItems : [];
     if (list.length === 0) return renderSelectedGroupsEmpty();
 
-    const rows = list.map((item) => `
+    const rows = list.map((item) => {
+      const idFor = (field) => controlId('selected-group', item.itemId, field);
+      const groupContext = `do grupo ${item.codigoGrupo || item.itemId || ''}`.trim();
+      return `
       <tr class="selected-group-row" data-item-id="${escapeText(item.itemId)}">
         <td>
           <div class="sg-group-info">
@@ -133,10 +158,12 @@
         <td><span class="shelf-segment-badge">${escapeText(item.iconSegmento)} ${escapeText(item.nomeSegmento)}</span></td>
         <td>
           <div class="campo-input-usuario">
-            <label class="campo-label--usuario">Por cota</label>
+            <label class="campo-label--usuario" for="${idFor('valor-carta-unitario')}">Por cota <span class="sr-only">${escapeText(groupContext)}</span></label>
             <input
+              id="${idFor('valor-carta-unitario')}"
               type="text"
               class="input-usuario"
+              aria-label="Valor da carta por cota ${escapeText(groupContext)}"
               value="${number(item.valorCartaUnitario, 2, helpers)}"
               data-item-id="${escapeText(item.itemId)}"
               data-campo="valorCartaUnitario"
@@ -148,10 +175,12 @@
         </td>
         <td>
           <div class="campo-input-usuario">
-            <label class="campo-label--usuario">Cotas</label>
+            <label class="campo-label--usuario" for="${idFor('quantidade-cotas')}">Cotas <span class="sr-only">${escapeText(groupContext)}</span></label>
             <input
+              id="${idFor('quantidade-cotas')}"
               type="number"
               class="input-usuario input-usuario--qtd"
+              aria-label="Quantidade de cotas ${escapeText(groupContext)}"
               value="${Number(item.quantidadeCotas || 1)}"
               min="1"
               max="999"
@@ -169,10 +198,11 @@
           </div>
         </td>
         <td class="sg-remover-cell">
-          <button class="btn btn--sm btn--danger" onclick="App.removerGrupoSelecionado('${escapeText(item.itemId)}')" title="Remover grupo">x</button>
+          <button id="${idFor('remover')}" class="btn btn--sm btn--danger" type="button" onclick="App.removerGrupoSelecionado('${escapeText(item.itemId)}')" aria-label="Remover ${escapeText(groupContext)}" title="Remover grupo">x</button>
         </td>
       </tr>
-    `).join('');
+    `;
+    }).join('');
 
     return `
       <table class="data-table selected-groups-table">
@@ -332,6 +362,8 @@
       const efeitoLance = item.reduzirParcelaOuPrazo || 'reduzir_saldo';
       const indiceNome = String(item.indiceCorrecaoNome || 'fixo').toLowerCase();
       const selected = (actual, expected) => actual === expected ? ' selected' : '';
+      const idFor = (field) => controlId('project-group', item.itemId, field);
+      const groupContext = `do grupo ${item.codigoGrupo || item.itemId || ''}`.trim();
       const appliesOwn = modalidadeLance === 'livre' || modalidadeLance === 'combinado';
       const appliesEmbedded = modalidadeLance === 'embutido' || modalidadeLance === 'combinado';
       const appliesFgts = modalidadeLance === 'fgts' || modalidadeLance === 'combinado';
@@ -350,41 +382,41 @@
               <span class="shelf-segment-badge">${escapeText(item.iconSegmento)} ${escapeText(item.nomeSegmento)}</span>
               ${escapeText(item.administradora)} - Grupo ${escapeText(item.codigoGrupo)}
             </div>
-            <button class="btn btn--sm btn--danger" onclick="App.removerGrupoSelecionado('${escapeText(item.itemId)}'); App.recalcularProjeto()">x Remover</button>
+            <button id="${idFor('remover')}" class="btn btn--sm btn--danger" type="button" onclick="App.removerGrupoSelecionado('${escapeText(item.itemId)}'); App.recalcularProjeto()" aria-label="Remover ${escapeText(groupContext)}">x Remover</button>
           </div>
           <div class="cart-item-body">
             <div class="cart-grid-container">
               <div class="cart-field">
-                <label>Quantidade de cotas</label>
-                <input type="number" class="cart-input" data-campo="quantidadeCotas" value="${qtde}" min="1" max="999" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
+                <label for="${idFor('quantidade-cotas')}">Quantidade de cotas <span class="sr-only">${escapeText(groupContext)}</span></label>
+                <input id="${idFor('quantidade-cotas')}" type="number" class="cart-input" aria-label="Quantidade de cotas ${escapeText(groupContext)}" data-campo="quantidadeCotas" value="${qtde}" min="1" max="999" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
               </div>
               <div class="cart-field">
-                <label>Valor da carta por cota (R$)</label>
-                <input type="text" class="cart-input" data-money="true" data-campo="valorCartaUnitario" value="${number(valCarta, 2, helpers)}" onblur="App.onEditarItemProjeto(this); App.recalcularProjeto()">
+                <label for="${idFor('valor-carta-unitario')}">Valor da carta por cota (R$) <span class="sr-only">${escapeText(groupContext)}</span></label>
+                <input id="${idFor('valor-carta-unitario')}" type="text" class="cart-input" aria-label="Valor da carta por cota em reais ${escapeText(groupContext)}" data-money="true" data-campo="valorCartaUnitario" value="${number(valCarta, 2, helpers)}" onblur="App.onEditarItemProjeto(this); App.recalcularProjeto()">
               </div>
               <div class="cart-field">
-                <label>Prazo do grupo</label>
-                <input type="number" class="cart-input" data-campo="prazoMeses" value="${prazo}" min="1" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
+                <label for="${idFor('prazo-meses')}">Prazo do grupo <span class="sr-only">${escapeText(groupContext)}</span></label>
+                <input id="${idFor('prazo-meses')}" type="number" class="cart-input" aria-label="Prazo em meses ${escapeText(groupContext)}" data-campo="prazoMeses" value="${prazo}" min="1" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
               </div>
               <div class="cart-field">
-                <label>Taxa de administração (%)</label>
-                <input type="number" class="cart-input" data-campo="taxaAdmPct" value="${taxa.toFixed(2)}" step="0.01" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
+                <label for="${idFor('taxa-administracao')}">Taxa de administração (%) <span class="sr-only">${escapeText(groupContext)}</span></label>
+                <input id="${idFor('taxa-administracao')}" type="number" class="cart-input" aria-label="Taxa de administração em percentual ${escapeText(groupContext)}" data-campo="taxaAdmPct" value="${taxa.toFixed(2)}" step="0.01" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
               </div>
               <div class="cart-field">
-                <label>Fundo de reserva (%)</label>
-                <input type="number" class="cart-input" data-campo="fundoReservaPct" value="${fundo.toFixed(2)}" step="0.01" min="0" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
+                <label for="${idFor('fundo-reserva')}">Fundo de reserva (%) <span class="sr-only">${escapeText(groupContext)}</span></label>
+                <input id="${idFor('fundo-reserva')}" type="number" class="cart-input" aria-label="Fundo de reserva em percentual ${escapeText(groupContext)}" data-campo="fundoReservaPct" value="${fundo.toFixed(2)}" step="0.01" min="0" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
               </div>
               <div class="cart-field">
-                <label>Mês estimado de contemplação</label>
-                <input type="number" class="cart-input" data-campo="mesContemplacaoAlvo" value="${mob}" min="1" max="${prazo}" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
+                <label for="${idFor('mes-contemplacao')}">Mês estimado de contemplação <span class="sr-only">${escapeText(groupContext)}</span></label>
+                <input id="${idFor('mes-contemplacao')}" type="number" class="cart-input" aria-label="Mês estimado de contemplação ${escapeText(groupContext)}" data-campo="mesContemplacaoAlvo" value="${mob}" min="1" max="${prazo}" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
               </div>
               <div class="cart-field">
-                <label>Lance próprio (%)</label>
-                <input type="number" class="cart-input" data-campo="lanceProprioPct" value="${pctProprio}" step="0.1" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
+                <label for="${idFor('lance-proprio')}">Lance próprio (%) <span class="sr-only">${escapeText(groupContext)}</span></label>
+                <input id="${idFor('lance-proprio')}" type="number" class="cart-input" aria-label="Lance próprio em percentual ${escapeText(groupContext)}" data-campo="lanceProprioPct" value="${pctProprio}" step="0.1" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
               </div>
               <div class="cart-field">
-                <label>Lance embutido (%)${limiteEmbutido ? ` — máximo ${limiteEmbutido}%` : ''}</label>
-                <input type="number" class="cart-input" data-campo="lanceEmbutidoPct" value="${pctEmbutido}" step="0.1" min="0" ${limiteEmbutido ? `max="${limiteEmbutido}"` : ''} onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
+                <label for="${idFor('lance-embutido')}">Lance embutido (%)${limiteEmbutido ? ` — máximo ${limiteEmbutido}%` : ''} <span class="sr-only">${escapeText(groupContext)}</span></label>
+                <input id="${idFor('lance-embutido')}" type="number" class="cart-input" aria-label="Lance embutido em percentual ${escapeText(groupContext)}" data-campo="lanceEmbutidoPct" value="${pctEmbutido}" step="0.1" min="0" ${limiteEmbutido ? `max="${limiteEmbutido}"` : ''} onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
               </div>
               <div class="cart-field">
                 <label>Lance próprio (R$)</label>
@@ -403,17 +435,17 @@
                 <div class="cart-calc dyn-val-liq">${money((valCarta * qtde) - calcValEmb, helpers)}</div>
               </div>
             </div>
-            <details class="cart-item-advanced">
-              <summary>Parâmetros do grupo</summary>
+            <details id="${idFor('parametros')}" class="cart-item-advanced">
+              <summary id="${idFor('parametros-resumo')}" aria-controls="${idFor('parametros-conteudo')}" aria-label="Parâmetros ${escapeText(groupContext)}">Parâmetros do grupo</summary>
               <p class="text-muted">Taxas e regras locais permanecem como premissas até a confirmação contratual.</p>
-              <div class="cart-grid-container">
+              <div id="${idFor('parametros-conteudo')}" class="cart-grid-container">
                 <div class="cart-field">
-                  <label>Seguro (%)</label>
-                  <input type="number" class="cart-input" data-campo="seguroPct" value="${seguroPct.toFixed(2)}" min="0" max="100" step="0.01" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
+                  <label for="${idFor('seguro')}">Seguro (%) <span class="sr-only">${escapeText(groupContext)}</span></label>
+                  <input id="${idFor('seguro')}" type="number" class="cart-input" aria-label="Seguro em percentual ${escapeText(groupContext)}" data-campo="seguroPct" value="${seguroPct.toFixed(2)}" min="0" max="100" step="0.01" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
                 </div>
                 <div class="cart-field">
-                  <label>Índice de correção</label>
-                  <select class="cart-input" data-campo="indiceCorrecaoNome" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
+                  <label for="${idFor('indice-correcao')}">Índice de correção <span class="sr-only">${escapeText(groupContext)}</span></label>
+                  <select id="${idFor('indice-correcao')}" class="cart-input" aria-label="Índice de correção ${escapeText(groupContext)}" data-campo="indiceCorrecaoNome" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
                     <option value="fixo"${selected(indiceNome, 'fixo')}>Sem reajuste</option>
                     <option value="ipca"${selected(indiceNome, 'ipca')}>IPCA</option>
                     <option value="incc"${selected(indiceNome, 'incc')}>INCC</option>
@@ -421,16 +453,16 @@
                   </select>
                 </div>
                 <div class="cart-field">
-                  <label>Reajuste anual assumido (%)</label>
-                  <input type="number" class="cart-input" data-campo="indiceReajuste" value="${indiceReajuste.toFixed(2)}" min="0" max="100" step="0.01" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
+                  <label for="${idFor('reajuste-anual')}">Reajuste anual assumido (%) <span class="sr-only">${escapeText(groupContext)}</span></label>
+                  <input id="${idFor('reajuste-anual')}" type="number" class="cart-input" aria-label="Reajuste anual assumido em percentual ${escapeText(groupContext)}" data-campo="indiceReajuste" value="${indiceReajuste.toFixed(2)}" min="0" max="100" step="0.01" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
                 </div>
                 <div class="cart-field">
-                  <label>Mês de aniversário</label>
-                  <input type="number" class="cart-input" data-campo="mesAniversario" value="${mesAniversario}" min="1" max="12" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
+                  <label for="${idFor('mes-aniversario')}">Mês de aniversário <span class="sr-only">${escapeText(groupContext)}</span></label>
+                  <input id="${idFor('mes-aniversario')}" type="number" class="cart-input" aria-label="Mês de aniversário ${escapeText(groupContext)}" data-campo="mesAniversario" value="${mesAniversario}" min="1" max="12" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
                 </div>
                 <div class="cart-field">
-                  <label>Modalidade de lance</label>
-                  <select class="cart-input" data-campo="modalidadeLance" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
+                  <label for="${idFor('modalidade-lance')}">Modalidade de lance <span class="sr-only">${escapeText(groupContext)}</span></label>
+                  <select id="${idFor('modalidade-lance')}" class="cart-input" aria-label="Modalidade de lance ${escapeText(groupContext)}" data-campo="modalidadeLance" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
                     <option value="sem_lance"${selected(modalidadeLance, 'sem_lance')}>Sem lance</option>
                     <option value="livre"${selected(modalidadeLance, 'livre')}>Próprio</option>
                     <option value="embutido"${selected(modalidadeLance, 'embutido')}>Embutido</option>
@@ -440,32 +472,32 @@
                   </select>
                 </div>
                 <div class="cart-field">
-                  <label>FGTS informado (R$)</label>
-                  <input type="text" class="cart-input" data-money="true" data-campo="valorFgts" value="${number(valorFgts, 2, helpers)}" onblur="App.onEditarItemProjeto(this); App.recalcularProjeto()">
+                  <label for="${idFor('valor-fgts')}">FGTS informado (R$) <span class="sr-only">${escapeText(groupContext)}</span></label>
+                  <input id="${idFor('valor-fgts')}" type="text" class="cart-input" aria-label="Valor de FGTS informado em reais ${escapeText(groupContext)}" data-money="true" data-campo="valorFgts" value="${number(valorFgts, 2, helpers)}" onblur="App.onEditarItemProjeto(this); App.recalcularProjeto()">
                 </div>
                 <div class="cart-field">
-                  <label>Parcela reduzida</label>
+                  <label for="${idFor('parcela-reduzida')}">Parcela reduzida <span class="sr-only">${escapeText(groupContext)}</span></label>
                   <label class="form-switch">
-                    <input type="checkbox" data-campo="parcelaReduzidaAtiva" ${item.parcelaReduzidaAtiva ? 'checked' : ''} onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
+                    <input id="${idFor('parcela-reduzida')}" type="checkbox" aria-label="Aplicar parcela reduzida antes da contemplação ${escapeText(groupContext)}" data-campo="parcelaReduzidaAtiva" ${item.parcelaReduzidaAtiva ? 'checked' : ''} onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
                     <span class="form-switch__track"></span>
                     <span class="form-switch__label">Aplicar antes da contemplação</span>
                   </label>
                 </div>
                 <div class="cart-field">
-                  <label>Redução da parcela (%)</label>
-                  <input type="number" class="cart-input" data-campo="percentualReducao" value="${percentualReducao.toFixed(2)}" min="0" max="100" step="0.01" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
+                  <label for="${idFor('percentual-reducao')}">Redução da parcela (%) <span class="sr-only">${escapeText(groupContext)}</span></label>
+                  <input id="${idFor('percentual-reducao')}" type="number" class="cart-input" aria-label="Redução da parcela em percentual ${escapeText(groupContext)}" data-campo="percentualReducao" value="${percentualReducao.toFixed(2)}" min="0" max="100" step="0.01" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
                 </div>
                 <div class="cart-field">
-                  <label>Efeito do lance/antecipação</label>
-                  <select class="cart-input" data-campo="reduzirParcelaOuPrazo" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
+                  <label for="${idFor('efeito-lance')}">Efeito do lance/antecipação <span class="sr-only">${escapeText(groupContext)}</span></label>
+                  <select id="${idFor('efeito-lance')}" class="cart-input" aria-label="Efeito do lance ou antecipação ${escapeText(groupContext)}" data-campo="reduzirParcelaOuPrazo" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
                     <option value="reduzir_saldo"${selected(efeitoLance, 'reduzir_saldo')}>Reduzir saldo</option>
                     <option value="reduzir_prazo"${selected(efeitoLance, 'reduzir_prazo')}>Reduzir prazo</option>
                     <option value="reduzir_parcela"${selected(efeitoLance, 'reduzir_parcela')}>Reduzir parcela</option>
                   </select>
                 </div>
                 <div class="cart-field">
-                  <label>Política do saldo</label>
-                  <select class="cart-input" data-campo="politicaSaldo" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
+                  <label for="${idFor('politica-saldo')}">Política do saldo <span class="sr-only">${escapeText(groupContext)}</span></label>
+                  <select id="${idFor('politica-saldo')}" class="cart-input" aria-label="Política do saldo ${escapeText(groupContext)}" data-campo="politicaSaldo" onchange="App.onEditarItemProjeto(this); App.recalcularProjeto()">
                     <option value="carta"${selected(politicaSaldo, 'carta')}>Carta como principal</option>
                     <option value="carta_mais_custos"${selected(politicaSaldo, 'carta_mais_custos')}>Carta mais custos</option>
                   </select>

@@ -66,7 +66,8 @@ const BFProposalAcceptance = (() => {
     return {
       premissas: !!(checklist && checklist.premissas),
       cliente: !!(checklist && checklist.cliente),
-      documentacao: !!(checklist && checklist.documentacao)
+      documentacao: !!(checklist && checklist.documentacao),
+      disponibilidade: !!(checklist && checklist.disponibilidade)
     };
   }
 
@@ -275,7 +276,8 @@ const BFProposalAcceptance = (() => {
       checklist: {
         premissas: false,
         cliente: false,
-        documentacao: false
+        documentacao: false,
+        disponibilidade: false
       },
       version: 0,
       createdAt: '',

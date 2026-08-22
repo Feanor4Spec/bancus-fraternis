@@ -320,7 +320,8 @@ const ProposalSummary = (() => {
       checklist: {
         premissas: !!checklist.premissas,
         cliente: !!checklist.cliente,
-        documentacao: !!checklist.documentacao
+        documentacao: !!checklist.documentacao,
+        disponibilidade: !!checklist.disponibilidade
       }
     };
   }
@@ -365,14 +366,22 @@ const ProposalSummary = (() => {
     const liquidezPct = creditoTotal > 0 ? (caixaLiquida / creditoTotal) * 100 : 0;
     const lanceEmbutidoPct = creditoTotal > 0 ? (lanceEmbutido / creditoTotal) * 100 : 0;
     const riscos = [];
+    const sourceCompetencies = [...new Set(projectItems.map((item) => item.dataBase).filter(Boolean))];
+    const sourceLabel = sourceCompetencies.length
+      ? sourceCompetencies.map(formatDataBaseLabel).join(', ')
+      : 'não informada';
     const premissas = [
       `Crédito simulado: ${money(creditoTotal)}. Crédito líquido estimado após o lance embutido: ${money(caixaLiquida)}.`,
       `Parcela inicial estimada: ${money(parcelaAtual)}. Prazo considerado: ${number(prazoTotal)} meses.`,
       `Lance total: ${money(lanceTotal)}, conforme os valores informados para lance próprio, embutido, FGTS ou lance fixo.`,
-      `Taxa média informada: ${percent(taxaMedia)}. Fundo de reserva e seguro seguem as condições de cada grupo.`
+      `Taxa média informada: ${percent(taxaMedia)}. Fundo de reserva e seguro seguem as condições de cada grupo.`,
+      `Competência das referências selecionadas: ${sourceLabel}.`
     ];
 
     if (!projectItems.length) riscos.push('Nenhum grupo foi selecionado. Inclua pelo menos um grupo antes de enviar a proposta.');
+    if (projectItems.length) riscos.push(sourceCompetencies.length
+      ? `As referências são históricas (${sourceLabel}). Confirme disponibilidade, taxas e regras atuais com a administradora antes da contratação.`
+      : 'A competência da base não foi informada. Confirme a origem e as condições atuais antes de compartilhar a proposta.');
     if (readiness < 70) riscos.push('O perfil financeiro está incompleto. Confirme renda, reserva e capacidade de pagamento antes do aceite.');
     if (diagnostics.reconciled !== true) riscos.push('Os valores do resumo e do cronograma ainda não conferem. Recalcule a simulação antes de enviar.');
     if (Array.isArray(diagnostics.errors) && diagnostics.errors.length) {
@@ -466,6 +475,17 @@ const ProposalSummary = (() => {
 
   function formatDate(value) {
     return safeDate(value).toLocaleDateString('pt-BR');
+  }
+
+  function formatDataBaseLabel(value) {
+    const raw = String(value == null ? '' : value).trim();
+    const match = raw.match(/^(\d{4})[-/]?(\d{2})$/);
+    if (!match) return raw || 'não informada';
+    const monthIndex = Number(match[2]) - 1;
+    if (monthIndex < 0 || monthIndex > 11) return raw;
+    const month = new Intl.DateTimeFormat('pt-BR', { month: 'long' })
+      .format(new Date(Number(match[1]), monthIndex, 1));
+    return `${month} de ${match[1]}`;
   }
 
   function addMonths(date, months) {
@@ -602,6 +622,7 @@ const ProposalSummary = (() => {
         indiceReajuste,
         mesAniversario,
         modalidadeLance,
+        dataBase: String(item.dataBase ?? group.dataBase ?? group.dataReferencia ?? group.mesReferencia ?? '').trim(),
         classificacao: classificacao && (classificacao.final || classificacao.classe || classificacao.nota || classificacao),
         papel: papel && (papel.papel || papel.nome || papel)
       };
@@ -682,6 +703,10 @@ const ProposalSummary = (() => {
     const cronograma = resultado && Array.isArray(resultado.cronograma) ? resultado.cronograma : [];
     const descriptor = getProjectDescriptor(project);
     const projectItems = normalizeProjectItems(project);
+    const dataBaseCodes = [...new Set(projectItems.map((item) => item.dataBase).filter(Boolean))];
+    const dataBaseLabel = dataBaseCodes.length
+      ? dataBaseCodes.map(formatDataBaseLabel).join(', ')
+      : 'não informada';
     const adesao = safeDate(params && params.dataSimulacao);
     const mesContemplacao = Math.max(1, Number(params && params.mesContemplacao) || 18);
     const parcelasTotais = Number(resumo.prazoTotal) || Number(params && params.prazoTotal) || cronograma.length || 1;
@@ -757,7 +782,7 @@ const ProposalSummary = (() => {
 
     const proposal = {
       id: `PROP-${adesao.getFullYear()}-${String(proposalSeq).padStart(4, '0')}`,
-      status: resultado && resultado.diagnostics && resultado.diagnostics.reconciled === true ? 'Validada' : 'Rascunho',
+      status: resultado && resultado.diagnostics && resultado.diagnostics.reconciled === true ? 'Cálculo conferido' : 'Rascunho',
       title: 'Proposta de consórcio',
       subtitle: 'Valores, prazos, parcelas, lances, custos e riscos calculados com os dados informados.',
       grupo: descriptor.grupo,
@@ -769,6 +794,12 @@ const ProposalSummary = (() => {
       administradora: descriptor.administradora,
       segmento: descriptor.segmento,
       generatedAt: new Date(),
+      dataSource: {
+        kind: 'historical-reference',
+        competence: dataBaseCodes,
+        competenceLabel: dataBaseLabel,
+        availabilityConfirmed: false
+      },
       projectSummary,
       projectItems,
       productPhases: buildProductPhases({ adesao, proximaParcelaData, contemplData, mesContemplacao, parcelasRestantes }),
@@ -803,12 +834,14 @@ const ProposalSummary = (() => {
       },
       schedule: normalizeSchedule(cronograma, adesao),
       nextSteps: [
+        { title: 'Confirmar disponibilidade atual', description: `Validar com a administradora as vagas, taxas e regras vigentes. Referência usada: ${dataBaseLabel}.`, date: formatDate(new Date()) },
         { title: 'Conferir valores e condições', description: 'Confirmar carta, prazo, taxa, fundo de reserva, seguro e limites de lance.', date: formatDate(new Date()) },
         { title: 'Definir os recursos do lance', description: 'Confirmar quanto será pago com recursos próprios e quanto será descontado da carta.' },
         { title: 'Acompanhar as assembleias', description: 'Verificar as datas e os resultados divulgados pela administradora.', date: formatDate(proximaParcelaData) },
         { title: 'Separar os documentos', description: 'Preparar cadastro, comprovantes e documentos exigidos para a análise e o uso do crédito.' }
       ],
       disclaimers: [
+        `Os grupos foram comparados com referências históricas da competência ${dataBaseLabel}; disponibilidade e condições atuais precisam ser confirmadas com a administradora.`,
         'Os valores são estimativas calculadas com os dados informados e dependem das regras da administradora.',
         'Parcelas, saldo devedor e custo total podem mudar por reajustes, assembleias, lances e outras condições contratuais.',
         'Esta é uma simulação. A contemplação não é garantida e a contratação depende da análise da administradora e do contrato.'
@@ -1129,21 +1162,21 @@ const ProposalSummary = (() => {
 
         ${items.length ? `
           <div class="ps-project-table-wrap">
-            <table class="ps-project-table">
+            <table class="ps-project-table" aria-label="Grupos e condições consideradas na proposta">
               <thead>
                 <tr>
-                  <th>Grupo</th>
-                  <th>Administradora e segmento</th>
-                  <th>Cotas e crédito</th>
-                  <th>Prazo e contemplação</th>
-                  <th>Taxa e reajuste</th>
-                  <th>Lance</th>
+                  <th scope="col">Grupo</th>
+                  <th scope="col">Administradora e segmento</th>
+                  <th scope="col">Cotas e crédito</th>
+                  <th scope="col">Prazo e contemplação</th>
+                  <th scope="col">Taxa e reajuste</th>
+                  <th scope="col">Lance</th>
                 </tr>
               </thead>
               <tbody>
                 ${items.map(item => `
                   <tr>
-                    <td><strong>${escapeHTML(item.codigoGrupo)}</strong></td>
+                    <th scope="row"><strong>${escapeHTML(item.codigoGrupo)}</strong></th>
                     <td><strong>${escapeHTML(item.administradora)}</strong><small>${escapeHTML(item.segmento)}</small></td>
                     <td><strong>${number(item.quantidadeCotas)} ${item.quantidadeCotas === 1 ? 'cota' : 'cotas'}</strong><small>Carta unitária ${money(item.valorCartaUnitario)} • total ${money(item.valorCartaTotal)}</small></td>
                     <td><strong>${number(item.prazoMeses)} meses</strong><small>Contemplação no cenário: mês ${number(item.mesContemplacaoAlvo)}</small></td>
@@ -1197,7 +1230,7 @@ const ProposalSummary = (() => {
   function renderFinancialComposition(data) {
     const total = data.charts.composition.reduce((s, item) => s + item.value, 0) || 1;
     const chart = isChartEnabled(data, 'composition')
-      ? `<div class="ps-chart-card"><canvas id="${chartId(data, 'composition')}"></canvas></div>`
+      ? `<div class="ps-chart-card"><canvas id="${chartId(data, 'composition')}" role="img" aria-label="Composição do valor total do plano">Composição do valor total do plano.</canvas></div>`
       : renderDisabledChart('Custos do plano');
     return `
       <section class="ps-section ps-section--split ps-print-page">
@@ -1227,7 +1260,7 @@ const ProposalSummary = (() => {
 
   function renderContributionOverview(data) {
     const chart = isChartEnabled(data, 'installment')
-      ? `<div class="ps-chart-card"><canvas id="${chartId(data, 'installment')}"></canvas></div>`
+      ? `<div class="ps-chart-card"><canvas id="${chartId(data, 'installment')}" role="img" aria-label="Composição da parcela inicial">Composição da parcela inicial.</canvas></div>`
       : renderDisabledChart('Evolução das parcelas');
     return `
       <section class="ps-section ps-section--split ps-print-page">
@@ -1278,7 +1311,7 @@ const ProposalSummary = (() => {
             </ul>
           </aside>
           ${isChartEnabled(data, 'bid')
-            ? `<div class="ps-chart-card"><canvas id="${chartId(data, 'bid')}"></canvas></div>`
+            ? `<div class="ps-chart-card"><canvas id="${chartId(data, 'bid')}" role="img" aria-label="Comparação entre lance e crédito líquido">Comparação entre lance e crédito líquido.</canvas></div>`
             : renderDisabledChart('Lance e crédito')}
         </div>
       </section>
@@ -1288,10 +1321,10 @@ const ProposalSummary = (() => {
   function renderProjectionSection(data) {
     const charts = [
       isChartEnabled(data, 'debt')
-        ? `<div class="ps-chart-card"><canvas id="${chartId(data, 'debt')}"></canvas></div>`
+        ? `<div class="ps-chart-card"><canvas id="${chartId(data, 'debt')}" role="img" aria-label="Projeção do saldo devedor">Projeção do saldo devedor.</canvas></div>`
         : renderDisabledChart('Saldo devedor'),
       isChartEnabled(data, 'installmentProjection')
-        ? `<div class="ps-chart-card"><canvas id="${chartId(data, 'installmentProjection')}"></canvas></div>`
+        ? `<div class="ps-chart-card"><canvas id="${chartId(data, 'installmentProjection')}" role="img" aria-label="Projeção das parcelas">Projeção das parcelas.</canvas></div>`
         : renderDisabledChart('Projeção de parcelas')
     ].join('');
     return `
@@ -1350,21 +1383,21 @@ const ProposalSummary = (() => {
         </div>
 
         <div class="ps-schedule-table-wrap">
-          <table class="ps-schedule-table">
+          <table class="ps-schedule-table" aria-label="Cronograma de parcelas e eventos">
             <thead>
               <tr>
-                <th>Mês</th>
-                <th>Data</th>
-                <th>Evento</th>
-                <th>Parcela base</th>
-                <th>Taxa adm.</th>
-                <th>Fundo</th>
-                <th>Seguro</th>
-                <th>Parcela total</th>
-                <th>Lance/adiant.</th>
-                <th>Multa/juros</th>
-                <th>Saldo final</th>
-                <th>Prazo</th>
+                <th scope="col">Mês</th>
+                <th scope="col">Data</th>
+                <th scope="col">Evento</th>
+                <th scope="col">Parcela base</th>
+                <th scope="col">Taxa adm.</th>
+                <th scope="col">Fundo</th>
+                <th scope="col">Seguro</th>
+                <th scope="col">Parcela total</th>
+                <th scope="col">Lance/adiant.</th>
+                <th scope="col">Multa/juros</th>
+                <th scope="col">Saldo final</th>
+                <th scope="col">Prazo</th>
               </tr>
             </thead>
             <tbody>
@@ -1374,7 +1407,7 @@ const ProposalSummary = (() => {
                 const rowTitle = row.observacao ? ` title="${escapeHTML(row.observacao)}"` : '';
                 return `
                   <tr${rowTitle}>
-                    <td class="ps-schedule-table__center">${number(row.mes)}</td>
+                    <th scope="row" class="ps-schedule-table__center">${number(row.mes)}</th>
                     <td>${formatDate(row.data)}</td>
                     <td><span class="ps-event-pill ps-event-pill--${eventTone(row.evento)}">${escapeHTML(row.evento)}</span></td>
                     <td class="ps-schedule-table__num">${money(row.parcelaBase)}</td>
@@ -1485,7 +1518,8 @@ const ProposalSummary = (() => {
     const checks = [
       { key: 'premissas', title: 'Valores e condições', body: 'Crédito, prazo, taxa, fundo, lance e parcelas foram conferidos.' },
       { key: 'cliente', title: 'Dados do cliente', body: 'Objetivo e capacidade de pagamento foram conferidos.' },
-      { key: 'documentacao', title: 'Documentos necessários', body: 'Documentos e próximos contatos foram definidos.' }
+      { key: 'documentacao', title: 'Documentos necessários', body: 'Documentos e próximos contatos foram definidos.' },
+      { key: 'disponibilidade', title: 'Condições atuais', body: 'Disponibilidade, taxas e regras vigentes foram confirmadas com a administradora.' }
     ];
     const updatedLabel = acceptance.updatedAt ? formatDate(acceptance.updatedAt) : 'Aguardando registro';
 

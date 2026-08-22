@@ -71,7 +71,8 @@ const [
   simulatorCss,
   proposalResumeGuardJs,
   proposalIntegrityJs,
-  proposalAcceptanceJs
+  proposalAcceptanceJs,
+  proposalSummaryJs
 ] = await Promise.all([
   read('js/shared-layout.js'),
   read('pages/dashboard-cliente.html'),
@@ -91,7 +92,8 @@ const [
   read('css/simulator-evolution.css'),
   read('js/proposal-resume-guard.js'),
   read('js/proposal-integrity.js'),
-  read('js/proposal-acceptance.js')
+  read('js/proposal-acceptance.js'),
+  read('js/proposal-summary.js')
 ]);
 
 const roles = ['public', 'cliente', 'consultor', 'admin'];
@@ -141,10 +143,17 @@ check('simulator.client-readonly-state', simulatorCss.includes('body.proposal-cl
 check('simulator.client-readonly-snapshot', (appJs.match(/!clientReadOnly/g) || []).length >= 3 && appJs.includes('isClientProposalResume(params, proposalTarget ? 10 : 0)') && appJs.includes('setClientMode?.(true, { locked: true })'), 'Conferência usa o resultado salvo sem recalcular, reabrir edição ou exibir alertas de bastidor.');
 check('simulator.current-comparison', proposalIntegrityJs.includes('comparisonFingerprint') && appJs.includes('proposalComparisonIsCurrent()') && appJs.includes('restoreComparisonSource(compResult)'), 'Envio exige comparação correspondente aos grupos e condições atuais.');
 check('simulator.acceptance-resume', appJs.includes('resumedProposalAcceptance') && proposalAcceptanceJs.includes('parseLocalDate') && proposalAcceptanceJs.includes('valid < today'), 'Retomada preserva revisão e validade sem deslocamento de fuso.');
+check('simulator.historical-source-truth', simulatorHtml.includes('Referências históricas')
+  && simulatorHtml.includes('data-catalog-competency')
+  && proposalSummaryJs.includes("kind: 'historical-reference'")
+  && proposalSummaryJs.includes('Confirmar disponibilidade atual'), 'Base histórica e necessidade de confirmação aparecem da prateleira à proposta.');
+check('simulator.client-cpf-deferred', simulatorHtml.includes('data-client-cpf-field')
+  && appJs.includes('cpfField.hidden = true')
+  && appJs.includes("!clientSimulationFlow && !isValidCPF"), 'CPF deixa de bloquear a descoberta e fica reservado à etapa contratual.');
 check('simulator.pdf-send-gates', appJs.includes('function proposalDocumentIssues()')
   && appJs.includes('proposalBuilderReadinessIssues(getProposalBuilderConfig())')
   && appJs.includes('proposalCalculationMatchesCurrentForm()')
-  && appJs.includes("['premissas', 'cliente', 'documentacao']")
+  && appJs.includes("['premissas', 'cliente', 'documentacao', 'disponibilidade']")
   && appJs.includes('proposalAcceptanceHasCurrentValidity(acceptance)')
   && proposalJs.includes('publicationDays(prepared.payload.review.validUntil)')
   && appJs.includes('const issues = proposalDocumentIssues();')

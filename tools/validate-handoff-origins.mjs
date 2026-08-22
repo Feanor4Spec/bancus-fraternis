@@ -122,7 +122,7 @@ const proposal = service.createFromProposal({
   statusLabel: 'Revisada localmente',
   version: 2,
   validUntil: '2026-06-07',
-  checklist: { premissas: true, cliente: true, documentacao: true }
+  checklist: { premissas: true, cliente: true, documentacao: true, disponibilidade: true }
 });
 
 assert(service.sourceType(journey) === 'journey', 'Handoff de trilha sem origem journey.');

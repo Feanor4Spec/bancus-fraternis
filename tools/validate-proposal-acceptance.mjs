@@ -119,7 +119,7 @@ const reviewed = context.BFProposalAcceptance.saveReview({
   reviewerRole: 'Mesa de revisao',
   validUntil,
   notes: 'Premissas revisadas para o CPF 52998224725.',
-  checklist: { premissas: true, cliente: true, documentacao: true },
+  checklist: { premissas: true, cliente: true, documentacao: true, disponibilidade: true },
   sourceHash: 'fp-contentv1'
 });
 assert(reviewed && reviewed.status === 'reviewed', `Checklist completo deveria gerar reviewed, recebeu ${reviewed && reviewed.status}.`);
@@ -140,7 +140,7 @@ const todayReview = context.BFProposalAcceptance.saveReview({
   reviewerRole: 'Mesa de revisao',
   validUntil: todayValidUntil,
   notes: 'Validade termina hoje.',
-  checklist: { premissas: true, cliente: true, documentacao: true }
+  checklist: { premissas: true, cliente: true, documentacao: true, disponibilidade: true }
 });
 assert(todayReview && todayReview.status === 'reviewed', `Validade de hoje nao deveria estar vencida, recebeu ${todayReview && todayReview.status}.`);
 assert(todayReview && todayReview.validUntil === todayValidUntil, 'Validade de hoje nao foi preservada como data local.');
@@ -151,7 +151,7 @@ const invalidReview = context.BFProposalAcceptance.saveReview({
   reviewerRole: 'Mesa de revisao',
   validUntil: '2026-02-31',
   notes: 'Data de validade invalida.',
-  checklist: { premissas: true, cliente: true, documentacao: true }
+  checklist: { premissas: true, cliente: true, documentacao: true, disponibilidade: true }
 });
 assert(invalidReview && invalidReview.validUntil === '', 'Data de calendario invalida deveria ser descartada.');
 assert(invalidReview && invalidReview.status === 'reviewed', `Data invalida nao deveria ser normalizada como vencida, recebeu ${invalidReview && invalidReview.status}.`);
@@ -188,7 +188,7 @@ context.localStorage.setItem(acceptanceStorageKey, JSON.stringify([{
   reviewerRole: 'Mesa Legada',
   notes: 'Nota legada com telefone 11888887777.',
   validUntil,
-  checklist: { premissas: true, cliente: true, documentacao: true },
+  checklist: { premissas: true, cliente: true, documentacao: true, disponibilidade: true },
   version: 1,
   snapshot: {
     cliente: 'Cliente Legado',

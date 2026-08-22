@@ -20,6 +20,12 @@
     cliente: 'Cliente'
   };
 
+  const ROLE_HOME_PAGES = Object.freeze({
+    admin: 'dashboard-admin.html',
+    consultor: 'handoff-consultivo.html',
+    cliente: 'dashboard-cliente.html'
+  });
+
   const STATUS_LABELS = {
     active: 'Ativo',
     inactive: 'Inativo'
@@ -667,6 +673,14 @@
     return `${loginPath}?redirect=${encodeURIComponent(current)}`;
   }
 
+  function roleHomeUrl(role, authReason) {
+    const inPagesDir = location.pathname.includes('/pages/');
+    const pagePrefix = inPagesDir ? '' : 'pages/';
+    const homePage = ROLE_HOME_PAGES[role] || ROLE_HOME_PAGES.cliente;
+    const reason = String(authReason || '').trim();
+    return `${pagePrefix}${homePage}${reason ? `?auth=${encodeURIComponent(reason)}` : ''}`;
+  }
+
   function requireRole(roles, options) {
     const required = parseRoles(roles);
     const user = getCurrentUser();
@@ -683,7 +697,7 @@
     }
 
     if (required.length > 0 && !required.includes(user.role)) {
-      if (shouldRedirect) location.replace('dashboard-cliente.html?auth=forbidden');
+      if (shouldRedirect) location.replace(roleHomeUrl(user.role, 'forbidden'));
       return null;
     }
 
@@ -710,7 +724,7 @@
       const roles = body ? body.getAttribute('data-auth-roles') : '';
       const required = parseRoles(roles || '');
       if (required.length && !required.includes(result.user.role)) {
-        location.replace('dashboard-cliente.html?auth=forbidden');
+        location.replace(roleHomeUrl(result.user.role, 'forbidden'));
       }
       return result;
     }

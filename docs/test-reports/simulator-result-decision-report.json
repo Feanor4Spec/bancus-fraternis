@@ -3,14 +3,16 @@
   "decision": {
     "status": "revisar",
     "tone": "critical",
-    "risks": 1,
-    "premises": 4,
+    "risks": 2,
+    "premises": 5,
     "comparisons": 3
   },
   "contracts": {
     "htmlSummary": true,
     "appContext": true,
     "proposalDecision": true,
+    "historicalSourceDisclosure": true,
+    "availabilityConfirmation": true,
     "builderOption": true,
     "css": true
   },
