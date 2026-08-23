@@ -1,0 +1,1103 @@
+{
+  "ok": true,
+  "generatedAt": "2026-08-23T02:39:38.151Z",
+  "baseUrl": "http://127.0.0.1:8080",
+  "targetGroupKey": "00000776|202512|1|79",
+  "playwrightSource": "C:\\Users\\gustavo.pinheiro\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\node_modules\\playwright",
+  "checks": [
+    {
+      "id": "source.cta-two-surfaces",
+      "ok": true,
+      "evidence": {}
+    },
+    {
+      "id": "source.cta-native-buttons",
+      "ok": true,
+      "evidence": {}
+    },
+    {
+      "id": "source.intent-query",
+      "ok": true,
+      "evidence": {}
+    },
+    {
+      "id": "source.guide-contract",
+      "ok": true,
+      "evidence": {}
+    },
+    {
+      "id": "source.quick-note",
+      "ok": true,
+      "evidence": {}
+    },
+    {
+      "id": "source.script-order",
+      "ok": true,
+      "evidence": {}
+    },
+    {
+      "id": "source.targeted-options",
+      "ok": true,
+      "evidence": {}
+    },
+    {
+      "id": "source.human-group-labels",
+      "ok": true,
+      "evidence": {}
+    },
+    {
+      "id": "source.explicit-return-precedence",
+      "ok": true,
+      "evidence": {}
+    },
+    {
+      "id": "source.explicit-return-fail-closed",
+      "ok": true,
+      "evidence": {}
+    },
+    {
+      "id": "source.preview-mode",
+      "ok": true,
+      "evidence": {}
+    },
+    {
+      "id": "source.responsive",
+      "ok": true,
+      "evidence": {}
+    },
+    {
+      "id": "source.client-commercial-surface",
+      "ok": true,
+      "evidence": {}
+    },
+    {
+      "id": "source.no-generated-language",
+      "ok": true,
+      "evidence": {}
+    },
+    {
+      "id": "policy.empty",
+      "ok": true,
+      "evidence": {}
+    },
+    {
+      "id": "policy.selecting",
+      "ok": true,
+      "evidence": {}
+    },
+    {
+      "id": "policy.ready",
+      "ok": true,
+      "evidence": {}
+    },
+    {
+      "id": "policy.multiple",
+      "ok": true,
+      "evidence": {}
+    },
+    {
+      "id": "contracts.documented",
+      "ok": true,
+      "evidence": {}
+    },
+    {
+      "id": "browser.server-available",
+      "ok": true,
+      "evidence": {
+        "status": 200,
+        "baseUrl": "http://127.0.0.1:8080"
+      }
+    },
+    {
+      "id": "browser.demo-mode",
+      "ok": true,
+      "evidence": {
+        "mode": "demo"
+      }
+    },
+    {
+      "id": "browser.stale-token-fixture",
+      "ok": true,
+      "evidence": {
+        "staleToken": "GRS-57q3aw-1s5i2c6-upese"
+      }
+    },
+    {
+      "id": "browser.cta-visible-and-sized",
+      "ok": true,
+      "evidence": {
+        "x": 402.3125,
+        "y": 206.140625,
+        "width": 199.984375,
+        "height": 47
+      }
+    },
+    {
+      "id": "browser.direct-return-prefers-explicit",
+      "ok": true,
+      "evidence": {
+        "guideState": "selecting",
+        "selectedCount": 1,
+        "url": "http://127.0.0.1:8080/pages/simulador.html#step-4",
+        "storedIntent": true,
+        "directSelection": null,
+        "guideText": "COMPARAÇÃO DE GRUPOS\nGrupo 79 adicionado\n\nVocê já pode simular este grupo. Para comparar, adicione mais uma opção.\n\n1 de 2 grupos\nGrupo 79\nGrupo 79 adicionado. 1 de 2 grupos.\nAdicionar para comparar",
+        "priorityMethodVisible": false,
+        "sortLabel": "Mais adequados",
+        "scoreHeader": "Compatibilidade"
+      }
+    },
+    {
+      "id": "browser.navigation-cleaned",
+      "ok": true,
+      "evidence": {
+        "url": "http://127.0.0.1:8080/pages/simulador.html#step-4"
+      }
+    },
+    {
+      "id": "browser.selection-consumed",
+      "ok": true,
+      "evidence": {}
+    },
+    {
+      "id": "browser.intent-preserved-until-pair",
+      "ok": true,
+      "evidence": {}
+    },
+    {
+      "id": "browser.client-commercial-surface",
+      "ok": true,
+      "evidence": {
+        "guideState": "selecting",
+        "selectedCount": 1,
+        "url": "http://127.0.0.1:8080/pages/simulador.html#step-4",
+        "storedIntent": true,
+        "directSelection": null,
+        "guideText": "COMPARAÇÃO DE GRUPOS\nGrupo 79 adicionado\n\nVocê já pode simular este grupo. Para comparar, adicione mais uma opção.\n\n1 de 2 grupos\nGrupo 79\nGrupo 79 adicionado. 1 de 2 grupos.\nAdicionar para comparar",
+        "priorityMethodVisible": false,
+        "sortLabel": "Mais adequados",
+        "scoreHeader": "Compatibilidade"
+      }
+    },
+    {
+      "id": "browser.cardinality",
+      "ok": true,
+      "evidence": {
+        "selectedCount": 2,
+        "aValue": "0",
+        "bValue": "1",
+        "aGroupKey": "00000776|202512|1|79",
+        "bGroupKey": "06043050|202512|3|1752",
+        "noteVisible": true,
+        "railStep": "Prévia de comparação",
+        "progressVisibility": "hidden",
+        "ownBid": "0",
+        "embeddedBid": "0",
+        "groupTags": [
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752"
+        ],
+        "differenceLabels": [
+          "Grupo 79: R$ 407.304,19 maior",
+          "Grupo 1752: 100 meses menor",
+          "Grupo 1752: 1,75 p.p. menor",
+          "Diferença de R$ 461.346,14",
+          "Grupo 1752: R$ 2.004,33 menor",
+          "Grupo 79: R$ 407.304,19 maior",
+          "Grupo 1752: R$ 686.624,43 menor",
+          "Grupo 1752: R$ 36.695,53 menor",
+          "Diferença de R$ 4.475,22",
+          "Mesma condição"
+        ],
+        "winnerLabels": [
+          "Destaque",
+          "Destaque",
+          "Destaque",
+          "Destaque",
+          "Destaque",
+          "Destaque",
+          "Destaque"
+        ],
+        "statusText": "Comparação atualizada.",
+        "reducedPaymentFocusable": true,
+        "intent": null
+      }
+    },
+    {
+      "id": "browser.target-is-group-a",
+      "ok": true,
+      "evidence": {
+        "selectedCount": 2,
+        "aValue": "0",
+        "bValue": "1",
+        "aGroupKey": "00000776|202512|1|79",
+        "bGroupKey": "06043050|202512|3|1752",
+        "noteVisible": true,
+        "railStep": "Prévia de comparação",
+        "progressVisibility": "hidden",
+        "ownBid": "0",
+        "embeddedBid": "0",
+        "groupTags": [
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752"
+        ],
+        "differenceLabels": [
+          "Grupo 79: R$ 407.304,19 maior",
+          "Grupo 1752: 100 meses menor",
+          "Grupo 1752: 1,75 p.p. menor",
+          "Diferença de R$ 461.346,14",
+          "Grupo 1752: R$ 2.004,33 menor",
+          "Grupo 79: R$ 407.304,19 maior",
+          "Grupo 1752: R$ 686.624,43 menor",
+          "Grupo 1752: R$ 36.695,53 menor",
+          "Diferença de R$ 4.475,22",
+          "Mesma condição"
+        ],
+        "winnerLabels": [
+          "Destaque",
+          "Destaque",
+          "Destaque",
+          "Destaque",
+          "Destaque",
+          "Destaque",
+          "Destaque"
+        ],
+        "statusText": "Comparação atualizada.",
+        "reducedPaymentFocusable": true,
+        "intent": null
+      }
+    },
+    {
+      "id": "browser.distinct-pair",
+      "ok": true,
+      "evidence": {
+        "selectedCount": 2,
+        "aValue": "0",
+        "bValue": "1",
+        "aGroupKey": "00000776|202512|1|79",
+        "bGroupKey": "06043050|202512|3|1752",
+        "noteVisible": true,
+        "railStep": "Prévia de comparação",
+        "progressVisibility": "hidden",
+        "ownBid": "0",
+        "embeddedBid": "0",
+        "groupTags": [
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752"
+        ],
+        "differenceLabels": [
+          "Grupo 79: R$ 407.304,19 maior",
+          "Grupo 1752: 100 meses menor",
+          "Grupo 1752: 1,75 p.p. menor",
+          "Diferença de R$ 461.346,14",
+          "Grupo 1752: R$ 2.004,33 menor",
+          "Grupo 79: R$ 407.304,19 maior",
+          "Grupo 1752: R$ 686.624,43 menor",
+          "Grupo 1752: R$ 36.695,53 menor",
+          "Diferença de R$ 4.475,22",
+          "Mesma condição"
+        ],
+        "winnerLabels": [
+          "Destaque",
+          "Destaque",
+          "Destaque",
+          "Destaque",
+          "Destaque",
+          "Destaque",
+          "Destaque"
+        ],
+        "statusText": "Comparação atualizada.",
+        "reducedPaymentFocusable": true,
+        "intent": null
+      }
+    },
+    {
+      "id": "browser.preview-is-explicit",
+      "ok": true,
+      "evidence": {
+        "selectedCount": 2,
+        "aValue": "0",
+        "bValue": "1",
+        "aGroupKey": "00000776|202512|1|79",
+        "bGroupKey": "06043050|202512|3|1752",
+        "noteVisible": true,
+        "railStep": "Prévia de comparação",
+        "progressVisibility": "hidden",
+        "ownBid": "0",
+        "embeddedBid": "0",
+        "groupTags": [
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752"
+        ],
+        "differenceLabels": [
+          "Grupo 79: R$ 407.304,19 maior",
+          "Grupo 1752: 100 meses menor",
+          "Grupo 1752: 1,75 p.p. menor",
+          "Diferença de R$ 461.346,14",
+          "Grupo 1752: R$ 2.004,33 menor",
+          "Grupo 79: R$ 407.304,19 maior",
+          "Grupo 1752: R$ 686.624,43 menor",
+          "Grupo 1752: R$ 36.695,53 menor",
+          "Diferença de R$ 4.475,22",
+          "Mesma condição"
+        ],
+        "winnerLabels": [
+          "Destaque",
+          "Destaque",
+          "Destaque",
+          "Destaque",
+          "Destaque",
+          "Destaque",
+          "Destaque"
+        ],
+        "statusText": "Comparação atualizada.",
+        "reducedPaymentFocusable": true,
+        "intent": null
+      }
+    },
+    {
+      "id": "browser.preview-neutral-bid",
+      "ok": true,
+      "evidence": {
+        "selectedCount": 2,
+        "aValue": "0",
+        "bValue": "1",
+        "aGroupKey": "00000776|202512|1|79",
+        "bGroupKey": "06043050|202512|3|1752",
+        "noteVisible": true,
+        "railStep": "Prévia de comparação",
+        "progressVisibility": "hidden",
+        "ownBid": "0",
+        "embeddedBid": "0",
+        "groupTags": [
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752"
+        ],
+        "differenceLabels": [
+          "Grupo 79: R$ 407.304,19 maior",
+          "Grupo 1752: 100 meses menor",
+          "Grupo 1752: 1,75 p.p. menor",
+          "Diferença de R$ 461.346,14",
+          "Grupo 1752: R$ 2.004,33 menor",
+          "Grupo 79: R$ 407.304,19 maior",
+          "Grupo 1752: R$ 686.624,43 menor",
+          "Grupo 1752: R$ 36.695,53 menor",
+          "Diferença de R$ 4.475,22",
+          "Mesma condição"
+        ],
+        "winnerLabels": [
+          "Destaque",
+          "Destaque",
+          "Destaque",
+          "Destaque",
+          "Destaque",
+          "Destaque",
+          "Destaque"
+        ],
+        "statusText": "Comparação atualizada.",
+        "reducedPaymentFocusable": true,
+        "intent": null
+      }
+    },
+    {
+      "id": "browser.human-comparison-language",
+      "ok": true,
+      "evidence": {
+        "selectedCount": 2,
+        "aValue": "0",
+        "bValue": "1",
+        "aGroupKey": "00000776|202512|1|79",
+        "bGroupKey": "06043050|202512|3|1752",
+        "noteVisible": true,
+        "railStep": "Prévia de comparação",
+        "progressVisibility": "hidden",
+        "ownBid": "0",
+        "embeddedBid": "0",
+        "groupTags": [
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752"
+        ],
+        "differenceLabels": [
+          "Grupo 79: R$ 407.304,19 maior",
+          "Grupo 1752: 100 meses menor",
+          "Grupo 1752: 1,75 p.p. menor",
+          "Diferença de R$ 461.346,14",
+          "Grupo 1752: R$ 2.004,33 menor",
+          "Grupo 79: R$ 407.304,19 maior",
+          "Grupo 1752: R$ 686.624,43 menor",
+          "Grupo 1752: R$ 36.695,53 menor",
+          "Diferença de R$ 4.475,22",
+          "Mesma condição"
+        ],
+        "winnerLabels": [
+          "Destaque",
+          "Destaque",
+          "Destaque",
+          "Destaque",
+          "Destaque",
+          "Destaque",
+          "Destaque"
+        ],
+        "statusText": "Comparação atualizada.",
+        "reducedPaymentFocusable": true,
+        "intent": null
+      }
+    },
+    {
+      "id": "browser.comparison-announced",
+      "ok": true,
+      "evidence": {
+        "selectedCount": 2,
+        "aValue": "0",
+        "bValue": "1",
+        "aGroupKey": "00000776|202512|1|79",
+        "bGroupKey": "06043050|202512|3|1752",
+        "noteVisible": true,
+        "railStep": "Prévia de comparação",
+        "progressVisibility": "hidden",
+        "ownBid": "0",
+        "embeddedBid": "0",
+        "groupTags": [
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752",
+          "Grupo 79",
+          "Grupo 1752"
+        ],
+        "differenceLabels": [
+          "Grupo 79: R$ 407.304,19 maior",
+          "Grupo 1752: 100 meses menor",
+          "Grupo 1752: 1,75 p.p. menor",
+          "Diferença de R$ 461.346,14",
+          "Grupo 1752: R$ 2.004,33 menor",
+          "Grupo 79: R$ 407.304,19 maior",
+          "Grupo 1752: R$ 686.624,43 menor",
+          "Grupo 1752: R$ 36.695,53 menor",
+          "Diferença de R$ 4.475,22",
+          "Mesma condição"
+        ],
+        "winnerLabels": [
+          "Destaque",
+          "Destaque",
+          "Destaque",
+          "Destaque",
+          "Destaque",
+          "Destaque",
+          "Destaque"
+        ],
+        "statusText": "Comparação atualizada.",
+        "reducedPaymentFocusable": true,
+        "intent": null
+      }
+    },
+    {
+      "id": "browser.intent-consumed-after-open",
+      "ok": true,
+      "evidence": {}
+    },
+    {
+      "id": "browser.no-render-artifacts",
+      "ok": true,
+      "evidence": {}
+    },
+    {
+      "id": "browser.commercial-language",
+      "ok": true,
+      "evidence": {}
+    },
+    {
+      "id": "browser.back-to-groups",
+      "ok": true,
+      "evidence": {}
+    },
+    {
+      "id": "browser.mobile-no-overflow",
+      "ok": true,
+      "evidence": {
+        "scrollWidth": 360,
+        "clientWidth": 360,
+        "mobileMediaMatches": true,
+        "guideWidth": 338,
+        "unnamedVisibleControls": 0,
+        "duplicateIds": [],
+        "layoutWidths": [
+          {
+            "selector": "#shelf-table",
+            "clientWidth": 298,
+            "scrollWidth": 298,
+            "overflowX": "visible",
+            "parent": "table-wrapper"
+          },
+          {
+            "selector": "table-wrapper",
+            "clientWidth": 298,
+            "scrollWidth": 298,
+            "overflowX": "visible",
+            "parent": "card"
+          },
+          {
+            "selector": "#selected-groups-panel",
+            "clientWidth": 334,
+            "scrollWidth": 334,
+            "overflowX": "visible",
+            "parent": "selected-groups-panel-wrapper"
+          },
+          {
+            "selector": "#selected-groups-footer",
+            "clientWidth": 334,
+            "scrollWidth": 334,
+            "overflowX": "visible",
+            "parent": "selected-groups-panel"
+          },
+          {
+            "selector": "selected-groups-panel-wrapper",
+            "clientWidth": 334,
+            "scrollWidth": 334,
+            "overflowX": "hidden",
+            "parent": "step-section step-section--active"
+          },
+          {
+            "selector": "#step-4",
+            "clientWidth": 338,
+            "scrollWidth": 338,
+            "overflowX": "visible",
+            "parent": "sim-main"
+          },
+          {
+            "selector": "#main",
+            "clientWidth": 338,
+            "scrollWidth": 338,
+            "overflowX": "visible",
+            "parent": "sim-layout"
+          },
+          {
+            "selector": "sim-layout",
+            "clientWidth": 338,
+            "scrollWidth": 338,
+            "overflowX": "visible",
+            "parent": "sim-body bf-v8-body proposal-outline-collapsed simulator-client-flow"
+          },
+          {
+            "selector": "sim-body bf-v8-body proposal-outline-collapsed simulator-client-flow",
+            "clientWidth": 360,
+            "scrollWidth": 360,
+            "overflowX": "hidden",
+            "parent": "HTML"
+          },
+          {
+            "selector": "HTML",
+            "clientWidth": 360,
+            "scrollWidth": 360,
+            "overflowX": "hidden",
+            "parent": ""
+          }
+        ],
+        "overflowElements": [
+          {
+            "tag": "DIV",
+            "id": "",
+            "className": "sim-evolution-rail__steps",
+            "left": -412,
+            "right": 348,
+            "width": 760
+          },
+          {
+            "tag": "BUTTON",
+            "id": "",
+            "className": "is-complete",
+            "left": -401,
+            "right": 337,
+            "width": 738
+          },
+          {
+            "tag": "BUTTON",
+            "id": "",
+            "className": "is-complete",
+            "left": -401,
+            "right": 337,
+            "width": 738
+          },
+          {
+            "tag": "BUTTON",
+            "id": "",
+            "className": "is-active",
+            "left": -401,
+            "right": 337,
+            "width": 738
+          },
+          {
+            "tag": "BUTTON",
+            "id": "",
+            "className": "",
+            "left": -401,
+            "right": 337,
+            "width": 738
+          },
+          {
+            "tag": "BUTTON",
+            "id": "",
+            "className": "",
+            "left": -401,
+            "right": 337,
+            "width": 738
+          },
+          {
+            "tag": "BUTTON",
+            "id": "",
+            "className": "",
+            "left": -401,
+            "right": 337,
+            "width": 738
+          },
+          {
+            "tag": "BUTTON",
+            "id": "",
+            "className": "",
+            "left": -401,
+            "right": 337,
+            "width": 738
+          }
+        ]
+      }
+    },
+    {
+      "id": "browser.controls-named",
+      "ok": true,
+      "evidence": {
+        "scrollWidth": 360,
+        "clientWidth": 360,
+        "mobileMediaMatches": true,
+        "guideWidth": 338,
+        "unnamedVisibleControls": 0,
+        "duplicateIds": [],
+        "layoutWidths": [
+          {
+            "selector": "#shelf-table",
+            "clientWidth": 298,
+            "scrollWidth": 298,
+            "overflowX": "visible",
+            "parent": "table-wrapper"
+          },
+          {
+            "selector": "table-wrapper",
+            "clientWidth": 298,
+            "scrollWidth": 298,
+            "overflowX": "visible",
+            "parent": "card"
+          },
+          {
+            "selector": "#selected-groups-panel",
+            "clientWidth": 334,
+            "scrollWidth": 334,
+            "overflowX": "visible",
+            "parent": "selected-groups-panel-wrapper"
+          },
+          {
+            "selector": "#selected-groups-footer",
+            "clientWidth": 334,
+            "scrollWidth": 334,
+            "overflowX": "visible",
+            "parent": "selected-groups-panel"
+          },
+          {
+            "selector": "selected-groups-panel-wrapper",
+            "clientWidth": 334,
+            "scrollWidth": 334,
+            "overflowX": "hidden",
+            "parent": "step-section step-section--active"
+          },
+          {
+            "selector": "#step-4",
+            "clientWidth": 338,
+            "scrollWidth": 338,
+            "overflowX": "visible",
+            "parent": "sim-main"
+          },
+          {
+            "selector": "#main",
+            "clientWidth": 338,
+            "scrollWidth": 338,
+            "overflowX": "visible",
+            "parent": "sim-layout"
+          },
+          {
+            "selector": "sim-layout",
+            "clientWidth": 338,
+            "scrollWidth": 338,
+            "overflowX": "visible",
+            "parent": "sim-body bf-v8-body proposal-outline-collapsed simulator-client-flow"
+          },
+          {
+            "selector": "sim-body bf-v8-body proposal-outline-collapsed simulator-client-flow",
+            "clientWidth": 360,
+            "scrollWidth": 360,
+            "overflowX": "hidden",
+            "parent": "HTML"
+          },
+          {
+            "selector": "HTML",
+            "clientWidth": 360,
+            "scrollWidth": 360,
+            "overflowX": "hidden",
+            "parent": ""
+          }
+        ],
+        "overflowElements": [
+          {
+            "tag": "DIV",
+            "id": "",
+            "className": "sim-evolution-rail__steps",
+            "left": -412,
+            "right": 348,
+            "width": 760
+          },
+          {
+            "tag": "BUTTON",
+            "id": "",
+            "className": "is-complete",
+            "left": -401,
+            "right": 337,
+            "width": 738
+          },
+          {
+            "tag": "BUTTON",
+            "id": "",
+            "className": "is-complete",
+            "left": -401,
+            "right": 337,
+            "width": 738
+          },
+          {
+            "tag": "BUTTON",
+            "id": "",
+            "className": "is-active",
+            "left": -401,
+            "right": 337,
+            "width": 738
+          },
+          {
+            "tag": "BUTTON",
+            "id": "",
+            "className": "",
+            "left": -401,
+            "right": 337,
+            "width": 738
+          },
+          {
+            "tag": "BUTTON",
+            "id": "",
+            "className": "",
+            "left": -401,
+            "right": 337,
+            "width": 738
+          },
+          {
+            "tag": "BUTTON",
+            "id": "",
+            "className": "",
+            "left": -401,
+            "right": 337,
+            "width": 738
+          },
+          {
+            "tag": "BUTTON",
+            "id": "",
+            "className": "",
+            "left": -401,
+            "right": 337,
+            "width": 738
+          }
+        ]
+      }
+    },
+    {
+      "id": "browser.no-duplicate-ids",
+      "ok": true,
+      "evidence": {
+        "scrollWidth": 360,
+        "clientWidth": 360,
+        "mobileMediaMatches": true,
+        "guideWidth": 338,
+        "unnamedVisibleControls": 0,
+        "duplicateIds": [],
+        "layoutWidths": [
+          {
+            "selector": "#shelf-table",
+            "clientWidth": 298,
+            "scrollWidth": 298,
+            "overflowX": "visible",
+            "parent": "table-wrapper"
+          },
+          {
+            "selector": "table-wrapper",
+            "clientWidth": 298,
+            "scrollWidth": 298,
+            "overflowX": "visible",
+            "parent": "card"
+          },
+          {
+            "selector": "#selected-groups-panel",
+            "clientWidth": 334,
+            "scrollWidth": 334,
+            "overflowX": "visible",
+            "parent": "selected-groups-panel-wrapper"
+          },
+          {
+            "selector": "#selected-groups-footer",
+            "clientWidth": 334,
+            "scrollWidth": 334,
+            "overflowX": "visible",
+            "parent": "selected-groups-panel"
+          },
+          {
+            "selector": "selected-groups-panel-wrapper",
+            "clientWidth": 334,
+            "scrollWidth": 334,
+            "overflowX": "hidden",
+            "parent": "step-section step-section--active"
+          },
+          {
+            "selector": "#step-4",
+            "clientWidth": 338,
+            "scrollWidth": 338,
+            "overflowX": "visible",
+            "parent": "sim-main"
+          },
+          {
+            "selector": "#main",
+            "clientWidth": 338,
+            "scrollWidth": 338,
+            "overflowX": "visible",
+            "parent": "sim-layout"
+          },
+          {
+            "selector": "sim-layout",
+            "clientWidth": 338,
+            "scrollWidth": 338,
+            "overflowX": "visible",
+            "parent": "sim-body bf-v8-body proposal-outline-collapsed simulator-client-flow"
+          },
+          {
+            "selector": "sim-body bf-v8-body proposal-outline-collapsed simulator-client-flow",
+            "clientWidth": 360,
+            "scrollWidth": 360,
+            "overflowX": "hidden",
+            "parent": "HTML"
+          },
+          {
+            "selector": "HTML",
+            "clientWidth": 360,
+            "scrollWidth": 360,
+            "overflowX": "hidden",
+            "parent": ""
+          }
+        ],
+        "overflowElements": [
+          {
+            "tag": "DIV",
+            "id": "",
+            "className": "sim-evolution-rail__steps",
+            "left": -412,
+            "right": 348,
+            "width": 760
+          },
+          {
+            "tag": "BUTTON",
+            "id": "",
+            "className": "is-complete",
+            "left": -401,
+            "right": 337,
+            "width": 738
+          },
+          {
+            "tag": "BUTTON",
+            "id": "",
+            "className": "is-complete",
+            "left": -401,
+            "right": 337,
+            "width": 738
+          },
+          {
+            "tag": "BUTTON",
+            "id": "",
+            "className": "is-active",
+            "left": -401,
+            "right": 337,
+            "width": 738
+          },
+          {
+            "tag": "BUTTON",
+            "id": "",
+            "className": "",
+            "left": -401,
+            "right": 337,
+            "width": 738
+          },
+          {
+            "tag": "BUTTON",
+            "id": "",
+            "className": "",
+            "left": -401,
+            "right": 337,
+            "width": 738
+          },
+          {
+            "tag": "BUTTON",
+            "id": "",
+            "className": "",
+            "left": -401,
+            "right": 337,
+            "width": 738
+          },
+          {
+            "tag": "BUTTON",
+            "id": "",
+            "className": "",
+            "left": -401,
+            "right": 337,
+            "width": 738
+          }
+        ]
+      }
+    },
+    {
+      "id": "browser.resume-incomplete-journey",
+      "ok": true,
+      "evidence": {
+        "resumedAt": "2"
+      }
+    },
+    {
+      "id": "browser.runtime-errors",
+      "ok": true,
+      "evidence": {
+        "browserErrors": []
+      }
+    }
+  ],
+  "failures": [],
+  "browserErrors": []
+}

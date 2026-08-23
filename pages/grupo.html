@@ -58,7 +58,10 @@
           <h1 id="group-title">Grupo <span data-group-code>—</span></h1>
           <p><span data-group-admin>—</span><span aria-hidden="true"> · </span><span data-group-segment>—</span></p>
         </div>
-        <button class="btn btn--primary group360-identity__action" type="button" data-use-group>Usar no projeto</button>
+        <div class="group360-identity__actions" aria-label="Ações para este grupo">
+          <button class="btn btn--secondary" type="button" data-compare-group>Comparar este grupo</button>
+          <button class="btn btn--primary" type="button" data-use-group>Usar no projeto</button>
+        </div>
         <dl class="group360-identity__facts" aria-label="Resumo comercial da referência">
           <div><dt>Competência</dt><dd data-group-competence>—</dd></div>
           <div><dt>Carta de referência</dt><dd data-snapshot="credit">—</dd></div>
@@ -247,7 +250,13 @@
 
       <footer class="group360-actions">
         <a class="btn btn--secondary" data-back-to-shelf href="simulador.html?from=grupo&restore=1#step-4"><img src="../assets/icons/ui/ui-arrow.svg" alt="" aria-hidden="true" focusable="false"> Voltar à prateleira</a>
-        <div><span data-project-note>O histórico demonstrativo não será anexado à proposta.</span><button class="btn btn--primary" type="button" data-use-group>Usar grupo no projeto</button></div>
+        <div>
+          <span data-project-note>O histórico demonstrativo não será anexado à proposta.</span>
+          <div class="group360-actions__buttons">
+            <button class="btn btn--secondary" type="button" data-use-group>Usar no projeto</button>
+            <button class="btn btn--primary" type="button" data-compare-group>Comparar este grupo</button>
+          </div>
+        </div>
       </footer>
     </div>
   </main>

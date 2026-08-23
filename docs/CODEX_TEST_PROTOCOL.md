@@ -56,7 +56,7 @@ Validacoes obrigatorias:
 - Paginas sem shell compartilhado que continuam ativas devem carregar o v8 diretamente.
 - `pages/index.html` deve manter a narrativa institucional antes do perfil financeiro.
 - `pages/simulador.html` deve preservar loading da base real, barra percentual e retomada por `simulationId`.
-- `pages/simulador.html` deve carregar `js/simulator-journey.js`, `js/simulator-state.js`, `js/simulator-shelf.js`, `js/simulator-cart.js`, `js/simulator-result.js`, `js/proposal-builder.js` e `js/proposal-governance.js` antes de `js/app.js`, preservando `App.*`.
+- `pages/simulador.html` deve carregar `js/simulator-journey.js`, `js/simulator-state.js`, `js/simulator-shelf.js`, `js/simulator-cart.js`, `js/simulator-result.js`, `js/proposal-builder.js` e `js/proposal-governance.js` antes de `js/app.js`, e `js/group-comparison-journey.js` depois dele, preservando `App.*`.
 - `data-simulator-journey-actions` deve aparecer no painel de decisao do simulador quando a jornada for renderizada.
 - `data-simulator-objective-guide` deve aparecer na etapa de filtros e `data-simulator-objective-apply` deve aplicar filtros sugeridos por objetivo antes da prateleira.
 - `data-shelf-recommendation` e `data-shelf-recommendation-reason` devem explicar por que cada grupo apareceu, preservando `App.selecionarGrupo`.
@@ -87,6 +87,7 @@ $node='<node-runtime>'
 & $node tools\validate-simulator-shelf.mjs
 & $node tools\validate-simulator-cart.mjs
 & $node tools\validate-simulator-result-decision.mjs
+& $node tools\validate-group-comparison-journey.mjs
 & $node tools\validate-navigable-journey.mjs
 & $node tools\validate-github-pages-deploy.mjs
 & $node tools\validate-calculadoras.mjs
@@ -152,18 +153,18 @@ $node='<node-runtime>'
 
 ## Proposta comercial e PDF espelhado
 
-Objetivo: garantir que a etapa 9 do simulador exiba o mesmo conteudo exportado no PDF, com informacoes e graficos separados em blocos coerentes.
+Objetivo: garantir que a etapa 10 do simulador exiba o mesmo conteudo exportado no PDF, com informacoes e graficos separados em blocos coerentes.
 
 Validacoes obrigatorias:
 
 - Abrir `http://127.0.0.1:8080/pages/simulador.html`.
 - Carregar um exemplo ou restaurar uma simulacao salva.
-- Avancar para a etapa 9 e confirmar a existencia de `#proposal-export-root`.
+- Avancar para a etapa 10 e confirmar a existencia de `#proposal-export-root`.
 - Confirmar que a lousa contem `data-proposal-builder-readiness`, presets consultivo/tecnico e acoes de selecionar/limpar por grupo.
 - Confirmar que `BFProposalBuilder` centraliza storage, presets, prontidao, dependencias e estimativa de paginas da lousa.
 - Confirmar que `BFProposalGovernance` centraliza paineis de versionamento, aceite, historicos e ponte de handoff da proposta.
 - Confirmar que itens desmarcados na lousa nao aparecem como placeholder no PDF final.
-- Confirmar que a etapa 9 contem `.ps-section--conversation` e quatro `.ps-conversation-card`.
+- Confirmar que a etapa 10 contem `.ps-section--conversation` e quatro `.ps-conversation-card`.
 - Confirmar que `data-proposal-selection-summary` registra a quantidade de blocos, graficos, conceitos e formulas selecionados.
 - Confirmar que `#proposal-export-root` e `#proposal-summary-print-root` usam IDs de graficos diferentes para evitar duplicidade de canvas.
 - Clicar em `Exportar PDF` e verificar que o arquivo gerado preserva cabecalho, resumo, blocos conversacionais, graficos, cronograma e disclaimer.
@@ -188,7 +189,7 @@ Objetivo: validar que a proposta pode ser revisada, versionada e exportada com s
 Validacoes obrigatorias:
 
 - Abrir `http://127.0.0.1:8080/pages/simulador.html`.
-- Carregar exemplo, calcular e ir para a etapa 9.
+- Carregar exemplo, calcular e ir para a etapa 10.
 - Confirmar `data-proposal-acceptance-panel` antes do preview da proposta.
 - Marcar premissas, contexto do cliente e documentacao/handoff.
 - Clicar em `Registrar revisao`.
@@ -213,7 +214,7 @@ Objetivo: validar que a proposta salva snapshots comparaveis antes de PDF, impre
 Validacoes obrigatorias:
 
 - Abrir `http://127.0.0.1:8080/pages/simulador.html`.
-- Carregar exemplo, calcular e ir para a etapa 9.
+- Carregar exemplo, calcular e ir para a etapa 10.
 - Confirmar `data-proposal-version-panel` antes do preview da proposta.
 - Clicar em `Salvar versao atual` e confirmar historico em `data-proposal-version-history`.
 - Alterar a lousa ou registrar nova revisao e confirmar `data-proposal-version-comparison`.
@@ -251,7 +252,7 @@ Objetivo: validar que uma proposta revisada vira lead local de atendimento consu
 Validacoes obrigatorias:
 
 - Abrir `http://127.0.0.1:8080/pages/simulador.html`.
-- Carregar exemplo, calcular e ir para a etapa 9.
+- Carregar exemplo, calcular e ir para a etapa 10.
 - Registrar revisao completa marcando premissas, contexto do cliente e documentacao/handoff.
 - Confirmar que `data-proposal-handoff-bridge` libera a acao `Criar handoff`.
 - Criar o handoff e confirmar `data-proposal-handoff-ready="true"`.

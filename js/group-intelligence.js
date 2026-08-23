@@ -771,6 +771,13 @@
     params.set('restore', '1');
     params.set('groupReturn', token || 'direct');
     if (extra.useGroup) params.set('useGroup', '1');
+    if (extra.compareGroup) {
+      params.set('compareGroup', '1');
+      params.set('compareGroupKey', String(extra.compareGroupKey || currentGroup?.groupKey || ''));
+    } else {
+      params.delete('compareGroup');
+      params.delete('compareGroupKey');
+    }
     const hash = /^#[A-Za-z0-9._:-]{1,160}$/.test(String(state?.source?.hash || ''))
       ? state.source.hash
       : '#step-4';
@@ -781,13 +788,14 @@
     global.location.assign(simulatorReturnHref(options));
   }
 
-  function useGroup() {
+  function selectGroup(intent = 'project') {
     if (!currentGroup) return;
     const { token } = resolvedReturnState();
     const selection = {
       schema: 'bancus.group-selection.v1',
       createdAt: new Date().toISOString(),
       groupKey: String(currentGroup.groupKey || ''),
+      intent,
       evidence: snapshotEvidence(currentGroup),
       confirmationRequired,
       assemblyHistory: currentHistory?.available ? {
@@ -804,8 +812,16 @@
       setText('[data-project-note]', 'Não foi possível preparar o retorno. Tente novamente.');
       return;
     }
-    returnToSimulator({ useGroup: true });
+    returnToSimulator({
+      useGroup: true,
+      compareGroup: intent === 'compare',
+      compareGroupKey: intent === 'compare' ? currentGroup.groupKey : ''
+    });
   }
+
+  function useGroup() { selectGroup('project'); }
+
+  function compareGroup() { selectGroup('compare'); }
 
   function syncSectionNav(hash = global.location.hash) {
     const links = $$('.group360-section-nav a[href^="#"]');
@@ -825,6 +841,7 @@
       });
     }
     $$('[data-use-group]').forEach((button) => button.addEventListener('click', useGroup));
+    $$('[data-compare-group]').forEach((button) => button.addEventListener('click', compareGroup));
     $('[data-group-retry]')?.addEventListener('click', () => global.location.reload());
     $('[data-confirm-parameters]')?.addEventListener('click', (event) => {
       confirmationRequired = true;

@@ -4,6 +4,28 @@
 
 ---
 
+## [v9.3.2] - 2026-08-22
+
+### Comparação multigrupos a partir da Visão 360
+
+#### Adicionado
+- Ação “Comparar este grupo” no resumo e no encerramento da Visão 360.
+- Guia contextual na prateleira para os estados de nenhum, um ou dois ou mais grupos selecionados.
+- Comparação inicial com o grupo acionado como opção A, parceiro distinto como B e lances próprio e embutido iniciados em 0%.
+- Gate de navegador para retorno direto, seleção idempotente, par correto, retomada da simulação, mobile e acessibilidade.
+
+#### Modificado
+- O retorno explícito por `groupReturn` agora prevalece sobre estados antigos da sessão e rejeita identificadores inválidos sem restaurar outro projeto.
+- A comparação inicial deixa claro que não representa o avanço da jornada, oculta o progresso percentual e conduz o usuário ao primeiro preenchimento pendente antes da proposta.
+- A superfície do cliente usa “Mais adequados” e “Compatibilidade” e não expõe a metodologia interna de priorização.
+
+#### Validação
+- `node tools/validate-group-comparison-journey.mjs`
+- `node tools/validate-group-intelligence.mjs`
+- Navegador em 1280 × 720 e 360 × 800, sem overflow horizontal, controles sem nome ou IDs duplicados.
+
+---
+
 ## [v9.3.1] - 2026-08-22
 
 ### Visão 360 do Grupo — Dinâmica operacional

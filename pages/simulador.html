@@ -25,6 +25,7 @@
   <link rel="stylesheet" href="../css/bank-fratern-design-system.css">
   <link rel="stylesheet" href="../assets/css/bf-design-system-v8.css">
   <link rel="stylesheet" href="../css/simulator-evolution.css">
+  <link rel="stylesheet" href="../css/group-comparison-journey.css?v=9.3.2">
 </head>
 
 <body class="sim-body bf-v8-body proposal-outline-collapsed simulator-audience-pending" data-bf-page="simulador" data-bf-archetype="calculator"
@@ -606,6 +607,27 @@
           <span>Taxas, vagas e regras precisam ser confirmadas com a administradora antes da contratação.</span>
         </aside>
 
+        <section class="group-comparison-guide" data-group-comparison-guide data-state="empty" tabindex="-1"
+          aria-labelledby="group-comparison-guide-title">
+          <div class="group-comparison-guide__mark" aria-hidden="true">
+            <img src="../assets/icons/ui/ui-scale.svg" alt="">
+          </div>
+          <div class="group-comparison-guide__body">
+            <span class="group-comparison-guide__eyebrow">Comparação de grupos</span>
+            <h3 id="group-comparison-guide-title" data-comparison-title>Compare antes de decidir</h3>
+            <p data-comparison-copy>Adicione dois grupos para comparar crédito, parcela, taxa, prazo e custo.</p>
+            <div class="group-comparison-guide__selection">
+              <span class="group-comparison-guide__progress" data-comparison-progress>0 de 2 grupos</span>
+              <div class="group-comparison-guide__chips" data-comparison-selected aria-label="Grupos prontos para comparação"></div>
+            </div>
+            <span class="sr-only" data-comparison-live role="status" aria-live="polite"></span>
+          </div>
+          <div class="group-comparison-guide__actions">
+            <button class="btn btn--primary" type="button" data-comparison-primary>Escolher primeiro grupo</button>
+            <button class="btn btn--ghost btn--sm" type="button" data-comparison-add-more hidden>Adicionar outro grupo</button>
+          </div>
+        </section>
+
         <!-- Ordenação + Contagem -->
         <div class="journey-progress-panel" id="journey-progress-panel" data-state="pending" aria-live="polite" hidden>
           <div class="journey-progress-panel__head">
@@ -953,6 +975,14 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
           <p class="section-header__desc">Veja as diferenças de crédito, parcela, lance, prazo e custo.</p>
         </div>
 
+        <aside class="comparison-preflight-note" data-comparison-quick-note role="note" hidden>
+          <img src="../assets/icons/ui/ui-compass.svg" alt="" aria-hidden="true">
+          <div>
+            <strong>Comparação inicial sem lance</strong>
+            <span>O cenário começa com lance próprio e embutido em 0%. Ajuste as condições abaixo para testar outra possibilidade.</span>
+          </div>
+        </aside>
+
         <!-- Bloco 1: Seleção dos Grupos -->
         <div class="card mb-6">
           <div class="card__header">
@@ -965,7 +995,7 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
           </div>
           <div class="form-grid">
             <div class="form-group">
-              <label class="form-label" for="compGrupoA">Grupo A (Principal)
+              <label class="form-label" for="compGrupoA">Primeiro grupo
                 <span class="tooltip-trigger" data-tip="Selecione o primeiro grupo para comparação.">?</span>
               </label>
               <select id="compGrupoA" class="form-select" onchange="App.onCompGrupoChange()">
@@ -973,8 +1003,8 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label" for="compGrupoB">Grupo B (Comparado)
-                <span class="tooltip-trigger" data-tip="Selecione o segundo grupo para comparar com o Grupo A.">?</span>
+              <label class="form-label" for="compGrupoB">Segundo grupo
+                <span class="tooltip-trigger" data-tip="Selecione o segundo grupo para comparar com o primeiro.">?</span>
               </label>
               <select id="compGrupoB" class="form-select" onchange="App.onCompGrupoChange()">
                 <option value=""> Selecione </option>
@@ -995,10 +1025,10 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
             dois grupos selecionados.</p>
           <div class="form-grid">
             <div class="form-group">
-              <label class="form-label" for="compPoliticaSaldo">Política de Saldo</label>
+              <label class="form-label" for="compPoliticaSaldo">Saldo considerado</label>
               <select id="compPoliticaSaldo" class="form-select" onchange="App.onCompGrupoChange()">
-                <option value="carta">Política A: Saldo = Carta</option>
-                <option value="com_custos">Política B: Saldo = Carta + Custos</option>
+                <option value="carta">Somente o valor da carta</option>
+                <option value="com_custos">Carta e custos do plano</option>
               </select>
             </div>
             <div class="form-group">
@@ -1022,14 +1052,15 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
                 placeholder="20">
             </div>
             <div class="form-group">
-              <label class="form-label">Parcela Reduzida?</label>
+              <label class="form-label">Parcela reduzida</label>
               <label class="form-switch">
-                <input type="checkbox" id="compParcelaReduzida" onchange="App.onCompGrupoChange()">
+                <input type="checkbox" id="compParcelaReduzida" aria-label="Usar parcela reduzida na comparação" onchange="App.onCompGrupoChange()">
                 <span class="form-switch__track"></span>
-                <span class="form-switch__label">Sim</span>
+                <span class="form-switch__label">Usar</span>
               </label>
             </div>
           </div>
+          <p class="comparison-update-status" data-comparison-status role="status" aria-live="polite"></p>
         </div>
 
         <!-- Bloco 2: Cards Comparativos -->
@@ -1038,11 +1069,11 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
         </div>
 
         <!-- Bloco 2.5: Winner Summary -->
-        <div id="comp-winners-container" class="card mb-6" style="display:none;">
+        <div id="comp-winners-container" class="card mb-6" style="display:none;" tabindex="-1" aria-labelledby="comparison-summary-title">
           <div class="card__header">
             <div class="card__title">
                <div class="card__title-icon card__title-icon--green" aria-hidden="true"><img src="../assets/icons/ui/ui-scale.svg" alt=""></div>
-               Resumo da comparação
+              <span id="comparison-summary-title">Resumo da comparação</span>
             </div>
           </div>
           <div id="comp-winners-badges" class="comp-winners-badges"></div>
@@ -1095,9 +1126,11 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
         </div>
 
         <div class="step-nav">
-          <button class="btn btn--ghost" type="button" onclick="App.prevStep()">&larr; Voltar</button>
-          <button class="btn btn--accent btn--lg" type="button" onclick="App.nextStep()">
-            <img src="../assets/icons/ui/ui-document.svg" alt=""> Revisar proposta final &rarr;
+          <button class="btn btn--ghost" type="button" data-comparison-back
+            onclick="if (window.BFGroupComparisonJourney?.backFromComparison()) return; App.prevStep()">&larr; Voltar</button>
+          <button class="btn btn--accent btn--lg" type="button" data-comparison-next
+            onclick="if (window.BFGroupComparisonJourney?.continueFromComparison()) return; App.nextStep()">
+            <img src="../assets/icons/ui/ui-document.svg" alt=""> <span data-comparison-next-label>Revisar proposta final &rarr;</span>
           </button>
         </div>
       </section>
@@ -1443,6 +1476,7 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
   <script src="../js/proposal-resume-guard.js"></script>
   <script src="../js/proposal-integrity.js"></script>
   <script src="../js/app.js"></script>
+  <script src="../js/group-comparison-journey.js?v=9.3.2"></script>
   <script src="../js/proposal-experience.js"></script>
   <script>
     // V7: Carregamento assíncrono da base real

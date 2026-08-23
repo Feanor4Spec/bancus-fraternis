@@ -2943,8 +2943,6 @@ const App = (() => {
     if (!selectA || !selectB) return;
 
     const sourceGroups = projetoEstruturado.itens.map(item => item._group).filter(Boolean);
-    const sourceLabel = 'Projeto atual';
-
     if (sourceGroups.length < 2) {
       const message = '<option value="">Adicione ao menos dois grupos ao projeto</option>';
       selectA.innerHTML = message;
@@ -2957,13 +2955,12 @@ const App = (() => {
     selectB.disabled = false;
 
     const options = sourceGroups.map((g, i) => {
-      const classStr = (g.classificacaoExecutiva || '').charAt(0) || '?';
-      const label = `[${classStr}] ${g.nomeAdministradora || 'Admin'} — Grp ${g.codigoGrupo} — ${g.iconSegmento || ''} ${Format.money(g.valorCartaRef)} — ${g.prazoMeses}m`;
-      return `<option value="${i}">${label}</option>`;
+      const label = `Grupo ${g.codigoGrupo} · ${g.nomeAdministradora || 'Administradora'} · ${Format.money(g.valorCartaRef)} · ${g.prazoMeses} meses`;
+      return `<option value="${i}" data-group-key="${escapeSettingsText(g.groupKey || '')}">${label}</option>`;
     }).join('');
 
-    selectA.innerHTML = `<option value="">— Selecione (${sourceLabel}) —</option>` + options;
-    selectB.innerHTML = `<option value="">— Selecione (${sourceLabel}) —</option>` + options;
+    selectA.innerHTML = '<option value="">Selecione um grupo do projeto</option>' + options;
+    selectB.innerHTML = '<option value="">Selecione um grupo do projeto</option>' + options;
 
     if (sourceGroups.length >= 2) { selectA.value = '0'; selectB.value = '1'; }
   }
@@ -3150,6 +3147,9 @@ const App = (() => {
     const scenario = getCompScenario();
     const comparisonSource = buildComparisonSource(valA, valB, scenario, groupA, groupB);
     const compared = Comparator.compareGroups(groupA, groupB, scenario);
+    const comparisonLabels = [`Grupo ${groupA.codigoGrupo || 'A'}`, `Grupo ${groupB.codigoGrupo || 'B'}`];
+    if (compared?.charts?.composition) compared.charts.composition.labels = comparisonLabels;
+    if (compared?.charts?.contemplation) compared.charts.contemplation.labels = comparisonLabels;
     compResult = {
       ...compared,
       _source: comparisonSource,
@@ -3181,7 +3181,6 @@ const App = (() => {
     const rB = result.groupB.resumo;
     const gA = result.groupA.group;
     const gB = result.groupB.group;
-    const d = result.deltas;
     const w = result.winners;
 
     const cronA = rA.cronograma || [];
@@ -3189,43 +3188,54 @@ const App = (() => {
     const ultimaParcelaA = cronA.length > 0 ? cronA[cronA.length - 1].parcelaTotal : 0;
     const ultimaParcelaB = cronB.length > 0 ? cronB[cronB.length - 1].parcelaTotal : 0;
 
-    const nomeA = gA.plano || 'Grupo A';
-    const nomeB = gB.plano || 'Grupo B';
+    const nomeA = `Grupo ${gA.codigoGrupo || 'A'}`;
+    const nomeB = `Grupo ${gB.codigoGrupo || 'B'}`;
 
     const metrics = [
-      { label: 'Carta de Crédito', vA: Format.money(gA.valorCarta), vB: Format.money(gB.valorCarta), delta: d.valorCartaPct, winner: w.maiorCarta, icon: 'CC', prefer: 'higher' },
-      { label: 'Prazo Total', vA: `${gA.prazoMeses} meses`, vB: `${gB.prazoMeses} meses`, delta: d.prazoPct, winner: w.menorPrazo, icon: 'PR', prefer: 'context' },
-      { label: 'Taxa de Administração', vA: `${Number(gA.taxaAdmTotalPct || 0).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}%`, vB: `${Number(gB.taxaAdmTotalPct || 0).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}%`, delta: d.taxaAdmPct, winner: w.menorTaxa, icon: 'TX', prefer: 'lower' },
-      { label: 'Total do Plano', vA: Format.money(rA.valorTotalPlano), vB: Format.money(rB.valorTotalPlano), delta: d.totalPlanoPct, winner: null, icon: 'TP' },
-      { label: 'Parcela Inicial', vA: Format.money(rA.parcelaTotalAtual), vB: Format.money(rB.parcelaTotalAtual), delta: d.parcelaInicialPct, winner: w.menorParcelaInicial, icon: 'PI', prefer: 'lower' },
-      { label: 'Carta Líquida', vA: Format.money(rA.cartaLiquida), vB: Format.money(rB.cartaLiquida), delta: d.cartaLiquidaPct, winner: w.maiorCartaLiquida, icon: 'CL', prefer: 'higher' },
-      { label: 'Total Pago', vA: Format.money(rA.totalPago), vB: Format.money(rB.totalPago), delta: d.totalPagoPct, winner: w.menorTotalPago, icon: 'PG', prefer: 'lower' },
-      { label: 'Até Contemplação', vA: Format.money(rA.totalPagoAteContemplacao), vB: Format.money(rB.totalPagoAteContemplacao), delta: d.ateContemplacaoPct, winner: w.menorCustoAteContemplacao, icon: 'CT', prefer: 'lower' },
-      { label: 'Última Parcela', vA: Format.money(ultimaParcelaA), vB: Format.money(ultimaParcelaB), delta: d.ultimaParcelaPct, winner: null, icon: 'UP' },
-      { label: 'Lance Embutido Máx', vA: `${getEffectiveLanceEmbutidoMax(gA)}%`, vB: `${getEffectiveLanceEmbutidoMax(gB)}%`, delta: Comparator.calcDeltaPct(getEffectiveLanceEmbutidoMax(gA), getEffectiveLanceEmbutidoMax(gB)), winner: w.maiorFlexibilidadeLance, icon: 'LE', prefer: 'higher' },
+      { label: 'Carta de crédito', rawA: gA.valorCarta, rawB: gB.valorCarta, vA: Format.money(gA.valorCarta), vB: Format.money(gB.valorCarta), winner: w.maiorCarta, icon: 'ui-document.svg', prefer: 'higher', unit: 'money' },
+      { label: 'Prazo total', rawA: gA.prazoMeses, rawB: gB.prazoMeses, vA: `${gA.prazoMeses} meses`, vB: `${gB.prazoMeses} meses`, winner: w.menorPrazo, icon: 'ui-compass.svg', prefer: 'lower', unit: 'months' },
+      { label: 'Taxa de administração', rawA: Number(gA.taxaAdmTotalPct || 0), rawB: Number(gB.taxaAdmTotalPct || 0), vA: `${Number(gA.taxaAdmTotalPct || 0).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}%`, vB: `${Number(gB.taxaAdmTotalPct || 0).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}%`, winner: w.menorTaxa, icon: 'ui-calculator.svg', prefer: 'lower', unit: 'points' },
+      { label: 'Total do plano', rawA: rA.valorTotalPlano, rawB: rB.valorTotalPlano, vA: Format.money(rA.valorTotalPlano), vB: Format.money(rB.valorTotalPlano), winner: null, icon: 'ui-coin.svg', unit: 'money' },
+      { label: 'Parcela inicial', rawA: rA.parcelaTotalAtual, rawB: rB.parcelaTotalAtual, vA: Format.money(rA.parcelaTotalAtual), vB: Format.money(rB.parcelaTotalAtual), winner: w.menorParcelaInicial, icon: 'ui-coin.svg', prefer: 'lower', unit: 'money' },
+      { label: 'Crédito disponível', rawA: rA.cartaLiquida, rawB: rB.cartaLiquida, vA: Format.money(rA.cartaLiquida), vB: Format.money(rB.cartaLiquida), winner: w.maiorCartaLiquida, icon: 'ui-key.svg', prefer: 'higher', unit: 'money' },
+      { label: 'Total pago', rawA: rA.totalPago, rawB: rB.totalPago, vA: Format.money(rA.totalPago), vB: Format.money(rB.totalPago), winner: w.menorTotalPago, icon: 'ui-vault.svg', prefer: 'lower', unit: 'money' },
+      { label: 'Desembolso até o mês simulado', rawA: rA.totalPagoAteContemplacao, rawB: rB.totalPagoAteContemplacao, vA: Format.money(rA.totalPagoAteContemplacao), vB: Format.money(rB.totalPagoAteContemplacao), winner: w.menorCustoAteContemplacao, icon: 'ui-graph.svg', prefer: 'lower', unit: 'money' },
+      { label: 'Última parcela', rawA: ultimaParcelaA, rawB: ultimaParcelaB, vA: Format.money(ultimaParcelaA), vB: Format.money(ultimaParcelaB), winner: null, icon: 'ui-coin.svg', unit: 'money' },
+      { label: 'Limite de lance embutido', rawA: getEffectiveLanceEmbutidoMax(gA), rawB: getEffectiveLanceEmbutidoMax(gB), vA: `${getEffectiveLanceEmbutidoMax(gA)}%`, vB: `${getEffectiveLanceEmbutidoMax(gB)}%`, winner: w.maiorFlexibilidadeLance, icon: 'ui-handshake.svg', prefer: 'higher', unit: 'points' },
     ];
 
     container.innerHTML = metrics.map(m => {
-      const deltaStr = m.delta > 0 ? `+${m.delta.toFixed(1)}%` : `${m.delta.toFixed(1)}%`;
-      const deltaClass = m.delta > 0 ? 'comp-delta--up' : (m.delta < 0 ? 'comp-delta--down' : 'comp-delta--neutral');
-      const winnerBadgeA = m.winner === 'A' ? '<span class="comp-winner-badge">OK</span>' : '';
-      const winnerBadgeB = m.winner === 'B' ? '<span class="comp-winner-badge">OK</span>' : '';
+      const difference = Math.abs(Number(m.rawA || 0) - Number(m.rawB || 0));
+      const differenceText = m.unit === 'money'
+        ? Format.money(difference)
+        : m.unit === 'months'
+          ? `${Format.number(difference, 0)} ${difference === 1 ? 'mês' : 'meses'}`
+          : `${difference.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} p.p.`;
+      const winnerName = m.winner === 'A' ? nomeA : (m.winner === 'B' ? nomeB : '');
+      const semanticDifference = difference < 0.000001
+        ? 'Mesma condição'
+        : winnerName
+          ? `${winnerName}: ${differenceText} ${m.prefer === 'lower' ? 'menor' : 'maior'}`
+          : `Diferença de ${differenceText}`;
+      const deltaClass = winnerName ? 'comp-delta--favorable' : 'comp-delta--neutral';
+      const winnerBadgeA = m.winner === 'A' ? '<span class="comp-winner-badge">Destaque</span>' : '';
+      const winnerBadgeB = m.winner === 'B' ? '<span class="comp-winner-badge">Destaque</span>' : '';
 
       return `
         <div class="comp-card animate-in">
-          <div class="comp-card__icon">${m.icon}</div>
-          <div class="comp-card__label">${m.label}</div>
+          <div class="comp-card__icon" aria-hidden="true"><img src="../assets/icons/ui/${m.icon}" alt=""></div>
+          <div class="comp-card__label">${escapeSettingsText(m.label)}</div>
           <div class="comp-card__values">
             <div class="comp-card__value comp-card__value--a">
-              <span class="comp-card__group-tag">A</span>
+              <span class="comp-card__group-tag">${escapeSettingsText(nomeA)}</span>
               ${m.vA} ${winnerBadgeA}
             </div>
             <div class="comp-card__value comp-card__value--b">
-              <span class="comp-card__group-tag comp-card__group-tag--b">B</span>
+              <span class="comp-card__group-tag comp-card__group-tag--b">${escapeSettingsText(nomeB)}</span>
               ${m.vB} ${winnerBadgeB}
             </div>
           </div>
-          <div class="comp-card__delta ${deltaClass}">Δ ${deltaStr}</div>
+          <div class="comp-card__delta ${deltaClass}">${escapeSettingsText(semanticDifference)}</div>
         </div>
       `;
     }).join('');
@@ -3237,16 +3247,16 @@ const App = (() => {
     if (!container) return;
 
     const w = result.winners;
-    const nomeA = result.groupA.group.plano || 'Grupo A';
-    const nomeB = result.groupB.group.plano || 'Grupo B';
+    const nomeA = `Grupo ${result.groupA.group.codigoGrupo || 'A'}`;
+    const nomeB = `Grupo ${result.groupB.group.codigoGrupo || 'B'}`;
 
     const winnerItems = [
       { label: 'Menor Taxa', winner: w.menorTaxa },
       { label: 'Menor Parcela Inicial', winner: w.menorParcelaInicial },
       { label: 'Menor Total Pago', winner: w.menorTotalPago },
       { label: 'Maior Carta Líquida', winner: w.maiorCartaLiquida },
-      { label: 'Maior Flex. Lance', winner: w.maiorFlexibilidadeLance },
-      { label: 'Menor Custo até Contempl.', winner: w.menorCustoAteContemplacao },
+      { label: 'Maior limite de lance embutido', winner: w.maiorFlexibilidadeLance },
+      { label: 'Menor desembolso até o mês simulado', winner: w.menorCustoAteContemplacao },
     ];
 
     container.innerHTML = winnerItems.map(item => {
@@ -3993,12 +4003,15 @@ const App = (() => {
   function groupReturnToken() {
     try {
       const params = new URLSearchParams(window.location.search || '');
-      if (params.get('useGroup') === '1' && !params.get('groupReturn')) return 'direct';
-      const active = window.BFGroupJourney?.activeToken?.() || '';
-      if (active) return active;
-      return params.get('groupReturn') || '';
-    } catch (error) {
+      const explicit = params.get('groupReturn') || '';
+      if (explicit) {
+        if (explicit === 'direct') return 'direct';
+        return window.BFGroupJourney?.validToken?.(explicit) ? explicit : '';
+      }
+      if (params.get('useGroup') === '1') return 'direct';
       return window.BFGroupJourney?.activeToken?.() || '';
+    } catch (error) {
+      return '';
     }
   }
 
