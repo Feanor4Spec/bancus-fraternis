@@ -151,10 +151,10 @@ assert(proposal.decision.comparison.length >= 2, 'Decisao deveria incluir compar
 assert(proposal.decision.premises.length >= 3, 'Decisao deveria incluir premissas.');
 assert(proposal.decision.reasons.length >= 3, 'Decisao deveria incluir motivos.');
 assert(proposal.decision.risks.length >= 1, 'Decisao deveria incluir riscos ou ausencia explicita de alerta.');
-assert(proposal.dataSource?.kind === 'historical-reference', 'Proposta nao identifica a base como referencia historica.');
+assert(proposal.dataSource?.kind === 'catalog-snapshot', 'Proposta nao identifica a base como retrato do catalogo.');
 assert(proposal.dataSource?.competenceLabel === 'dezembro de 2025', 'Proposta nao traduz a competencia da base.');
 assert(proposal.dataSource?.availabilityConfirmed === false, 'Proposta nao exige confirmacao atual da disponibilidade.');
-assert(proposal.decision.risks.some((risk) => risk.includes('referências são históricas')), 'Risco de atualidade nao aparece na decisao.');
+assert(proposal.decision.risks.some((risk) => risk.includes('retratos do catálogo')), 'Risco de atualidade nao aparece na decisao.');
 assert(proposal.disclaimers.some((item) => item.includes('dezembro de 2025')), 'Disclaimer nao registra a competencia da base.');
 assert(proposal.nextSteps.some((item) => item.title === 'Confirmar disponibilidade atual'), 'Proposta nao orienta a confirmacao atual antes da contratacao.');
 
@@ -171,7 +171,7 @@ const report = {
     htmlSummary: simulatorHtml.includes('proposal-summary-container'),
     appContext: appJs.includes('decisionContext: getDecisionContextSnapshot()'),
     proposalDecision: proposalSummaryJs.includes('data-simulator-result-decision'),
-    historicalSourceDisclosure: proposal.dataSource?.competenceLabel === 'dezembro de 2025',
+    catalogSnapshotDisclosure: proposal.dataSource?.competenceLabel === 'dezembro de 2025',
     availabilityConfirmation: proposal.nextSteps.some((item) => item.title === 'Confirmar disponibilidade atual'),
     builderOption: proposalBuilderJs.includes("key: 'decision'"),
     css: stylesCss.includes('.ps-section--decision')

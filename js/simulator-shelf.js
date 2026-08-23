@@ -42,6 +42,12 @@
     return n.toLocaleString('pt-BR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
   }
 
+  function optionalNumber(value, decimals = 0, helpers = {}) {
+    return value === null || value === undefined || value === ''
+      ? 'Não disponível'
+      : number(value, decimals, helpers);
+  }
+
   function pageSizeFromSettings(settings, fallback = 20) {
     try {
       const raw = settings && typeof settings.get === 'function' ? Number(settings.get('pageSize')) : fallback;
@@ -409,10 +415,10 @@
       const rowBg = rowColorMap[letter] || '';
       const rowCls = added ? 'shelf-row shelf-row--added' : 'shelf-row';
       const addBtnHtml = added
-        ? `<button class="btn btn--sm btn--success" onclick="App.selecionarGrupo(${globalIdx})" title="Re-adicionar">OK</button>`
-        : `<button class="btn btn--sm btn--primary" onclick="App.selecionarGrupo(${globalIdx})" title="Adicionar">+</button>`;
+        ? `<button class="btn btn--sm btn--success" type="button" disabled aria-label="Grupo ${escapeText(group.codigoGrupo)} já adicionado ao projeto" title="Já está no projeto">No projeto</button>`
+        : `<button class="btn btn--sm btn--primary" type="button" onclick="App.selecionarGrupo(${globalIdx})" aria-label="Adicionar grupo ${escapeText(group.codigoGrupo)} ao projeto" title="Adicionar ao projeto">Adicionar</button>`;
       return `
-        <tr class="${rowCls}" data-idx="${globalIdx}" ${rowBg ? `style="background:${rowBg}"` : ''}>
+        <tr class="${rowCls}" data-idx="${globalIdx}" data-group-key="${escapeText(group.groupKey)}" ${rowBg ? `style="background:${rowBg}"` : ''}>
           <td data-shelf-col="score"><span class="shelf-score ${scoreCls}">${score}</span></td>
           <td data-shelf-col="classificacao">${classBadge(group)}</td>
           <td data-shelf-col="papel">${roleBadge(group)}</td>
@@ -423,7 +429,7 @@
           <td data-shelf-col="prazo">${escapeText(group.prazoMeses)}m</td>
           <td data-shelf-col="taxa">${(Number(group.taxaAdmPct || 0)).toFixed(2)}%</td>
           <td data-shelf-col="indice">${escapeText(group.indiceCorrecaoNome || '-')}</td>
-          <td data-shelf-col="ativas">${number(group.qtdAtivasEmDia || 0, 0, options)}</td>
+          <td data-shelf-col="ativas">${optionalNumber(group.qtdAtivasEmDia, 0, options)}</td>
           <td data-shelf-col="saude">${saudeBadge(group)}</td>
           <td data-shelf-col="acoes" class="shelf-actions-cell">
             <button class="btn btn--sm btn--ghost" type="button" data-shelf-detail-trigger="${globalIdx}" onclick="App.verDetalheGrupo(${globalIdx})" aria-label="Ver detalhes do grupo ${escapeText(group.codigoGrupo)}" title="Ver detalhes">Ver</button>
@@ -479,11 +485,11 @@
           <div class="shelf-detail-section">
             <h4>Cotas e saúde do grupo</h4>
             <table class="detail-mini-table">
-              <tr><td>Cotas Ativas em Dia</td><td><strong>${number(group.qtdAtivasEmDia || 0, 0, options)}</strong></td></tr>
-              <tr><td>Contempladas no mês</td><td>${escapeText(group.qtdContempladasNoMes)}</td></tr>
-              <tr><td>Cotas excluídas</td><td>${escapeText(group.qtdExcluidas)}</td></tr>
-              <tr><td>Cotas Quitadas</td><td>${escapeText(group.qtdQuitadas)}</td></tr>
-              <tr><td>Crédito pendente</td><td>${escapeText(group.qtdCreditoPendente)}</td></tr>
+              <tr><td>Cotas Ativas em Dia</td><td><strong>${optionalNumber(group.qtdAtivasEmDia, 0, options)}</strong></td></tr>
+              <tr><td>Contempladas no mês</td><td>${optionalNumber(group.qtdContempladasNoMes, 0, options)}</td></tr>
+              <tr><td>Cotas excluídas</td><td>${optionalNumber(group.qtdExcluidas, 0, options)}</td></tr>
+              <tr><td>Cotas Quitadas</td><td>${optionalNumber(group.qtdQuitadas, 0, options)}</td></tr>
+              <tr><td>Crédito pendente</td><td>${optionalNumber(group.qtdCreditoPendente, 0, options)}</td></tr>
             </table>
           </div>
           <div class="shelf-detail-section">
@@ -504,9 +510,14 @@
 
   function setDetailAddVisible(root, visible) {
     const doc = root || global.document;
-    const modal = doc && doc.getElementById('shelf-detail-modal');
-    const addBtn = modal?.querySelector('.shelf-detail-card > div:last-child button');
+    const addBtn = doc && doc.getElementById('shelf-detail-add');
     if (addBtn) addBtn.style.display = visible ? '' : 'none';
+  }
+
+  function setDetail360Visible(root, visible) {
+    const doc = root || global.document;
+    const button = doc && doc.getElementById('shelf-detail-360');
+    if (button) button.style.display = visible ? '' : 'none';
   }
 
   global.BFSimulatorShelf = {
@@ -529,6 +540,7 @@
     explainGroupRecommendation,
     detailTitle,
     renderDetail,
-    setDetailAddVisible
+    setDetailAddVisible,
+    setDetail360Visible
   };
 })(typeof window !== 'undefined' ? window : globalThis);

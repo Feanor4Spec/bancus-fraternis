@@ -127,6 +127,10 @@
         observacaoItem: item.observacaoItem,
         classificacao: item.classificacao,
         papel: item.papel,
+        dataBase: item.dataBase || group.dataBase || '',
+        groupEvidence: Array.isArray(item.groupEvidence) ? item.groupEvidence.slice(0, 3).map((entry) => ({ ...(entry || {}) })) : [],
+        assemblyHistory: item.assemblyHistory ? { ...item.assemblyHistory } : null,
+        groupConfirmation: item.groupConfirmation ? { ...item.groupConfirmation } : null,
         groupSnapshot: {
           groupKey: group.groupKey || item.groupKey,
           codigoGrupo: group.codigoGrupo || item.codigoGrupo,
@@ -135,10 +139,10 @@
           administradora: group.administradora || item.administradora,
           nomeSegmento: group.nomeSegmento || item.nomeSegmento,
           iconSegmento: group.iconSegmento || item.iconSegmento,
-          valorCartaRef: group.valorCartaRef || item.valorCartaRef || item.valorCartaUnitario,
-          prazoMeses: group.prazoMeses || item.prazoMeses,
-          taxaAdmPct: group.taxaAdmPct || item.taxaAdmPct,
-          fundoReservaPct: group.fundoReservaPct || item.fundoReservaPct,
+          valorCartaRef: group.valorCartaRef ?? item.valorCartaRef ?? item.valorCartaUnitario,
+          prazoMeses: group.prazoMeses ?? item.prazoMeses,
+          taxaAdmPct: group.taxaAdmPct ?? item.taxaAdmPct,
+          fundoReservaPct: group.fundoReservaPct ?? item.fundoReservaPct,
           indiceCorrecaoNome: group.indiceCorrecaoNome || item.indiceCorrecaoNome,
           lanceEmbutidoMaxPct: getLimit(group),
           lanceFixoPct: group.lanceFixoPct,
@@ -146,6 +150,11 @@
           reducaoMaxParcelaPct: group.reducaoMaxParcelaPct,
           seguroPctComercial: group.seguroPctComercial,
           dataBase: group.dataBase,
+          qtdAtivasEmDia: group.qtdAtivasEmDia,
+          qtdContempladasNoMes: group.qtdContempladasNoMes,
+          qtdExcluidas: group.qtdExcluidas,
+          qtdQuitadas: group.qtdQuitadas,
+          qtdCreditoPendente: group.qtdCreditoPendente,
           indiceMaturidade: group.indiceMaturidade,
           _fieldProvenance: group._fieldProvenance,
           _commercialVerification: group._commercialVerification,
@@ -160,10 +169,22 @@
 
   function findGroupForSavedItem(savedItem, catalog = []) {
     const source = Array.isArray(catalog) ? catalog : [];
-    return source.find((group) => {
-      return (savedItem.groupKey && group.groupKey === savedItem.groupKey)
-        || (savedItem.codigoGrupo && group.codigoGrupo === savedItem.codigoGrupo && (!savedItem.administradora || group.nomeAdministradora === savedItem.administradora));
-    }) || savedItem.groupSnapshot || {
+    if (savedItem.groupKey) {
+      const exact = source.find((group) => group.groupKey === savedItem.groupKey);
+      if (exact) return exact;
+      if (savedItem.groupSnapshot) {
+        return { ...savedItem.groupSnapshot, groupKey: savedItem.groupKey, resolutionStatus: 'snapshot-only' };
+      }
+      return { groupKey: savedItem.groupKey, resolutionStatus: 'missing' };
+    }
+    const legacyCandidates = source.filter((group) => (
+      savedItem.codigoGrupo
+      && group.codigoGrupo === savedItem.codigoGrupo
+      && (!savedItem.administradora || group.nomeAdministradora === savedItem.administradora)
+      && (!savedItem.codigoSegmento || Number(group.codigoSegmento) === Number(savedItem.codigoSegmento))
+    ));
+    if (legacyCandidates.length === 1) return legacyCandidates[0];
+    return { ...(savedItem.groupSnapshot || {
       groupKey: savedItem.groupKey,
       codigoGrupo: savedItem.codigoGrupo,
       codigoSegmento: savedItem.codigoSegmento,
@@ -175,7 +196,7 @@
       taxaAdmPct: savedItem.taxaAdmPct,
       fundoReservaPct: savedItem.fundoReservaPct,
       indiceCorrecaoNome: savedItem.indiceCorrecaoNome
-    };
+    }), resolutionStatus: legacyCandidates.length > 1 ? 'ambiguous' : 'missing' };
   }
 
   function restoreSavedCartItems(savedCart, options = {}) {
@@ -197,11 +218,11 @@
         nomeSegmento: savedItem.nomeSegmento || item.nomeSegmento,
         iconSegmento: savedItem.iconSegmento || item.iconSegmento,
         quantidadeCotas: Math.max(1, parseInt(savedItem.quantidadeCotas, 10) || 1),
-        valorCartaRef: savedItem.valorCartaRef || item.valorCartaRef,
-        valorCartaUnitario: savedItem.valorCartaUnitario || item.valorCartaUnitario,
-        prazoMeses: savedItem.prazoMeses || item.prazoMeses,
-        taxaAdmPct: savedItem.taxaAdmPct || item.taxaAdmPct,
-        fundoReservaPct: savedItem.fundoReservaPct || item.fundoReservaPct,
+        valorCartaRef: savedItem.valorCartaRef ?? item.valorCartaRef,
+        valorCartaUnitario: savedItem.valorCartaUnitario ?? item.valorCartaUnitario,
+        prazoMeses: savedItem.prazoMeses ?? item.prazoMeses,
+        taxaAdmPct: savedItem.taxaAdmPct ?? item.taxaAdmPct,
+        fundoReservaPct: savedItem.fundoReservaPct ?? item.fundoReservaPct,
         seguroPct: savedItem.seguroPct ?? item.seguroPct,
         indiceCorrecaoNome: savedItem.indiceCorrecaoNome || item.indiceCorrecaoNome,
         indiceReajuste: savedItem.indiceReajuste ?? item.indiceReajuste,
@@ -224,6 +245,10 @@
         observacaoItem: savedItem.observacaoItem || '',
         classificacao: savedItem.classificacao || item.classificacao,
         papel: savedItem.papel || item.papel,
+        dataBase: savedItem.dataBase || group.dataBase || '',
+        groupEvidence: Array.isArray(savedItem.groupEvidence) ? savedItem.groupEvidence.slice(0, 3).map((entry) => ({ ...(entry || {}) })) : [],
+        assemblyHistory: savedItem.assemblyHistory ? { ...savedItem.assemblyHistory } : null,
+        groupConfirmation: savedItem.groupConfirmation ? { ...savedItem.groupConfirmation } : null,
         _group: group
       });
       const limit = getLimit(group);

@@ -2061,3 +2061,17 @@ body:not(.proposal-client-mode) .proposal-client-interest {
     break-inside: avoid;
   }
 }
+.shelf-detail-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .shelf-detail-actions > .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

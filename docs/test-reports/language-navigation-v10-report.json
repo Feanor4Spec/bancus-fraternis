@@ -142,8 +142,8 @@
       "title": "A pagina publica e a pagina do simulador estao disponiveis no codigo-fonte.",
       "ok": true,
       "evidence": {
-        "simulatorBytes": 83880,
-        "publicBytes": 4562
+        "simulatorBytes": 84193,
+        "publicBytes": 4580
       }
     },
     {
@@ -316,7 +316,7 @@
       "title": "A proposta publica preserva o aviso de que a contemplacao nao e garantida.",
       "ok": true,
       "evidence": {
-        "publicTextExcerpt": "Ir para a proposta PROPOSTA PARA CONFERÊNCIA Disponível para consulta Imprimir ou salvar em PDF Quero falar com um consultor BANCUS FRATERNIS Sua proposta de consórcio Confira crédito, parcelas, lances, prazos, custos e riscos antes de decidir. PROPOSTA PROP-2026-3651 CRÉDITO TOTAL R$ 3.651.261,12 PARCELA ESTIMADA R$ 23.177,31 LINK DISPONÍVEL ATÉ 31 de dezembro de 2030 às 20:59 PROPOSTA PROP-2026-3651 Proposta de consórcio Valores, prazos, parcelas, lances, custos e riscos calculados com os dado"
+        "publicTextExcerpt": "Ir para a proposta PROPOSTA PARA CONFERÊNCIA · SOMENTE LEITURA Disponível para consulta Imprimir ou salvar em PDF Quero falar com um consultor BANCUS FRATERNIS Sua proposta de consórcio Confira crédito, parcelas, lances, prazos, custos e riscos antes de decidir. PROPOSTA PROP-2026-3651 CRÉDITO TOTAL R$ 3.651.261,12 PARCELA ESTIMADA R$ 23.177,31 LINK DISPONÍVEL ATÉ 31 de dezembro de 2030 às 20:59 PROPOSTA PROP-2026-3651 Proposta de consórcio Valores, prazos, parcelas, lances, custos e riscos calc"
       }
     },
     {

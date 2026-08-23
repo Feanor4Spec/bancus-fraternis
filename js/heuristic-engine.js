@@ -60,7 +60,9 @@ const HeuristicEngine = (() => {
     const metricas = {
       ativasMonitoradas: _safeNumber(g && g.qtdAtivasEmDia, 0),
       taxaInadimplencia: _safeRatio(g && g.taxaInadimplencia, 0),
-      indiceMaturidade: _safeRatio(g && g.indiceMaturidade, 0),
+      // Maturidade e uma razao operacional (assembleias/prazo), nao uma taxa.
+      // Valores acima de 1 sao validos e nao devem ser divididos por 100.
+      indiceMaturidade: _safeNumber(g && g.indiceMaturidade, 0),
       taxaQuitacao: 0,
       taxaCreditoPendente: 0,
       intensidadeExclusao: 0,
@@ -131,7 +133,7 @@ const HeuristicEngine = (() => {
    * Já vem pré-calculado no JSON como `indiceMaturidade`.
    */
   function getIndiceMaturidade(g) {
-    const normalized = _safeRatio(g && g.indiceMaturidade, 0);
+    const normalized = _safeNumber(g && g.indiceMaturidade, 0);
     if (normalized > 0) return normalized;
     return _safeDiv(g && g.assembleias, g && g.prazoMeses);
   }

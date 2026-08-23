@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Consulte o retrato do grupo e uma série demonstrativa de assembleias, com fontes e competências separadas.">
+  <meta name="theme-color" content="#0B2C52">
+  <title>Visão 360 do grupo | Bancus Fraternis</title>
+  <link rel="icon" href="../assets/logos/bank-fratern-icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/shared-site.css">
+  <link rel="stylesheet" href="../css/bank-fratern-design-system.css">
+  <link rel="stylesheet" href="../assets/css/platform.css">
+  <link rel="stylesheet" href="../assets/css/bf-design-system-v8.css">
+  <link rel="stylesheet" href="../css/group-intelligence.css">
+  <script src="../assets/vendor/chart.js/4.4.0/chart.umd.min.js"></script>
+</head>
+<body class="bf-platform-body bf-v8-body group-intelligence-page" data-bf-page="grupo" data-group-state="loading">
+  <a class="bf-skip-link skip-main-content" href="#main">Ir para a visão do grupo</a>
+  <div data-shell-header></div>
+
+  <main class="group360-shell" id="main" aria-busy="true">
+    <nav class="group360-breadcrumb" aria-label="Navegação estrutural">
+      <ol>
+        <li><a href="simulador.html?from=grupo#step-4">Simulador</a></li>
+        <li><a href="simulador.html?from=grupo#step-4">Prateleira de grupos</a></li>
+        <li aria-current="page">Visão 360</li>
+      </ol>
+    </nav>
+
+    <section class="group360-state group360-state--loading" data-group-loading role="status" aria-live="polite">
+      <img src="../assets/icons/ui/ui-building.svg" alt="" aria-hidden="true" focusable="false">
+      <div><strong>Preparando a história do grupo</strong><span>Conferindo identidade, competência e fontes.</span></div>
+    </section>
+
+    <section class="group360-state group360-state--error" data-group-error hidden role="alert" aria-live="assertive">
+      <img src="../assets/icons/ui/ui-shield.svg" alt="" aria-hidden="true" focusable="false">
+      <div><strong>Não foi possível abrir este grupo</strong><span data-group-error-message>Tente novamente.</span></div>
+      <button class="btn btn--secondary" type="button" data-group-retry>Tentar novamente</button>
+    </section>
+
+    <section class="group360-state group360-state--empty" data-group-empty hidden role="status" aria-live="polite">
+      <img src="../assets/icons/ui/ui-building.svg" alt="" aria-hidden="true" focusable="false">
+      <div>
+        <strong>Grupo não encontrado nesta competência</strong>
+        <span>A identificação completa não corresponde a uma referência do catálogo.</span>
+      </div>
+      <a class="btn btn--secondary" href="simulador.html?from=grupo#step-4">Voltar à prateleira</a>
+    </section>
+
+    <div data-group-content hidden>
+      <header class="group360-identity" aria-labelledby="group-title">
+        <div class="group360-identity__mark" aria-hidden="true"><img src="../assets/icons/ui/ui-building.svg" alt="" aria-hidden="true" focusable="false"></div>
+        <div class="group360-identity__copy">
+          <span class="group360-kicker" data-group-admin-short>Administradora</span>
+          <h1 id="group-title">Grupo <span data-group-code>—</span></h1>
+          <p><span data-group-admin>—</span><span aria-hidden="true"> · </span><span data-group-segment>—</span></p>
+        </div>
+        <button class="btn btn--primary group360-identity__action" type="button" data-use-group>Usar no projeto</button>
+        <dl class="group360-identity__facts" aria-label="Resumo comercial da referência">
+          <div><dt>Competência</dt><dd data-group-competence>—</dd></div>
+          <div><dt>Carta de referência</dt><dd data-snapshot="credit">—</dd></div>
+          <div><dt>Prazo</dt><dd data-snapshot="term">—</dd></div>
+        </dl>
+      </header>
+
+      <section class="group360-provenance" aria-label="Fontes e competências">
+        <span class="group360-source-chip group360-source-chip--snapshot"><img src="../assets/icons/ui/ui-document.svg" alt="" aria-hidden="true" focusable="false"> Retrato do catálogo <strong data-snapshot-chip-date>—</strong></span>
+        <span class="group360-source-chip group360-source-chip--demo" data-history-source-chip><img src="../assets/icons/journey/05-assembleia.svg" alt="" aria-hidden="true" focusable="false"> Série demonstrativa <strong>fev/2024 a fev/2025</strong></span>
+        <span class="group360-provenance__rule"><img src="../assets/icons/ui/ui-shield.svg" alt="" aria-hidden="true" focusable="false"> As fontes e competências permanecem separadas</span>
+      </section>
+
+      <nav class="group360-section-nav" aria-label="Seções da visão do grupo">
+        <a href="#historia" aria-current="page">Resumo</a>
+        <a href="#retrato">Cotas e saúde</a>
+        <a href="#assembleias">Assembleias</a>
+        <a href="#lances">Lances</a>
+        <a href="#fluxos">Fluxo e cobertura</a>
+        <a href="#fontes">Dados e definições</a>
+      </nav>
+
+      <section class="group360-history" id="historia" aria-labelledby="history-title" data-history-ready>
+        <div class="group360-overview-head">
+          <div class="group360-history__intro">
+            <span class="group360-kicker">Visão 360 do grupo</span>
+            <h2 id="history-title">Série demonstrativa do grupo</h2>
+            <p data-history-intro>A série demonstrativa ajuda a explorar a leitura das assembleias. Ela não representa uma condição atual, promessa de contemplação ou recomendação de lance.</p>
+          </div>
+
+          <dl class="group360-kpis" aria-label="Resumo da série demonstrativa">
+            <div><dt>Assembleias</dt><dd data-metric="assemblies">—</dd><small>eventos no período</small></div>
+            <div><dt>Contemplações</dt><dd data-metric="total">—</dd><small>sorteio e lance</small></div>
+            <div><dt>Por lance</dt><dd data-metric="bid">—</dd><small data-metric="bidShare">—</small></div>
+            <div><dt>Faixa observada</dt><dd data-metric="range">—</dd><small>mínimo e máximo</small></div>
+          </dl>
+        </div>
+
+        <div class="group360-history__grid">
+          <article class="group360-history-card">
+            <header class="group360-card-head">
+              <div><span class="group360-card-eyebrow">Série demonstrativa</span><h3>Como a série evoluiu em cada assembleia</h3></div>
+              <span class="group360-legend-note">13 eventos</span>
+            </header>
+
+            <figure class="group360-chart-block" id="assembleias" aria-labelledby="volume-chart-title">
+              <figcaption id="volume-chart-title"><strong>Contemplações por modalidade</strong><span>Sorteios e lances em cada evento da série.</span></figcaption>
+              <div class="group360-chart-scroll" tabindex="0" aria-label="Gráfico rolável de contemplações por assembleia">
+                <div class="group360-chart-canvas"><canvas id="assembly-volume-chart" tabindex="0" role="img" aria-label="Gráfico de barras empilhadas com contemplações por sorteio e lance." aria-describedby="volume-chart-description volume-chart-live"></canvas></div>
+              </div>
+              <p class="group360-chart-description" id="volume-chart-description" data-volume-description>Descrição do gráfico em preparação.</p>
+              <p class="sr-only" id="volume-chart-live" data-volume-chart-live aria-live="polite"></p>
+              <p class="group360-chart-fallback" data-volume-chart-fallback hidden>O gráfico não pôde ser exibido. Os mesmos dados continuam disponíveis na tabela.</p>
+              <details class="group360-chart-data"><summary>Ver dados e descrição do gráfico</summary><div class="group360-table-wrap" tabindex="0" aria-label="Tabela rolável de contemplações por assembleia"><table><caption>Contemplações por assembleia</caption><thead><tr><th scope="col">Assembleia</th><th scope="col">Data</th><th scope="col">Sorteio</th><th scope="col">Lance</th><th scope="col">Total</th><th scope="col">Detalhe</th></tr></thead><tbody data-assembly-table-body></tbody></table></div></details>
+            </figure>
+
+            <figure class="group360-chart-block" id="lances" aria-labelledby="bid-chart-title">
+              <figcaption id="bid-chart-title"><strong>Faixa dos lances contemplados</strong><span>Percentuais mínimo e máximo registrados na série.</span></figcaption>
+              <div class="group360-chart-scroll" tabindex="0" aria-label="Gráfico rolável da faixa de lances">
+                <div class="group360-chart-canvas"><canvas id="assembly-bid-chart" tabindex="0" role="img" aria-label="Gráfico de linhas com percentuais mínimo e máximo dos lances." aria-describedby="bid-chart-description bid-chart-live"></canvas></div>
+              </div>
+              <p class="group360-chart-description" id="bid-chart-description" data-bid-description>Descrição do gráfico em preparação.</p>
+              <p class="sr-only" id="bid-chart-live" data-bid-chart-live aria-live="polite"></p>
+              <p class="group360-chart-fallback" data-bid-chart-fallback hidden>O gráfico não pôde ser exibido. Os mesmos dados continuam disponíveis na tabela.</p>
+              <details class="group360-chart-data"><summary>Ver dados e descrição do gráfico</summary><div class="group360-table-wrap" tabindex="0" aria-label="Tabela rolável da faixa de lances"><table><caption>Faixa de lances por assembleia</caption><thead><tr><th scope="col">Assembleia</th><th scope="col">Data</th><th scope="col">Mínimo</th><th scope="col">Máximo</th></tr></thead><tbody data-bid-table-body></tbody></table></div></details>
+            </figure>
+          </article>
+
+          <aside class="group360-insight-rail" aria-label="Leitura do grupo">
+            <article class="group360-insight group360-insight--primary">
+              <img src="../assets/icons/ui/ui-graph.svg" alt="" aria-hidden="true" focusable="false">
+              <span>O que mudou</span>
+              <h3>Do piso ao salto observado</h3>
+              <p data-history-change>Leitura em preparação.</p>
+              <strong data-history-peak>—</strong>
+            </article>
+            <article class="group360-insight group360-insight--attention">
+              <img src="../assets/icons/ui/ui-shield.svg" alt="" aria-hidden="true" focusable="false">
+              <span>Antes de usar na proposta</span>
+              <h3>Histórico não é parâmetro contratual</h3>
+              <p>A série desta tela é demonstrativa. Confirme resultados oficiais, regras vigentes e disponibilidade com a administradora.</p>
+              <button class="group360-text-action" type="button" data-confirm-parameters>Marcar para conferência</button>
+              <small data-confirmation-status aria-live="polite">Nenhuma marcação nesta sessão.</small>
+            </article>
+            <article class="group360-insight" id="retrato-resumo">
+              <img src="../assets/icons/ui/ui-building.svg" alt="" aria-hidden="true" focusable="false">
+              <span>Retrato do catálogo</span>
+              <h3 data-snapshot-title>Competência —</h3>
+              <dl class="group360-snapshot-mini">
+                <div><dt>Cotas ativas em dia</dt><dd data-snapshot="active">—</dd></div>
+                <div><dt>Contempladas no mês</dt><dd data-snapshot="contemplated">—</dd></div>
+                <div><dt>Crédito pendente</dt><dd data-snapshot="pending">—</dd></div>
+              </dl>
+              <p>Estes números pertencem ao retrato do catálogo e não são uma linha do tempo.</p>
+            </article>
+          </aside>
+        </div>
+      </section>
+
+      <section class="group360-history-empty" data-history-empty hidden role="status" aria-live="polite" aria-labelledby="history-empty-title">
+        <img src="../assets/icons/journey/05-assembleia.svg" alt="" aria-hidden="true" focusable="false">
+        <div><span class="group360-kicker">História do grupo</span><h2 id="history-empty-title">Histórico ainda não disponível</h2><p>O retrato deste grupo está no catálogo, mas não existe uma série de assembleias vinculada à sua identificação completa.</p></div>
+      </section>
+
+      <section class="group360-snapshot" id="retrato" aria-labelledby="snapshot-heading">
+        <header><span class="group360-kicker">Retrato atual</span><h2 id="snapshot-heading">O que consta no catálogo</h2><p>Valores da competência indicada, sem criar tendência ou projeção.</p></header>
+        <dl class="group360-snapshot-grid">
+          <div><dt>Carta de referência</dt><dd data-snapshot="credit">—</dd></div>
+          <div><dt>Prazo do grupo</dt><dd data-snapshot="term">—</dd></div>
+          <div><dt>Taxa de administração</dt><dd data-snapshot="fee">—</dd></div>
+          <div><dt>Cotas excluídas</dt><dd data-snapshot="excluded">—</dd></div>
+          <div><dt>Cotas quitadas</dt><dd data-snapshot="paid">—</dd></div>
+          <div><dt>Índice de correção</dt><dd data-snapshot="index">—</dd></div>
+        </dl>
+        <div class="group360-unavailable" id="fluxos" aria-label="Dados não disponíveis no catálogo">
+          <article><img src="../assets/icons/ui/ui-graph.svg" alt="" aria-hidden="true" focusable="false"><div><strong>Arrecadação, liquidez e cobertura</strong><span>Dados financeiros não recebidos para este grupo.</span></div></article>
+          <article><img src="../assets/icons/ui/ui-building.svg" alt="" aria-hidden="true" focusable="false"><div><strong>Distribuição geográfica</strong><span>Não disponível na fonte atual.</span></div></article>
+          <article><img src="../assets/icons/ui/ui-users.svg" alt="" aria-hidden="true" focusable="false"><div><strong>Evolução de cotas excluídas</strong><span>Há apenas o estoque acumulado do retrato, sem série temporal.</span></div></article>
+        </div>
+      </section>
+
+      <section class="group360-sources" id="fontes" aria-labelledby="sources-heading">
+        <header><span class="group360-kicker">Rastreabilidade</span><h2 id="sources-heading">Fontes usadas nesta leitura</h2></header>
+        <div class="group360-sources__grid">
+          <article><img src="../assets/icons/ui/ui-document.svg" alt="" aria-hidden="true" focusable="false"><div><strong>Retrato do catálogo</strong><p data-source-snapshot>Competência em preparação.</p><details class="group360-technical"><summary>Dados técnicos da fonte</summary><code data-source-key>—</code></details></div></article>
+          <article data-source-history-card><img src="../assets/icons/journey/05-assembleia.svg" alt="" aria-hidden="true" focusable="false"><div><strong>Série demonstrativa</strong><p data-source-history>Período em preparação. Não contratual e não elegível como evidência histórica da proposta.</p><details class="group360-technical"><summary>Dados técnicos da fonte</summary><code data-source-history-id>—</code></details></div></article>
+        </div>
+      </section>
+
+      <footer class="group360-actions">
+        <a class="btn btn--secondary" data-back-to-shelf href="simulador.html?from=grupo&restore=1#step-4"><img src="../assets/icons/ui/ui-arrow.svg" alt="" aria-hidden="true" focusable="false"> Voltar à prateleira</a>
+        <div><span data-project-note>O histórico demonstrativo não será anexado à proposta.</span><button class="btn btn--primary" type="button" data-use-group>Usar grupo no projeto</button></div>
+      </footer>
+    </div>
+  </main>
+
+  <div class="group360-drawer-backdrop" data-drawer-backdrop hidden></div>
+  <aside class="group360-drawer" data-assembly-drawer role="dialog" aria-modal="true" aria-labelledby="assembly-drawer-title" aria-hidden="true" hidden>
+    <header><div><span class="group360-kicker">Detalhe da série demonstrativa</span><h2 id="assembly-drawer-title" data-drawer-title>Assembleia</h2><p data-drawer-subtitle>—</p></div><button class="btn btn--secondary" type="button" data-drawer-close>Fechar detalhe</button></header>
+    <dl data-drawer-facts></dl>
+    <div class="group360-drawer__note"><strong>Como ler</strong><p data-drawer-note>—</p></div>
+  </aside>
+
+  <div data-shell-footer></div>
+  <script src="../assets/js/services/backend-api.service.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/storage.js"></script>
+  <script src="../js/shared-layout.js"></script>
+  <script src="../js/shelf-data.js"></script>
+  <script src="../js/group-journey.js"></script>
+  <script src="../js/group-assembly-data.js"></script>
+  <script src="../js/group-intelligence.js"></script>
+</body>
+</html>

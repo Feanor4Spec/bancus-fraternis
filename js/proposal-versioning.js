@@ -218,15 +218,43 @@ const BFProposalVersions = (() => {
     };
   }
 
+  function sanitizeEvidence(entries) {
+    return (Array.isArray(entries) ? entries : []).slice(0, 3).map((entry) => ({
+      schema: cleanText(entry && entry.schema, 60),
+      key: cleanText(entry && entry.key, 60),
+      label: cleanText(entry && entry.label, 100),
+      value: entry && entry.value === null
+        ? null
+        : typeof (entry && entry.value) === 'number'
+        ? number(entry.value)
+        : cleanText(entry && entry.value, 180),
+      unit: cleanText(entry && entry.unit, 30),
+      competence: cleanText(entry && entry.competence, 20),
+      sourceType: cleanText(entry && entry.sourceType, 40),
+      sourceLabel: cleanText(entry && entry.sourceLabel, 80),
+      sourceSchema: cleanText(entry && entry.sourceSchema, 80),
+      sourceHash: cleanText(entry && entry.sourceHash, 80),
+      sourceGeneratedAt: cleanText(entry && entry.sourceGeneratedAt, 40),
+      status: cleanText(entry && entry.status, 40),
+      definition: cleanText(entry && entry.definition, 220),
+      limitation: cleanText(entry && entry.limitation, 220),
+      historyIncluded: entry && entry.historyIncluded === true
+    }));
+  }
+
   function sanitizeGroups(groups) {
     return (Array.isArray(groups) ? groups : []).slice(0, 12).map((item, index) => ({
       index: Math.max(1, parseInt(item && item.index, 10) || index + 1),
       administradora: cleanText(item && item.administradora, 80),
       grupo: cleanText(item && item.grupo, 60),
+      groupKey: cleanText(item && item.groupKey, 250),
+      competence: cleanText(item && item.competence, 20),
       segmento: cleanText(item && item.segmento, 80),
       cotas: number(item && item.cotas),
       carta: number(item && item.carta),
-      prazo: number(item && item.prazo)
+      prazo: number(item && item.prazo),
+      evidence: sanitizeEvidence(item && item.evidence),
+      confirmationRequired: item && item.confirmationRequired === true
     }));
   }
 
@@ -291,10 +319,14 @@ const BFProposalVersions = (() => {
       index: index + 1,
       administradora: cleanText(item.administradora || item.nomeAdministradora || item.admin || '', 80),
       grupo: cleanText(item.codigoGrupo || item.grupo || item.idGrupo || '', 60),
+      groupKey: cleanText(item.groupKey || item._group?.groupKey || '', 250),
+      competence: cleanText(item.dataBase || item._group?.dataBase || '', 20),
       segmento: cleanText(item.nomeSegmento || item.segmento || item.tipoBem || '', 80),
       cotas: number(item.quantidadeCotas || item.cotas || 1),
       carta: number(item.valorCartaTotal || item.valorCartaRef || item.valorCarta || 0),
-      prazo: number(item.prazoMeses || item.prazo || 0)
+      prazo: number(item.prazoMeses || item.prazo || 0),
+      evidence: sanitizeEvidence(item.groupEvidence),
+      confirmationRequired: item.groupConfirmation?.status === 'required'
     }));
   }
 

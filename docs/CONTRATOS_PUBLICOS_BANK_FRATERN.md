@@ -1,6 +1,6 @@
 # Contratos Publicos - Bancus Fraternis
 
-Atualizado em 2026-06-12.
+Atualizado em 2026-08-22.
 
 Este documento e a matriz viva dos contratos que novas evolucoes devem preservar. O Bancus Fraternis e uma plataforma estatica/progressiva de decisao financeira; por isso, compatibilidade local importa tanto quanto visual e jornada.
 
@@ -23,6 +23,9 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | `bf_auth_mode_v1` | `BFAuth` / `BFBackendApi` | Cache publico de modo e transporte informado por `/api/auth/config`. | Pode conter apenas configuracao nao sensivel. |
 | `consorciopro_settings` | `Settings` | Preferencias historicas do simulador, incluindo `pageSize` da prateleira normalizado entre 20 e 50. | Nome legado controlado; nao renomear sem migracao. |
 | `consorciopro_simulations` | `Storage` / `App` | Simulacoes salvas do simulador completo. | Manter leitura de simulacoes antigas. |
+| `bf_group_return_state_v1:<token>` | `BFGroupJourney` | Snapshot temporario da prateleira, carrinho, formulario e calculo antes de abrir a Visao 360. | `sessionStorage`, TTL de 30 minutos, maximo de oito estados e descarte apos o retorno. |
+| `bf_group_active_return_v1` | `BFGroupJourney` | Token do retorno ativo da Visao 360. | Deve apontar apenas para token valido e ser removido com o estado consumido. |
+| `bf_group_selection_v1:<token>` | Visao 360 / `App` | Selecao sanitizada do grupo usada no retorno ao simulador. | `sessionStorage`; a selecao e reconstruida pelo simulador e nao pode duplicar o mesmo `groupKey`. |
 | `bank_fratern_proposal_acceptances_v1` | `BFProposalAcceptance` | Revisoes, aceite local e status de proposta. | Preservar `proposalId`, `status`, `version` e `snapshot`. |
 | `bank_fratern_proposal_versions_v1` | `BFProposalVersions` | Snapshots versionados da proposta, lousa, metricas e comparacao antes do handoff. | Preservar `proposalId`, `version`, `sourceHash`, `builder` e `metrics`. |
 | `bank_fratern_proposal_builder_v1` | `BFProposalBuilder` / `ProposalSummary` / `App` | Lousa seletiva de exportacao da proposta. | Novas opcoes devem ter default compativel. |
@@ -59,6 +62,7 @@ Este documento e a matriz viva dos contratos que novas evolucoes devem preservar
 | Trilha | `data-decision-journey-form`, `data-decision-journey-state`, `data-decision-journey-steps`, `data-decision-journey-actions`. |
 | Comparador | `data-comparator-form`, `data-comparator-result`, `data-comparator-preset-summary`, `data-comparator-model-recommendation`. |
 | Simulador | `data-simulator-readiness`, `data-simulator-decision-strip`, `data-simulator-journey-actions`, `data-simulator-objective-guide`, `data-simulator-objective-card`, `data-simulator-objective-apply`, `data-simulator-result-decision`, `data-simulator-result-cta`, `data-simulator-result-premise`, `data-simulator-result-risk`, `data-simulator-result-comparison`, `data-v8-stagebar`, `data-shelf-col`, `data-shelf-recommendation`, `data-shelf-recommendation-reason`. |
+| Visao 360 do Grupo | `data-group-state`, `data-group-loading`, `data-group-error`, `data-group-empty`, `data-group-content`, `data-history-ready`, `data-history-empty`, `data-use-group`, `data-assembly-drawer`. |
 | Proposta | `data-proposal-acceptance-panel`, `data-proposal-handoff-bridge`, `data-proposal-builder-board`, `data-proposal-builder-readiness`, `data-proposal-builder-option`, `data-proposal-version-panel`, `data-proposal-version-history`, `data-proposal-version-comparison`. |
 | Handoff | `data-handoff-list`, `data-handoff-detail`, `data-handoff-metrics`, `data-handoff-recovery-signals`, `data-handoff-consultant-cockpit`, `data-handoff-action-plan`, `data-handoff-action-execution`, `data-handoff-action-reason`, `data-handoff-action-history`, `data-handoff-assignee-filter`, `data-handoff-aging-filter`, filtro de origem com opcao `calculator`, `data-handoff-proposal-version`, `data-handoff-commercial-stage`, `data-handoff-commercial-stage-panel`, `data-handoff-commercial-stage-history`, `data-handoff-live-data-panel`, `data-handoff-live-source`, `data-handoff-live-refresh`. |
 | Dashboard Cliente | `data-client-continuity-strip`, `data-client-continuity-cockpit`, `data-client-backend-snapshots`, `data-client-backend-entities`, `data-client-backend-materialized`, `data-client-live-data-panel`, `data-client-live-source`, `data-client-live-refresh`, `data-client-next-action`, `data-client-calculator-impact`, `data-client-calculator-impact-item`, `data-client-calculator-impact-risk`, `data-client-calculator-impact-action`, `data-client-create-calculator-handoff`, `data-client-handoff-status`, `data-client-proposal-status`, `data-client-simulation-context`, `data-client-commercial-stage`, `data-client-continuity-timeline`, `data-client-decision-journey`, `data-client-recovery-signals`. |
@@ -175,6 +179,8 @@ Leitura progressiva dos snapshots:
 | `BFSimulatorJourney` | Contexto de origem, prefill e proximas acoes do simulador. |
 | `BFSimulatorState` | Snapshots de formulario, carrinho salvo e payload de simulacao. |
 | `BFSimulatorShelf` | Regras da prateleira do simulador: filtros, paginacao, visibilidade de colunas, tabela e detalhe do grupo. |
+| `BFGroupJourney` | Estado temporario de ida e volta da Visao 360, deep link exato por `groupKey` e evidencias sanitizadas do retrato do catalogo. |
+| `BFGroupAssemblyData` | Serie demonstrativa de assembleias, com associacao explicitamente nao verificada, separada do retrato atual e inelegivel como evidencia contratual. |
 | `BFSimulatorCart` | Regras do carrinho/projeto estruturado do simulador: totais, HTML do carrinho, normalizacao de edicao e aplicacao de resultados. |
 | `BFSimulatorResult` | Orquestracao de calculo, resumo, proposta e tabela analitica do simulador, mantendo `App.*` como fachada publica. |
 | `BFProductsJourney` | Produtos, selecao e analytics de jornada. |

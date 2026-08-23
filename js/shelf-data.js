@@ -166,6 +166,23 @@ function _parseRatio(value, fallback = 0) {
   return parsed > 1 ? parsed / 100 : parsed;
 }
 
+function _parseOptionalNumber(value) {
+  if (value === undefined || value === null || value === '') return null;
+  const parsed = _parseNumber(value, Number.NaN);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function _parseOptionalInteger(value) {
+  const parsed = _parseOptionalNumber(value);
+  return parsed === null ? null : Math.max(0, Math.round(parsed));
+}
+
+function _parseOptionalRatio(value) {
+  const parsed = _parseOptionalNumber(value);
+  if (parsed === null) return null;
+  return parsed > 1 ? parsed / 100 : parsed;
+}
+
 function _parseBoolean(value, fallback = false) {
   if (typeof value === 'boolean') return value;
   if (value === undefined || value === null || value === '') return fallback;
@@ -231,12 +248,18 @@ function _normalizeGroup(raw, index = 0) {
   // Maturidade e uma razao operacional, nao uma porcentagem. Valores acima de
   // 1 (presentes na base real) devem permanecer intactos para que a heuristica
   // nao mova grupos maduros/finais de volta para o inicio do ciclo.
-  const indiceMaturidadeRaw = _parseNumber(_firstValue(g, ['indiceMaturidade', 'maturidade'], 0));
-  const assembleias = _parseInteger(
-    _firstValue(g, ['assembleias', 'qtdAssembleias', 'assembleiasRealizadas', 'numeroAssembleia'], indiceMaturidadeRaw * prazoMeses),
-    0
+  const indiceMaturidadeRaw = _parseOptionalNumber(_firstValue(g, ['indiceMaturidade', 'maturidade'], null));
+  const assembleiasInformadas = _parseOptionalInteger(
+    _firstValue(g, ['assembleias', 'qtdAssembleias', 'assembleiasRealizadas', 'numeroAssembleia'], null)
   );
-  const indiceMaturidade = indiceMaturidadeRaw || (prazoMeses > 0 ? assembleias / prazoMeses : 0);
+  const assembleias = assembleiasInformadas ?? (
+    indiceMaturidadeRaw !== null && prazoMeses > 0
+      ? Math.max(0, Math.round(indiceMaturidadeRaw * prazoMeses))
+      : null
+  );
+  const indiceMaturidade = indiceMaturidadeRaw ?? (
+    assembleias !== null && prazoMeses > 0 ? assembleias / prazoMeses : null
+  );
   const cnpjRaiz = _onlyDigits(_firstValue(g, ['cnpjRaiz', 'cnpjAdministradora', 'cnpj'], ''), _asText(g.cnpjRaiz));
   const codigoGrupo = _asText(_firstValue(g, ['codigoGrupo', 'grupo', 'idGrupo'], ''), `GRUPO-${index + 1}`);
   const dataBase = _firstValue(g, ['dataBase', 'competencia'], '');
@@ -255,14 +278,14 @@ function _normalizeGroup(raw, index = 0) {
     _firstValue(g, ['indiceCorrecaoNome', 'indiceCorrecao'], IndiceCorrecaoRef[g.indiceCorrecaoCodigo] || 'Outro'),
     'Outro'
   );
-  g.qtdAtivasEmDia = _parseInteger(_firstValue(g, ['qtdAtivasEmDia', 'qtdAtivas'], 0));
-  g.qtdContempladasNoMes = _parseInteger(_firstValue(g, ['qtdContempladasNoMes', 'qtdContempladasMes'], 0));
-  g.qtdQuitadas = _parseInteger(_firstValue(g, ['qtdQuitadas', 'quitadas'], 0));
-  g.qtdExcluidas = _parseInteger(_firstValue(g, ['qtdExcluidas', 'qtdCanceladas', 'excluidas'], 0));
-  g.qtdCreditoPendente = _parseInteger(_firstValue(g, ['qtdCreditoPendente', 'creditoPendente'], 0));
-  g.taxaInadimplencia = _parseRatio(_firstValue(g, ['taxaInadimplencia', 'inadimplenciaPct'], 0));
+  g.qtdAtivasEmDia = _parseOptionalInteger(_firstValue(g, ['qtdAtivasEmDia', 'qtdAtivas'], null));
+  g.qtdContempladasNoMes = _parseOptionalInteger(_firstValue(g, ['qtdContempladasNoMes', 'qtdContempladasMes'], null));
+  g.qtdQuitadas = _parseOptionalInteger(_firstValue(g, ['qtdQuitadas', 'quitadas'], null));
+  g.qtdExcluidas = _parseOptionalInteger(_firstValue(g, ['qtdExcluidas', 'qtdCanceladas', 'excluidas'], null));
+  g.qtdCreditoPendente = _parseOptionalInteger(_firstValue(g, ['qtdCreditoPendente', 'creditoPendente'], null));
+  g.taxaInadimplencia = _parseOptionalRatio(_firstValue(g, ['taxaInadimplencia', 'inadimplenciaPct'], null));
   g.indiceMaturidade = indiceMaturidade;
-  g.contemplacoesRelativasPct = _parseNumber(_firstValue(g, ['contemplacoesRelativasPct'], 0));
+  g.contemplacoesRelativasPct = _parseOptionalNumber(_firstValue(g, ['contemplacoesRelativasPct'], null));
   g.lanceEmbutidoMaxPct = _parseNumber(_firstValue(g, ['lanceEmbutidoMaxPct'], 30), 30);
   g.lanceFixoPct = _parseNumber(_firstValue(g, ['lanceFixoPct'], 20), 20);
   g.parcelaReduzidaDisponivel = _parseBoolean(_firstValue(g, ['parcelaReduzidaDisponivel'], true), true);
@@ -277,6 +300,12 @@ function _normalizeGroup(raw, index = 0) {
     taxaAdmPct: sourceHas('taxaAdmPct') ? 'source' : 'derived',
     prazoMeses: sourceHas('prazoMeses') ? 'source' : 'derived',
     indiceMaturidade: sourceHas('indiceMaturidade') ? 'source' : 'derived',
+    qtdAtivasEmDia: sourceHas('qtdAtivasEmDia') ? 'source' : 'unavailable',
+    qtdContempladasNoMes: sourceHas('qtdContempladasNoMes') ? 'source' : 'unavailable',
+    qtdExcluidas: sourceHas('qtdExcluidas') ? 'source' : 'unavailable',
+    qtdQuitadas: sourceHas('qtdQuitadas') ? 'source' : 'unavailable',
+    qtdCreditoPendente: sourceHas('qtdCreditoPendente') ? 'source' : 'unavailable',
+    taxaInadimplencia: sourceHas('taxaInadimplencia') ? 'source' : 'unavailable',
     fundoReservaPct: sourceHas('fundoReservaPct') ? 'base-default' : 'default',
     lanceEmbutidoMaxPct: sourceHas('lanceEmbutidoMaxPct') ? 'base-default' : 'default',
     lanceFixoPct: sourceHas('lanceFixoPct') ? 'base-default' : 'default',
@@ -317,9 +346,9 @@ function enrichGroup(g, index = 0) {
 
   // Garantir campo de contemplações relativas
   if (g.contemplacoesRelativasPct == null) {
-    g.contemplacoesRelativasPct = g.qtdAtivasEmDia > 0
+    g.contemplacoesRelativasPct = g.qtdAtivasEmDia !== null && g.qtdContempladasNoMes !== null && g.qtdAtivasEmDia > 0
       ? ((g.qtdContempladasNoMes / g.qtdAtivasEmDia) * 100)
-      : 0;
+      : null;
   }
 
   // Garantir campos comerciais padrão (a base real não traz, usa defaults)

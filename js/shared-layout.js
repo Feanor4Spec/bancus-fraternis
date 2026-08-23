@@ -236,7 +236,7 @@
           : `${pageDir}index.html`;
     const adminLinks = role === 'admin' ? `
       <div>
-        <h5>Administração</h5>
+        <h5 role="heading" aria-level="2">Administração</h5>
         <a href="${pageDir}modelos-governanca.html">Modelos</a><br>
         <a href="${pageDir}calculadoras-governanca.html">Calculadoras</a><br>
         <a href="${pageDir}api-docs.html">Integrações</a>
@@ -258,7 +258,7 @@
         </div>
         <div class="footer__links">
           <div>
-            <h5>Acesso rápido</h5>
+            <h5 role="heading" aria-level="2">Acesso rápido</h5>
             <a href="${homeHref}">${homeLabel}</a><br>
             <a href="${pageDir}simulador.html">Simular</a><br>
             <a href="${pageDir}produtos.html">Produtos</a><br>

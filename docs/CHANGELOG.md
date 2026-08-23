@@ -4,6 +4,29 @@
 
 ---
 
+## [v9.3.0] - 2026-08-22
+
+### Visão 360 do Grupo — Série demonstrativa do grupo
+
+#### Adicionado
+- Nova rota `pages/grupo.html` com identidade do grupo, retrato do catálogo, série demonstrativa de assembleias, gráficos acessíveis, tabelas equivalentes, detalhe por evento e seis destinos de navegação.
+- Ponte de ida e volta entre a prateleira e a Visão 360, com estado temporário de sessão, retorno à etapa 4 e inclusão idempotente do grupo no projeto.
+- Evidências de catálogo para a proposta, limitadas, versionadas e reconstruídas a partir da fonte carregada; a série demonstrativa não é elegível como evidência contratual.
+- Gates `tools/validate-group-intelligence.mjs`, relatório de navegador e comparação visual da Opção 2.
+
+#### Modificado
+- Prateleira, motor heurístico, estado do simulador e proposta passaram a preservar `groupKey`, competência, status, definição, limitação e metadados verificáveis da fonte.
+- Valores ausentes permanecem `null` e não são convertidos em zero; evidências de até três grupos são distribuídas para preservar diversidade.
+- A rota sem grupo apresenta orientação vazia, sem selecionar silenciosamente uma referência padrão.
+
+#### Validação
+- `node tools/validate-group-intelligence.mjs`
+- `node tools/validate-simulator-shelf.mjs`
+- `node tools/validate-simulator-result-decision.mjs`
+- 22 gates relacionados de regressão aprovados, além de navegação, teclado, foco, contraste e ausência de overflow horizontal em 1280 × 720.
+
+---
+
 ## [v9.2.0] - 2026-08-22
 
 ### Autenticação produtiva e entrada simplificada

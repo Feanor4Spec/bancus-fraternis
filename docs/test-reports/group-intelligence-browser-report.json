@@ -1,0 +1,77 @@
+{
+  "ok": true,
+  "date": "2026-08-22",
+  "route": "http://127.0.0.1:8080/pages/grupo.html?groupKey=00000776%7C202512%7C1%7C79",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "scenarios": {
+    "exactGroup": {
+      "state": "ready",
+      "group": "79",
+      "historyAssemblies": 13,
+      "historyTotalContemplations": 47,
+      "historyByBid": 34,
+      "bidRange": "21,0%-43,6%"
+    },
+    "bareRoute": {
+      "state": "empty",
+      "defaultGroupInvented": false
+    },
+    "groupWithoutHistory": {
+      "group": "57",
+      "state": "ready",
+      "snapshotVisible": true,
+      "historyVisible": false,
+      "emptyHistoryVisible": true
+    },
+    "directReturn": {
+      "target": "/pages/simulador.html#step-4",
+      "activeStep": 4,
+      "selectedGroups": 1
+    },
+    "returnAfterSectionNavigation": {
+      "sourceHash": "#lances",
+      "targetTop": 139.83,
+      "returnedTo": "/pages/simulador.html#step-4",
+      "stayedOnGroupPage": false
+    },
+    "sectionNavigation": {
+      "historiaTop": 140,
+      "assembleiasTop": 140,
+      "lancesTop": 140,
+      "retratoTop": 140,
+      "fluxosTop": 140,
+      "fontesTop": 140
+    },
+    "duplicateSelection": {
+      "attempts": 2,
+      "selectedGroups": 1,
+      "group79Rows": 1
+    },
+    "chartKeyboard": {
+      "focusedCanvas": "assembly-volume-chart",
+      "arrowRightAnnouncement": "Assembleia 151, 05 de mar de 2024: 1 por sorteio, 2 por lance, 3 no total."
+    },
+    "assemblyDialog": {
+      "initialFocus": "Fechar detalhe",
+      "backgroundInert": true,
+      "escapeCloses": true,
+      "focusReturned": true
+    },
+    "layout": {
+      "horizontalOverflow": false,
+      "primaryActionVisibleInFirstViewport": true,
+      "primaryActionTop": 197.81,
+      "rangeMetricFitsCard": true,
+      "historyCardTop": 536.87,
+      "unnamedInteractiveControls": 0,
+      "visibleTargetsBelow24px": 0
+    }
+  },
+  "limitations": [
+    "Rendered captures at 360px and 768px were not executed because the integrated browser policy blocked the local emulation surface; responsive CSS contracts passed static validation.",
+    "A dedicated real screen-reader session was not executed."
+  ]
+}

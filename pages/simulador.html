@@ -715,7 +715,9 @@
                 data-shelf-detail-close onclick="App.fecharDetalheGrupo()">Fechar</button>
             </div>
             <div id="shelf-detail-content"></div>
-            <div style="margin-top:20px;text-align:right;">
+            <div class="shelf-detail-actions" style="margin-top:20px;text-align:right;">
+              <button id="shelf-detail-360" class="btn btn--secondary" type="button"
+                onclick="App.abrirVisaoGrupoDoDetalhe()">Abrir Visão 360</button>
               <button id="shelf-detail-add" class="btn btn--primary" type="button"
                 onclick="App.selecionarGrupoDoDetalhe()">+ Adicionar ao Projeto</button>
             </div>
@@ -1436,6 +1438,7 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
   <script src="../assets/js/services/handoff-consultivo.service.js"></script>
   <script src="../js/simulator-journey.js"></script>
   <script src="../js/simulator-state.js"></script>
+  <script src="../js/group-journey.js"></script>
   <script src="../js/storage.js"></script>
   <script src="../js/proposal-resume-guard.js"></script>
   <script src="../js/proposal-integrity.js"></script>
@@ -1499,6 +1502,7 @@ S <span style="color:#ef4444;">Sim   Parcela = 0 (fim do plano)</span>
           // Disparar busca inicial para popular a prateleira
           if (progress) progress.stage('shelf', 94, 'Organizando os grupos.', 'Aplicando os filtros iniciais.');
           App.buscarGrupos();
+          if (App.restaurarRetornoGrupo) App.restaurarRetornoGrupo();
         } else {
           console.warn('[bootV7] App indisponivel; boot continuou sem busca inicial.');
         }

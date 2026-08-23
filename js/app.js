@@ -56,6 +56,8 @@ const App = (() => {
   let _viewingGroup = null; // grupo aberto no modal de detalhes
   let _shelfDetailReturnFocus = null;
   let _shelfDetailReturnFocusKey = '';
+  let _groupReturnRestored = false;
+  let _lastGroupSelectionChangedProject = false;
   // V5: Projeto Estruturado Multi-Seleção
   let projetoEstruturado = { itens: [] }; // carrinho de grupos selecionados
 
@@ -3630,7 +3632,7 @@ const App = (() => {
         ? `<button class="btn btn--sm btn--success" onclick="App.selecionarGrupo(${globalIdx})" title="Re-adicionar">OK</button>`
         : `<button class="btn btn--sm btn--primary" onclick="App.selecionarGrupo(${globalIdx})" title="Adicionar">+</button>`;
       return `
-        <tr class="${rowCls}" data-idx="${globalIdx}" ${rowBg ? `style="background:${rowBg}"` : ''}>
+        <tr class="${rowCls}" data-idx="${globalIdx}" data-group-key="${escapeSettingsText(g.groupKey)}" ${rowBg ? `style="background:${rowBg}"` : ''}>
           <td data-shelf-col="score"><span class="shelf-score ${scoreCls}">${g.scoreShelf}</span></td>
           <td data-shelf-col="classificacao">${_getClassBadge(g)}</td>
           <td data-shelf-col="papel">${_getRoleBadge(g)}</td>
@@ -3641,7 +3643,7 @@ const App = (() => {
           <td data-shelf-col="prazo">${g.prazoMeses}m</td>
           <td data-shelf-col="taxa">${(g.taxaAdmPct || 0).toFixed(2)}%</td>
           <td data-shelf-col="indice">${g.indiceCorrecaoNome || '—'}</td>
-          <td data-shelf-col="ativas">${Format.number(g.qtdAtivasEmDia || 0, 0)}</td>
+          <td data-shelf-col="ativas">${g.qtdAtivasEmDia == null ? 'Não disponível' : Format.number(g.qtdAtivasEmDia, 0)}</td>
           <td data-shelf-col="saude">${_getSaudeBadge(g)}</td>
           <td data-shelf-col="acoes" class="shelf-actions-cell">
             <button class="btn btn--sm btn--ghost" type="button" data-shelf-detail-trigger="${globalIdx}" onclick="App.verDetalheGrupo(${globalIdx})" aria-label="Ver detalhes do grupo ${escapeSettingsText(g.codigoGrupo)}" title="Ver detalhes">Ver</button>
@@ -3753,6 +3755,9 @@ const App = (() => {
       if (window.BFSimulatorShelf.setDetailAddVisible) {
         window.BFSimulatorShelf.setDetailAddVisible(document, true);
       }
+      if (window.BFSimulatorShelf.setDetail360Visible) {
+        window.BFSimulatorShelf.setDetail360Visible(document, true);
+      }
       abrirShelfDetailModal();
       return;
     }
@@ -3819,11 +3824,11 @@ const App = (() => {
           <div class="shelf-detail-section">
             <h4>Cotas e Saúde do Grupo</h4>
             <table class="detail-mini-table">
-              <tr><td>Cotas Ativas em Dia</td><td><strong>${Format.number(g.qtdAtivasEmDia || 0, 0)}</strong></td></tr>
-              <tr><td>Contempladas no Mês</td><td>${g.qtdContempladasNoMes}</td></tr>
-              <tr><td>Cotas Excluídas</td><td>${g.qtdExcluidas}</td></tr>
-              <tr><td>Cotas Quitadas</td><td>${g.qtdQuitadas}</td></tr>
-              <tr><td>Crédito Pendente</td><td>${g.qtdCreditoPendente}</td></tr>
+              <tr><td>Cotas Ativas em Dia</td><td><strong>${g.qtdAtivasEmDia == null ? 'Não disponível' : Format.number(g.qtdAtivasEmDia, 0)}</strong></td></tr>
+              <tr><td>Contempladas no Mês</td><td>${g.qtdContempladasNoMes == null ? 'Não disponível' : g.qtdContempladasNoMes}</td></tr>
+              <tr><td>Cotas Excluídas</td><td>${g.qtdExcluidas == null ? 'Não disponível' : g.qtdExcluidas}</td></tr>
+              <tr><td>Cotas Quitadas</td><td>${g.qtdQuitadas == null ? 'Não disponível' : g.qtdQuitadas}</td></tr>
+              <tr><td>Crédito Pendente</td><td>${g.qtdCreditoPendente == null ? 'Não disponível' : g.qtdCreditoPendente}</td></tr>
               <tr><td>Indice operacional</td><td><strong>${g.scoreShelf}</strong>/100</td></tr>
             </table>
           </div>
@@ -3889,40 +3894,356 @@ const App = (() => {
     if (!options.keepProjectSimulation) projectSimulation = null;
   }
 
-  /** Adiciona um grupo ao projeto estruturado (carrinho multi-select). */
-  function selecionarGrupo(idx) {
-    const g = shelfGroups[idx];
-    if (!g) return;
-    selectedShelfGroup = g; // compatibilidade legada
+  function captureShelfControlState() {
+    const ids = [
+      'filtroAdministradora', 'filtroProduto', 'filtroPrazoMin', 'filtroPrazoMax',
+      'filtroCartaMin', 'filtroCartaMax', 'filtroTaxaMax', 'filtroClassificacao',
+      'filtroSaude', 'filtroMaturidade', 'filtroFgts', 'filtroParcelaReduzida',
+      'filtroBusca', 'shelfSort'
+    ];
+    return ids.reduce((state, id) => {
+      const element = document.getElementById(id);
+      if (!element) return state;
+      state[id] = element.type === 'checkbox' ? !!element.checked : element.value;
+      return state;
+    }, {});
+  }
 
-    // Criar item no projeto estruturado
+  function applyShelfControlState(controls) {
+    if (!controls || typeof controls !== 'object') return 0;
+    let applied = 0;
+    Object.entries(controls).forEach(([id, value]) => {
+      const element = document.getElementById(id);
+      if (!element) return;
+      if (element.type === 'checkbox') element.checked = value === true;
+      else element.value = String(value == null ? '' : value);
+      applied += 1;
+    });
+    return applied;
+  }
+
+  function buildCatalogSnapshotEvidence(group) {
+    if (!group || !window.BFGroupJourney?.buildSnapshotEvidence) return [];
+    const status = typeof getShelfDataStatus === 'function' ? getShelfDataStatus() : {};
+    return window.BFGroupJourney.buildSnapshotEvidence(group, status);
+  }
+
+  function captureCalculationSnapshot() {
+    const safeSnapshot = (value) => {
+      if (!value) return null;
+      try { return jsonSnapshot(value); } catch (error) { return null; }
+    };
+    return {
+      currentParams: window.BFSimulatorState?.sanitizeLocalParams
+        ? window.BFSimulatorState.sanitizeLocalParams(currentParams || {})
+        : {},
+      resultado: safeSnapshot(resultado),
+      cenarios: safeSnapshot(cenarios),
+      comparison: safeSnapshot(compResult),
+      projectSimulation: safeSnapshot(projectSimulation)
+    };
+  }
+
+  function abrirVisaoGrupo(groupKey, options = {}) {
+    const key = String(groupKey || '').trim();
+    const group = (typeof ShelfCatalog !== 'undefined' && Array.isArray(ShelfCatalog))
+      ? ShelfCatalog.find((candidate) => String(candidate?.groupKey || '') === key)
+      : null;
+    if (!group || !window.BFGroupJourney?.buildHref || !window.BFSimulatorState) {
+      showToast('Não foi possível abrir a visão deste grupo.', 'warning');
+      return false;
+    }
+    try {
+      const cart = window.BFSimulatorState.collectSavedCart(projetoEstruturado.itens, { getEffectiveLanceEmbutidoMax });
+      const returnState = window.BFGroupJourney.create({
+        step: currentStep,
+        surface: options.surface || 'shelf-modal',
+        scrollY: window.scrollY,
+        focusGroupKey: key,
+        openGroupKey: key,
+        shelf: {
+          controls: captureShelfControlState(),
+          page: _shelfCurrentPage,
+          pageSize: getPageSize()
+        },
+        cart,
+        formSnapshot: window.BFSimulatorState.collectFormSnapshot(document),
+        calculationSnapshot: captureCalculationSnapshot()
+      });
+      const href = window.BFGroupJourney.buildHref(key, {
+        returnState,
+        surface: options.surface || 'shelf-modal'
+      });
+      if (!href) throw new Error('link inválido');
+      window.location.assign(href);
+      return true;
+    } catch (error) {
+      showToast('Não foi possível preparar a navegação para este grupo.', 'warning');
+      return false;
+    }
+  }
+
+  function abrirVisaoGrupoDoDetalhe() {
+    if (!_viewingGroup) return false;
+    const key = _viewingGroup.groupKey;
+    fecharDetalheGrupo({ restoreFocus: false });
+    return abrirVisaoGrupo(key, { surface: 'shelf-modal' });
+  }
+
+  function groupReturnToken() {
+    try {
+      const params = new URLSearchParams(window.location.search || '');
+      if (params.get('useGroup') === '1' && !params.get('groupReturn')) return 'direct';
+      const active = window.BFGroupJourney?.activeToken?.() || '';
+      if (active) return active;
+      return params.get('groupReturn') || '';
+    } catch (error) {
+      return window.BFGroupJourney?.activeToken?.() || '';
+    }
+  }
+
+  function clearGroupReturnNavigationParams() {
+    if (!window.history?.replaceState) return;
+    try {
+      const url = new URL(window.location.href);
+      ['groupReturn', 'restore', 'useGroup'].forEach((key) => url.searchParams.delete(key));
+      if (url.searchParams.get('from') === 'grupo') url.searchParams.delete('from');
+      window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
+    } catch (error) { /* no-op */ }
+  }
+
+  function readPendingGroupSelection(token) {
+    const safeToken = window.BFGroupJourney?.validToken?.(token) ? token : 'direct';
+    try {
+      const key = `bf_group_selection_v1:${safeToken}`;
+      const value = JSON.parse(sessionStorage.getItem(key) || 'null');
+      if (!value || value.schema !== 'bancus.group-selection.v1') return null;
+      if (String(value.groupKey || '').split('|').length !== 4) {
+        sessionStorage.removeItem(key);
+        return null;
+      }
+      const createdAt = Date.parse(value.createdAt || '');
+      if (!Number.isFinite(createdAt) || Date.now() - createdAt > 30 * 60 * 1000 || createdAt - Date.now() > 60 * 1000) {
+        sessionStorage.removeItem(key);
+        return null;
+      }
+      return value;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function discardPendingGroupSelection(token) {
+    const safeToken = window.BFGroupJourney?.validToken?.(token) ? token : 'direct';
+    try {
+      sessionStorage.removeItem(`bf_group_selection_v1:${safeToken}`);
+    } catch (error) { /* no-op */ }
+  }
+
+  function ensureGroupInProject(group, options = {}) {
+    if (!group) return null;
+    selectedShelfGroup = group;
+    const existing = projetoEstruturado.itens.find((candidate) => candidate.groupKey === group.groupKey);
+    if (existing) {
+      existing.groupEvidence = buildCatalogSnapshotEvidence(group);
+      if (!options.deferRender) {
+        renderShelfPage();
+        renderGruposSelecionados();
+      }
+      if (!options.silent) {
+        showToast(`O grupo ${group.codigoGrupo} já está no projeto. Ajuste a quantidade de cotas no painel selecionado.`, 'info');
+        window.requestAnimationFrame(() => {
+          document.querySelector(`.selected-group-row[data-item-id="${existing.itemId}"] input, .selected-group-row[data-item-id="${existing.itemId}"] button`)?.focus();
+        });
+      }
+      return { item: existing, created: false };
+    }
+
     const item = window.BFSimulatorCart && window.BFSimulatorCart.createProjectItem
-      ? window.BFSimulatorCart.createProjectItem(g, { shelfEngine: ShelfEngine, numberSetting, getEffectiveLanceEmbutidoMax })
-      : ShelfEngine.createProjectItem(g, 1);
+      ? window.BFSimulatorCart.createProjectItem(group, { shelfEngine: ShelfEngine, numberSetting, getEffectiveLanceEmbutidoMax })
+      : ShelfEngine.createProjectItem(group, 1);
     if (!item) {
-      showToast('Nao foi possivel adicionar o grupo ao projeto.', 'error');
-      return;
+      if (!options.silent) showToast('Não foi possível adicionar o grupo ao projeto.', 'error');
+      return null;
     }
     if (!window.BFSimulatorCart) {
       item.mesContemplacaoAlvo = numberSetting('defaultMesContemplacao', item.mesContemplacaoAlvo || 18);
       item.lanceEmbutidoPct = Math.max(0, Math.min(
-        getEffectiveLanceEmbutidoMax(g),
+        getEffectiveLanceEmbutidoMax(group),
         Number(item.lanceEmbutidoPct || 0)
       ));
     }
+    item.groupEvidence = buildCatalogSnapshotEvidence(group);
+    item.assemblyHistory = { status: 'unavailable', includedInProposal: false };
+    item.groupConfirmation = null;
     projetoEstruturado.itens.push(item);
     invalidateCalculatedArtifacts();
 
-    // Re-renderizar tabela para atualizar indicador "Adicionado"
+    if (!options.deferRender) {
+      renderShelfPage();
+      renderGruposSelecionados();
+      atualizarBotaoAvancar();
+      populateGroupSelects();
+      renderSimulatorDecision();
+    }
+    if (!options.silent) showToast(`Grupo ${group.codigoGrupo} (${group.nomeAdministradora}) adicionado ao projeto.`, 'success');
+    return { item, created: true };
+  }
+
+  function restoreGroupSelectionFromSession(token = groupReturnToken()) {
+    _lastGroupSelectionChangedProject = false;
+    const selection = readPendingGroupSelection(token);
+    if (!selection?.groupKey) return false;
+    const group = (typeof ShelfCatalog !== 'undefined' && Array.isArray(ShelfCatalog))
+      ? ShelfCatalog.find((candidate) => String(candidate?.groupKey || '') === String(selection.groupKey))
+      : null;
+    if (!group) {
+      showToast('O grupo selecionado não está disponível nesta competência.', 'warning');
+      return false;
+    }
+    const ensured = ensureGroupInProject(group, { deferRender: true, silent: true });
+    const item = ensured?.item || null;
+    if (!item) return false;
+    const alreadyInProject = ensured.created !== true;
+    _lastGroupSelectionChangedProject = ensured.created === true;
+    // Não confiar em valores vindos do sessionStorage: a evidência é sempre
+    // reconstruída a partir do groupKey exato e do catálogo carregado.
+    item.groupEvidence = buildCatalogSnapshotEvidence(group);
+    item.assemblyHistory = selection.assemblyHistory?.status === 'demonstrative'
+      ? {
+          status: 'demonstrative',
+          includedInProposal: false,
+          associationStatus: 'unverified-demonstrative-mapping'
+        }
+      : { status: 'unavailable', includedInProposal: false };
+    item.groupConfirmation = selection.confirmationRequired === true
+      ? {
+          status: 'required',
+          reason: 'Confirmar resultados oficiais, regras vigentes e disponibilidade com a administradora.'
+        }
+      : null;
+    item.dataBase = item.dataBase || group.dataBase || '';
+    discardPendingGroupSelection(token);
     renderShelfPage();
-    // Renderizar painel de grupos selecionados
     renderGruposSelecionados();
-    // Atualizar botão de avançar
+    renderStep5Cart();
     atualizarBotaoAvancar();
     populateGroupSelects();
     renderSimulatorDecision();
+    if (resultado) renderProposta();
+    showToast(
+      alreadyInProject
+        ? `Referências do grupo ${group.codigoGrupo} atualizadas no projeto.`
+        : `Grupo ${group.codigoGrupo} adicionado ao projeto.`,
+      'success'
+    );
+    return true;
+  }
 
-    showToast(`Grupo ${g.codigoGrupo} (${g.nomeAdministradora}) adicionado ao projeto.`, 'success');
+  function restoreCalculationSnapshot(snapshot) {
+    if (!snapshot || typeof snapshot !== 'object' || _lastGroupSelectionChangedProject) return false;
+    currentParams = snapshot.currentParams && typeof snapshot.currentParams === 'object'
+      ? snapshot.currentParams
+      : currentParams;
+    resultado = snapshot.resultado && Array.isArray(snapshot.resultado.cronograma)
+      ? snapshot.resultado
+      : null;
+    cenarios = snapshot.cenarios || null;
+    compResult = snapshot.comparison || null;
+    projectSimulation = snapshot.projectSimulation || null;
+    if (resultado) {
+      renderResultados();
+      renderTabela();
+      renderProposta();
+    }
+    if (compResult && !compResult.erro) {
+      const comparisonRestored = restoreComparisonSource(compResult);
+      if (comparisonRestored) {
+        setComparisonOutputsVisible(true);
+        renderCompCards(compResult);
+        renderCompWinners(compResult);
+        renderCompNarrativa(compResult);
+        window.setTimeout(() => ChartManager.renderAllComparison(compResult), 150);
+      } else {
+        invalidateComparison();
+      }
+    }
+    renderSimulatorDecision();
+    return true;
+  }
+
+  function restaurarRetornoGrupo(options = {}) {
+    const token = groupReturnToken();
+    if (!token) return false;
+    if (token === 'direct') {
+      const direct = restoreGroupSelectionFromSession('direct');
+      goToStep(4, { skipValidation: true, skipAutoSearch: true, skipFocus: false });
+      clearGroupReturnNavigationParams();
+      return direct;
+    }
+    if (!window.BFGroupJourney?.read) return false;
+    if (options.selectionOnly) {
+      const state = window.BFGroupJourney.read(token);
+      if (!state) return false;
+      const selected = restoreGroupSelectionFromSession(token);
+      restoreCalculationSnapshot(state.calculationSnapshot);
+      window.setTimeout(() => {
+        window.scrollTo({ top: Math.max(0, Number(state.source?.scrollY) || 0), behavior: 'auto' });
+        const row = Array.from(document.querySelectorAll('[data-group-key]'))
+          .find((candidate) => candidate.dataset.groupKey === state.source?.focusGroupKey);
+        row?.querySelector('[data-shelf-detail-trigger]')?.focus({ preventScroll: true });
+      }, 40);
+      window.BFGroupJourney.discard?.(token);
+      clearGroupReturnNavigationParams();
+      return selected || true;
+    }
+    if (_groupReturnRestored) return false;
+    const state = window.BFGroupJourney.read(token);
+    if (!state) return false;
+    _groupReturnRestored = true;
+    if (window.BFSimulatorState?.applyFormSnapshot) {
+      window.BFSimulatorState.applyFormSnapshot(state.formSnapshot, document);
+    }
+    applyShelfControlState(state.shelf?.controls);
+    if (Array.isArray(state.cart) && window.BFSimulatorState?.restoreSavedCartItems) {
+      projetoEstruturado.itens = window.BFSimulatorState.restoreSavedCartItems(state.cart, {
+        catalog: typeof ShelfCatalog !== 'undefined' && Array.isArray(ShelfCatalog) ? ShelfCatalog : [],
+        shelfEngine: typeof ShelfEngine !== 'undefined' ? ShelfEngine : null,
+        getEffectiveLanceEmbutidoMax
+      });
+      projetoEstruturado.itens.forEach((item) => {
+        const exact = (typeof ShelfCatalog !== 'undefined' && Array.isArray(ShelfCatalog) ? ShelfCatalog : [])
+          .find((group) => group.groupKey === item.groupKey);
+        item.groupEvidence = exact ? buildCatalogSnapshotEvidence(exact) : [];
+      });
+      renderGruposSelecionados();
+      renderStep5Cart();
+      populateGroupSelects();
+    }
+    buscarGrupos();
+    const page = Math.max(1, Number(state.shelf?.page) || 1);
+    const totalPages = Math.max(1, Math.ceil(shelfGroups.length / getPageSize()));
+    _shelfCurrentPage = Math.min(page, totalPages);
+    renderShelfPage();
+    goToStep(Number(state.source?.step) || 4, { skipValidation: true, skipAutoSearch: true, skipFocus: true });
+    const selected = restoreGroupSelectionFromSession(token);
+    restoreCalculationSnapshot(state.calculationSnapshot);
+    window.setTimeout(() => {
+      window.scrollTo({ top: Math.max(0, Number(state.source?.scrollY) || 0), behavior: 'auto' });
+      const row = Array.from(document.querySelectorAll('[data-group-key]'))
+        .find((candidate) => candidate.dataset.groupKey === state.source?.focusGroupKey);
+      row?.querySelector('[data-shelf-detail-trigger]')?.focus({ preventScroll: true });
+    }, 80);
+    window.BFGroupJourney.discard?.(token);
+    clearGroupReturnNavigationParams();
+    return true;
+  }
+
+  /** Adiciona um grupo ao projeto estruturado (carrinho multi-select). */
+  function selecionarGrupo(idx) {
+    const g = shelfGroups[idx];
+    if (!g) return;
+    return ensureGroupInProject(g)?.item || null;
   }
 
   /** Remove um grupo do projeto estruturado. */
@@ -4607,6 +4928,9 @@ const App = (() => {
       const addBtn = modal?.querySelector('.shelf-detail-card > div:last-child button');
       if (addBtn) addBtn.style.display = 'none';
     }
+    if (window.BFSimulatorShelf && window.BFSimulatorShelf.setDetail360Visible) {
+      window.BFSimulatorShelf.setDetail360Visible(document, false);
+    }
 
     abrirShelfDetailModal();
   }
@@ -4955,6 +5279,10 @@ const App = (() => {
     verDetalheGrupo,
     fecharDetalheGrupo,
     selecionarGrupoDoDetalhe,
+    abrirVisaoGrupo,
+    abrirVisaoGrupoDoDetalhe,
+    restaurarRetornoGrupo,
+    restoreGroupSelectionFromSession,
     selecionarGrupo,
     // V7 — Paginação
     shelfPrevPage,
@@ -4984,3 +5312,9 @@ if (typeof window !== 'undefined') window.App = App;
 
 // Inicializar quando o DOM estiver pronto
 document.addEventListener('DOMContentLoaded', App.init);
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted && App.restaurarRetornoGrupo) {
+    App.fecharDetalheGrupo?.({ restoreFocus: false });
+    App.restaurarRetornoGrupo({ selectionOnly: true });
+  }
+});

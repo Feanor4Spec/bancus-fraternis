@@ -150,6 +150,8 @@ const PAGE_ALIASES = new Set([
   'lousa-navegacao.html',
   'login.html',
   'simulador.html',
+  'grupo.html',
+  'proposta.html',
   'simulador-consorcio.html',
   'simulador-financiamento.html',
   'simulador-veiculos.html',

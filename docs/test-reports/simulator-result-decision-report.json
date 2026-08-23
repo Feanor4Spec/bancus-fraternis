@@ -11,7 +11,7 @@
     "htmlSummary": true,
     "appContext": true,
     "proposalDecision": true,
-    "historicalSourceDisclosure": true,
+    "catalogSnapshotDisclosure": true,
     "availabilityConfirmation": true,
     "builderOption": true,
     "css": true

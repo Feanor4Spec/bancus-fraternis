@@ -202,7 +202,7 @@ const table = shelf.renderTable([sampleGroup], {
 const explanation = shelf.explainGroupRecommendation(sampleGroup, { filters });
 assert(table.countText === '1 referência encontrada', 'renderTable gerou contador incorreto.');
 assert(table.bodyHtml.includes('shelf-row--added'), 'renderTable deveria marcar grupo ja adicionado.');
-assert(table.bodyHtml.includes('App.selecionarGrupo(0)'), 'renderTable deveria manter acao publica App.selecionarGrupo.');
+assert(table.bodyHtml.includes('já adicionado ao projeto') && table.bodyHtml.includes('disabled'), 'renderTable deveria impedir duplicacao do mesmo groupKey.');
 assert(table.bodyHtml.includes('data-shelf-col="acoes"'), 'renderTable deveria preservar data-shelf-col.');
 assert(table.bodyHtml.includes('data-shelf-recommendation'), 'renderTable deveria explicar recomendacao do grupo.');
 assert(explanation.reasons.length >= 2, 'explainGroupRecommendation deveria gerar motivos acionaveis.');

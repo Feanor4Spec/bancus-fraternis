@@ -380,7 +380,7 @@ const ProposalSummary = (() => {
 
     if (!projectItems.length) riscos.push('Nenhum grupo foi selecionado. Inclua pelo menos um grupo antes de enviar a proposta.');
     if (projectItems.length) riscos.push(sourceCompetencies.length
-      ? `As referências são históricas (${sourceLabel}). Confirme disponibilidade, taxas e regras atuais com a administradora antes da contratação.`
+      ? `As referências são retratos do catálogo (${sourceLabel}). Confirme disponibilidade, taxas e regras atuais com a administradora antes da contratação.`
       : 'A competência da base não foi informada. Confirme a origem e as condições atuais antes de compartilhar a proposta.');
     if (readiness < 70) riscos.push('O perfil financeiro está incompleto. Confirme renda, reserva e capacidade de pagamento antes do aceite.');
     if (diagnostics.reconciled !== true) riscos.push('Os valores do resumo e do cronograma ainda não conferem. Recalcule a simulação antes de enviar.');
@@ -606,6 +606,7 @@ const ProposalSummary = (() => {
       return {
         index: index + 1,
         itemId: item.itemId || group.itemId || '',
+        groupKey: item.groupKey || group.groupKey || '',
         codigoGrupo: item.codigoGrupo || group.codigoGrupo || `Grupo ${index + 1}`,
         administradora: item.administradora || group.nomeAdministradora || group.administradora || 'Administradora a definir',
         segmento: item.nomeSegmento || group.nomeSegmento || 'Segmento a definir',
@@ -623,6 +624,11 @@ const ProposalSummary = (() => {
         mesAniversario,
         modalidadeLance,
         dataBase: String(item.dataBase ?? group.dataBase ?? group.dataReferencia ?? group.mesReferencia ?? '').trim(),
+        groupEvidence: Array.isArray(item.groupEvidence)
+          ? item.groupEvidence.slice(0, 3).map((entry) => ({ ...(entry || {}) }))
+          : [],
+        assemblyHistory: item.assemblyHistory ? { ...item.assemblyHistory } : null,
+        groupConfirmation: item.groupConfirmation ? { ...item.groupConfirmation } : null,
         classificacao: classificacao && (classificacao.final || classificacao.classe || classificacao.nota || classificacao),
         papel: papel && (papel.papel || papel.nome || papel)
       };
@@ -795,7 +801,7 @@ const ProposalSummary = (() => {
       segmento: descriptor.segmento,
       generatedAt: new Date(),
       dataSource: {
-        kind: 'historical-reference',
+        kind: 'catalog-snapshot',
         competence: dataBaseCodes,
         competenceLabel: dataBaseLabel,
         availabilityConfirmed: false
@@ -1146,6 +1152,22 @@ const ProposalSummary = (() => {
   function renderProjectComposition(data) {
     const items = Array.isArray(data.projectItems) ? data.projectItems : [];
     const summary = data.projectSummary || {};
+    const evidenceBuckets = items.map((item) => (Array.isArray(item.groupEvidence) ? item.groupEvidence : [])
+      .slice(0, 3)
+      .map((entry) => ({ ...entry, codigoGrupo: item.codigoGrupo, groupKey: item.groupKey || entry.groupKey })));
+    const evidence = [];
+    for (let round = 0; round < 3 && evidence.length < 3; round += 1) {
+      for (const bucket of evidenceBuckets) {
+        if (bucket[round]) evidence.push(bucket[round]);
+        if (evidence.length === 3) break;
+      }
+    }
+    const confirmations = items.filter((item) => item.groupConfirmation?.status === 'required');
+    const evidenceValue = (entry) => {
+      if (entry.value === null || entry.value === undefined || entry.value === '') return 'Não disponível';
+      if (entry.unit === 'quotas') return `${number(entry.value)} cotas`;
+      return String(entry.value);
+    };
     return `
       <section class="ps-section ps-print-page">
         <div class="ps-section__head">
@@ -1190,6 +1212,23 @@ const ProposalSummary = (() => {
         ` : `
           <div class="ps-empty-schedule">Nenhum grupo foi selecionado. Os totais usam apenas os valores gerais informados na simulação.</div>
         `}
+
+        ${evidence.length ? `
+          <aside class="ps-insight" data-proposal-group-evidence>
+            <strong>Referências verificáveis do catálogo</strong>
+            <p>Até três referências, distribuídas entre os grupos selecionados, foram congeladas com esta proposta. Elas identificam a competência consultada e não confirmam disponibilidade ou condição contratual atual.</p>
+            <ul>
+              ${evidence.map((entry) => `<li><strong>${escapeHTML(entry.label || entry.key || 'Referência')}</strong>: ${escapeHTML(evidenceValue(entry))} <small>Grupo ${escapeHTML(entry.codigoGrupo)} · competência ${escapeHTML(entry.competence || 'não informada')}</small></li>`).join('')}
+            </ul>
+          </aside>
+        ` : ''}
+
+        ${confirmations.length ? `
+          <aside class="ps-insight ps-insight--warning" data-proposal-group-confirmation>
+            <strong>Conferência necessária</strong>
+            <p>Confirme resultados oficiais, regras vigentes e disponibilidade com a administradora para ${confirmations.map((item) => `Grupo ${escapeHTML(item.codigoGrupo)}`).join(', ')} antes do envio ao cliente.</p>
+          </aside>
+        ` : ''}
 
         <aside class="ps-insight">
           <strong>Conferência</strong>

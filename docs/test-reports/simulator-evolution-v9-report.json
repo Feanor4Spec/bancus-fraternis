@@ -434,7 +434,7 @@
       "ok": true,
       "evidence": {
         "pageCount": 16,
-        "htmlLength": 212083,
+        "htmlLength": 215980,
         "hasRoot": true
       }
     },
@@ -456,6 +456,7 @@
           "js/database-progress.js",
           "js/engine.js",
           "js/export.js",
+          "js/group-journey.js",
           "js/heuristic-engine.js",
           "js/proposal-acceptance.js",
           "js/proposal-builder.js",
