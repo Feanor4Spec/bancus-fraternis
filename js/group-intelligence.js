@@ -17,6 +17,9 @@
   let drawerReturnFocus = null;
   let drawerInertState = [];
   let confirmationRequired = false;
+  let operationalView = null;
+  let operationalMode = 'count';
+  let syncSectionNavFromPosition = null;
 
   global.addEventListener('error', (event) => {
     diagnostics.errors.push(String(event.message || 'Erro de execução não identificado.'));
@@ -147,6 +150,244 @@
       index: String(group.indiceCorrecaoNome || 'Não disponível')
     };
     Object.entries(values).forEach(([key, value]) => setText(`[data-snapshot="${key}"]`, value));
+    renderOperational(group);
+  }
+
+  function countStatus(value) {
+    return safeNumber(value) === null ? 'unavailable' : 'observed';
+  }
+
+  function statusLabel(status, unavailableLabel = 'Não calculável') {
+    if (status === 'derived') return 'Calculado';
+    if (status === 'observed') return 'Observado';
+    return unavailableLabel;
+  }
+
+  function quotaPhrase(value) {
+    const parsed = safeNumber(value);
+    if (parsed === null) return 'contagem não informada';
+    return `${integer.format(parsed)} ${parsed === 1 ? 'cota' : 'cotas'}`;
+  }
+
+  function metricPercentage(metric) {
+    return safeNumber(metric?.percentage?.value);
+  }
+
+  function percentageOrUnavailable(metric) {
+    const value = metricPercentage(metric);
+    return value === null ? 'Não calculável' : formatPercent(value);
+  }
+
+  function unavailabilityCopy(metric) {
+    const messages = {
+      competence_missing: 'competência não informada',
+      numerator_unavailable: 'contagem não informada',
+      denominator_unavailable: 'base ativa não informada',
+      denominator_zero: 'base ativa igual a zero',
+      observed_value_unavailable: 'valor observado não informado'
+    };
+    return messages[metric?.unavailableReason] || 'dados insuficientes';
+  }
+
+  function renderOperationalDefinitions(metrics) {
+    const root = $('[data-operational-definitions]');
+    if (!root) return;
+    root.replaceChildren();
+    const order = [
+      'monthlyContemplationsRelative',
+      'historicalExclusionPressure',
+      'pendingCreditRelative',
+      'observedMaturity'
+    ];
+    order.forEach((key) => {
+      const metric = metrics?.[key];
+      if (!metric) return;
+      const item = document.createElement('div');
+      const term = document.createElement('dt');
+      const label = document.createElement('span');
+      const badge = document.createElement('span');
+      const detail = document.createElement('dd');
+      const definition = document.createElement('p');
+      const formula = document.createElement('code');
+      const limitation = document.createElement('p');
+      label.textContent = metric.label;
+      badge.className = 'group360-data-status';
+      badge.dataset.status = metric.status;
+      badge.textContent = statusLabel(metric.status, 'Não disponível');
+      term.append(label, badge);
+      definition.textContent = metric.definition;
+      formula.textContent = metric.formula;
+      limitation.textContent = metric.limitation;
+      detail.append(definition, formula, limitation);
+      item.append(term, detail);
+      root.append(item);
+    });
+  }
+
+  function operationalRows(mode) {
+    const metrics = operationalView?.result?.metrics || {};
+    const monthly = metrics.monthlyContemplationsRelative;
+    const exclusion = metrics.historicalExclusionPressure;
+    const pendingRelative = metrics.pendingCreditRelative;
+    const active = safeNumber(monthly?.counts?.denominator?.value);
+    const contemplated = safeNumber(monthly?.counts?.numerator?.value);
+    const excluded = safeNumber(exclusion?.counts?.numerator?.value);
+    const pending = safeNumber(pendingRelative?.counts?.numerator?.value);
+
+    const baseSupport = active === null
+      ? 'Base ativa não informada; indicadores relativos não calculáveis.'
+      : active === 0
+        ? 'Base ativa observada em zero; indicadores relativos não calculáveis.'
+        : 'Base observada usada nos indicadores relativos desta competência.';
+
+    const countRows = {
+      active: {
+        value: formatInteger(active),
+        support: baseSupport,
+        status: countStatus(active),
+        unavailableLabel: 'Não informado'
+      },
+      contemplated: {
+        value: formatInteger(contemplated),
+        support: contemplated === 0
+          ? 'Nenhuma ocorrência na competência; isso não projeta eventos futuros.'
+          : metricPercentage(monthly) === null
+            ? `Indicador relativo não calculável: ${unavailabilityCopy(monthly)}.`
+            : `${formatPercent(metricPercentage(monthly))} da base. Não representa chance ou garantia de contemplação.`,
+        status: countStatus(contemplated),
+        unavailableLabel: 'Não informado'
+      },
+      excluded: {
+        value: formatInteger(excluded),
+        support: metricPercentage(exclusion) === null
+          ? `Indicador relativo não calculável: ${unavailabilityCopy(exclusion)}.`
+          : `${formatPercent(metricPercentage(exclusion))} da base atual. Estoque acumulado; não é taxa mensal.`,
+        status: countStatus(excluded),
+        unavailableLabel: 'Não informado'
+      },
+      pending: {
+        value: formatInteger(pending),
+        support: pending === 0
+          ? 'Nenhuma ocorrência na competência; não mede disponibilidade de caixa.'
+          : metricPercentage(pendingRelative) === null
+            ? `Indicador relativo não calculável: ${unavailabilityCopy(pendingRelative)}.`
+            : `${formatPercent(metricPercentage(pendingRelative))} da base. Não mede insolvência, caixa ou liquidez.`,
+        status: countStatus(pending),
+        unavailableLabel: 'Não informado'
+      }
+    };
+
+    if (mode === 'count') return countRows;
+    return {
+      active: countRows.active,
+      contemplated: {
+        value: percentageOrUnavailable(monthly),
+        support: metricPercentage(monthly) === null
+          ? `${quotaPhrase(contemplated)} na competência; percentual não calculável por ${unavailabilityCopy(monthly)}.`
+          : `${quotaPhrase(contemplated)} na competência. Não representa chance ou garantia de contemplação.`,
+        status: monthly?.status || 'unavailable'
+      },
+      excluded: {
+        value: percentageOrUnavailable(exclusion),
+        support: metricPercentage(exclusion) === null
+          ? `${quotaPhrase(excluded)} acumuladas; percentual não calculável por ${unavailabilityCopy(exclusion)}.`
+          : `${quotaPhrase(excluded)} acumuladas em relação à base atual. Pode superar 100% e não é taxa mensal.`,
+        status: exclusion?.status || 'unavailable'
+      },
+      pending: {
+        value: percentageOrUnavailable(pendingRelative),
+        support: metricPercentage(pendingRelative) === null
+          ? `${quotaPhrase(pending)} com utilização pendente; percentual não calculável por ${unavailabilityCopy(pendingRelative)}.`
+          : `${quotaPhrase(pending)} com utilização pendente. Não mede insolvência, caixa ou liquidez.`,
+        status: pendingRelative?.status || 'unavailable'
+      }
+    };
+  }
+
+  function renderOperationalMode(mode = 'count', options = {}) {
+    if (!operationalView) return;
+    operationalMode = mode === 'relative' ? 'relative' : 'count';
+    const rows = operationalRows(operationalMode);
+    Object.entries(rows).forEach(([key, row]) => {
+      setText(`[data-operational-value="${key}"]`, row.value);
+      setText(`[data-operational-support="${key}"]`, row.support);
+      $$(`[data-operational-status="${key}"]`).forEach((element) => {
+        element.textContent = statusLabel(row.status, row.unavailableLabel);
+        element.dataset.status = row.status;
+      });
+    });
+    $$('[data-operational-mode]').forEach((button) => {
+      button.setAttribute('aria-pressed', String(button.dataset.operationalMode === operationalMode));
+    });
+    const base = safeNumber(operationalView.group.qtdAtivasEmDia);
+    const competence = formatCompetence(operationalView.group.dataBase);
+    const announcement = operationalMode === 'relative'
+      ? base !== null && base > 0
+        ? `Exibindo indicadores relativos à base de ${quotaPhrase(base)} ativas em dia.`
+        : `Exibindo indicadores relativos. Percentuais não calculáveis: ${base === 0 ? 'base ativa igual a zero' : 'base ativa não informada'}.`
+      : `Exibindo as contagens observadas na competência ${competence}.`;
+    setText('[data-operational-live]', announcement);
+    if (options.focus === true) $(`[data-operational-mode="${operationalMode}"]`)?.focus();
+  }
+
+  function renderCatalogHealth(group) {
+    const delinquency = safeNumber(group?.taxaInadimplencia);
+    const level = String(group?.saudeCarteira || '').trim();
+    const healthCopy = delinquency === null
+      ? 'Inadimplência não informada.'
+      : `Inadimplência ${formatPercent(delinquency * 100)}${level ? ` · faixa da carteira: ${level.toLocaleLowerCase('pt-BR')}` : ''}.`;
+    setText('[data-operational-health]', healthCopy);
+  }
+
+  function renderOperationalUnavailable(group) {
+    const message = 'Leitura operacional indisponível nesta sessão.';
+    $('[data-operational-section]')?.setAttribute('data-operational-state', 'unavailable');
+    ['active', 'contemplated', 'excluded', 'pending'].forEach((key) => {
+      setText(`[data-operational-value="${key}"]`, 'Não disponível');
+      setText(`[data-operational-support="${key}"]`, 'Não foi possível calcular este indicador.');
+      $$(`[data-operational-status="${key}"]`).forEach((element) => {
+        element.textContent = 'Indisponível';
+        element.dataset.status = 'unavailable';
+      });
+    });
+    $$('[data-operational-mode]').forEach((button) => { button.disabled = true; });
+    setText('[data-operational-live]', message);
+    setText('[data-operational-maturity-summary]', 'Maturidade indisponível');
+    setText('[data-operational-classification]', 'A leitura das cotas não pôde ser preparada nesta sessão.');
+    setText('[data-operational-competence]', formatCompetence(group?.dataBase));
+    $('[data-operational-definitions]')?.replaceChildren();
+    renderCatalogHealth(group);
+  }
+
+  function renderOperational(group) {
+    const engine = global.BFGroupOperationalMetrics;
+    if (!engine?.calculate) {
+      diagnostics.warnings.push('Motor de métricas operacionais indisponível.');
+      renderOperationalUnavailable(group);
+      return;
+    }
+    const result = engine.calculate(group);
+    operationalView = { group, result };
+    const maturity = result.metrics.observedMaturity;
+    const maturityValue = metricPercentage(maturity);
+    setText('[data-operational-maturity-summary]', maturityValue === null
+      ? 'Maturidade não informada'
+      : `${formatPercent(maturityValue)} de maturidade observada`);
+    const classification = String(group.classificacaoExecutiva || '').trim();
+    setText('[data-operational-classification]', classification
+      ? `Classificação do catálogo: ${classification.replace(/\s+-\s+/g, ' — ')}.`
+      : 'Classificação do catálogo não informada.');
+    renderCatalogHealth(group);
+    setText('[data-operational-competence]', formatCompetence(group.dataBase));
+    renderOperationalDefinitions(result.metrics);
+    renderOperationalMode(operationalMode);
+    diagnostics.resources.push({
+      type: 'operational-metrics',
+      schema: result.schema,
+      version: result.version,
+      competence: result.competence,
+      status: 'ready'
+    });
   }
 
   function renderMetrics(history) {
@@ -517,13 +758,18 @@
     return String(new URLSearchParams(global.location.search || '').get('returnState') || '').trim();
   }
 
+  function resolvedReturnState() {
+    const candidate = returnToken();
+    const state = candidate ? global.BFGroupJourney?.read?.(candidate) : null;
+    return state ? { token: candidate, state } : { token: '', state: null };
+  }
+
   function simulatorReturnHref(extra = {}) {
-    const token = returnToken();
-    const state = token ? global.BFGroupJourney?.read?.(token) : null;
+    const { token, state } = resolvedReturnState();
     const params = new URLSearchParams(state?.source?.search || '');
     params.set('from', 'grupo');
     params.set('restore', '1');
-    if (token) params.set('groupReturn', token);
+    params.set('groupReturn', token || 'direct');
     if (extra.useGroup) params.set('useGroup', '1');
     const hash = /^#[A-Za-z0-9._:-]{1,160}$/.test(String(state?.source?.hash || ''))
       ? state.source.hash
@@ -537,7 +783,7 @@
 
   function useGroup() {
     if (!currentGroup) return;
-    const token = returnToken();
+    const { token } = resolvedReturnState();
     const selection = {
       schema: 'bancus.group-selection.v1',
       createdAt: new Date().toISOString(),
@@ -566,7 +812,7 @@
     const wanted = links.find((link) => link.getAttribute('href') === hash)
       || links.find((link) => link.getAttribute('href') === '#historia');
     links.forEach((link) => link.removeAttribute('aria-current'));
-    if (wanted) wanted.setAttribute('aria-current', 'page');
+    if (wanted) wanted.setAttribute('aria-current', 'location');
   }
 
   function configureNavigation() {
@@ -586,6 +832,12 @@
       event.currentTarget.disabled = true;
       setText('[data-confirmation-status]', 'Esta pendência acompanhará o grupo até a proposta.');
     });
+    $$('[data-operational-mode]').forEach((button) => {
+      button.addEventListener('click', () => {
+        renderOperationalMode(button.dataset.operationalMode);
+        syncSectionNav('#retrato');
+      });
+    });
     $('.group360-section-nav')?.addEventListener('click', (event) => {
       const link = event.target.closest('a[href^="#"]');
       if (!link || link.getAttribute('aria-disabled') === 'true') {
@@ -595,18 +847,39 @@
       syncSectionNav(link.getAttribute('href'));
     });
     global.addEventListener('hashchange', () => syncSectionNav());
-    if ('IntersectionObserver' in global) {
-      const observer = new IntersectionObserver((entries) => {
-        const visible = entries.filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible?.target?.id) syncSectionNav(`#${visible.target.id}`);
-      }, { rootMargin: '-24% 0px -62% 0px', threshold: [0, .2, .6] });
-      ['historia', 'retrato', 'assembleias', 'lances', 'fluxos', 'fontes']
-        .map((id) => document.getElementById(id))
-        .filter(Boolean)
-        .forEach((section) => observer.observe(section));
-    }
     syncSectionNav();
+    if ('IntersectionObserver' in global) {
+      const observedSections = ['historia', 'retrato', 'assembleias', 'lances', 'fluxos', 'fontes']
+        .map((id) => document.getElementById(id))
+        .filter(Boolean);
+      const syncFromPosition = () => {
+        const anchor = Math.min(180, Math.max(100, global.innerHeight * .24));
+        const positions = observedSections.map((section) => {
+          const rect = section.getBoundingClientRect();
+          return { section, top: rect.top, bottom: rect.bottom };
+        });
+        const crossing = positions
+          .filter((position) => position.top <= anchor && position.bottom > anchor)
+          .sort((a, b) => b.top - a.top)[0];
+        const upcoming = positions
+          .filter((position) => position.bottom > anchor)
+          .sort((a, b) => a.top - b.top)[0];
+        const current = crossing || upcoming;
+        if (current?.section?.id) syncSectionNav(`#${current.section.id}`);
+      };
+      syncSectionNavFromPosition = syncFromPosition;
+      const observer = new IntersectionObserver(syncFromPosition, { rootMargin: '-100px 0px -60% 0px', threshold: [0, .01, .2] });
+      observedSections.forEach((section) => observer.observe(section));
+      let navigationFrame = 0;
+      global.addEventListener('scroll', () => {
+        if (navigationFrame) return;
+        navigationFrame = global.requestAnimationFrame(() => {
+          navigationFrame = 0;
+          syncFromPosition();
+        });
+      }, { passive: true });
+      global.requestAnimationFrame(syncFromPosition);
+    }
     $('[data-assembly-table-body]')?.addEventListener('click', (event) => {
       const trigger = event.target.closest('[data-assembly-id]');
       if (!trigger || !currentHistory?.available) return;
@@ -660,6 +933,7 @@
       renderSnapshot(group);
       renderHistory(currentHistory);
       setState('ready');
+      global.requestAnimationFrame(() => syncSectionNavFromPosition?.());
       diagnostics.resources.push({ type: 'assembly-history', status: currentHistory.available ? 'demonstrative' : 'unavailable', sourceId: currentHistory.source?.sourceId || '' });
     } catch (error) {
       diagnostics.errors.push(String(error.message || error));

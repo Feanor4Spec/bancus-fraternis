@@ -6,7 +6,11 @@
     "competence": 202512,
     "groupKey": "00000776|202512|1|79",
     "activeQuotas": 721,
-    "excludedQuotas": 698
+    "contemplatedInCompetence": 3,
+    "excludedQuotas": 698,
+    "pendingCredit": 43,
+    "delinquencyRate": 0.048812665,
+    "portfolioHealth": "Baixa"
   },
   "history": {
     "assemblies": 13,
@@ -28,6 +32,13 @@
       "bidMax": 37.841
     }
   },
+  "operational": {
+    "schema": "bancus.group-operational-metrics.v1",
+    "monthlyContemplationsPercentage": 0.4160887656033287,
+    "historicalExclusionPressurePercentage": 96.80998613037448,
+    "pendingCreditPercentage": 5.9639389736477115,
+    "observedMaturityPercentage": 86
+  },
   "structuralContracts": {
     "pageRoute": true,
     "chartJsLocal": true,
@@ -40,6 +51,18 @@
     "noInlineSvg": true,
     "localAssets": true,
     "exactLookup": true,
+    "operationalModuleBeforeController": true,
+    "operationalModeSwitch": true,
+    "operationalFourMetrics": true,
+    "operationalHealth": true,
+    "operationalMethodAndLimits": true,
+    "operationalNullAndZero": true,
+    "operationalTextSafety": true,
+    "commercialLanguage": true,
+    "compactDataCoverage": true,
+    "semanticOperationalLists": true,
+    "operationalUnavailableState": true,
+    "noDuplicateSnapshotMini": true,
     "escapeAndTextContent": true,
     "keyboardEscape": true,
     "inertBackground": true,
@@ -55,12 +78,14 @@
     "proposalEvidenceDiversity": true,
     "evidenceRebuiltFromCatalog": true,
     "directReturn": true,
+    "directBackReturnsToShelf": true,
     "returnWithoutHistoryTrap": true,
     "filteredSelectionIndependent": true,
     "pendingSelectionConsumedAfterSuccess": true,
     "duplicateGroupBlocked": true,
     "commercialCtaVisibleEarly": true,
     "safeAnchorOffset": true,
+    "anchorNavigationLocation": true,
     "nullEvidenceVersioned": true,
     "versionedGroupKey": true
   },

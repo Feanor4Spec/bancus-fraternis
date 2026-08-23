@@ -10,6 +10,7 @@ const assert = (condition, message) => { if (!condition) failures.push(message);
 const page = read('pages/grupo.html');
 const css = read('css/group-intelligence.css');
 const controller = read('js/group-intelligence.js');
+const operationalSource = read('js/group-operational-metrics.js');
 const assemblySource = read('js/group-assembly-data.js');
 const journeySource = read('js/group-journey.js');
 const app = read('js/app.js');
@@ -49,9 +50,24 @@ const group79 = compact.rows.find((row) => row[keyIndex] === assemblyData.EXACT_
 assert(Boolean(group79), 'Snapshot exato do grupo 79 não encontrado no catálogo compacto.');
 assert(group79?.[index.get('qtdAtivasEmDia')] === 721, 'Snapshot do grupo 79 deve preservar 721 cotas ativas.');
 assert(group79?.[index.get('qtdExcluidas')] === 698, 'Snapshot do grupo 79 deve preservar 698 cotas excluídas.');
+assert(group79?.[index.get('qtdContempladasNoMes')] === 3, 'Snapshot do grupo 79 deve preservar 3 contemplações na competência.');
+assert(group79?.[index.get('qtdCreditoPendente')] === 43, 'Snapshot do grupo 79 deve preservar 43 créditos pendentes.');
+assert(Math.abs(group79?.[index.get('taxaInadimplencia')] - 0.048812665) < 1e-12, 'Snapshot do grupo 79 deve preservar a inadimplência observada.');
+assert(group79?.[index.get('saudeCarteira')] === 'Baixa', 'Snapshot do grupo 79 deve preservar o nível baixo da carteira.');
 const codeCounts = new Map();
 compact.rows.forEach((row) => codeCounts.set(String(row[groupCodeIndex]), (codeCounts.get(String(row[groupCodeIndex])) || 0) + 1));
 assert([...codeCounts.values()].some((count) => count > 1), 'Fixture não comprova colisão de código de grupo.');
+
+const operationalContext = { globalThis: {} };
+operationalContext.window = operationalContext.globalThis;
+vm.runInNewContext(operationalSource, operationalContext, { filename: 'group-operational-metrics.js' });
+const operationalApi = operationalContext.globalThis.BFGroupOperationalMetrics;
+const group79Snapshot = Object.fromEntries(compact.columns.map((column, position) => [column, group79[position]]));
+const operational = operationalApi.calculate(group79Snapshot);
+assert(Math.abs(operational.metrics.monthlyContemplationsRelative.percentage.value - ((3 / 721) * 100)) < 1e-12, 'Relação mensal de contemplações do grupo 79 divergente.');
+assert(Math.abs(operational.metrics.historicalExclusionPressure.percentage.value - ((698 / 721) * 100)) < 1e-12, 'Pressão histórica de exclusão do grupo 79 divergente.');
+assert(Math.abs(operational.metrics.pendingCreditRelative.percentage.value - ((43 / 721) * 100)) < 1e-12, 'Crédito pendente relativo do grupo 79 divergente.');
+assert(operational.metrics.observedMaturity.percentage.value === 86, 'Maturidade observada do grupo 79 deve permanecer em 86%.');
 
 const heuristicContext = { console, globalThis: {} };
 heuristicContext.window = heuristicContext.globalThis;
@@ -118,11 +134,45 @@ const structuralContracts = {
   provenance: /As fontes e competências permanecem separadas/.test(page),
   demoDisclosure: /Série demonstrativa do grupo/.test(page) && /não representa uma condição atual/.test(page)
     && /Como a série evoluiu em cada assembleia/.test(page),
-  unavailableStates: /Arrecadação, liquidez e cobertura/.test(page) && /Dados financeiros não recebidos para este grupo/.test(page),
+  unavailableStates: /Arrecadação, liquidez e cobertura/.test(page) && /Nenhum valor foi estimado/.test(page)
+    && /Sem geodados vinculados ao grupo/.test(page) && /apenas o estoque acumulado/.test(page),
   drawerDialog: /role="dialog"[\s\S]*aria-modal="true"/.test(page),
   noInlineSvg: !/<svg\b/i.test(page),
   localAssets: /assets\/icons\/ui\/ui-building\.svg/.test(page),
   exactLookup: /group\?\.groupKey/.test(controller) && !/find\([^\n]*codigoGrupo/.test(controller),
+  operationalModuleBeforeController: page.indexOf('../js/group-operational-metrics.js') > 0
+    && page.indexOf('../js/group-operational-metrics.js') < page.indexOf('../js/group-intelligence.js'),
+  operationalModeSwitch: /role="group" aria-labelledby="operational-mode-label"/.test(page)
+    && (page.match(/data-operational-mode=/g) || []).length === 2
+    && /aria-pressed="true"/.test(page) && /aria-pressed="false"/.test(page),
+  operationalFourMetrics: (page.match(/data-operational-card=/g) || []).length === 4
+    && /Cotas ativas em dia/.test(page) && /Contempladas no mês/.test(page)
+    && /Cotas excluídas/.test(page) && /Crédito pendente/.test(page),
+  operationalHealth: /data-operational-health/.test(page)
+    && /group\?\.taxaInadimplencia/.test(controller)
+    && /group\?\.saudeCarteira/.test(controller)
+    && /Inadimplência não informada/.test(controller),
+  operationalMethodAndLimits: /Entender cálculos e limitações/.test(page)
+    && /data-operational-definitions/.test(page)
+    && /Não representa chance ou garantia de contemplação/.test(controller)
+    && /Pode superar 100% e não é taxa mensal/.test(controller)
+    && /Não mede insolvência, caixa ou liquidez/.test(controller),
+  operationalNullAndZero: /=== 0/.test(controller) && /Não calculável/.test(controller)
+    && /Não informado/.test(controller) && /safeNumber/.test(controller),
+  operationalTextSafety: /root\.replaceChildren\(\)/.test(controller)
+    && /document\.createElement\('dt'\)/.test(controller) && /textContent/.test(controller),
+  commercialLanguage: /Cotas e saúde do grupo/.test(page)
+    && /Use esta leitura na triagem comercial/.test(page)
+    && !/(gerado por ia|texto de ia|atualizamos|nova funcionalidade|versão atualizada|prompt executivo)/i.test(page),
+  compactDataCoverage: /group360-data-coverage/.test(page) && !/group360-unavailable/.test(page),
+  semanticOperationalLists: /role="list" aria-label="Leitura operacional das cotas"/.test(page)
+    && (page.match(/role="listitem"/g) || []).length === 4
+    && /group360-data-coverage[\s\S]*?<ul>/.test(page)
+    && !/group360-data-coverage[\s\S]*?<dl>[\s\S]*?<small>/.test(page),
+  operationalUnavailableState: /renderOperationalUnavailable\(group\)/.test(controller)
+    && /Maturidade indisponível/.test(controller)
+    && /button\.disabled = true/.test(controller),
+  noDuplicateSnapshotMini: !/group360-snapshot-mini/.test(page),
   escapeAndTextContent: /textContent/.test(controller),
   keyboardEscape: /event\.key === 'Escape'/.test(controller),
   inertBackground: /element\.inert = true/.test(controller) && /aria-hidden/.test(controller),
@@ -140,6 +190,8 @@ const structuralContracts = {
   evidenceRebuiltFromCatalog: /item\.groupEvidence = buildCatalogSnapshotEvidence\(group\)/.test(app)
     && !/item\.groupEvidence = Array\.isArray\(selection\.evidence\)/.test(app),
   directReturn: /token === 'direct'/.test(app) && /params\.get\('useGroup'\) === '1'/.test(app),
+  directBackReturnsToShelf: /params\.set\('groupReturn', token \|\| 'direct'\)/.test(controller)
+    && /resolvedReturnState/.test(controller),
   returnWithoutHistoryTrap: /location\.assign\(simulatorReturnHref\(options\)\)/.test(controller) && !/history\.back\(/.test(controller),
   filteredSelectionIndependent: /ensureGroupInProject\(group, \{ deferRender: true, silent: true \}\)/.test(restoreSelectionBlock)
     && !/shelfGroups/.test(restoreSelectionBlock),
@@ -148,6 +200,9 @@ const structuralContracts = {
   duplicateGroupBlocked: /const existing = projetoEstruturado\.itens\.find/.test(app) && /já está no projeto/.test(app),
   commercialCtaVisibleEarly: (page.match(/data-use-group/g) || []).length >= 2,
   safeAnchorOffset: /scroll-margin-top:\s*140px/.test(css),
+  anchorNavigationLocation: /aria-current="location"/.test(page)
+    && /setAttribute\('aria-current', 'location'\)/.test(controller)
+    && /aria-current='location'/.test(css),
   nullEvidenceVersioned: /entry && entry\.value === null/.test(versions),
   versionedGroupKey: /groupKey: cleanText/.test(versions) && /evidence: sanitizeEvidence/.test(versions)
 };
@@ -161,9 +216,20 @@ const report = {
     competence: group79?.[index.get('dataBase')],
     groupKey: assemblyData.EXACT_GROUP_KEY,
     activeQuotas: group79?.[index.get('qtdAtivasEmDia')],
-    excludedQuotas: group79?.[index.get('qtdExcluidas')]
+    contemplatedInCompetence: group79?.[index.get('qtdContempladasNoMes')],
+    excludedQuotas: group79?.[index.get('qtdExcluidas')],
+    pendingCredit: group79?.[index.get('qtdCreditoPendente')],
+    delinquencyRate: group79?.[index.get('taxaInadimplencia')],
+    portfolioHealth: group79?.[index.get('saudeCarteira')]
   },
   history: history.metrics,
+  operational: {
+    schema: operational.schema,
+    monthlyContemplationsPercentage: operational.metrics.monthlyContemplationsRelative.percentage.value,
+    historicalExclusionPressurePercentage: operational.metrics.historicalExclusionPressure.percentage.value,
+    pendingCreditPercentage: operational.metrics.pendingCreditRelative.percentage.value,
+    observedMaturityPercentage: operational.metrics.observedMaturity.percentage.value
+  },
   structuralContracts,
   failures
 };

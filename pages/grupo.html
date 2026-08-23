@@ -73,7 +73,7 @@
       </section>
 
       <nav class="group360-section-nav" aria-label="Seções da visão do grupo">
-        <a href="#historia" aria-current="page">Resumo</a>
+        <a href="#historia" aria-current="location">Resumo</a>
         <a href="#retrato">Cotas e saúde</a>
         <a href="#assembleias">Assembleias</a>
         <a href="#lances">Lances</a>
@@ -143,17 +143,6 @@
               <button class="group360-text-action" type="button" data-confirm-parameters>Marcar para conferência</button>
               <small data-confirmation-status aria-live="polite">Nenhuma marcação nesta sessão.</small>
             </article>
-            <article class="group360-insight" id="retrato-resumo">
-              <img src="../assets/icons/ui/ui-building.svg" alt="" aria-hidden="true" focusable="false">
-              <span>Retrato do catálogo</span>
-              <h3 data-snapshot-title>Competência —</h3>
-              <dl class="group360-snapshot-mini">
-                <div><dt>Cotas ativas em dia</dt><dd data-snapshot="active">—</dd></div>
-                <div><dt>Contempladas no mês</dt><dd data-snapshot="contemplated">—</dd></div>
-                <div><dt>Crédito pendente</dt><dd data-snapshot="pending">—</dd></div>
-              </dl>
-              <p>Estes números pertencem ao retrato do catálogo e não são uma linha do tempo.</p>
-            </article>
           </aside>
         </div>
       </section>
@@ -163,20 +152,88 @@
         <div><span class="group360-kicker">História do grupo</span><h2 id="history-empty-title">Histórico ainda não disponível</h2><p>O retrato deste grupo está no catálogo, mas não existe uma série de assembleias vinculada à sua identificação completa.</p></div>
       </section>
 
-      <section class="group360-snapshot" id="retrato" aria-labelledby="snapshot-heading">
-        <header><span class="group360-kicker">Retrato atual</span><h2 id="snapshot-heading">O que consta no catálogo</h2><p>Valores da competência indicada, sem criar tendência ou projeção.</p></header>
-        <dl class="group360-snapshot-grid">
-          <div><dt>Carta de referência</dt><dd data-snapshot="credit">—</dd></div>
-          <div><dt>Prazo do grupo</dt><dd data-snapshot="term">—</dd></div>
-          <div><dt>Taxa de administração</dt><dd data-snapshot="fee">—</dd></div>
-          <div><dt>Cotas excluídas</dt><dd data-snapshot="excluded">—</dd></div>
-          <div><dt>Cotas quitadas</dt><dd data-snapshot="paid">—</dd></div>
-          <div><dt>Índice de correção</dt><dd data-snapshot="index">—</dd></div>
-        </dl>
-        <div class="group360-unavailable" id="fluxos" aria-label="Dados não disponíveis no catálogo">
-          <article><img src="../assets/icons/ui/ui-graph.svg" alt="" aria-hidden="true" focusable="false"><div><strong>Arrecadação, liquidez e cobertura</strong><span>Dados financeiros não recebidos para este grupo.</span></div></article>
-          <article><img src="../assets/icons/ui/ui-building.svg" alt="" aria-hidden="true" focusable="false"><div><strong>Distribuição geográfica</strong><span>Não disponível na fonte atual.</span></div></article>
-          <article><img src="../assets/icons/ui/ui-users.svg" alt="" aria-hidden="true" focusable="false"><div><strong>Evolução de cotas excluídas</strong><span>Há apenas o estoque acumulado do retrato, sem série temporal.</span></div></article>
+      <section class="group360-snapshot group360-operational" id="retrato" aria-labelledby="snapshot-heading" data-operational-section>
+        <header class="group360-operational__head">
+          <div>
+            <span class="group360-kicker">Dinâmica operacional</span>
+            <h2 id="snapshot-heading">Cotas e saúde do grupo</h2>
+            <p>Compare as contagens observadas com indicadores relativos à base ativa da mesma competência.</p>
+          </div>
+          <div class="group360-mode-control">
+            <span id="operational-mode-label">Forma de leitura</span>
+            <div class="group360-mode-switch" role="group" aria-labelledby="operational-mode-label">
+              <button type="button" data-operational-mode="count" aria-pressed="true">Contagens</button>
+              <button type="button" data-operational-mode="relative" aria-pressed="false">Indicadores relativos</button>
+            </div>
+            <p data-operational-live aria-live="polite">Exibindo as contagens observadas na competência.</p>
+          </div>
+        </header>
+
+        <div class="group360-operational-grid" role="list" aria-label="Leitura operacional das cotas">
+          <div class="group360-operational-metric" role="listitem" data-operational-card="active">
+            <div class="group360-operational-metric__label"><img src="../assets/icons/ui/ui-users.svg" alt="" aria-hidden="true" focusable="false"><span>Cotas ativas em dia</span></div>
+            <strong data-operational-value="active">—</strong>
+            <p data-operational-support="active">Base da leitura em preparação.</p>
+            <span class="group360-data-status" data-operational-status="active">—</span>
+          </div>
+          <div class="group360-operational-metric" role="listitem" data-operational-card="contemplated">
+            <div class="group360-operational-metric__label"><img src="../assets/icons/journey/05-assembleia.svg" alt="" aria-hidden="true" focusable="false"><span>Contempladas no mês</span></div>
+            <strong data-operational-value="contemplated">—</strong>
+            <p data-operational-support="contemplated">Leitura em preparação.</p>
+            <span class="group360-data-status" data-operational-status="contemplated">—</span>
+          </div>
+          <div class="group360-operational-metric" role="listitem" data-operational-card="excluded">
+            <div class="group360-operational-metric__label"><img src="../assets/icons/ui/ui-shield.svg" alt="" aria-hidden="true" focusable="false"><span>Cotas excluídas</span></div>
+            <strong data-operational-value="excluded">—</strong>
+            <p data-operational-support="excluded">Leitura em preparação.</p>
+            <span class="group360-data-status" data-operational-status="excluded">—</span>
+          </div>
+          <div class="group360-operational-metric" role="listitem" data-operational-card="pending">
+            <div class="group360-operational-metric__label"><img src="../assets/icons/ui/ui-key.svg" alt="" aria-hidden="true" focusable="false"><span>Crédito pendente</span></div>
+            <strong data-operational-value="pending">—</strong>
+            <p data-operational-support="pending">Leitura em preparação.</p>
+            <span class="group360-data-status" data-operational-status="pending">—</span>
+          </div>
+        </div>
+
+        <aside class="group360-operational-context" aria-labelledby="operational-context-title">
+          <img src="../assets/icons/ui/ui-compass.svg" alt="" aria-hidden="true" focusable="false">
+          <div>
+            <span class="group360-kicker">Momento do grupo</span>
+            <h3 id="operational-context-title" data-operational-maturity-summary>Maturidade em preparação</h3>
+            <p class="group360-operational-health" data-operational-health>Inadimplência em preparação.</p>
+            <p><span data-operational-classification>Classificação em preparação.</span> Use esta leitura na triagem comercial e confirme regras e disponibilidade antes da proposta.</p>
+          </div>
+          <dl>
+            <div><dt>Competência</dt><dd data-operational-competence>—</dd></div>
+            <div><dt>Origem</dt><dd>Retrato do catálogo</dd></div>
+          </dl>
+        </aside>
+
+        <details class="group360-operational-method">
+          <summary>Entender cálculos e limitações</summary>
+          <div class="group360-operational-method__body">
+            <p>Os estados abaixo podem se sobrepor e não formam um total único. Valores relativos usam cotas ativas em dia como base da competência.</p>
+            <dl data-operational-definitions></dl>
+          </div>
+        </details>
+
+        <details class="group360-catalog-details">
+          <summary>Ver outros dados do catálogo</summary>
+          <dl class="group360-snapshot-grid">
+            <div><dt>Taxa de administração</dt><dd data-snapshot="fee">—</dd></div>
+            <div><dt>Cotas quitadas</dt><dd data-snapshot="paid">—</dd></div>
+            <div><dt>Índice de correção</dt><dd data-snapshot="index">—</dd></div>
+          </dl>
+        </details>
+
+        <div class="group360-data-coverage" id="fluxos" aria-labelledby="coverage-heading">
+          <header><span class="group360-kicker">Cobertura dos dados</span><h3 id="coverage-heading">O que a fonte ainda não permite analisar</h3></header>
+          <ul>
+            <li><strong>Arrecadação, liquidez e cobertura</strong><span>Não recebido</span><small>Nenhum valor foi estimado.</small></li>
+            <li><strong>Distribuição geográfica</strong><span>Não recebido</span><small>Sem geodados vinculados ao grupo.</small></li>
+            <li><strong>Evolução das cotas excluídas</strong><span>Sem série temporal</span><small>A fonte informa apenas o estoque acumulado.</small></li>
+          </ul>
         </div>
       </section>
 
@@ -210,6 +267,7 @@
   <script src="../js/shelf-data.js"></script>
   <script src="../js/group-journey.js"></script>
   <script src="../js/group-assembly-data.js"></script>
+  <script src="../js/group-operational-metrics.js"></script>
   <script src="../js/group-intelligence.js"></script>
 </body>
 </html>

@@ -4,6 +4,30 @@
 
 ---
 
+## [v9.3.1] - 2026-08-22
+
+### Visão 360 do Grupo — Dinâmica operacional
+
+#### Adicionado
+- Alternância acessível entre contagens observadas e indicadores relativos para cotas ativas, contempladas na competência, excluídas acumuladas e crédito pendente.
+- Motor puro `BFGroupOperationalMetrics`, com quatro métricas governadas, definições, fórmulas, competência, limitações, distinção entre `null` e zero e bloqueio de estimativas de caixa ou probabilidade.
+- Bloco de inadimplência observada, maturidade, classificação do catálogo, metodologia recolhível e cobertura compacta dos dados ainda não recebidos.
+- Gate dedicado com 64 verificações e cenários renderizados em 360 px, 768 px e 1280 px.
+
+#### Modificado
+- “Cotas e saúde” deixou de repetir o retrato lateral e passou a concentrar a leitura operacional e o nível observado da carteira em uma única superfície comercial.
+- O retorno direto de “Voltar à prateleira” agora normaliza a jornada para a etapa 4 mesmo quando a Visão 360 foi aberta por link, sem selecionar o grupo silenciosamente.
+- A navegação interna usa `aria-current="location"` e acompanha a posição real da página; o controle de leitura preserva foco e anuncia a mudança em região viva.
+- Dados financeiros, geográficos e séries não recebidas aparecem como cobertura indisponível, sem projeção ou preenchimento artificial; listas e indicadores usam semântica nomeada.
+
+#### Validação
+- `node tools/validate-group-operational-metrics.mjs` — 64/64 verificações.
+- `node tools/validate-group-intelligence.mjs` — aprovado.
+- Navegador integrado: troca de modo, foco, metodologia, retorno direto, 360/768/1280, zero overflow, zero IDs duplicados e zero controles sem nome.
+- Contraste: menor relação verificada de 7,08:1; os 18 alertas estáticos de imagem foram revisados como ícones decorativos com texto adjacente.
+
+---
+
 ## [v9.3.0] - 2026-08-22
 
 ### Visão 360 do Grupo — Série demonstrativa do grupo

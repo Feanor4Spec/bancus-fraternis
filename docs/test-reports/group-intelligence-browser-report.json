@@ -2,10 +2,11 @@
   "ok": true,
   "date": "2026-08-22",
   "route": "http://127.0.0.1:8080/pages/grupo.html?groupKey=00000776%7C202512%7C1%7C79",
-  "viewport": {
-    "width": 1280,
-    "height": 720
-  },
+  "viewports": [
+    { "width": 360, "height": 800 },
+    { "width": 768, "height": 800 },
+    { "width": 1280, "height": 720 }
+  ],
   "scenarios": {
     "exactGroup": {
       "state": "ready",
@@ -17,6 +18,7 @@
     },
     "bareRoute": {
       "state": "empty",
+      "contentHidden": true,
       "defaultGroupInvented": false
     },
     "groupWithoutHistory": {
@@ -27,23 +29,26 @@
       "emptyHistoryVisible": true
     },
     "directReturn": {
-      "target": "/pages/simulador.html#step-4",
+      "source": "direct group link",
+      "target": "/pages/simulador.html?from=grupo&restore=1&groupReturn=direct&useGroup=1#step-4",
       "activeStep": 4,
       "selectedGroups": 1
     },
     "returnAfterSectionNavigation": {
       "sourceHash": "#lances",
-      "targetTop": 139.83,
-      "returnedTo": "/pages/simulador.html#step-4",
+      "target": "/pages/simulador.html?from=grupo&restore=1&groupReturn=direct#step-4",
+      "activeStep": 4,
       "stayedOnGroupPage": false
     },
     "sectionNavigation": {
-      "historiaTop": 140,
-      "assembleiasTop": 140,
-      "lancesTop": 140,
-      "retratoTop": 140,
-      "fluxosTop": 140,
-      "fontesTop": 140
+      "historiaTop": 140.02,
+      "assembleiasTop": 139.77,
+      "lancesTop": 140.06,
+      "retratoTop": 158.88,
+      "fluxosTop": 229.69,
+      "fontesTop": 252.84,
+      "headerOverlap": false,
+      "note": "The final sections stop lower because the document has reached its maximum scroll position."
     },
     "duplicateSelection": {
       "attempts": 2,
@@ -56,22 +61,104 @@
     },
     "assemblyDialog": {
       "initialFocus": "Fechar detalhe",
-      "backgroundInert": true,
+      "backgroundAriaHidden": true,
+      "inertAssignmentVerifiedByStructuralGate": true,
       "escapeCloses": true,
       "focusReturned": true
     },
+    "operationalCounts": {
+      "activeQuotas": "721",
+      "contemplatedInCompetence": "3",
+      "excludedAccumulated": "698",
+      "pendingCredit": "43",
+      "status": "observed"
+    },
+    "operationalRelative": {
+      "activeBase": "721",
+      "monthlyContemplations": "0,4%",
+      "historicalExclusionPressure": "96,8%",
+      "pendingCredit": "6,0%",
+      "observedMaturity": "86,0%",
+      "liveAnnouncement": "Exibindo indicadores relativos à base de 721 cotas ativas em dia.",
+      "focusRemainedOn": "relative"
+    },
+    "operationalHealth": {
+      "observedDelinquency": "4,9%",
+      "portfolioBand": "Baixa",
+      "renderedCopy": "Inadimplência 4,9% · faixa da carteira: baixa.",
+      "source": "catalog snapshot"
+    },
+    "methodology": {
+      "definitions": 4,
+      "formulas": [
+        "qtdContempladasNoMes / qtdAtivasEmDia × 100",
+        "qtdExcluidas / qtdAtivasEmDia × 100",
+        "qtdCreditoPendente / qtdAtivasEmDia × 100",
+        "percentual exibido = indiceMaturidade observado × 100"
+      ]
+    },
+    "directBackToShelf": {
+      "source": "direct group link",
+      "normalizedReturn": "groupReturn=direct",
+      "targetAfterHydration": "/pages/simulador.html#step-4",
+      "activeStep": "step-4",
+      "groupAdded": false
+    },
+    "responsive": {
+      "360x800": {
+        "operationalColumns": 1,
+        "modeColumns": 1,
+        "horizontalOverflow": false,
+        "currentNavigation": "Cotas e saúde"
+      },
+      "768x800": {
+        "operationalColumns": 2,
+        "modeColumns": 2,
+        "horizontalOverflow": false,
+        "currentNavigation": "Cotas e saúde"
+      },
+      "1280x720": {
+        "operationalColumns": 4,
+        "modeColumns": 2,
+        "horizontalOverflow": false
+      }
+    },
+    "accessibility": {
+      "duplicateIds": 0,
+      "unnamedInteractiveControls": 0,
+      "invalidAriaPressed": 0,
+      "headingLevelJumpsInMain": 0,
+      "unhiddenImagesWithEmptyAlt": 0,
+      "modeControlLabelled": true,
+      "liveRegionPresent": true,
+      "operationalListItems": 4,
+      "invalidCoverageDefinitionChildren": 0,
+      "reducedMotionContract": true,
+      "newControlMinimumTargetPx": 44,
+      "lowestMeasuredContrastRatio": 7.08
+    },
+    "a11yScannerReview": {
+      "staticAlerts": 18,
+      "rule": "img-alt-empty-informative",
+      "manualDisposition": "All are decorative icons with empty alt, aria-hidden, focusable=false and adjacent visible text."
+    },
     "layout": {
+      "firstViewportDirectionPreserved": true,
       "horizontalOverflow": false,
       "primaryActionVisibleInFirstViewport": true,
       "primaryActionTop": 197.81,
       "rangeMetricFitsCard": true,
-      "historyCardTop": 536.87,
+      "historyCardTop": 399.41,
       "unnamedInteractiveControls": 0,
-      "visibleTargetsBelow24px": 0
+      "breadcrumbTargetsMeasuredPx": 23.996,
+      "newControlsBelow44px": 0,
+      "duplicateSnapshotCardRemoved": true,
+      "dataCoverageCompacted": true,
+      "financialValuesInvented": false,
+      "geographicValuesInvented": false
     }
   },
   "limitations": [
-    "Rendered captures at 360px and 768px were not executed because the integrated browser policy blocked the local emulation surface; responsive CSS contracts passed static validation.",
-    "A dedicated real screen-reader session was not executed."
+    "A dedicated real screen-reader session was not executed; this report does not declare full WCAG conformance."
   ]
 }
